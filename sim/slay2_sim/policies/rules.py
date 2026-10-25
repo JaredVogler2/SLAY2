@@ -10,6 +10,7 @@ import re
 from collections import defaultdict
 
 from ..knowledge import card_info, static_rating
+from ..observation import obs_hash
 from . import register
 from .base import Policy
 
@@ -106,6 +107,8 @@ def score_event_option(label: str, desc: str, run: dict) -> float:
         if cost > gold:
             s -= 100
         s -= cost / 12.0
+    if "fake" in d or "fake" in lab:
+        s -= 15  # the "Merchant???" sells fake relics
     if "relic" in d and "curse" not in d:
         s += 12
     elif "relic" in d:
@@ -274,6 +277,9 @@ class RulesV1(Policy):
         super().reset(rng_seed)
         self.ctx = ""      # what the pending card-selection is for
         self.last_phase = ""
+        self._h = None
+        self._last_idx = -1
+        self._tried: set[int] = set()
 
     # ---- non-combat sub-policies
     def _card_reward(self, obs, actions) -> int:
@@ -362,8 +368,32 @@ class RulesV1(Policy):
         self.ctx = "remove" if "remove" in d else "upgrade" if "upgrade" in d else "transform" if "transform" in d else "add" if "pick" in d else "enchant" if "enchant" in d else ""
         return best["idx"]
 
-    # ---- main entry
+    # ---- main entry (anti-stall wrapper around the phase logic)
     def act(self, obs, actions, fm=None):
+        h = obs_hash(obs)
+        if h == self._h:
+            self._tried.add(self._last_idx)  # the previous choice left the observation unchanged: it was a no-op
+        else:
+            self._tried = set()
+        idx = self._decide(obs, actions, fm)
+        if idx in self._tried:
+            idx = self._untried(obs["actions"])
+        self._h, self._last_idx = h, idx
+        return idx
+
+    def _untried(self, acts: list[dict]) -> int:
+        """Pick a different action than the no-op ones tried at this exact observation (prefer leaving/skipping)."""
+        pref = ("leave_shop", "skip", "skip_potion", "skip_relic", "end_turn", "confirm_choice")
+        rest = [a for a in acts if a["idx"] not in self._tried]
+        if not rest:  # everything tried: fall back to a random legal action rather than looping
+            return acts[self.rng.randrange(len(acts))]["idx"]
+        for kind in pref:
+            for a in rest:
+                if a["action"] == kind or a.get("option_id") == "leave":
+                    return a["idx"]
+        return rest[0]["idx"]
+
+    def _decide(self, obs, actions, fm=None):
         actions = obs["actions"]  # sanitised legal actions (same order as the raw list) carrying "idx"
         phase = obs["phase"]
         run = obs["run"]

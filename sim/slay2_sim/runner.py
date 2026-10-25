@@ -219,6 +219,8 @@ def run_episode(
                 last_phase = mgr.phase
             rec.steps = steps
             rec.combats_won = combats_won
+            if hasattr(policy, "episode_stats"):
+                rec.extra.update(policy.episode_stats())
             if outcome is None:
                 outcome = Outcome.WIN if mgr.player_won else Outcome.DEATH
                 if outcome is Outcome.DEATH:

@@ -11,7 +11,7 @@ from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 from concurrent.futures.process import BrokenProcessPool
 from pathlib import Path
 
-from . import external
+from . import external, gaps
 from .manifest import canonical_json, environment_fingerprint, save_json, sha256_file, sha256_hex, utc_now
 from .outcomes import EpisodeRecord, Outcome, summarize
 from .policies import make_policy
@@ -165,6 +165,7 @@ def run_batch(
         "policy": {"name": policy_name, "params": policy_params},
         "seeds": seed_info,
         "simulator": {**sim.describe(), "parity_with_live_game": "UNVERIFIED"},
+        "known_simulator_gaps": gaps.applicable(cfg.ascension),
         "environment": environment_fingerprint(external.REPO_ROOT),
         "workers": workers,
         "summary": {**summary, "win_rate_95ci_wilson": ci},

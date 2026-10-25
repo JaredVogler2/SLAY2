@@ -36,6 +36,9 @@ def print_summary(manifest: dict) -> None:
     print(f"episodes={s['episodes']}  completed={s['completed']}  " + "  ".join(f"{k}={v}" for k, v in c.items()))
     print("win rate of completed games:", _fmt_ci(c["win"], s["completed"]))
     print(f"simulator parity with live game: {manifest['simulator']['parity_with_live_game']}  (pin_ok={manifest['simulator']['pin_ok']})")
+    for g in manifest.get("known_simulator_gaps", []):
+        if g["affects"] == "results":
+            print(f"  known gap {g['id']}: {g['summary']}")
     print(f"wall={manifest['wall_seconds_this_invocation']}s  episodes.jsonl sha256={manifest['episodes_file']['sha256'][:16]}...")
 
 

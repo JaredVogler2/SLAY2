@@ -20,3 +20,4 @@ def make_policy(name: str, **params) -> Policy:
 
 
 from . import rules  # noqa: E402,F401  (registers rules_v1)
+from . import search  # noqa: E402,F401  (registers search_v1)
