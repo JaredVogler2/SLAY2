@@ -42,6 +42,6 @@ jobs:
           python-version: "3.12"
       - run: pip install numpy pytest
       - name: Python tests (tests that need the external simulator skip themselves)
-        run: PYTHONPATH=sim python -m pytest sim/tests -q
+        run: PYTHONPATH=sim python -m pytest sim/tests -q --durations=10
       - name: Provenance guard self-test
         run: bash scripts/test-guard.sh

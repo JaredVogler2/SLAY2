@@ -1,5 +1,6 @@
 """The Python oracle must reproduce the published tables on its own (it is the independent arbiter for packages/odds)."""
 
+import hashlib
 import json
 from fractions import Fraction as F
 from pathlib import Path
@@ -82,4 +83,5 @@ def test_golden_file_is_reproducible(tmp_path):
     assert o.write_golden(a) == o.write_golden(b) > 700
     assert a.read_bytes() == b.read_bytes()
     committed = Path(__file__).resolve().parents[2] / "packages" / "odds" / "test" / "fixtures" / "golden-python.json"
-    assert committed.read_bytes() == a.read_bytes(), "regenerate with: python -m slay2_sim oracle"
+    # compare digests, not bytes: pytest's byte-diff of a 290 KB file takes minutes when it fails
+    assert hashlib.sha256(committed.read_bytes()).hexdigest() == hashlib.sha256(a.read_bytes()).hexdigest(), "regenerate with: python -m slay2_sim oracle"
