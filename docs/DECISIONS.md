@@ -53,3 +53,14 @@ Original new **Slay the Spire 2**, solo-first, 5-character / 3-act / Ascension A
 **Decision.** Search and any lookahead use `slay2_sim.clone.clone_manager` (closure cells rebound through the deepcopy memo) followed by `fair_determinize` (canonical-sort-then-shuffle of the draw pile and reseeding of every reachable RNG). Both properties are tested: clone fidelity (0 divergences) and counterfactual invariance (equal observations/determinized state for different hidden states).
 
 **Alternatives rejected.** Replay-from-scratch per node (O(history) per node); hand-written enemy-turn models (re-implements the simulator and its bugs).
+
+## 2026-10-25 — ADR-018: toolchain pins (exact versions, verified against the npm registry on 2026-10-25)
+
+**Decision.** Node 22 (`.node-version`, `engines >=22.12`), pnpm 10.28.0 (`packageManager`), Next.js **16.4.3** (App Router, Turbopack), React 19.3.1, **TypeScript 6.0.3**, ESLint 10.13.0 (flat config) with typescript-eslint 8.72.0 and eslint-config-next 16.4.3, Vitest 5.0.5, fast-check 4.10.2, Zod 4.6.7, Tailwind 4.3.3, Prettier 3.9.10, Playwright 1.64.1 + axe-core/playwright 4.14.0. Every version is pinned exactly; `pnpm-lock.yaml` is committed and CI installs with `--frozen-lockfile`.
+
+**Why not the newest.** TypeScript 7.0.2 is published, but typescript-eslint 8.72.0 declares `typescript >=4.8.4 <6.1.0`, so type-aware linting would be unsupported; revisit when typescript-eslint supports 7. `jsdom` is pinned to 29.1.1 because 30.x requires Node >=22.22.2 and the build container has 22.22.0. `@types/node` is pinned to the 22 line to match the runtime.
+
+**Known wrinkles (checked, not hidden).** (1) TypeScript 6 defaults `types` to `[]`; each package opts in (`"types": ["node"]`). (2) `eslint-config-next` pulls three plugins whose declared peer range stops at ESLint 9; ESLint 10.13 runs them cleanly on this code base (`pnpm lint` green) - if a rule crashes in future, downgrade ESLint to 9.x rather than disabling lint. (3) Licenses (2026-10-25, `pnpm licenses list`): 357 MIT, 26 Apache-2.0, 14 ISC, 9 BSD-2, 3 BSD-3 and a few others; non-permissive entries are MPL-2.0 (axe-core, lightningcss: dev/build only), CC-BY-4.0 (`caniuse-lite` data, build only), **LGPL-3.0-or-later** (`@img/sharp-libvips-*`, optional prebuilt binaries pulled in by Next's `sharp`; SLAY2 does not use `next/image` optimisation, the libraries are dynamically linked and unmodified), OFL-1.1 (Fontsource fonts: Inter, Cinzel, JetBrains Mono). `pnpm audit`: no known vulnerabilities.
+
+**Fonts.** Fontsource (OFL-1.1) packages are bundled into the build; no request to Google Fonts is made by visitors.
+
