@@ -44,15 +44,15 @@ State per player: `offset` (float), start **-0.05**, cap **+0.40**. Growth per n
 
 | ID | Rule | Evidence | Status | Implemented / Test |
 |---|---|---|---|---|
-| CARD-1 | Rarity roll with offset `o`: draw `r ~ U[0,1)`; `T_rare = baseRare + o` (**not clamped**); rare if `r < T_rare`; uncommon if `r < baseUncommon + T_rare`; else common. Hence `P(rare)=clamp(baseRare+o,0,1)` and the uncommon/common boundary **shifts with the offset** (regular fight at the -5 start: 0 / 35 / 65 %, not 0 / 37 / 63 %). | E1 `Odds/CardRarityOdds.cs RollWithoutChangingFutureOdds`; E3 wording | VERIFIED-E1 | planned `packages/odds/rarity` |
-| CARD-2 | Base odds (rare / uncommon): **regular 3% / 37%**, **elite 10% / 40%**, **shop 9% / 37%**, **boss 100% rare** (offset ignored in the roll). | E1 `CardRarityOdds.GetBaseOdds`; E3; E4 | VERIFIED-E1 | planned |
-| CARD-3 | A7 base rare: **regular 1.49%** (not 1.5), **elite 5%**, **shop 4.5%**; uncommon unchanged. | E1 `CardRarityOdds.RegularRareOdds/EliteRareOdds/ShopRareOdds`; E3 (E4 prose omits it) | VERIFIED-E1 | planned |
-| CARD-4 | After each card of an **Encounter**-sourced reward whose odds type is Regular/Elite/Boss: rare -> `offset = -0.05`; non-rare -> `offset = min(offset + growth, 0.40)`. Cards in a pack are rolled **sequentially**, so later cards see earlier results; cards after a rare in the *same* pack restart from -0.05. | E1 `CardRarityOdds.Roll`, `Factories/CardFactory.cs RollForRarity` | VERIFIED-E1 | planned |
-| CARD-5 | **Boss rewards also reset the counter** (`Roll(BossEncounter)` returns Rare -> `offset = -0.05`) even though the roll ignores the offset. (sts.wiki only says "offset ignored".) | E1 `CardRarityOdds.Roll` | VERIFIED-E1 | planned |
-| CARD-6 | Shop cards read the offset **without advancing it** (`RollWithoutChangingFutureOdds(Shop)`); non-encounter sources (events, relic packs such as Orrery) use `RollWithBaseOdds`: rare if `r < baseRare`, uncommon if `r < baseUncommon` (**not cumulative**) -> 3 / 34 / 63 % at A0 regular odds. Neither advances the counter. | E1 `CardRarityOdds`, `CardFactory.cs`; E3 ("3% / 34% / 63%") | VERIFIED-E1 | planned |
+| CARD-1 | Rarity roll with offset `o`: draw `r ~ U[0,1)`; `T_rare = baseRare + o` (**not clamped**); rare if `r < T_rare`; uncommon if `r < baseUncommon + T_rare`; else common. Hence `P(rare)=clamp(baseRare+o,0,1)` and the uncommon/common boundary **shifts with the offset** (regular fight at the -5 start: 0 / 35 / 65 %, not 0 / 37 / 63 %). | E1 `Odds/CardRarityOdds.cs RollWithoutChangingFutureOdds`; E3 wording | VERIFIED-E1 | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts` |
+| CARD-2 | Base odds (rare / uncommon): **regular 3% / 37%**, **elite 10% / 40%**, **shop 9% / 37%**, **boss 100% rare** (offset ignored in the roll). | E1 `CardRarityOdds.GetBaseOdds`; E3; E4 | VERIFIED-E1 | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts` |
+| CARD-3 | A7 base rare: **regular 1.49%** (not 1.5), **elite 5%**, **shop 4.5%**; uncommon unchanged. | E1 `CardRarityOdds.RegularRareOdds/EliteRareOdds/ShopRareOdds`; E3 (E4 prose omits it) | VERIFIED-E1 | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts` |
+| CARD-4 | After each card of an **Encounter**-sourced reward whose odds type is Regular/Elite/Boss: rare -> `offset = -0.05`; non-rare -> `offset = min(offset + growth, 0.40)`. Cards in a pack are rolled **sequentially**, so later cards see earlier results; cards after a rare in the *same* pack restart from -0.05. | E1 `CardRarityOdds.Roll`, `Factories/CardFactory.cs RollForRarity` | VERIFIED-E1 | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts` |
+| CARD-5 | **Boss rewards also reset the counter** (`Roll(BossEncounter)` returns Rare -> `offset = -0.05`) even though the roll ignores the offset. (sts.wiki only says "offset ignored".) | E1 `CardRarityOdds.Roll` | VERIFIED-E1 | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts` |
+| CARD-6 | Shop cards read the offset **without advancing it** (`RollWithoutChangingFutureOdds(Shop)`); non-encounter sources (events, relic packs such as Orrery) use `RollWithBaseOdds`: rare if `r < baseRare`, uncommon if `r < baseUncommon` (**not cumulative**) -> 3 / 34 / 63 % at A0 regular odds. Neither advances the counter. | E1 `CardRarityOdds`, `CardFactory.cs`; E3 ("3% / 34% / 63%") | VERIFIED-E1 | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts` |
 | CARD-7 | If no eligible card exists at the rolled rarity, the roll steps to the next-higher rarity **with wrapping** (`GetNextAllowedRarity`). A card is then drawn uniformly from the eligible cards of that rarity not already in the pack. | E1 `CardFactory.cs` | VERIFIED-E1 | not modelled (needs pool) |
-| CARD-8 | Derived published checks that my model reproduces exactly: offset table (28 cells incl. A7), "1+ rare right after a rare": regular 0 %, elite 16.95 %; stationary run averages regular 19.72 % / elite 30.91 %. | E6 vs E3, E4 | CORROBORATED | planned golden tests |
-| CARD-9 | Per-player odds sets (co-op: each seat has its own counters). | E1 `Odds/PlayerOddsSet.cs` | VERIFIED-E1 | solo only |
+| CARD-8 | Derived published checks that my model reproduces exactly: offset table (28 cells incl. A7), "1+ rare right after a rare": regular 0 %, elite 16.95 %; stationary run averages regular 19.72 % / elite 30.91 %. | E6 vs E3, E4 | CORROBORATED | `packages/odds/src/rarity.ts`; `test/{golden,published,properties,bruteforce}.test.ts`: asserted exactly (0 %, 16.95 %) and 19.7 / 30.9 % by power iteration |
+| CARD-9 | Per-player odds sets (co-op: each seat has its own counters). | E1 `Odds/PlayerOddsSet.cs` | VERIFIED-E1 | solo only (engine takes one player's counters) |
 
 ## 4. Upgrades on reward cards
 
@@ -108,6 +108,28 @@ State per player: `offset` (float), start **-0.05**, cap **+0.40**. Growth per n
 | BLD-2 | v0.107.1 **replaced the PRNG** (xoshiro256**): seeds from earlier builds do not reproduce; seeds must never be compared across builds. | E2 |
 | BLD-3 | Beta v0.108-v0.111 changed several card rarities (e.g. Echoing Slash, Bloodletting, Cruelty, Dominate, Accelerant, Flanking, Ignition) and White Beast Statue's potion interaction. Pools and odds are therefore **build-specific**. | E2 |
 | BLD-4 | Act-3 boss Doormaker was removed and replaced by **Aeonglass** (main v0.107.1). | E2 |
+
+## 11. Implementation status (engines, tests) - updated 2026-10-25
+
+Engines live in `packages/odds/src` (BigInt rationals, ADR-013). Verification layers: **G** = 720 exact golden cases from the independent Python oracle (`sim/slay2_sim/oracle_odds.py`, regenerate with `python -m slay2_sim oracle`), **P** = published third-party tables (`packages/odds/test/fixtures/published.json`), **B** = brute-force enumeration of every world, **Q** = fast-check properties, **S** = Monte Carlo against the third-party simulator (separate audit, 200,000 samples per setting). Mutation check: deliberately changing the A7 base rate or the boss-reset rule makes the golden suite fail.
+
+| Rules | Module | Layers | Notes |
+|---|---|---|---|
+| CARD-1..6, CARD-8 | `rarity.ts` | G P B Q S | Posterior over the pity counter from partial histories (`inferCounter`), pack forecasts with credible band. Impossible histories are flagged, not repaired. |
+| UPG-1 | `upgrade.ts` | G P | Float32 caveat: Act 1 is 2^-24 in the game, 0 here. |
+| POT-1..3 | `potion.ts` | G B Q | Boss rooms also roll (E1 `Rewards/RewardsSet.cs`; E3: final boss gives no rewards). Stored chance is never clamped: only forced drops reach negative values, and ordinary play tops out at 100 % (a drop is then certain). Long-run drop rate of ordinary fights converges to the 50 % `targetOdds` documented in E1. |
+| UNK-1, UNK-2 | `unknown-room.ts` | G P B Q | First-ever-run scripting (UNK-3) and caller blacklists/relic hooks (UNK-4) are not modelled and are stated on every result. |
+| SHOP-2..4 | `shop.ts` | G P | Published ranges round the interval endpoints half-up; the endpoint has probability zero, so the attainable maximum is one lower when the endpoint is a half-integer (e.g. 52.5 -> 53 published, 52 attainable). Colorless common base is 57 (published range 54-60). |
+| GOLD-1, ASC-2 | `gold.ts` | G P | Poverty truncates 75 % of each end separately. |
+| DRAW-1 | `draw.ts`, `combinatorics.ts` | G B Q | Plus joint draws of several card groups and the one-reshuffle case. Retain/innate/ethereal/exhaust/orbs are not modelled. |
+
+### Newly recorded facts (this session)
+
+| ID | Fact | Evidence |
+|---|---|---|
+| POT-5 | Potion rolls happen after **normal fights, elites and bosses**; elites add +12.5 points to the roll only. The **final boss** gives no gold, cards, potion or relic. | E1 `Rewards/RewardsSet.cs`; E3 sts.wiki card-rewards page |
+| CARD-10 | Relics that change card packs (Prayer Wheel: second regular pack after fights; White Star: all-rare pack after elites; Lasting Candy; Driftwood: reroll; Pael's Wing: sacrifice; Orrery: five packs from base odds; Dingy Rug/Prismatic Gem: pool changes; Molten Egg/Silver Crucible/Lava Lamp: upgrades) are **not modelled**; the advisor must say "relic X changes this" instead of silently using base rules. | E3 sts.wiki |
+| SHOP-6 | Merchant relics from treasure rolls are common 50 % / uncommon 33 % / rare 17 %; elite relics use the same split. | E3, E4 |
 
 ## Not yet covered (explicit gaps)
 

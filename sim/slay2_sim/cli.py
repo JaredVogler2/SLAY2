@@ -1,4 +1,4 @@
-"""Command line: ``python -m slay2_sim <doctor|seeds|smoke|run|audit|compare>``."""
+"""Command line: ``python -m slay2_sim <doctor|seeds|smoke|run|audit|compare|oracle>``."""
 
 from __future__ import annotations
 
@@ -156,6 +156,15 @@ def cmd_audit(args) -> int:
     return 2
 
 
+def cmd_oracle(args) -> int:
+    from .oracle_odds import write_golden
+
+    out = Path(args.out)
+    n = write_golden(out)
+    print(f"wrote {n} exact golden cases to {out} (independent Python reference for packages/odds)")
+    return 0
+
+
 def cmd_compare(args) -> int:
     a = {r.seed: r for r in read_episodes(Path(args.a) / "episodes.jsonl")}
     b = {r.seed: r for r in read_episodes(Path(args.b) / "episodes.jsonl")}
@@ -226,6 +235,10 @@ def build_parser() -> argparse.ArgumentParser:
     au.add_argument("--ascension", type=int, default=0)
     au.add_argument("--profile", default="veteran", choices=["veteran", "first_run"])
     au.set_defaults(fn=cmd_audit)
+
+    orc = sub.add_parser("oracle", help="write the independent exact golden fixtures for packages/odds")
+    orc.add_argument("--out", default=str(external.REPO_ROOT / "packages" / "odds" / "test" / "fixtures" / "golden-python.json"))
+    orc.set_defaults(fn=cmd_oracle)
 
     cp = sub.add_parser("compare", help="paired comparison of two batches by seed")
     cp.add_argument("a")
