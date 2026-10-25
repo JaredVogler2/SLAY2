@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "game": "STS2",
+  "channel": "main",
+  "version": "0.107.1",
+  "steamBuildId": "23811903",
+  "releasedAt": "2026-06-18",
+  "verifiedAt": "2026-10-25",
+  "ruleSetId": "sts2-main-0.107.1",
+  "status": "verified-rules-subset",
+  "scope": "Run-level odds and economy only (see docs/game/MECHANICS-COVERAGE.md). Per-card/relic/enemy semantics are NOT covered.",
+  "acts": { "count": 3, "byIndex": [["Overgrowth", "Underdocks"], ["Hive"], ["Glory"]], "finalRoom": "TheArchitect (scripted event)", "ascensionMax": 10 },
+  "evidence": {
+    "E1": "decompiled sts2.dll v0.107.1 via external/pins.json#sts2-rl-agent (rights-restricted; facts only)",
+    "E2": "Steam announcements, megacrit.com FAQ/content policy",
+    "E3": "sts.wiki (data-mined, v0.107.1)",
+    "E4": "almanauts.com (build 23811903)",
+    "E5": "slaythespire.wiki.gg",
+    "E6": "SLAY2 exact-arithmetic tests"
+  },
+  "contentHash": null,
+  "contentHashNote": "SLAY2 vendors no game content, so there is no content hash yet. A hash of a derived facts-only catalog will be added when that catalog exists.",
+  "rights": "No game assets or text are stored here. See docs/IP-COMPLIANCE.md."
+}

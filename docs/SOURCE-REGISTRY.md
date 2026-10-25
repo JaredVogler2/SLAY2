@@ -1,3 +1,5 @@
+> **Superseded for verification purposes by [`sources/SOURCE-REGISTRY.md`](sources/SOURCE-REGISTRY.md)** (fetched and read on 2026-10-25, with licenses, SHAs and resolved contradictions). This file is kept as the original lead list.
+
 # SLAY2 source register — audited research leads (2026-10-25)
 
 Every entry is a **source lead**, not license permission or proof that the SLAY2 project executed games/training. All game facts must be pinned by `game=STS2, build, Steam channel, date` and confirmed before extraction/training. Relative reliability: official original game tested locally > official patch notes > extracted versioned data with independently checked fields > reputable mechanics wiki > community agent report > speculative guide. **Never use SLAY (STS1) rules by default.**
