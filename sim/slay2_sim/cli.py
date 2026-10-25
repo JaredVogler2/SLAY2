@@ -1,4 +1,4 @@
-"""Command line: ``python -m slay2_sim <doctor|seeds|smoke|run|audit|compare|oracle>``."""
+"""Command line: ``python -m slay2_sim <doctor|seeds|smoke|run|audit|compare|oracle|catalog>``."""
 
 from __future__ import annotations
 
@@ -165,6 +165,16 @@ def cmd_oracle(args) -> int:
     return 0
 
 
+def cmd_catalog(args) -> int:
+    from .catalog import OUT_PATH, build_catalog, pool_sizes
+
+    body = build_catalog(write=not args.dry_run)
+    print(f"{'(dry run) ' if args.dry_run else 'wrote '}{OUT_PATH}  cards={len(body['cards'])}  sha256={body['sha256'][:16]}...")
+    for cls, row in pool_sizes(body).items():
+        print(f"  {cls:12s} " + "  ".join(f"{r}: {v['allUnlocked']} (no epochs: {v['noEpochs']})" for r, v in row.items()))
+    return 0
+
+
 def cmd_compare(args) -> int:
     a = {r.seed: r for r in read_episodes(Path(args.a) / "episodes.jsonl")}
     b = {r.seed: r for r in read_episodes(Path(args.b) / "episodes.jsonl")}
@@ -239,6 +249,10 @@ def build_parser() -> argparse.ArgumentParser:
     orc = sub.add_parser("oracle", help="write the independent exact golden fixtures for packages/odds")
     orc.add_argument("--out", default=str(external.REPO_ROOT / "packages" / "odds" / "test" / "fixtures" / "golden-python.json"))
     orc.set_defaults(fn=cmd_oracle)
+
+    cat = sub.add_parser("catalog", help="derive the facts-only card catalog from the pinned local references")
+    cat.add_argument("--dry-run", action="store_true")
+    cat.set_defaults(fn=cmd_catalog)
 
     cp = sub.add_parser("compare", help="paired comparison of two batches by seed")
     cp.add_argument("a")

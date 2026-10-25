@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   Rational,
   at,
+  cardAppearanceProbability,
   cardRarityPmf,
   choose,
   combatGoldPmf,
@@ -478,5 +479,54 @@ describe("price and gold properties", () => {
   it("at() is bounds-checked", () => {
     expect(at([1, 2, 3], 1)).toBe(2);
     expect(() => at([1], 3)).toThrow(RangeError);
+  });
+});
+
+describe("expected rarity counts and card appearance", () => {
+  it("expected counts by rarity sum to the pack size and match the rare-count PMF", () => {
+    fc.assert(
+      fc.property(
+        arbSource,
+        arbCounter,
+        arbScarcity,
+        fc.integer({ min: 1, max: 5 }),
+        (src, k, sc, cards) => {
+          const s = summarizePack(enumeratePack(src, k, cards, rules(sc)), cards);
+          const total = s.expectedByRarity.common
+            .add(s.expectedByRarity.uncommon)
+            .add(s.expectedByRarity.rare);
+          expect(total.eq(cards)).toBe(true);
+          expect(s.expectedByRarity.rare.eq(s.expectedRares)).toBe(true);
+        },
+      ),
+      { numRuns: 100 },
+    );
+  });
+
+  it("a specific card's chance is the expected slots of its rarity over the pool size", () => {
+    const s = summarizePack(
+      enumeratePack({ kind: "encounter", room: "regular" }, 45, 3, rules(false)),
+      3,
+    );
+    // At the cap a regular slot is 43% rare, and a rare resets the chance to 0 for the rest of the pack:
+    // E[rares] = p + (1 - p) * (p + (1 - p) * p) with p = 43/100.
+    const p = Rational.of(43, 100);
+    const q = Rational.ONE.sub(p);
+    const expected = p.add(q.mul(p.add(q.mul(p))));
+    expect(s.expectedByRarity.rare.eq(expected)).toBe(true);
+    expect(cardAppearanceProbability(s.expectedByRarity.rare, 25).eq(expected.div(25))).toBe(true);
+    expect(() => cardAppearanceProbability(Rational.ONE, 0)).toThrow(RangeError);
+    expect(cardAppearanceProbability(Rational.of(5), 2).eq(1)).toBe(true);
+  });
+
+  it("matches explicit subset enumeration for a boss pack (3 distinct rares drawn from 25)", () => {
+    const s = summarizePack(
+      enumeratePack({ kind: "encounter", room: "boss" }, 0, 3, rules(false)),
+      3,
+    );
+    // P(a given rare is among 3 distinct picks from 25) = 3/25
+    expect(cardAppearanceProbability(s.expectedByRarity.rare, 25).eq(Rational.of(3, 25))).toBe(
+      true,
+    );
   });
 });

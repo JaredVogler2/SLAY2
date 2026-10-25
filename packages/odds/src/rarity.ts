@@ -170,6 +170,8 @@ export function enumeratePack(
 export interface PackSummary {
   readonly atLeastOneRare: Rational;
   readonly expectedRares: Rational;
+  /** Expected number of cards of each rarity in the pack (sums to the pack size). */
+  readonly expectedByRarity: Readonly<Record<Rarity, Rational>>;
   /** index = number of rares in the pack */
   readonly rareCountPmf: readonly Rational[];
   readonly endCounter: Dist<number>;
@@ -179,15 +181,24 @@ export function summarizePack(outcomes: readonly PackOutcome[], cards: number): 
   const rareCountPmf = Array.from({ length: cards + 1 }, () => Rational.ZERO);
   const endCounter: Dist<number> = new Map();
   let expected = Rational.ZERO;
+  const byRarity: Record<Rarity, Rational> = {
+    common: Rational.ZERO,
+    uncommon: Rational.ZERO,
+    rare: Rational.ZERO,
+  };
   for (const o of outcomes) {
     const rares = o.rarities.filter((r) => r === "rare").length;
     rareCountPmf[rares] = at(rareCountPmf, rares).add(o.probability);
     expected = expected.add(o.probability.mul(rares));
     addMass(endCounter, o.endCounter, o.probability);
+    for (const r of o.rarities) {
+      byRarity[r] = byRarity[r].add(o.probability);
+    }
   }
   return {
     atLeastOneRare: Rational.ONE.sub(at(rareCountPmf, 0)),
     expectedRares: expected,
+    expectedByRarity: byRarity,
     rareCountPmf,
     endCounter,
   };
@@ -258,6 +269,7 @@ export function inferCounter(
 export interface PackForecast {
   readonly atLeastOneRare: Rational;
   readonly expectedRares: Rational;
+  readonly expectedByRarity: Readonly<Record<Rarity, Rational>>;
   readonly rareCountPmf: readonly Rational[];
   /** Spread of P(at least one rare) across the counter posterior. */
   readonly atLeastOneRareBand: {
@@ -282,6 +294,11 @@ export function forecastPack(
   }
   let atLeast = Rational.ZERO;
   let expected = Rational.ZERO;
+  const byRarity: Record<Rarity, Rational> = {
+    common: Rational.ZERO,
+    uncommon: Rational.ZERO,
+    rare: Rational.ZERO,
+  };
   const pmf = Array.from({ length: cards + 1 }, () => Rational.ZERO);
   const perCounter: WeightedValue[] = [];
   let first: Record<Rarity, Rational> = {
@@ -293,6 +310,9 @@ export function forecastPack(
     const s = summarizePack(enumeratePack(source, counter, cards, rules), cards);
     atLeast = atLeast.add(mass.mul(s.atLeastOneRare));
     expected = expected.add(mass.mul(s.expectedRares));
+    for (const r of RARITIES) {
+      byRarity[r] = byRarity[r].add(mass.mul(s.expectedByRarity[r]));
+    }
     s.rareCountPmf.forEach((p, i) => {
       pmf[i] = at(pmf, i).add(mass.mul(p));
     });
@@ -309,6 +329,7 @@ export function forecastPack(
   return {
     atLeastOneRare: atLeast,
     expectedRares: expected,
+    expectedByRarity: byRarity,
     rareCountPmf: pmf,
     atLeastOneRareBand: {
       min: values.reduce((a, b) => a.min(b)),
@@ -327,4 +348,20 @@ export function rareChanceAtCounter(
   rules: RarityRules,
 ): Rational {
   return cardRarityPmf({ kind: "encounter", room }, counter, rules).rare;
+}
+
+/**
+ * Probability that one specific card appears in a pack. Each pack slot first rolls a rarity, then picks uniformly among
+ * the eligible cards of that rarity not already in the pack, so the cards of one rarity in a pack form a uniform random
+ * subset of that pool: P(card in pack) = E[number of slots with the card's rarity] / pool size (CARD-7).
+ * Assumes the pool has at least as many cards as slots of that rarity (always true for 20/35/25 pools and 3 slots).
+ */
+export function cardAppearanceProbability(
+  expectedSlotsOfItsRarity: Rational,
+  poolSize: number,
+): Rational {
+  if (!Number.isInteger(poolSize) || poolSize < 1) {
+    throw new RangeError("poolSize must be a positive integer");
+  }
+  return expectedSlotsOfItsRarity.div(poolSize).min(1);
 }

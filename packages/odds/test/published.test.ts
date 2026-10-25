@@ -257,3 +257,33 @@ describe("published economy tables (Almanauts)", () => {
     ).toBe(true);
   });
 });
+
+describe("published 'one specific rare' appearance rate (Almanauts: about 0.79% per regular reward)", () => {
+  it("equals the stationary expected rares per pack divided by the 25-card solo rare pool", () => {
+    const src: RewardSource = { kind: "encounter", room: "regular" };
+    const cap = 45;
+    const transitions: Map<number, number>[] = [];
+    const expectedRares: number[] = [];
+    for (let k = 0; k <= cap; k += 1) {
+      const outs = enumeratePack(src, k, 3, A0);
+      const m = new Map<number, number>();
+      for (const o of outs) {
+        m.set(o.endCounter, (m.get(o.endCounter) ?? 0) + o.probability.toNumber());
+      }
+      transitions.push(m);
+      expectedRares.push(summarizePack(outs, 3).expectedByRarity.rare.toNumber());
+    }
+    let pi: number[] = Array.from({ length: cap + 1 }, (_, k) => (k === 0 ? 1 : 0));
+    for (let iter = 0; iter < 5000; iter += 1) {
+      const next = Array.from({ length: cap + 1 }, () => 0);
+      pi.forEach((mass, k) => {
+        for (const [to, p] of transitions[k] ?? []) {
+          next[to] = (next[to] ?? 0) + mass * p;
+        }
+      });
+      pi = next;
+    }
+    const meanRares = pi.reduce((acc, mass, k) => acc + mass * (expectedRares[k] ?? 0), 0);
+    expect(((meanRares / 25) * 100).toFixed(2)).toBe("0.79");
+  });
+});

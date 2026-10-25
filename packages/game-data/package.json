@@ -1,0 +1,21 @@
+{
+  "name": "@slay2/game-data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Facts-only STS2 card catalog (ids, names, class, rarity, type, cost, keywords, pool facts, SLAY2 roles). No text, art or effect numbers.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@slay2/game-schema": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "vitest": "5.0.5"
+  }
+}
