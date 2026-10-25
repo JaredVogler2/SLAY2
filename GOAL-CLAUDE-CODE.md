@@ -3,7 +3,7 @@
 ```text
 /goal
 
-Build SLAY2: the world's best, most scientifically credible, beautiful and useful competitive strategy decision-intelligence website for the original Mega Crit game SLAY THE SPIRE 2, deployed on Vercel.
+Build SLAY2: the world's best, most scientifically credible, beautiful and useful competitive strategy decision-intelligence website for Mega Crit's sequel SLAY THE SPIRE 2, deployed on Vercel.
 
 Repository: https://github.com/JaredVogler2/SLAY2.git
 
