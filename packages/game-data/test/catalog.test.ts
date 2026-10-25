@@ -3,14 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
   ALL_UNLOCKED,
   CATALOG,
+  CHARACTER_FACTS,
   NO_EPOCHS,
   PLAYABLE_CLASSES,
   cardsOfClass,
+  characterFacts,
   getCard,
   matchScore,
   poolSizes,
   rewardPool,
   searchCards,
+  starterDeck,
 } from "../src/index";
 
 describe("catalog integrity", () => {
@@ -130,6 +133,37 @@ describe("card search", () => {
     if (bash) {
       expect(matchScore("bash", bash)).toBeGreaterThan(matchScore("ba", bash));
       expect(matchScore("", bash)).toBe(1);
+    }
+  });
+});
+
+describe("character facts (E1)", () => {
+  it("has the five characters with their starting HP, gold, energy and starting decks", () => {
+    expect(CHARACTER_FACTS.map((c) => [c.id, c.startingHp])).toEqual([
+      ["ironclad", 80],
+      ["silent", 70],
+      ["regent", 75],
+      ["necrobinder", 66],
+      ["defect", 75],
+    ]);
+    for (const c of CHARACTER_FACTS) {
+      expect(c.startingGold).toBe(99);
+      expect(c.maxEnergy).toBe(3);
+      // the Silent starts with 12 cards (5 Strike, 5 Defend, 2 specials); everyone else with 10
+      const size = starterDeck(c.id).reduce((n, e) => n + e.count, 0);
+      expect(size, c.id).toBe(c.id === "silent" ? 12 : 10);
+    }
+    expect(characterFacts("defect").baseOrbSlots).toBe(3);
+    expect(characterFacts("ironclad").startingRelics[0]?.name).toBe("Burning Blood");
+  });
+
+  it("starter cards are basic-rarity catalog cards of the same class", () => {
+    for (const c of CHARACTER_FACTS) {
+      for (const e of starterDeck(c.id)) {
+        const card = getCard(e.id);
+        expect(card?.rarity, e.id).toBe("basic");
+        expect(card?.class, e.id).toBe(c.id);
+      }
     }
   });
 });

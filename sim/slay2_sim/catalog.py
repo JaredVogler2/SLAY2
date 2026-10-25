@@ -24,6 +24,7 @@ from .manifest import canonical_json, sha256_hex
 
 BUILD_ID = "sts2-main-0.107.1"
 OUT_PATH = external.REPO_ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json"
+CHARACTERS_PATH = external.REPO_ROOT / "packages" / "game-data" / "data" / "characters.sts2-main-0.107.1.json"
 
 CLASSES = ("ironclad", "silent", "regent", "necrobinder", "defect")
 COLOR_TO_CLASS = {c: c for c in CLASSES} | {"colorless": "colorless", "curse": "curse", "status": "status", "token": "token", "event": "event", "quest": "quest"}
@@ -122,7 +123,14 @@ def roles_for(card: dict) -> list[str]:
 
 
 def prior_for(card: dict, rarity: str, cost: int | str | None) -> int:
-    """Heuristic static-power estimate (0-100). Context-free, unvalidated; the advisor treats it as a weak prior."""
+    """Heuristic static-power estimate (0-100), bounded: rarity band +/- a capped stat adjustment.
+
+    Context-free and NOT validated against outcomes; the advisor treats it as a weak prior. The adjustment is capped so
+    that a card with an unusually large effect number cannot outrank the whole rarity ladder (Pact's End scoring 95 under
+    the first, unbounded formula was the warning sign).
+    """
+    from math import tanh
+
     v = card.get("vars") or {}
     if rarity in ("curse", "status", "quest"):
         return 0
@@ -130,7 +138,8 @@ def prior_for(card: dict, rarity: str, cost: int | str | None) -> int:
         return 5
     energy = 2.0 if cost == "X" else float(max(int(cost), 1))
     raw = 0.0
-    raw += (v.get("damage") or 0) * (v.get("repeat") or 1 if (v.get("repeat") or 0) > 1 else 1) * 0.55
+    hits = v.get("repeat") or 1 if (v.get("repeat") or 0) > 1 else 1
+    raw += (v.get("damage") or 0) * hits * 0.55
     raw += (v.get("block") or 0) * 0.5 + (v.get("block_for_stars") or 0) * 0.4
     raw += min(v.get("cards") or 0, 3) * 2.2 + min(v.get("energy") or 0, 3) * 3.0
     raw += (v.get("power_strength") or 0) * 4.5 + (v.get("power_dexterity") or 0) * 3.5 + (v.get("power_focus") or 0) * 3.5
@@ -143,8 +152,8 @@ def prior_for(card: dict, rarity: str, cost: int | str | None) -> int:
     if "Exhaust" in card.get("keywords", []):
         raw -= 1.0
     per_energy = raw / energy
-    base = {"basic": 20.0, "common": 38.0, "uncommon": 48.0, "rare": 56.0, "ancient": 60.0, "event": 30.0, "token": 25.0}.get(rarity, 30.0)
-    return int(max(5, min(95, round(base + per_energy * 2.2))))
+    base = {"basic": 22.0, "common": 40.0, "uncommon": 52.0, "rare": 62.0, "ancient": 66.0, "event": 32.0, "token": 25.0}.get(rarity, 30.0)
+    return int(max(5, min(95, round(base + 14.0 * tanh((per_energy - 5.0) / 12.0)))))
 
 
 def build_catalog(*, write: bool = True) -> dict:
@@ -225,3 +234,59 @@ def pool_sizes(catalog: dict) -> dict:
             row[r] = {"allUnlocked": len(members), "noEpochs": len([c for c in members if c["epochGate"] is None])}
         out[cls] = row
     return out
+
+
+# ----------------------------------------------------------------------------- characters (E1 facts)
+def build_characters(*, write: bool = True) -> dict:
+    """Starting HP/gold/energy, starting deck and relic of each playable character (E1 ``Models.Characters/*.cs``)."""
+    archive = external.locate("spire-archive", require_clean=True)
+    sim = external.locate("sts2-rl-agent", require_clean=True)
+    chars_dir = sim.root / "decompiled" / "MegaCrit.Sts2.Core.Models.Characters"
+    relics = {r["id"]: r["name"] for r in json.loads((archive.root / "data" / "sts2" / "relics.json").read_text(encoding="utf-8"))}
+    cards = {c["id"]: c["name"] for c in json.loads((archive.root / "data" / "sts2" / "cards.json").read_text(encoding="utf-8"))}
+    out = []
+    for cls in CLASSES:
+        text = (chars_dir / f"{cls.capitalize()}.cs").read_text(encoding="utf-8", errors="ignore")
+
+        def num(name: str) -> int:
+            m = re.search(rf"{name}\s*=>\s*(\d+);", text)
+            if not m:
+                raise external.ExternalError(f"{cls}: {name} not found")
+            return int(m.group(1))
+
+        deck_block = text.split("StartingDeck", 1)[1].split("StartingRelics", 1)[0]
+        deck: dict[str, int] = {}
+        for c in re.findall(r"ModelDb\.Card<(\w+)>\(\)", deck_block):
+            deck[snake(c)] = deck.get(snake(c), 0) + 1
+        relic_block = text.split("StartingRelics", 1)[1].split(";", 1)[0]
+        relic_ids = [snake(r) for r in re.findall(r"ModelDb\.Relic<(\w+)>\(\)", relic_block)]
+        orb = re.search(r"BaseOrbSlotCount\s*=>\s*(\d+);", text)
+        out.append({
+            "id": cls,
+            "startingHp": num("StartingHp"),
+            "startingGold": num("StartingGold"),
+            "maxEnergy": 3,
+            "startingDeck": [{"id": cid, "count": n} for cid, n in deck.items()],
+            "startingRelics": [{"id": rid, "name": relics.get(rid, rid)} for rid in relic_ids],
+            **({"baseOrbSlots": int(orb.group(1))} if orb else {}),
+        })
+        missing = [cid for cid in deck if cid not in cards]
+        if missing:
+            raise external.ExternalError(f"{cls}: starting-deck cards missing from the catalog: {missing}")
+    body = {
+        "schema": 1,
+        "build": BUILD_ID,
+        "provenance": {
+            "kind": "facts-only (E1: Models.Characters/*.cs); relic display names from spire-archive",
+            "sources": [{"id": "sts2-rl-agent", "sha": sim.head}, {"id": "spire-archive", "sha": archive.head}],
+            "derivedBy": "sim/slay2_sim/catalog.py",
+            "retrieved": "2026-10-25",
+            "notes": ["maxEnergy is the CharacterModel default (3); no character in v0.107.1 overrides it in these files."],
+        },
+        "characters": out,
+    }
+    body["sha256"] = sha256_hex(canonical_json({k: v for k, v in body.items() if k != "sha256"}))
+    if write:
+        CHARACTERS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        CHARACTERS_PATH.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    return body

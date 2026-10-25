@@ -166,8 +166,10 @@ def cmd_oracle(args) -> int:
 
 
 def cmd_catalog(args) -> int:
-    from .catalog import OUT_PATH, build_catalog, pool_sizes
+    from .catalog import CHARACTERS_PATH, OUT_PATH, build_catalog, build_characters, pool_sizes
 
+    chars = build_characters(write=not args.dry_run)
+    print(f"{'(dry run) ' if args.dry_run else 'wrote '}{CHARACTERS_PATH}  characters={len(chars['characters'])}")
     body = build_catalog(write=not args.dry_run)
     print(f"{'(dry run) ' if args.dry_run else 'wrote '}{OUT_PATH}  cards={len(body['cards'])}  sha256={body['sha256'][:16]}...")
     for cls, row in pool_sizes(body).items():
