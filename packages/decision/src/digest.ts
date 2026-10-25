@@ -1,7 +1,10 @@
 /** Stable JSON with sorted keys, used to build cache keys and state digests. */
 export function canonicalJson(value: unknown): string {
+  if (value === undefined) {
+    return "null";
+  }
   if (value === null || typeof value !== "object") {
-    return JSON.stringify(value) ?? "null";
+    return JSON.stringify(value);
   }
   if (Array.isArray(value)) {
     return `[${value.map((v) => canonicalJson(v)).join(",")}]`;

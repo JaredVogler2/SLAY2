@@ -2,6 +2,7 @@ import { CATALOG, getCard, rewardPool, ALL_UNLOCKED, type CardEntry } from "@sla
 import { requireSupportedBuild } from "@slay2/game-schema";
 
 import { mulberry32, stateDigest } from "./digest";
+import { must } from "./util";
 import { GROUPS, profileDeck, type DeckEntry, type DeckProfile, type Group } from "./profile";
 import { baseWeights, scoreTerms, total, type Terms, type Weights } from "./quality";
 import {
@@ -163,16 +164,22 @@ function rankWith(
   offered: readonly CardEntry[],
 ): { action: DraftAction; delta: number }[] {
   const baseTotal = total(scoreTerms(base, weights));
-  const scored = offered.map((card) => ({
-    action: { kind: "pick", cardId: card.id } as DraftAction,
+  const scored: { action: DraftAction; delta: number }[] = offered.map((card) => ({
+    action: pickAction(card.id),
     delta: total(scoreTerms(profileDeck(withCard(entries, card)), weights)) - baseTotal,
   }));
-  scored.push({ action: { kind: "skip" }, delta: 0 });
+  scored.push({ action: SKIP, delta: 0 });
   // skip wins ties: it is listed last but sorted stably after the strict comparison below
   return scored.sort(
     (a, b) =>
       b.delta - a.delta || (a.action.kind === "skip" ? -1 : b.action.kind === "skip" ? 1 : 0),
   );
+}
+
+const SKIP: DraftAction = { kind: "skip" };
+
+function pickAction(cardId: string): DraftAction {
+  return { kind: "pick", cardId };
 }
 
 function actionKey(a: DraftAction): string {
@@ -234,7 +241,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
         },
       ];
     } else {
-      const card = getCard(r.action.cardId) as CardEntry;
+      const card = must(getCard(r.action.cardId), "catalog card");
       const after = profileDeck(withCard(entries, card));
       reasons = describeDelta(baseTerms, scoreTerms(after, weights), base, after, card);
     }
@@ -250,7 +257,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
   // Stability of the top choice under random changes to the heuristic's own weights (model uncertainty, not outcome uncertainty).
   const digest = stateDigest(request);
   const rnd = mulberry32(Number.parseInt(digest.slice(-8), 16));
-  const top = actionKey((options[0] as RankedOption).action);
+  const top = actionKey(must(options[0], "top option").action);
   const others: Record<string, number> = {};
   let kept = 0;
   for (let i = 0; i < PERTURBATIONS; i += 1) {
@@ -274,7 +281,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     }
   }
 
-  const first = options[0] as RankedOption;
+  const first = must(options[0], "top option");
   const second = options[1];
   const margin = second ? first.indexDelta - second.indexDelta : first.indexDelta;
   const tradeoffs: string[] = [];
@@ -299,10 +306,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     "Relics, potions, gold and the upcoming map (not used by the v0 draft heuristic).",
   );
 
-  const legal: DraftAction[] = [
-    ...offered.map((c) => ({ kind: "pick", cardId: c.id }) as DraftAction),
-    { kind: "skip" },
-  ];
+  const legal: DraftAction[] = [...offered.map((c) => pickAction(c.id)), SKIP];
   return {
     schema: 1,
     gameId: "STS2",
