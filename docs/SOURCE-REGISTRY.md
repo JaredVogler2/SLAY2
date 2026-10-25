@@ -1,0 +1,48 @@
+# SLAY2 source register — audited research leads (2026-10-25)
+
+Every entry is a **source lead**, not license permission or proof that the SLAY2 project executed games/training. All game facts must be pinned by `game=STS2, build, Steam channel, date` and confirmed before extraction/training. Relative reliability: official original game tested locally > official patch notes > extracted versioned data with independently checked fields > reputable mechanics wiki > community agent report > speculative guide. **Never use SLAY (STS1) rules by default.**
+
+| ID | Source | Evidence checked / useful facts | License/rights / reliability | Intended decision |
+|---|---|---|---|---|
+| 01 | [Mega Crit official press kit](https://www.megacrit.com/press-kits/slay-the-spire-2/) | March 5 2026 release, three OSes, multiplayer, new content, modding | Official facts; art not automatically free to rehost | Identity/version |
+| 02 | [Mega Crit FAQ](https://www.megacrit.com/faq/) | Godot; Early Access ongoing; up to 4-player Steam friends co-op; new Ancients/enchantments/afflictions/alternate acts | Official | Game target |
+| 03 | [Mega Crit launch](https://www.megacrit.com/news/2026-03-05-early-access-launch/) | New/returning cast and patch-changing new systems | Official March 5 2026 | Product scope |
+| 04 | [Official Steam announcements](https://steamcommunity.com/app/2868840/announcements/) | Developer patch channel, Sep 25 2026 newsletter describes substantial coming features but no release date | Official current patch source | Trigger patch audit |
+| 05 | [STS2DB patch tracker](https://sts2db.com/patches/) | Reports main v0.107.1, beta v0.111.0 as of Sep 23; Main RNG changed during Major Update #2 | Secondary, confirm official | Separate channels and pin |
+| 06 | [Steam build/patch data reference](https://almanauts.com/slaythespire2/patches/) | Stable build ID 23811903 reference; latest official listed beta 0.111.0 | Extracted-data secondary, updated Oct 20 | Patch provenance |
+| 07 | [Official wiki STS2 Ascension](https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Ascension) | Levels A0–A10, A10 double Act3 boss, cumulative A1–A10 specific modifiers, separate co-op | Wiki, validate patch | Difficulty rules |
+| 08 | [Official wiki STS2 Acts](https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Acts) | Three acts; alternate Act 1 Overgrowth/Underdocks; Ancients start act | Wiki page stub; game check | Victory terminal definition |
+| 09 | [Official wiki Ancients](https://slaythespire.wiki.gg/wiki/Ancients) | Act-dependent unlock-conditioned Ancient selection/offerings | Wiki verify build | Ancient boon optimizer |
+| 10 | [Official wiki enchantments](https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Enchantments) | Permanent card enhancement with per-card rules and targeting restrictions, beta warnings | Wiki; some beta only | Card effect transforms |
+| 11 | [STS2 cards/odds](https://sts.wiki/guides/card-rewards) | Normal 60/37/3, elite 50/40/10, shop 54/37/9, rare offset -5 to +40, potion start40, A7 shifts and scripts | Versioned community exposition, independently recalc | Exact probability tests |
+| 12 | [Almanauts exact card odds](https://almanauts.com/slaythespire2/card-odds/) | 72,424 claimed game validation cases, dynamic sequential rarity offsets and caps, pinned build | Self-reported tests (not SLAY2); no reuse grant | Independent parity oracle |
+| 13 | [Almanauts run odds](https://almanauts.com/slaythespire2/run-odds/) | 40% potion stateful counter, elite +12.5pp; '?' running conditions; shop prices | Self-reported 5,000 cases; validate patch | Prob calculator |
+| 14 | [Almanauts database](https://almanauts.com/slaythespire2/) | ~577 cards, 296 relics, 63 potions, 110 monsters, 57 events, 22 enchantments, 8 Ancients for stable pinned build | Copyright data; link/provenance not copy assumptions | Coverage inventory |
+| 15 | [Spire Codex](https://github.com/ptrlrd/spire-codex) / [API](https://spire-codex.com/docs) | STS2 structured card/relic/enemy/Ancient/event data, version and beta diffs, public API, run stats, exports | **Source PolyForm Noncommercial 1.0.0**; API separate API_TERMS.md; game art/data © Mega Crit; rights-gate before persistence | Data adapter under terms |
+| 16 | [Spire Archive](https://github.com/nkhoit/spire-archive) | STS1 and STS2 machine-readable entries; evolving counts | License/terms need independent review, extracted content rights | Secondary source validator |
+| 17 | [Slay the Spire Dev index](https://slaythespire.dev/) | 53 indexed bot/mod/tool research projects and game bridge distinctions | Index is leads not licenses | Sim/agent discovery |
+| 18 | [Slay the Spire Dev datasets](https://slaythespire.dev/datasets/) | AgenticSTS ~298 STS2 trajectories; Spire Codex exports; STS1 human histories not STS2 | Per-dataset rights verify | Training provenance |
+| 19 | [sts2-simulator](https://github.com/yizhang-dream/sts2-simulator) | Python headless Gymnasium full-run, action masks, real-game TCP parity harness, May-2026 pinned metadata, later balance overrides external | **No root LICENSE found via GitHub fetch**; don't copy code without explicit license and permission. Advertised Acts1–4 require reconciliation with 3-Act game | Parity-candidate not preapproved |
+| 20 | [sts2-rl-agent](https://github.com/zhiyue/sts2-rl-agent) | Five-class simulator/PPO with self-reported Act1 combat 92% win (NOT full-run); source lineage may overlap #19 | **No root LICENSE found via GitHub fetch**; do not copy | Benchmark architecture ideas |
+| 21 | [STS2MCP](https://github.com/Gennadiyev/STS2MCP) | Local REST + MCP C# game interface; tested v0.103.2, multiplayer beta, actions included | **MIT LICENSE confirmed**; game/mod compatibility stale and security for public web | Optional consented bridge / oracle fixtures |
+| 22 | [sts2-ai-mcp](https://github.com/BMingSY/sts2-ai-mcp) | v2 typed decision windows, preview, safe adapter; game engine target requires Godot/MegaDot version match | License check required at commit SHA; no assumption | Alternative bridge/parity |
+| 23 | [STS2FableBot](https://github.com/cicero225/STS2FableBot) | Ironclad full-run deterministic search bot; self-reported 20.7% A0 (343), 19.4% A1 (175), ~4200 total since June, build 0.107.1 | **MIT LICENSE confirmed**; claims not independently reproduced | Strong fair-state baseline |
+| 24 | [Sim the Spire WordPress](https://simthespire.wordpress.com/) | STS2 combat outcome distribution, exact combinatorial enumeration, enemy HP target thresholds, starting deck experiments | Original post text/charts no verified redistribution license; methodology inspiration | Original encounter heatmaps |
+| 25 | [Mega Crit content policy](https://www.megacrit.com/content-policy/) | Fan content/mod conditions, mod monetization restrictions, non-affiliation | Official; commercial independent coaching rights not settled | Licensing/legal gate |
+| 26 | [Vercel functions](https://vercel.com/docs/functions) | Hosting lightweight service; check current runtime duration/inference limits | Official, may change | Hosting design |
+| 27 | [Steam store page](https://store.steampowered.com/app/2868840/Slay_the_Spire_2/) | Five playable classes, up to four co-op, ongoing Early Access | Official marketing | Website claims |
+| 28 | [Community STS2 mechanics](https://www.sts2front.com/mechanics/) | Doom, Sly, Stars, Forge, afflictions | Secondary, verify actual behavior | Feature tests |
+| 29 | [Official wiki STS2 map locations](https://slaythespire.wiki.gg/wiki/Slay_the_Spire_2:Map_Locations) | Merchant standard stock 5 character, 2 colorless, 3 relics, 3 potions; Ancient rooms and boss structure | Community wiki, build specific | Shop optimizer |
+
+## Source-reuse decision registry
+
+**Allowed now:** read factual public pages and official documentation; link/attribute; develop original descriptive summaries and math derived independently, original mock scenarios, original design assets, independently coded and tested rule model. MIT code only after reviewing exact license/SHA and preserving attribution. **Conditional:** API access under checked rate limits and API terms, opt-in user run history imports, consented local state bridge from player's legitimately owned game, model checkpoint reuse under separately checked terms. **Do not do:** copy noncommercial project source into potentially commercial production app without rights; vendor unlicensed simulation engine code; redistribute raw decompiled C#/game PCK, image/audio sprites or copied bulk text; scrape copyrighted chart images or bulk Codex data contrary to terms; sell monetized mods contrary to publisher policy.
+
+## Candidate investigations for Phase 01
+
+- Test simulator #19 and #20 only where licenses explicitly authorize execution/reuse; audit version and incomplete external overlay, actual 3-act terminals, representative basic card effects and action masks. Need independent Parity runner on game owned by project owner.
+- Investigate #19/#20 shared lineage; one duplicate fork does not provide independent corroboration.
+- Evaluate #23 fair observable state and its real logs, representative measured win reports; compare CPU cost and refusal on unknown data.
+- Evaluate #15 terms for API access and *what may be cached*; do not infer right to publish extracted data/image dumps from API public accessibility.
+- Evaluate early access first-run scripted rewards and unlock-conditioned Ancient pools, A7 Scarcity and class-specific new mechanics.
+- Update this registry on every material official patch and re-run affected golden odds/combat tests.
