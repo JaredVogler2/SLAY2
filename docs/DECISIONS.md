@@ -37,3 +37,19 @@ Original new **Slay the Spire 2**, solo-first, 5-character / 3-act / Ascension A
 ## 2026-10-25 — ADR-015: Python research harness lives in `sim/`, separate from the web app
 
 **Decision.** Simulation, policies, audits and training are Python under `sim/` (original code), importing the simulator from the ignored checkout via `SLAY2_EXTERNAL_ROOT`. The Next.js app never imports or shells out to it (Vercel is not a compute platform for simulation). Exact-odds fixtures flow one way: TS engine -> JSON golden files -> Python audits.
+
+## 2026-10-25 — ADR-016: explicit profile cohorts and mandatory event registration
+
+**Context.** Measurement showed (a) every simulator run defaults to the profile's *first-ever run* (scripted early packs/potions/"?" rooms) and (b) the 68 events, including Neow and the Ancients, are not registered unless `sts2_env.events` is imported - which the gym env and training scripts never do.
+
+**Decision.** `external.activate()` imports `sts2_env.events`. Every batch records a `profile` in its config: `veteran` (default; `number_of_runs=10`, `epoch_unlock_count=20`) or `first_run`. Cohorts are never pooled in a headline metric. The profile is applied by temporarily swapping `RunManager`'s `RunState` for a subclass so the unlock state is set before the opening Ancient event (constructor flow otherwise unchanged).
+
+**Consequence.** Batches produced before this change (which lacked events) were discarded and regenerated; none are cited.
+
+## 2026-10-25 — ADR-017: closure-aware cloning is the only permitted forward model
+
+**Context.** Plain `copy.deepcopy` of a run diverges from the live run at the enemy turn (38/80 sequences) because function closures are copied by reference.
+
+**Decision.** Search and any lookahead use `slay2_sim.clone.clone_manager` (closure cells rebound through the deepcopy memo) followed by `fair_determinize` (canonical-sort-then-shuffle of the draw pile and reseeding of every reachable RNG). Both properties are tested: clone fidelity (0 divergences) and counterfactual invariance (equal observations/determinized state for different hidden states).
+
+**Alternatives rejected.** Replay-from-scratch per node (O(history) per node); hand-written enemy-turn models (re-implements the simulator and its bugs).
