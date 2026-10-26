@@ -1,0 +1,65 @@
+# --- third-party / rights-restricted material must NEVER be committed (see docs/IP-COMPLIANCE.md) ---
+/external/checkouts/
+/external/venvs/
+**/decompiled/
+**/extracted_pck/
+*.pck
+*.dll
+*.exe
+*.so
+*.dylib
+*.ctex
+*.assetbundle
+
+# --- local run artifacts (large traces live outside git; compact manifests are committed) ---
+/artifacts/
+/experiments/**/traces/
+/experiments/**/episodes.jsonl
+/models/**/*.zip
+/models/**/*.pt
+/models/**/*.onnx.tmp
+
+# --- node / next ---
+node_modules/
+.pnpm-store/
+.next/
+out/
+.turbo/
+.vercel/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- env / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- editors / OS ---
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# --- Playwright ---
+/playwright-report/
+/test-results/
+/blob-report/
+
+# playwright
+test-results/
+playwright-report/
+blob-report/
+
+# written by `next dev` (Next.js agent notes); not part of SLAY2
+apps/web/AGENTS.md

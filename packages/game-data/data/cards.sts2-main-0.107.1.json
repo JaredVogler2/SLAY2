@@ -1,0 +1,9709 @@
+{
+ "schema": 1,
+ "build": "sts2-main-0.107.1",
+ "provenance": {
+  "kind": "facts-only catalog derived locally from rights-restricted references (ADR-011); no card text, art or effect numbers",
+  "sources": [
+   {
+    "id": "spire-archive",
+    "sha": "4e6b0e040ccd00eb04fb1ab7fb0b298c222d2f29",
+    "gameVersion": "0.107.1",
+    "used": "identifiers, names, class, rarity, type, cost, keywords (facts); structured fields to compute roles/prior, then discarded"
+   },
+   {
+    "id": "sts2-rl-agent",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "gameVersion": "0.107.1",
+    "evidence": "E1",
+    "used": "class pool membership, epoch unlock lists, multiplayer constraints"
+   }
+  ],
+  "derivedBy": "sim/slay2_sim/catalog.py",
+  "retrieved": "2026-10-25",
+  "notes": [
+   "`roles` and `prior` are SLAY2 analysis. `prior` is a heuristic static-power estimate in 0-100, not a probability and not validated against outcomes.",
+   "`epochGate` names the unlock epoch that adds the card to its class pool for profiles that have not revealed it."
+  ]
+ },
+ "cards": [
+  {
+   "id": "ALCHEMIZE",
+   "name": "Alchemize",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS4"
+  },
+  {
+   "id": "ANOINTED",
+   "name": "Anointed",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS5"
+  },
+  {
+   "id": "BEACON_OF_HOPE",
+   "name": "Beacon of Hope",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "BEAT_DOWN",
+   "name": "Beat Down",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS3"
+  },
+  {
+   "id": "BOLAS",
+   "name": "Bolas",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CALAMITY",
+   "name": "Calamity",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS5"
+  },
+  {
+   "id": "ENTROPY",
+   "name": "Entropy",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 65,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS1"
+  },
+  {
+   "id": "ETERNAL_ARMOR",
+   "name": "Eternal Armor",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS2"
+  },
+  {
+   "id": "GOLD_AXE",
+   "name": "Gold Axe",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HAND_OF_GREED",
+   "name": "Hand of Greed",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "gold"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HIDDEN_GEM",
+   "name": "Hidden Gem",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "JACKPOT",
+   "name": "Jackpot",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS2"
+  },
+  {
+   "id": "KNOCKDOWN",
+   "name": "Knockdown",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "MASTER_OF_STRATEGY",
+   "name": "Master of Strategy",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MAYHEM",
+   "name": "Mayhem",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MIMIC",
+   "name": "Mimic",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "NOSTALGIA",
+   "name": "Nostalgia",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS4"
+  },
+  {
+   "id": "RALLY",
+   "name": "Rally",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "REND",
+   "name": "Rend",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS3"
+  },
+  {
+   "id": "ROLLING_BOULDER",
+   "name": "Rolling Boulder",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SALVO",
+   "name": "Salvo",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SCRAWL",
+   "name": "Scrawl",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS4"
+  },
+  {
+   "id": "SECRET_TECHNIQUE",
+   "name": "Secret Technique",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SECRET_WEAPON",
+   "name": "Secret Weapon",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THE_GAMBIT",
+   "name": "The Gambit",
+   "class": "colorless",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 75,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "AUTOMATION",
+   "name": "Automation",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS1"
+  },
+  {
+   "id": "BELIEVE_IN_YOU",
+   "name": "Believe in You",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "CATASTROPHE",
+   "name": "Catastrophe",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS1"
+  },
+  {
+   "id": "COORDINATE",
+   "name": "Coordinate",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "strength"
+   ],
+   "prior": 65,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "DARK_SHACKLES",
+   "name": "Dark Shackles",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "strength-loss"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DISCOVERY",
+   "name": "Discovery",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DRAMATIC_ENTRANCE",
+   "name": "Dramatic Entrance",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Exhaust",
+    "Innate"
+   ],
+   "roles": [
+    "aoe",
+    "damage",
+    "exhaust",
+    "innate"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "EQUILIBRIUM",
+   "name": "Equilibrium",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FASTEN",
+   "name": "Fasten",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FINESSE",
+   "name": "Finesse",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block",
+    "draw"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FISTICUFFS",
+   "name": "Fisticuffs",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FLASH_OF_STEEL",
+   "name": "Flash of Steel",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GANG_UP",
+   "name": "Gang Up",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "HUDDLE_UP",
+   "name": "Huddle Up",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "IMPATIENCE",
+   "name": "Impatience",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "INTERCEPT",
+   "name": "Intercept",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "JACK_OF_ALL_TRADES",
+   "name": "Jack of All Trades",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LIFT",
+   "name": "Lift",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "MIND_BLAST",
+   "name": "Mind Blast",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Innate"
+   ],
+   "roles": [
+    "damage",
+    "innate"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "OMNISLICE",
+   "name": "Omnislice",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PANACHE",
+   "name": "Panache",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 0,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PANIC_BUTTON",
+   "name": "Panic Button",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "block",
+    "exhaust"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PREP_TIME",
+   "name": "Prep Time",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS2"
+  },
+  {
+   "id": "PRODUCTION",
+   "name": "Production",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "energy",
+    "exhaust"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PROLONG",
+   "name": "Prolong",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PROWESS",
+   "name": "Prowess",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "dexterity",
+    "strength"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS3"
+  },
+  {
+   "id": "PURITY",
+   "name": "Purity",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust",
+    "Retain"
+   ],
+   "roles": [
+    "draw",
+    "exhaust",
+    "retain"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RESTLESSNESS",
+   "name": "Restlessness",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "draw",
+    "energy",
+    "retain"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SEEKER_STRIKE",
+   "name": "Seeker Strike",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHOCKWAVE",
+   "name": "Shockwave",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPLASH",
+   "name": "Splash",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "COLORLESS5"
+  },
+  {
+   "id": "STRATAGEM",
+   "name": "Stratagem",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TAG_TEAM",
+   "name": "Tag Team",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "THE_BOMB",
+   "name": "The Bomb",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THINKING_AHEAD",
+   "name": "Thinking Ahead",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THRUMMING_HATCHET",
+   "name": "Thrumming Hatchet",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ULTIMATE_DEFEND",
+   "name": "Ultimate Defend",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ULTIMATE_STRIKE",
+   "name": "Ultimate Strike",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VOLLEY",
+   "name": "Volley",
+   "class": "colorless",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": "X",
+   "keywords": [],
+   "roles": [
+    "damage",
+    "random-target"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ASCENDERS_BANE",
+   "name": "Ascender's Bane",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Eternal",
+    "Ethereal",
+    "Unplayable"
+   ],
+   "roles": [
+    "eternal",
+    "ethereal",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BAD_LUCK",
+   "name": "Bad Luck",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Eternal",
+    "Unplayable"
+   ],
+   "roles": [
+    "eternal",
+    "self-damage",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CLUMSY",
+   "name": "Clumsy",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Ethereal",
+    "Unplayable"
+   ],
+   "roles": [
+    "ethereal",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CURSE_OF_THE_BELL",
+   "name": "Curse of the Bell",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Eternal",
+    "Unplayable"
+   ],
+   "roles": [
+    "eternal",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEBT",
+   "name": "Debt",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "gold",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DECAY",
+   "name": "Decay",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "damage",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DOUBT",
+   "name": "Doubt",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable",
+    "weak"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ENTHRALLED",
+   "name": "Enthralled",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": 2,
+   "keywords": [
+    "Eternal"
+   ],
+   "roles": [
+    "eternal"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FOLLY",
+   "name": "Folly",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Eternal",
+    "Ethereal",
+    "Innate",
+    "Unplayable"
+   ],
+   "roles": [
+    "eternal",
+    "ethereal",
+    "innate",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GREED",
+   "name": "Greed",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Eternal",
+    "Unplayable"
+   ],
+   "roles": [
+    "eternal",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GUILTY",
+   "name": "Guilty",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "INJURY",
+   "name": "Injury",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NORMALITY",
+   "name": "Normality",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "damage",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "POOR_SLEEP",
+   "name": "Poor Sleep",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Retain",
+    "Unplayable"
+   ],
+   "roles": [
+    "retain",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REGRET",
+   "name": "Regret",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHAME",
+   "name": "Shame",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPORE_MIND",
+   "name": "Spore Mind",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WRITHE",
+   "name": "Writhe",
+   "class": "curse",
+   "rarity": "curse",
+   "type": "curse",
+   "cost": null,
+   "keywords": [
+    "Innate",
+    "Unplayable"
+   ],
+   "roles": [
+    "innate",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BIASED_COGNITION",
+   "name": "Biased Cognition",
+   "class": "defect",
+   "rarity": "ancient",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "focus"
+   ],
+   "prior": 78,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "QUADCAST",
+   "name": "Quadcast",
+   "class": "defect",
+   "rarity": "ancient",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 60,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFEND_DEFECT",
+   "name": "Defend",
+   "class": "defect",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 19,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DUALCAST",
+   "name": "Dualcast",
+   "class": "defect",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 16,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STRIKE_DEFECT",
+   "name": "Strike",
+   "class": "defect",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 20,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ZAP",
+   "name": "Zap",
+   "class": "defect",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 16,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BALL_LIGHTNING",
+   "name": "Ball Lightning",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BARRAGE",
+   "name": "Barrage",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT5"
+  },
+  {
+   "id": "BEAM_CELL",
+   "name": "Beam Cell",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "vulnerable"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BOOST_AWAY",
+   "name": "Boost Away",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CHARGE_BATTERY",
+   "name": "Charge Battery",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "energy"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CLAW",
+   "name": "Claw",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 36,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COLD_SNAP",
+   "name": "Cold Snap",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COMPILE_DRIVER",
+   "name": "Compile Driver",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COOLHEADED",
+   "name": "Coolheaded",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FOCUSED_STRIKE",
+   "name": "Focused Strike",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "focus"
+   ],
+   "prior": 44,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GO_FOR_THE_EYES",
+   "name": "Go for the Eyes",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "weak"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GUNK_UP",
+   "name": "Gunk Up",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HOLOGRAM",
+   "name": "Hologram",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "block",
+    "exhaust"
+   ],
+   "prior": 35,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HOTFIX",
+   "name": "Hotfix",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "focus"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LEAP",
+   "name": "Leap",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LIGHTNING_ROD",
+   "name": "Lightning Rod",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MOMENTUM_STRIKE",
+   "name": "Momentum Strike",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SWEEPING_BEAM",
+   "name": "Sweeping Beam",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "draw"
+   ],
+   "prior": 43,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TURBO",
+   "name": "TURBO",
+   "class": "defect",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT7"
+  },
+  {
+   "id": "UPROAR",
+   "name": "Uproar",
+   "class": "defect",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 36,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ADAPTIVE_STRIKE",
+   "name": "Adaptive Strike",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ALL_FOR_ONE",
+   "name": "All for One",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BUFFER",
+   "name": "Buffer",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CONSUMING_SHADOW",
+   "name": "Consuming Shadow",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT2"
+  },
+  {
+   "id": "COOLANT",
+   "name": "Coolant",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CREATIVE_AI",
+   "name": "Creative AI",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFRAGMENT",
+   "name": "Defragment",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "focus"
+   ],
+   "prior": 66,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ECHO_FORM",
+   "name": "Echo Form",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "ethereal"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FLAK_CANNON",
+   "name": "Flak Cannon",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "random-target"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT5"
+  },
+  {
+   "id": "GENETIC_ALGORITHM",
+   "name": "Genetic Algorithm",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HELIX_DRILL",
+   "name": "Helix Drill",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT7"
+  },
+  {
+   "id": "HYPERBEAM",
+   "name": "Hyperbeam",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "focus"
+   ],
+   "prior": 73,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ICE_LANCE",
+   "name": "Ice Lance",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 68,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "IGNITION",
+   "name": "Ignition",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "MACHINE_LEARNING",
+   "name": "Machine Learning",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 65,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "METEOR_STRIKE",
+   "name": "Meteor Strike",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 5,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MODDED",
+   "name": "Modded",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MULTI_CAST",
+   "name": "Multi-Cast",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": "X",
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RAINBOW",
+   "name": "Rainbow",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REBOOT",
+   "name": "Reboot",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHATTER",
+   "name": "Shatter",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SIGNAL_BOOST",
+   "name": "Signal Boost",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPINNER",
+   "name": "Spinner",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SUPERCRITICAL",
+   "name": "Supercritical",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "energy",
+    "exhaust"
+   ],
+   "prior": 65,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TRASH_TO_TREASURE",
+   "name": "Trash to Treasure",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VOLTAIC",
+   "name": "Voltaic",
+   "class": "defect",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BOOT_SEQUENCE",
+   "name": "Boot Sequence",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust",
+    "Innate"
+   ],
+   "roles": [
+    "block",
+    "exhaust",
+    "innate"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BULK_UP",
+   "name": "Bulk Up",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "dexterity",
+    "orbs",
+    "strength"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CAPACITOR",
+   "name": "Capacitor",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CHAOS",
+   "name": "Chaos",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CHILL",
+   "name": "Chill",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COMPACT",
+   "name": "Compact",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DARKNESS",
+   "name": "Darkness",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DOUBLE_ENERGY",
+   "name": "Double Energy",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ENERGY_SURGE",
+   "name": "Energy Surge",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "energy",
+    "exhaust"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "FERAL",
+   "name": "Feral",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FIGHT_THROUGH",
+   "name": "Fight Through",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FTL",
+   "name": "FTL",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FUSION",
+   "name": "Fusion",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GLACIER",
+   "name": "Glacier",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GLASSWORK",
+   "name": "Glasswork",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HAILSTORM",
+   "name": "Hailstorm",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ITERATION",
+   "name": "Iteration",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LOOP",
+   "name": "Loop",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT2"
+  },
+  {
+   "id": "NULL",
+   "name": "Null",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "weak"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT2"
+  },
+  {
+   "id": "OVERCLOCK",
+   "name": "Overclock",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REFRACT",
+   "name": "Refract",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ROCKET_PUNCH",
+   "name": "Rocket Punch",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SCAVENGE",
+   "name": "Scavenge",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT7"
+  },
+  {
+   "id": "SCRAPE",
+   "name": "Scrape",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHADOW_SHIELD",
+   "name": "Shadow Shield",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SKIM",
+   "name": "Skim",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SMOKESTACK",
+   "name": "Smokestack",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "DEFECT5"
+  },
+  {
+   "id": "STORM",
+   "name": "Storm",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SUBROUTINE",
+   "name": "Subroutine",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SUNDER",
+   "name": "Sunder",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "energy"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SYNCHRONIZE",
+   "name": "Synchronize",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SYNTHESIS",
+   "name": "Synthesis",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TEMPEST",
+   "name": "Tempest",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": "X",
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TESLA_COIL",
+   "name": "Tesla Coil",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THUNDER",
+   "name": "Thunder",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WHITE_NOISE",
+   "name": "White Noise",
+   "class": "defect",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "APOTHEOSIS",
+   "name": "Apotheosis",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust",
+    "Innate"
+   ],
+   "roles": [
+    "exhaust",
+    "innate"
+   ],
+   "prior": 60,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "APPARITION",
+   "name": "Apparition",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Ethereal",
+    "Exhaust"
+   ],
+   "roles": [
+    "ethereal",
+    "exhaust",
+    "intangible"
+   ],
+   "prior": 60,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BRIGHTEST_FLAME",
+   "name": "Brightest Flame",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw",
+    "energy",
+    "max-hp"
+   ],
+   "prior": 72,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MAUL",
+   "name": "Maul",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 63,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NEOWS_FURY",
+   "name": "Neow's Fury",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "draw",
+    "exhaust"
+   ],
+   "prior": 70,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RELAX",
+   "name": "Relax",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "block",
+    "draw",
+    "energy",
+    "exhaust"
+   ],
+   "prior": 67,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WHISTLE",
+   "name": "Whistle",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 67,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WISH",
+   "name": "Wish",
+   "class": "event",
+   "rarity": "ancient",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 60,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BYRD_SWOOP",
+   "name": "Byrd Swoop",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 35,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CALTROPS",
+   "name": "Caltrops",
+   "class": "event",
+   "rarity": "event",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "thorns"
+   ],
+   "prior": 32,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CLASH",
+   "name": "Clash",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 35,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DISTRACTION",
+   "name": "Distraction",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 26,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DUAL_WIELD",
+   "name": "Dual Wield",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 29,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ENLIGHTENMENT",
+   "name": "Enlightenment",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 26,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ENTRENCH",
+   "name": "Entrench",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 26,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "EXTERMINATE",
+   "name": "Exterminate",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 35,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FEEDING_FRENZY",
+   "name": "Feeding Frenzy",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "strength"
+   ],
+   "prior": 45,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HELLO_WORLD",
+   "name": "Hello World",
+   "class": "event",
+   "rarity": "event",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 32,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MAD_SCIENCE",
+   "name": "Mad Science",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "damage"
+   ],
+   "prior": 38,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "METAMORPHOSIS",
+   "name": "Metamorphosis",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 29,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "OUTMANEUVER",
+   "name": "Outmaneuver",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 33,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PECK",
+   "name": "Peck",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 30,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REBOUND",
+   "name": "Rebound",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 32,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RIP_AND_TEAR",
+   "name": "Rip and Tear",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "random-target"
+   ],
+   "prior": 31,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SQUASH",
+   "name": "Squash",
+   "class": "event",
+   "rarity": "event",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "vulnerable"
+   ],
+   "prior": 36,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STACK",
+   "name": "Stack",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 26,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TORIC_TOUGHNESS",
+   "name": "Toric Toughness",
+   "class": "event",
+   "rarity": "event",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 28,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BREAK",
+   "name": "Break",
+   "class": "ironclad",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "vulnerable"
+   ],
+   "prior": 78,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CORRUPTION",
+   "name": "Corruption",
+   "class": "ironclad",
+   "rarity": "ancient",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BASH",
+   "name": "Bash",
+   "class": "ironclad",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "vulnerable"
+   ],
+   "prior": 21,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFEND_IRONCLAD",
+   "name": "Defend",
+   "class": "ironclad",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 19,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STRIKE_IRONCLAD",
+   "name": "Strike",
+   "class": "ironclad",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 20,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ANGER",
+   "name": "Anger",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ARMAMENTS",
+   "name": "Armaments",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BLOODLETTING",
+   "name": "Bloodletting",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "energy",
+    "self-damage"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BLOOD_WALL",
+   "name": "Blood Wall",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block",
+    "self-damage"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD7"
+  },
+  {
+   "id": "BODY_SLAM",
+   "name": "Body Slam",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BREAKTHROUGH",
+   "name": "Breakthrough",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "self-damage"
+   ],
+   "prior": 43,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CINDER",
+   "name": "Cinder",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD5"
+  },
+  {
+   "id": "HAVOC",
+   "name": "Havoc",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HEADBUTT",
+   "name": "Headbutt",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "IRON_WAVE",
+   "name": "Iron Wave",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "damage"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MOLTEN_FIST",
+   "name": "Molten Fist",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD2"
+  },
+  {
+   "id": "PERFECTED_STRIKE",
+   "name": "Perfected Strike",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "POMMEL_STRIKE",
+   "name": "Pommel Strike",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SETUP_STRIKE",
+   "name": "Setup Strike",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "strength"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHRUG_IT_OFF",
+   "name": "Shrug It Off",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "draw"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SWORD_BOOMERANG",
+   "name": "Sword Boomerang",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit",
+    "random-target"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THUNDERCLAP",
+   "name": "Thunderclap",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "vulnerable"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TREMBLE",
+   "name": "Tremble",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "vulnerable"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TRUE_GRIT",
+   "name": "True Grit",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TWIN_STRIKE",
+   "name": "Twin Strike",
+   "class": "ironclad",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "AGGRESSION",
+   "name": "Aggression",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BARRICADE",
+   "name": "Barricade",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BRAND",
+   "name": "Brand",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "self-damage",
+    "strength"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CASCADE",
+   "name": "Cascade",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": "X",
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CONFLAGRATION",
+   "name": "Conflagration",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CRIMSON_MANTLE",
+   "name": "Crimson Mantle",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CRUELTY",
+   "name": "Cruelty",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD2"
+  },
+  {
+   "id": "DARK_EMBRACE",
+   "name": "Dark Embrace",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEMON_FORM",
+   "name": "Demon Form",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "strength"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FEED",
+   "name": "Feed",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust",
+    "max-hp"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FIEND_FIRE",
+   "name": "Fiend Fire",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HELLRAISER",
+   "name": "Hellraiser",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "IMPERVIOUS",
+   "name": "Impervious",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "block",
+    "exhaust"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "JUGGERNAUT",
+   "name": "Juggernaut",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MANGLE",
+   "name": "Mangle",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "strength-loss"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NOT_YET",
+   "name": "Not Yet",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "heal"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "OFFERING",
+   "name": "Offering",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "energy",
+    "exhaust",
+    "self-damage"
+   ],
+   "prior": 65,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ONE_TWO_PUNCH",
+   "name": "One-Two Punch",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PACTS_END",
+   "name": "Pact's End",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "draw"
+   ],
+   "prior": 74,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD5"
+  },
+  {
+   "id": "PRIMAL_FORCE",
+   "name": "Primal Force",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PYRE",
+   "name": "Pyre",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STOKE",
+   "name": "Stoke",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TANK",
+   "name": "Tank",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "TEAR_ASUNDER",
+   "name": "Tear Asunder",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD7"
+  },
+  {
+   "id": "THRASH",
+   "name": "Thrash",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UNMOVABLE",
+   "name": "Unmovable",
+   "class": "ironclad",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ASHEN_STRIKE",
+   "name": "Ashen Strike",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BATTLE_TRANCE",
+   "name": "Battle Trance",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BLUDGEON",
+   "name": "Bludgeon",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BULLY",
+   "name": "Bully",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BURNING_PACT",
+   "name": "Burning Pact",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COLOSSUS",
+   "name": "Colossus",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEMONIC_SHIELD",
+   "name": "Demonic Shield",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "self-damage"
+   ],
+   "prior": 45,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "DISMANTLE",
+   "name": "Dismantle",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DOMINATE",
+   "name": "Dominate",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "vulnerable"
+   ],
+   "prior": 47,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD2"
+  },
+  {
+   "id": "DRUM_OF_BATTLE",
+   "name": "Drum of Battle",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw",
+    "energy"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD5"
+  },
+  {
+   "id": "EVIL_EYE",
+   "name": "Evil Eye",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "EXPECT_A_FIGHT",
+   "name": "Expect a Fight",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FEEL_NO_PAIN",
+   "name": "Feel No Pain",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FIGHT_ME",
+   "name": "Fight Me!",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit",
+    "strength"
+   ],
+   "prior": 57,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FLAME_BARRIER",
+   "name": "Flame Barrier",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FORGOTTEN_RITUAL",
+   "name": "Forgotten Ritual",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "energy",
+    "exhaust"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HEMOKINESIS",
+   "name": "Hemokinesis",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "self-damage"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HOWL_FROM_BEYOND",
+   "name": "Howl from Beyond",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "INFERNAL_BLADE",
+   "name": "Infernal Blade",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "INFERNO",
+   "name": "Inferno",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "IRONCLAD7"
+  },
+  {
+   "id": "INFLAME",
+   "name": "Inflame",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "strength"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "JUGGLING",
+   "name": "Juggling",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PILLAGE",
+   "name": "Pillage",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RAGE",
+   "name": "Rage",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RAMPAGE",
+   "name": "Rampage",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RUPTURE",
+   "name": "Rupture",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "strength"
+   ],
+   "prior": 57,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SECOND_WIND",
+   "name": "Second Wind",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPITE",
+   "name": "Spite",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STAMPEDE",
+   "name": "Stampede",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STOMP",
+   "name": "Stomp",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STONE_ARMOR",
+   "name": "Stone Armor",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TAUNT",
+   "name": "Taunt",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "vulnerable"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UNRELENTING",
+   "name": "Unrelenting",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UPPERCUT",
+   "name": "Uppercut",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VICIOUS",
+   "name": "Vicious",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WHIRLWIND",
+   "name": "Whirlwind",
+   "class": "ironclad",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": "X",
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FORBIDDEN_GRIMOIRE",
+   "name": "Forbidden Grimoire",
+   "class": "necrobinder",
+   "rarity": "ancient",
+   "type": "power",
+   "cost": 2,
+   "keywords": [
+    "Eternal"
+   ],
+   "roles": [
+    "eternal"
+   ],
+   "prior": 63,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PROTECTOR",
+   "name": "Protector",
+   "class": "necrobinder",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 60,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BODYGUARD",
+   "name": "Bodyguard",
+   "class": "necrobinder",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "summon"
+   ],
+   "prior": 16,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFEND_NECROBINDER",
+   "name": "Defend",
+   "class": "necrobinder",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 19,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STRIKE_NECROBINDER",
+   "name": "Strike",
+   "class": "necrobinder",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 20,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UNLEASH",
+   "name": "Unleash",
+   "class": "necrobinder",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 16,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "AFTERLIFE",
+   "name": "Afterlife",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "summon"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER5"
+  },
+  {
+   "id": "BLIGHT_STRIKE",
+   "name": "Blight Strike",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFILE",
+   "name": "Defile",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "damage",
+    "ethereal"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFY",
+   "name": "Defy",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "block",
+    "ethereal",
+    "weak"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DRAIN_POWER",
+   "name": "Drain Power",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 45,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FEAR",
+   "name": "Fear",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "damage",
+    "ethereal",
+    "vulnerable"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FLATTEN",
+   "name": "Flatten",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GRAVEBLAST",
+   "name": "Graveblast",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 36,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GRAVE_WARDEN",
+   "name": "Grave Warden",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "draw"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "INVOKE",
+   "name": "Invoke",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy",
+    "summon"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NEGATIVE_PULSE",
+   "name": "Negative Pulse",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "doom"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "POKE",
+   "name": "Poke",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PULL_AGGRO",
+   "name": "Pull Aggro",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block",
+    "summon"
+   ],
+   "prior": 36,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REAP",
+   "name": "Reap",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "damage",
+    "retain"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REAVE",
+   "name": "Reave",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SCOURGE",
+   "name": "Scourge",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "doom",
+    "draw"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER2"
+  },
+  {
+   "id": "SCULPTING_STRIKE",
+   "name": "Sculpting Strike",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER7"
+  },
+  {
+   "id": "SNAP",
+   "name": "Snap",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SOW",
+   "name": "Sow",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "aoe",
+    "damage",
+    "retain"
+   ],
+   "prior": 43,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WISP",
+   "name": "Wisp",
+   "class": "necrobinder",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "energy",
+    "exhaust"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BANSHEES_CRY",
+   "name": "Banshee's Cry",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 9,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "energy"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER7"
+  },
+  {
+   "id": "CALL_OF_THE_VOID",
+   "name": "Call of the Void",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 65,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEMESNE",
+   "name": "Demesne",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "draw",
+    "energy",
+    "ethereal"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEVOUR_LIFE",
+   "name": "Devour Life",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "EIDOLON",
+   "name": "Eidolon",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "END_OF_DAYS",
+   "name": "End of Days",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "doom"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ERADICATE",
+   "name": "Eradicate",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": "X",
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "damage",
+    "retain"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GLIMPSE_BEYOND",
+   "name": "Glimpse Beyond",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "HANG",
+   "name": "Hang",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MISERY",
+   "name": "Misery",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NECRO_MASTERY",
+   "name": "Necro Mastery",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "summon"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NEUROSURGE",
+   "name": "Neurosurge",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw",
+    "energy"
+   ],
+   "prior": 73,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "OBLIVION",
+   "name": "Oblivion",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "doom"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER2"
+  },
+  {
+   "id": "REANIMATE",
+   "name": "Reanimate",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "summon"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REAPER_FORM",
+   "name": "Reaper Form",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SACRIFICE",
+   "name": "Sacrifice",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "retain"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER5"
+  },
+  {
+   "id": "SEANCE",
+   "name": "Seance",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "draw",
+    "ethereal"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SENTRY_MODE",
+   "name": "Sentry Mode",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHARED_FATE",
+   "name": "Shared Fate",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SOUL_STORM",
+   "name": "Soul Storm",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPIRIT_OF_ASH",
+   "name": "Spirit of Ash",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SQUEEZE",
+   "name": "Squeeze",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THE_SCYTHE",
+   "name": "The Scythe",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TIMES_UP",
+   "name": "Time's Up",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TRANSFIGURE",
+   "name": "Transfigure",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "energy",
+    "exhaust"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UNDEATH",
+   "name": "Undeath",
+   "class": "necrobinder",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BONE_SHARDS",
+   "name": "Bone Shards",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "block",
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BORROWED_TIME",
+   "name": "Borrowed Time",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 57,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BURY",
+   "name": "Bury",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 4,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CALCIFY",
+   "name": "Calcify",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER5"
+  },
+  {
+   "id": "CAPTURE_SPIRIT",
+   "name": "Capture Spirit",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CLEANSE",
+   "name": "Cleanse",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "summon"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COUNTDOWN",
+   "name": "Countdown",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER2"
+  },
+  {
+   "id": "DANSE_MACABRE",
+   "name": "Danse Macabre",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEATHBRINGER",
+   "name": "Deathbringer",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "doom",
+    "weak"
+   ],
+   "prior": 47,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEATHS_DOOR",
+   "name": "Death's Door",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEATH_MARCH",
+   "name": "Death March",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEBILITATE",
+   "name": "Debilitate",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DELAY",
+   "name": "Delay",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block",
+    "energy"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DIRGE",
+   "name": "Dirge",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": "X",
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "summon"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DREDGE",
+   "name": "Dredge",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ENFEEBLING_TOUCH",
+   "name": "Enfeebling Touch",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "ethereal",
+    "strength-loss"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FETCH",
+   "name": "Fetch",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FRIENDSHIP",
+   "name": "Friendship",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy",
+    "strength"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HAUNT",
+   "name": "Haunt",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "self-damage"
+   ],
+   "prior": 47,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HIGH_FIVE",
+   "name": "High Five",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "vulnerable"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LEGION_OF_BONE",
+   "name": "Legion of Bone",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "summon"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "LETHALITY",
+   "name": "Lethality",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "ethereal"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MELANCHOLY",
+   "name": "Melancholy",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "block",
+    "energy"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NO_ESCAPE",
+   "name": "No Escape",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PAGESTORM",
+   "name": "Pagestorm",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PARSE",
+   "name": "Parse",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "draw",
+    "ethereal"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PULL_FROM_BELOW",
+   "name": "Pull from Below",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PUTREFY",
+   "name": "Putrefy",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RATTLE",
+   "name": "Rattle",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RIGHT_HAND_HAND",
+   "name": "Right Hand Hand",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "energy"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SEVERANCE",
+   "name": "Severance",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHROUD",
+   "name": "Shroud",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SIC_EM",
+   "name": "Sic 'Em",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SLEIGHT_OF_FLESH",
+   "name": "Sleight of Flesh",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPUR",
+   "name": "Spur",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "heal",
+    "retain",
+    "summon"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VEILPIERCER",
+   "name": "Veilpiercer",
+   "class": "necrobinder",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "NECROBINDER7"
+  },
+  {
+   "id": "BYRDONIS_EGG",
+   "name": "Byrdonis Egg",
+   "class": "quest",
+   "rarity": "quest",
+   "type": "quest",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LANTERN_KEY",
+   "name": "Lantern Key",
+   "class": "quest",
+   "rarity": "quest",
+   "type": "quest",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPOILS_MAP",
+   "name": "Spoils Map",
+   "class": "quest",
+   "rarity": "quest",
+   "type": "quest",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "gold",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "METEOR_SHOWER",
+   "name": "Meteor Shower",
+   "class": "regent",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "stars",
+    "vulnerable",
+    "weak"
+   ],
+   "prior": 77,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 2
+  },
+  {
+   "id": "THE_SEALED_THRONE",
+   "name": "The Sealed Throne",
+   "class": "regent",
+   "rarity": "ancient",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "stars"
+   ],
+   "prior": 66,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "DEFEND_REGENT",
+   "name": "Defend",
+   "class": "regent",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 19,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FALLING_STAR",
+   "name": "Falling Star",
+   "class": "regent",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars",
+    "vulnerable",
+    "weak"
+   ],
+   "prior": 25,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 2
+  },
+  {
+   "id": "STRIKE_REGENT",
+   "name": "Strike",
+   "class": "regent",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 20,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VENERATE",
+   "name": "Venerate",
+   "class": "regent",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "stars"
+   ],
+   "prior": 16,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ASTRAL_PULSE",
+   "name": "Astral Pulse",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "stars"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "BEGONE",
+   "name": "BEGONE!",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT5"
+  },
+  {
+   "id": "CELESTIAL_MIGHT",
+   "name": "Celestial Might",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "multi-hit"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CLOAK_OF_STARS",
+   "name": "Cloak of Stars",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block",
+    "stars"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 1
+  },
+  {
+   "id": "COLLISION_COURSE",
+   "name": "Collision Course",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COSMIC_INDIFFERENCE",
+   "name": "Cosmic Indifference",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CRESCENT_SPEAR",
+   "name": "Crescent Spear",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 1
+  },
+  {
+   "id": "CRUSH_UNDER",
+   "name": "Crush Under",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "strength-loss"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GATHER_LIGHT",
+   "name": "Gather Light",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "stars"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GLITTERSTREAM",
+   "name": "Glitterstream",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GLOW",
+   "name": "Glow",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw",
+    "stars"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GUIDING_STAR",
+   "name": "Guiding Star",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw",
+    "stars"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 2
+  },
+  {
+   "id": "HIDDEN_CACHE",
+   "name": "Hidden Cache",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "stars"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "KNOW_THY_PLACE",
+   "name": "Know Thy Place",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "vulnerable",
+    "weak"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PATTER",
+   "name": "Patter",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "vigor"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT7"
+  },
+  {
+   "id": "PHOTON_CUT",
+   "name": "Photon Cut",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 43,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REFINE_BLADE",
+   "name": "Refine Blade",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy",
+    "forge"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SOLAR_STRIKE",
+   "name": "Solar Strike",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPOILS_OF_BATTLE",
+   "name": "Spoils of Battle",
+   "class": "regent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw",
+    "forge"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT2"
+  },
+  {
+   "id": "WROUGHT_IN_WAR",
+   "name": "Wrought in War",
+   "class": "regent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "forge"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ARSENAL",
+   "name": "Arsenal",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT5"
+  },
+  {
+   "id": "BEAT_INTO_SHAPE",
+   "name": "Beat into Shape",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BIG_BANG",
+   "name": "Big Bang",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "energy",
+    "exhaust",
+    "forge",
+    "stars"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BOMBARDMENT",
+   "name": "Bombardment",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BUNDLE_OF_JOY",
+   "name": "Bundle of Joy",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "COMET",
+   "name": "Comet",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars",
+    "vulnerable",
+    "weak"
+   ],
+   "prior": 75,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 5
+  },
+  {
+   "id": "CRASH_LANDING",
+   "name": "Crash Landing",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 73,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DECISIONS_DECISIONS",
+   "name": "Decisions, Decisions",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust",
+    "stars"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 6
+  },
+  {
+   "id": "DYING_STAR",
+   "name": "Dying Star",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "aoe",
+    "damage",
+    "ethereal",
+    "stars",
+    "strength-loss"
+   ],
+   "prior": 66,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "FOREGONE_CONCLUSION",
+   "name": "Foregone Conclusion",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GENESIS",
+   "name": "Genesis",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GUARDS",
+   "name": "GUARDS!!!",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HAMMER_TIME",
+   "name": "Hammer Time",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "HEAVENLY_DRILL",
+   "name": "Heavenly Drill",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": "X",
+   "keywords": [],
+   "roles": [
+    "damage",
+    "energy"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT7"
+  },
+  {
+   "id": "HEIRLOOM_HAMMER",
+   "name": "Heirloom Hammer",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "I_AM_INVINCIBLE",
+   "name": "I Am Invincible",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MAKE_IT_SO",
+   "name": "Make It So",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "draw"
+   ],
+   "prior": 67,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MONARCHS_GAZE",
+   "name": "Monarch's Gaze",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "strength-loss"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NEUTRON_AEGIS",
+   "name": "Neutron Aegis",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "stars"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 5
+  },
+  {
+   "id": "ROYALTIES",
+   "name": "Royalties",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "gold"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SEEKING_EDGE",
+   "name": "Seeking Edge",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "forge"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SEVEN_STARS",
+   "name": "Seven Stars",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "multi-hit",
+    "stars"
+   ],
+   "prior": 71,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 7
+  },
+  {
+   "id": "SWORD_SAGE",
+   "name": "Sword Sage",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT2"
+  },
+  {
+   "id": "THE_SMITH",
+   "name": "The Smith",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "forge",
+    "stars"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 4
+  },
+  {
+   "id": "TYRANNY",
+   "name": "Tyranny",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VOID_FORM",
+   "name": "Void Form",
+   "class": "regent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [
+    "Ethereal"
+   ],
+   "roles": [
+    "ethereal"
+   ],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ALIGNMENT",
+   "name": "Alignment",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "energy",
+    "stars"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "BLACK_HOLE",
+   "name": "Black Hole",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BULWARK",
+   "name": "Bulwark",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block",
+    "forge"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CHARGE",
+   "name": "CHARGE!!",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CHILD_OF_THE_STARS",
+   "name": "Child of the Stars",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CONQUEROR",
+   "name": "Conqueror",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "forge"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CONVERGENCE",
+   "name": "Convergence",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "energy",
+    "stars"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEVASTATE",
+   "name": "Devastate",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars"
+   ],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 4
+  },
+  {
+   "id": "FURNACE",
+   "name": "Furnace",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "forge"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT2"
+  },
+  {
+   "id": "GAMMA_BLAST",
+   "name": "Gamma Blast",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars",
+    "vulnerable",
+    "weak"
+   ],
+   "prior": 60,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "GLIMMER",
+   "name": "Glimmer",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HEGEMONY",
+   "name": "Hegemony",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "energy"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "KINGLY_KICK",
+   "name": "Kingly Kick",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 4,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "KINGLY_PUNCH",
+   "name": "Kingly Punch",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "KNOCKOUT_BLOW",
+   "name": "Knockout Blow",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars"
+   ],
+   "prior": 53,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LARGESSE",
+   "name": "Largesse",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "LUNAR_BLAST",
+   "name": "Lunar Blast",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT7"
+  },
+  {
+   "id": "MANIFEST_AUTHORITY",
+   "name": "Manifest Authority",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MONOLOGUE",
+   "name": "Monologue",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ORBIT",
+   "name": "Orbit",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "energy"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PALE_BLUE_DOT",
+   "name": "Pale Blue Dot",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PARRY",
+   "name": "Parry",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PARTICLE_WALL",
+   "name": "Particle Wall",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block",
+    "stars"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 2
+  },
+  {
+   "id": "PILLAR_OF_CREATION",
+   "name": "Pillar of Creation",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PROPHESIZE",
+   "name": "Prophesize",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "QUASAR",
+   "name": "Quasar",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "stars"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 2
+  },
+  {
+   "id": "RADIATE",
+   "name": "Radiate",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage",
+    "stars"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REFLECT",
+   "name": "Reflect",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "stars"
+   ],
+   "prior": 55,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "RESONANCE",
+   "name": "Resonance",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "stars",
+    "strength"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 3
+  },
+  {
+   "id": "ROYAL_GAMBLE",
+   "name": "Royal Gamble",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "stars"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null,
+   "starCost": 5
+  },
+  {
+   "id": "SHINING_STRIKE",
+   "name": "Shining Strike",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "stars"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPECTRUM_SHIFT",
+   "name": "Spectrum Shift",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STARDUST",
+   "name": "Stardust",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "random-target"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SUMMON_FORTH",
+   "name": "Summon Forth",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "forge"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SUPERMASSIVE",
+   "name": "Supermassive",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "REGENT5"
+  },
+  {
+   "id": "TERRAFORMING",
+   "name": "Terraforming",
+   "class": "regent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "vigor"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SUPPRESS",
+   "name": "Suppress",
+   "class": "silent",
+   "rarity": "ancient",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Innate"
+   ],
+   "roles": [
+    "damage",
+    "innate",
+    "weak"
+   ],
+   "prior": 72,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WRAITH_FORM",
+   "name": "Wraith Form",
+   "class": "silent",
+   "rarity": "ancient",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "intangible"
+   ],
+   "prior": 62,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFEND_SILENT",
+   "name": "Defend",
+   "class": "silent",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 19,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NEUTRALIZE",
+   "name": "Neutralize",
+   "class": "silent",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "weak"
+   ],
+   "prior": 20,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STRIKE_SILENT",
+   "name": "Strike",
+   "class": "silent",
+   "rarity": "basic",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 20,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SURVIVOR",
+   "name": "Survivor",
+   "class": "silent",
+   "rarity": "basic",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 21,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ANTICIPATE",
+   "name": "Anticipate",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "dexterity"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BACKFLIP",
+   "name": "Backflip",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "draw"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BLADE_DANCE",
+   "name": "Blade Dance",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CLOAK_AND_DAGGER",
+   "name": "Cloak and Dagger",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block",
+    "draw"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DAGGER_SPRAY",
+   "name": "Dagger Spray",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DAGGER_THROW",
+   "name": "Dagger Throw",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEADLY_POISON",
+   "name": "Deadly Poison",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "poison"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEFLECT",
+   "name": "Deflect",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DODGE_AND_ROLL",
+   "name": "Dodge and Roll",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FLICK_FLACK",
+   "name": "Flick-Flack",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "aoe",
+    "damage",
+    "sly"
+   ],
+   "prior": 40,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LEADING_STRIKE",
+   "name": "Leading Strike",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "shiv"
+   ],
+   "prior": 36,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PIERCING_WAIL",
+   "name": "Piercing Wail",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust",
+    "strength-loss"
+   ],
+   "prior": 34,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "POISONED_STAB",
+   "name": "Poisoned Stab",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "poison"
+   ],
+   "prior": 42,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PREDATOR",
+   "name": "Predator",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 39,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PREPARED",
+   "name": "Prepared",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 37,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "RICOCHET",
+   "name": "Ricochet",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "damage",
+    "multi-hit",
+    "random-target",
+    "sly"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SLICE",
+   "name": "Slice",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SNAKEBITE",
+   "name": "Snakebite",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "poison",
+    "retain"
+   ],
+   "prior": 38,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT2"
+  },
+  {
+   "id": "SUCKER_PUNCH",
+   "name": "Sucker Punch",
+   "class": "silent",
+   "rarity": "common",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage",
+    "weak"
+   ],
+   "prior": 41,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UNTOUCHABLE",
+   "name": "Untouchable",
+   "class": "silent",
+   "rarity": "common",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "block",
+    "sly"
+   ],
+   "prior": 36,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ABRASIVE",
+   "name": "Abrasive",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "dexterity",
+    "sly",
+    "thorns"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ACCELERANT",
+   "name": "Accelerant",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT2"
+  },
+  {
+   "id": "ADRENALINE",
+   "name": "Adrenaline",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "energy",
+    "exhaust"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "AFTERIMAGE",
+   "name": "Afterimage",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ASSASSINATE",
+   "name": "Assassinate",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Exhaust",
+    "Innate"
+   ],
+   "roles": [
+    "damage",
+    "exhaust",
+    "innate",
+    "vulnerable"
+   ],
+   "prior": 63,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BLADE_OF_INK",
+   "name": "Blade of Ink",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT7"
+  },
+  {
+   "id": "BULLET_TIME",
+   "name": "Bullet Time",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BURST",
+   "name": "Burst",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "CORROSIVE_WAVE",
+   "name": "Corrosive Wave",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ECHOING_SLASH",
+   "name": "Echoing Slash",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 67,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ENVENOM",
+   "name": "Envenom",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FAN_OF_KNIVES",
+   "name": "Fan of Knives",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "shiv"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GRAND_FINALE",
+   "name": "Grand Finale",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "aoe",
+    "damage"
+   ],
+   "prior": 76,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "KNIFE_TRAP",
+   "name": "Knife Trap",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MALAISE",
+   "name": "Malaise",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": "X",
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MASTER_PLANNER",
+   "name": "Master Planner",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT5"
+  },
+  {
+   "id": "MURDER",
+   "name": "Murder",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NIGHTMARE",
+   "name": "Nightmare",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SERPENT_FORM",
+   "name": "Serpent Form",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 3,
+   "keywords": [],
+   "roles": [],
+   "prior": 58,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHADOWMELD",
+   "name": "Shadowmeld",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHADOW_STEP",
+   "name": "Shadow Step",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 64,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SNEAKY",
+   "name": "Sneaky",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "sly"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "STORM_OF_STEEL",
+   "name": "Storm of Steel",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 56,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "THE_HUNT",
+   "name": "The Hunt",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 61,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TOOLS_OF_THE_TRADE",
+   "name": "Tools of the Trade",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 62,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TRACKING",
+   "name": "Tracking",
+   "class": "silent",
+   "rarity": "rare",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ACCURACY",
+   "name": "Accuracy",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ACROBATICS",
+   "name": "Acrobatics",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BACKSTAB",
+   "name": "Backstab",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Exhaust",
+    "Innate"
+   ],
+   "roles": [
+    "damage",
+    "exhaust",
+    "innate"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BLUR",
+   "name": "Blur",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BOUNCING_FLASK",
+   "name": "Bouncing Flask",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "poison"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BUBBLE_BUBBLE",
+   "name": "Bubble Bubble",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "poison"
+   ],
+   "prior": 57,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT2"
+  },
+  {
+   "id": "CALCULATED_GAMBLE",
+   "name": "Calculated Gamble",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DASH",
+   "name": "Dash",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block",
+    "damage"
+   ],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "ESCAPE_PLAN",
+   "name": "Escape Plan",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "EXPERTISE",
+   "name": "Expertise",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 54,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "EXPOSE",
+   "name": "Expose",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FINISHER",
+   "name": "Finisher",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FLANKING",
+   "name": "Flanking",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": "multiplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "FLECHETTES",
+   "name": "Flechettes",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FOOTWORK",
+   "name": "Footwork",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "dexterity"
+   ],
+   "prior": 59,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HAND_TRICK",
+   "name": "Hand Trick",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "block"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT5"
+  },
+  {
+   "id": "HAZE",
+   "name": "Haze",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "poison",
+    "sly"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "HIDDEN_DAGGERS",
+   "name": "Hidden Daggers",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "draw",
+    "shiv"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT7"
+  },
+  {
+   "id": "INFINITE_BLADES",
+   "name": "Infinite Blades",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LEG_SWEEP",
+   "name": "Leg Sweep",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "block",
+    "weak"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MEMENTO_MORI",
+   "name": "Memento Mori",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MIRAGE",
+   "name": "Mirage",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "NOXIOUS_FUMES",
+   "name": "Noxious Fumes",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "OUTBREAK",
+   "name": "Outbreak",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PHANTOM_BLADES",
+   "name": "Phantom Blades",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT7"
+  },
+  {
+   "id": "PINPOINT",
+   "name": "Pinpoint",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 3,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "POUNCE",
+   "name": "Pounce",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "PRECISE_CUT",
+   "name": "Precise Cut",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "REFLEX",
+   "name": "Reflex",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "draw",
+    "sly"
+   ],
+   "prior": 48,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": "SILENT5"
+  },
+  {
+   "id": "SCARE",
+   "name": "Scare",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 46,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SKEWER",
+   "name": "Skewer",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": "X",
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SPEEDSTER",
+   "name": "Speedster",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 2,
+   "keywords": [],
+   "roles": [],
+   "prior": 49,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "STRANGLE",
+   "name": "Strangle",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 51,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TACTICIAN",
+   "name": "Tactician",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 3,
+   "keywords": [
+    "Sly"
+   ],
+   "roles": [
+    "energy",
+    "sly"
+   ],
+   "prior": 47,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "UP_MY_SLEEVE",
+   "name": "Up My Sleeve",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "skill",
+   "cost": 2,
+   "keywords": [],
+   "roles": [
+    "draw"
+   ],
+   "prior": 50,
+   "rewardEligible": true,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WELL_LAID_PLANS",
+   "name": "Well-Laid Plans",
+   "class": "silent",
+   "rarity": "uncommon",
+   "type": "power",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 52,
+   "rewardEligible": true,
+   "multiplayer": "singleplayer-only",
+   "epochGate": null
+  },
+  {
+   "id": "BECKON",
+   "name": "Beckon",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "self-damage"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "BURN",
+   "name": "Burn",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "damage",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DAZED",
+   "name": "Dazed",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Ethereal",
+    "Unplayable"
+   ],
+   "roles": [
+    "ethereal",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DEBRIS",
+   "name": "Debris",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "exhaust"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FRANTIC_ESCAPE",
+   "name": "Frantic Escape",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": 1,
+   "keywords": [],
+   "roles": [],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "INFECTION",
+   "name": "Infection",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "damage",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SLIMED",
+   "name": "Slimed",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SOOT",
+   "name": "Soot",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "TOXIC",
+   "name": "Toxic",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": 1,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "VOID",
+   "name": "Void",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Ethereal",
+    "Unplayable"
+   ],
+   "roles": [
+    "energy",
+    "ethereal",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WITHER",
+   "name": "Wither",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "damage",
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WOUND",
+   "name": "Wound",
+   "class": "status",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [
+    "Unplayable"
+   ],
+   "roles": [
+    "unplayable"
+   ],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "DISINTEGRATION",
+   "name": "Disintegration",
+   "class": "token",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [],
+   "roles": [],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MIND_ROT",
+   "name": "Mind Rot",
+   "class": "token",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [],
+   "roles": [],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SLOTH",
+   "name": "Sloth",
+   "class": "token",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [],
+   "roles": [],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "WASTE_AWAY",
+   "name": "Waste Away",
+   "class": "token",
+   "rarity": "status",
+   "type": "status",
+   "cost": null,
+   "keywords": [],
+   "roles": [],
+   "prior": 0,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "FUEL",
+   "name": "Fuel",
+   "class": "token",
+   "rarity": "token",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "energy",
+    "exhaust"
+   ],
+   "prior": 24,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "GIANT_ROCK",
+   "name": "Giant Rock",
+   "class": "token",
+   "rarity": "token",
+   "type": "attack",
+   "cost": 1,
+   "keywords": [],
+   "roles": [
+    "damage"
+   ],
+   "prior": 29,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "LUMINESCE",
+   "name": "Luminesce",
+   "class": "token",
+   "rarity": "token",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust",
+    "Retain"
+   ],
+   "roles": [
+    "energy",
+    "exhaust",
+    "retain"
+   ],
+   "prior": 25,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MINION_DIVE_BOMB",
+   "name": "Minion Dive Bomb",
+   "class": "token",
+   "rarity": "token",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 26,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MINION_SACRIFICE",
+   "name": "Minion Sacrifice",
+   "class": "token",
+   "rarity": "token",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "block",
+    "exhaust"
+   ],
+   "prior": 23,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "MINION_STRIKE",
+   "name": "Minion Strike",
+   "class": "token",
+   "rarity": "token",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "draw",
+    "exhaust"
+   ],
+   "prior": 24,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SHIV",
+   "name": "Shiv",
+   "class": "token",
+   "rarity": "token",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "exhaust"
+   ],
+   "prior": 21,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SOUL",
+   "name": "Soul",
+   "class": "token",
+   "rarity": "token",
+   "type": "skill",
+   "cost": 0,
+   "keywords": [
+    "Exhaust"
+   ],
+   "roles": [
+    "draw",
+    "exhaust"
+   ],
+   "prior": 23,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SOVEREIGN_BLADE",
+   "name": "Sovereign Blade",
+   "class": "token",
+   "rarity": "token",
+   "type": "attack",
+   "cost": 2,
+   "keywords": [
+    "Retain"
+   ],
+   "roles": [
+    "damage",
+    "retain"
+   ],
+   "prior": 22,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  },
+  {
+   "id": "SWEEPING_GAZE",
+   "name": "Sweeping Gaze",
+   "class": "token",
+   "rarity": "token",
+   "type": "attack",
+   "cost": 0,
+   "keywords": [
+    "Ethereal",
+    "Exhaust"
+   ],
+   "roles": [
+    "damage",
+    "ethereal",
+    "exhaust",
+    "random-target"
+   ],
+   "prior": 19,
+   "rewardEligible": false,
+   "multiplayer": null,
+   "epochGate": null
+  }
+ ],
+ "sha256": "6717e3d5d311588dda139d2c5dde1f5fe8493be3f9628ff013ac675f9608b147"
+}

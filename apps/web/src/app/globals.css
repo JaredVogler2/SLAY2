@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+/*
+ * SLAY2 design tokens. Direction (prompt 06): charcoal / ink surfaces, warm copper accent, parchment text, cool teal for
+ * exact things, rose for risk. Contrast was computed, not assumed: body text >= 12:1, muted >= 7.5:1, accents >= 7:1.
+ */
+@theme {
+  --color-charcoal: #0b0f15;
+  --color-ink: #111924;
+  --color-ink-2: #172233;
+  --color-ink-3: #1e2c42;
+  --color-line: #2b3b52;
+  --color-line-strong: #62779a;
+  --color-parchment: #e9e0d0;
+  --color-muted: #a9b3c2;
+  --color-dim: #8793a6;
+  --color-copper: #d49a62;
+  --color-copper-deep: #a8703d;
+  --color-gold: #e6c07b;
+  --color-teal: #72d7c8;
+  --color-teal-deep: #3f9d91;
+  --color-rose: #e58b92;
+  --color-rose-deep: #b4565f;
+
+  --font-display: "Cinzel", "Trajan Pro", "Palatino Linotype", Georgia, serif;
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-panel: 14px;
+  --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 18px 40px -24px rgb(0 0 0 / 0.8);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-charcoal);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(1200px 600px at 78% -8%, rgb(212 154 98 / 0.1), transparent 60%),
+    radial-gradient(900px 500px at -8% 12%, rgb(114 215 200 / 0.06), transparent 55%),
+    var(--color-charcoal);
+  color: var(--color-parchment);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: rgb(212 154 98 / 0.35);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* tabular numbers wherever probabilities appear */
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum", "lnum";
+}
+
+/* panel with technical-drawing corner ticks */
+.panel {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 40%), var(--color-ink);
+  box-shadow: var(--shadow-panel);
+}
+
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-copper);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.panel::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: var(--radius-panel);
+}
+
+.panel::after {
+  right: -1px;
+  bottom: -1px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: var(--radius-panel);
+}
+
+.hairline {
+  background: linear-gradient(90deg, transparent, var(--color-line-strong), transparent);
+  height: 1px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-copper);
+}
+
+/* slow orbit used by the hero; disabled for people who prefer reduced motion */
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.orbit {
+  transform-origin: 50% 50%;
+  animation: orbit 240s linear infinite;
+}
+
+.orbit-reverse {
+  transform-origin: 50% 50%;
+  animation: orbit 360s linear infinite reverse;
+}
+
+.drift {
+  animation: drift 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .orbit,
+  .orbit-reverse,
+  .drift {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* range inputs: visible track and large thumb for touch */
+input[type="range"] {
+  accent-color: var(--color-copper);
+}
+
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

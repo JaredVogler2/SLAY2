@@ -1,0 +1,101 @@
+{
+  "_provenance": {
+    "note": "Numbers published by third-party references for STS2 main v0.107.1 (Steam build 23811903), transcribed as FACTS for verification only. No text is reproduced.",
+    "sources": [
+      {
+        "id": "S-stswiki-card-rewards",
+        "name": "Slay the Spire 2 Wiki, Card reward odds (sts.wiki)",
+        "retrieved": "2026-10-25",
+        "evidenceClass": "E3"
+      },
+      {
+        "id": "S-almanauts-card-odds",
+        "name": "Almanauts, Card reward odds calculator",
+        "retrieved": "2026-10-25",
+        "evidenceClass": "E4"
+      },
+      {
+        "id": "S-almanauts-run-odds",
+        "name": "Almanauts, Potions, ? rooms and shop prices",
+        "retrieved": "2026-10-25",
+        "evidenceClass": "E4"
+      }
+    ]
+  },
+  "offsetTable": {
+    "source": "S-stswiki-card-rewards",
+    "counters": [0, 3, 5, 10, 20, 30, 45],
+    "regularRarePercent": ["0", "1", "3", "8", "18", "28", "43"],
+    "eliteRarePercent": ["5", "8", "10", "15", "25", "35", "50"],
+    "regularA7RarePercent": ["0", "0", "0", "1.49", "6.49", "11.49", "18.99"],
+    "eliteA7RarePercent": ["0", "1.5", "2.5", "5", "10", "15", "22.5"]
+  },
+  "baseOddsPercent": {
+    "source": "S-stswiki-card-rewards",
+    "regular": { "common": "60", "uncommon": "37", "rare": "3" },
+    "elite": { "common": "50", "uncommon": "40", "rare": "10" },
+    "shop": { "common": "54", "uncommon": "37", "rare": "9" },
+    "boss": { "common": "0", "uncommon": "0", "rare": "100" },
+    "otherSources": { "common": "63", "uncommon": "34", "rare": "3" }
+  },
+  "afterRare": {
+    "source": "S-almanauts-card-odds",
+    "regularFirstCardRarePercent": "0",
+    "eliteFirstCardRarePercent": "5",
+    "regularAtLeastOneRarePercentRounded": "0",
+    "eliteAtLeastOneRarePercentRounded": "17"
+  },
+  "runAverageAtLeastOneRarePercent": {
+    "source": "S-almanauts-card-odds",
+    "regular": "19.7",
+    "elite": "30.9",
+    "note": "assumes every reward comes from the same source and the offset has settled (stationary distribution)"
+  },
+  "upgradeChancePercent": {
+    "source": "S-stswiki-card-rewards",
+    "a0": [0, 25, 50],
+    "a7": [0, 12.5, 25]
+  },
+  "unknownRoomTablePercent": {
+    "source": "S-almanauts-run-odds",
+    "note": "n-th '?' room of an act over every way the earlier ones can go; published to 1-2 decimals",
+    "rows": [
+      { "event": 85, "fight": 10, "shop": 3, "treasure": 2 },
+      { "event": 71.1, "fight": 19, "shop": 5.91, "treasure": 3.96 },
+      { "event": 60.3, "fight": 25.3, "shop": 8.56, "treasure": 5.8 },
+      { "event": 53.5, "fight": 28.3, "shop": 10.8, "treasure": 7.46 },
+      { "event": 49.9, "fight": 28.6, "shop": 12.6, "treasure": 8.88 },
+      { "event": 48.3, "fight": 27.8, "shop": 13.8, "treasure": 10 }
+    ]
+  },
+  "shopPriceRanges": {
+    "source": "S-almanauts-run-odds",
+    "note": "published ranges round the interval endpoints half-up; the exact upper endpoint has probability zero, so the attainable maximum can be one lower when the endpoint is a half-integer",
+    "card": { "common": [48, 53], "uncommon": [71, 79], "rare": [143, 158] },
+    "cardColorless": { "common": [54, 60], "uncommon": [82, 90], "rare": [164, 182] },
+    "cardOnSale": { "common": [24, 26], "uncommon": [35, 39], "rare": [71, 79] },
+    "relic": {
+      "common": [149, 201],
+      "uncommon": [191, 259],
+      "rare": [234, 316],
+      "shop": [170, 230]
+    },
+    "potion": { "common": [48, 53], "uncommon": [71, 79], "rare": [95, 105] }
+  },
+  "cardRemoval": {
+    "source": "S-almanauts-run-odds",
+    "a0": [75, 100, 125, 150, 175, 200],
+    "a6": [100, 150, 200, 250, 300, 350]
+  },
+  "gold": {
+    "source": "S-almanauts-run-odds",
+    "a0": { "monster": [10, 20], "elite": [35, 45], "boss": [100, 100] },
+    "a3": { "monster": [7, 15], "elite": [26, 33], "boss": [75, 75] }
+  },
+  "potionRarityPercent": {
+    "source": "S-almanauts-run-odds",
+    "common": 65,
+    "uncommon": 25,
+    "rare": 10
+  }
+}

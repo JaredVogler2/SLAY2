@@ -1,0 +1,104 @@
+{
+  "batch_id": "search_v1-ironclad-a0-veteran-train-n200",
+  "config": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "5edbd6700442b69a7b1dc0de2513a6b18f8c9b0ab021d783350ee967eca9f71c",
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": true,
+      "head": "98e9d80bfea80bd415d723912e005f436c4b4eca"
+    }
+  },
+  "episodes_file": {
+    "lines": 200,
+    "name": "episodes.jsonl",
+    "sha256": "e01db87d7ed86692bc5952e931054ca7d72ee564445d9ca1b11248691aec53e6"
+  },
+  "episodes_gz": {
+    "bytes": 7121,
+    "name": "episodes.jsonl.gz",
+    "sha256": "9dc6e8380b36be9bd77f713bb8c8d2ec14ae5bb3a75b315d6d819efa863cc673"
+  },
+  "finished": "2026-10-25T23:40:42+00:00",
+  "known_simulator_gaps": [
+    {
+      "affects": "coverage",
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "results",
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "affects": "results",
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    }
+  ],
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "name": "search_v1",
+    "params": {}
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v1.json",
+    "file_sha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb",
+    "manifest_sha256": "3c803d061efb97dc93501960d5601ebd98cf55a858e56789b9d6dc42d2c2f27c",
+    "n": 200,
+    "partition": "train",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 200,
+    "counts": {
+      "aborted": 0,
+      "death": 200,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 0,
+      "timeout": 0,
+      "win": 0
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 200,
+    "win_rate_95ci_wilson": [
+      0.0,
+      0.018845326377266564
+    ],
+    "win_rate_of_completed": 0.0
+  },
+  "traces": {
+    "count": 0,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 855.8,
+  "workers": 3
+}

@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "retrievedAt": "2026-10-25",
+  "policy": "Read-only, local, git-ignored. Nothing here may be vendored into SLAY2. See docs/IP-COMPLIANCE.md and ADR-011.",
+  "repos": [
+    {
+      "id": "sts2-rl-agent",
+      "url": "https://github.com/zhiyue/sts2-rl-agent",
+      "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+      "committedAt": "2026-10-25T02:33:40+08:00",
+      "license": "NONE",
+      "licenseEvidence": "No LICENSE/COPYING file anywhere in the 3,906-file tree; README says only 'for research and educational purposes'.",
+      "gameBuild": { "version": "0.107.1", "steamBuildId": "23811903", "channel": "main", "evidence": "GAME_VERSIONS.md in the repo" },
+      "contains": ["python simulator (sts2_env)", "decompiled/ = 3,426 Mega Crit C# files (proprietary, decompiled from sts2.dll)", "RL training scripts", "C# bridge mod sources"],
+      "usage": "local-read-only",
+      "allowed": ["read decompiled sources to VERIFY rules (facts only, cite file path)", "execute the simulator locally for research", "run its test-suite"],
+      "forbidden": ["copy/vendor any file into SLAY2", "publish decompiled text, card text, or extracted data", "ship simulator outputs as 'real game' results without the UNVERIFIED label"]
+    },
+    {
+      "id": "spire-archive",
+      "url": "https://github.com/nkhoit/spire-archive",
+      "sha": "4e6b0e040ccd00eb04fb1ab7fb0b298c222d2f29",
+      "committedAt": "2026-10-04T12:17:19-07:00",
+      "license": "NONE",
+      "licenseEvidence": "No LICENSE file in the 3,863-file tree; README states STS2 data is 'extracted from PCK game files + decompiled C# source'.",
+      "gameBuild": { "version": "0.107.1", "evidence": "data/sts2/history/0.107.1 snapshot present (also 0.103.2, 0.99.1)" },
+      "contains": ["extracted STS2/STS1 JSON data (cards, relics, potions, monsters, events, ...)", "per-version history snapshots", "Astro website + parsers"],
+      "usage": "local-read-only",
+      "allowed": ["read data to cross-check ids/rarity/cost/type", "compute patch diffs locally", "derive a minimal facts-only catalog (id, name, class, rarity, cost, type) with provenance flags"],
+      "forbidden": ["copy the data files or card/relic text into SLAY2", "copy images", "treat hand-written fields (e.g. mechanics.json) as authoritative - its A6 text is stale ('Gloom')"]
+    },
+    {
+      "id": "STS2FableBot",
+      "url": "https://github.com/cicero225/STS2FableBot",
+      "sha": "958882044c0d262b652e5408109a00e5b75d1ec2",
+      "committedAt": "2026-10-03T12:16:25-07:00",
+      "license": "MIT",
+      "licenseEvidence": "LICENSE: MIT, Copyright (c) 2026 Hieronym",
+      "usage": "reference-mit",
+      "allowed": ["reuse under MIT with attribution (not yet used)"],
+      "forbidden": ["claim its self-reported win rates as SLAY2 results"]
+    },
+    {
+      "id": "STS2MCP",
+      "url": "https://github.com/Gennadiyev/STS2MCP",
+      "sha": "55e064850a68f3b4cde7e5fd525bf9b2dec4e885",
+      "committedAt": "2026-07-29T17:02:00+08:00",
+      "license": "MIT",
+      "licenseEvidence": "LICENSE: MIT permission text, Copyright 2026 Yikun Ji (Kunologist)",
+      "usage": "reference-mit",
+      "allowed": ["reuse under MIT with attribution (not yet used)"],
+      "forbidden": ["ship its write-capable endpoints in the public companion"]
+    },
+    {
+      "id": "sts2-ai-mcp",
+      "url": "https://github.com/BMingSY/sts2-ai-mcp",
+      "sha": "5d1d36b24337d7dd27fe125682e4c51fb9f76aa0",
+      "committedAt": "2026-07-26T13:00:23+08:00",
+      "license": "AGPL-3.0",
+      "licenseEvidence": "LICENSE: GNU Affero General Public License v3",
+      "usage": "do-not-incorporate",
+      "allowed": ["read protocol ideas only"],
+      "forbidden": ["copy or link code into SLAY2 (copyleft network clause)"]
+    },
+    {
+      "id": "sts2-simulator",
+      "url": "https://github.com/yizhang-dream/sts2-simulator",
+      "sha": "83fcca63912e81c6e608de705b18a35dbbed0fd9",
+      "committedAt": "2026-09-23T03:18:32+08:00",
+      "license": "NONE",
+      "licenseEvidence": "No license file in the 293-file tree; README legal notice: 'No permission to redistribute game content is granted'.",
+      "usage": "not-used",
+      "forbidden": ["any use; not requested; structure was 'ported from reference game sources'"]
+    },
+    {
+      "id": "spire-codex",
+      "url": "https://github.com/ptrlrd/spire-codex",
+      "sha": "2af6543ca7a6c76acfde6be582651c7c05e88e50",
+      "committedAt": "2026-10-24T11:47:24-07:00",
+      "license": "PolyForm-Noncommercial-1.0.0",
+      "licenseEvidence": "LICENSE.md (source); API_TERMS.md governs the hosted API (300 req/min/IP; data export 10 req/hour; game data belongs to Mega Crit)",
+      "usage": "reference-noncommercial",
+      "forbidden": ["mirror its data or images", "use in a commercial product"]
+    }
+  ]
+}

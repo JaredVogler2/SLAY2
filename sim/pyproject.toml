@@ -1,0 +1,21 @@
+[project]
+name = "slay2-sim"
+version = "0.1.0"
+description = "SLAY2 research harness: evidence-grade runs, audits and policy comparison (original code)."
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+sim = ["gymnasium>=1.0.0"]            # needed by the external simulator checkout, not by this package
+train = ["torch>=2.0", "stable-baselines3>=2.3.0", "sb3-contrib>=2.3.0"]
+dev = ["pytest>=8.0", "pytest-xdist>=3.5"]
+
+[tool.setuptools.packages.find]
+include = ["slay2_sim*"]
+
+[tool.setuptools.package-data]
+slay2_sim = ["gaps.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"

@@ -1,0 +1,172 @@
+{
+ "schema": 1,
+ "build": "sts2-main-0.107.1",
+ "provenance": {
+  "kind": "facts-only (E1: Models.Characters/*.cs); relic display names from spire-archive",
+  "sources": [
+   {
+    "id": "sts2-rl-agent",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+   },
+   {
+    "id": "spire-archive",
+    "sha": "4e6b0e040ccd00eb04fb1ab7fb0b298c222d2f29"
+   }
+  ],
+  "derivedBy": "sim/slay2_sim/catalog.py",
+  "retrieved": "2026-10-25",
+  "notes": [
+   "maxEnergy is the CharacterModel default (3); no character in v0.107.1 overrides it in these files."
+  ]
+ },
+ "characters": [
+  {
+   "id": "ironclad",
+   "startingHp": 80,
+   "startingGold": 99,
+   "maxEnergy": 3,
+   "startingDeck": [
+    {
+     "id": "STRIKE_IRONCLAD",
+     "count": 5
+    },
+    {
+     "id": "DEFEND_IRONCLAD",
+     "count": 4
+    },
+    {
+     "id": "BASH",
+     "count": 1
+    }
+   ],
+   "startingRelics": [
+    {
+     "id": "BURNING_BLOOD",
+     "name": "Burning Blood"
+    }
+   ]
+  },
+  {
+   "id": "silent",
+   "startingHp": 70,
+   "startingGold": 99,
+   "maxEnergy": 3,
+   "startingDeck": [
+    {
+     "id": "STRIKE_SILENT",
+     "count": 5
+    },
+    {
+     "id": "DEFEND_SILENT",
+     "count": 5
+    },
+    {
+     "id": "NEUTRALIZE",
+     "count": 1
+    },
+    {
+     "id": "SURVIVOR",
+     "count": 1
+    }
+   ],
+   "startingRelics": [
+    {
+     "id": "RING_OF_THE_SNAKE",
+     "name": "Ring of the Snake"
+    }
+   ]
+  },
+  {
+   "id": "regent",
+   "startingHp": 75,
+   "startingGold": 99,
+   "maxEnergy": 3,
+   "startingDeck": [
+    {
+     "id": "STRIKE_REGENT",
+     "count": 4
+    },
+    {
+     "id": "DEFEND_REGENT",
+     "count": 4
+    },
+    {
+     "id": "FALLING_STAR",
+     "count": 1
+    },
+    {
+     "id": "VENERATE",
+     "count": 1
+    }
+   ],
+   "startingRelics": [
+    {
+     "id": "DIVINE_RIGHT",
+     "name": "Divine Right"
+    }
+   ]
+  },
+  {
+   "id": "necrobinder",
+   "startingHp": 66,
+   "startingGold": 99,
+   "maxEnergy": 3,
+   "startingDeck": [
+    {
+     "id": "STRIKE_NECROBINDER",
+     "count": 4
+    },
+    {
+     "id": "DEFEND_NECROBINDER",
+     "count": 4
+    },
+    {
+     "id": "BODYGUARD",
+     "count": 1
+    },
+    {
+     "id": "UNLEASH",
+     "count": 1
+    }
+   ],
+   "startingRelics": [
+    {
+     "id": "BOUND_PHYLACTERY",
+     "name": "Bound Phylactery"
+    }
+   ]
+  },
+  {
+   "id": "defect",
+   "startingHp": 75,
+   "startingGold": 99,
+   "maxEnergy": 3,
+   "startingDeck": [
+    {
+     "id": "STRIKE_DEFECT",
+     "count": 4
+    },
+    {
+     "id": "DEFEND_DEFECT",
+     "count": 4
+    },
+    {
+     "id": "ZAP",
+     "count": 1
+    },
+    {
+     "id": "DUALCAST",
+     "count": 1
+    }
+   ],
+   "startingRelics": [
+    {
+     "id": "CRACKED_CORE",
+     "name": "Cracked Core"
+    }
+   ],
+   "baseOrbSlots": 3
+  }
+ ],
+ "sha256": "2abfef9e3d936937f0f02255af5773e0c3ce3344d4c515c232aab9525efee6fe"
+}

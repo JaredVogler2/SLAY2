@@ -1,0 +1,84 @@
+{
+  "batch_id": "ladder-random_legal-ironclad-a0-veteran-train-n100",
+  "config": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "77b084b95fbfcb8912dc578385e78d904c1e73afa916de87a1c5819c5f1ffa6c",
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": true,
+      "head": "19312c97fd549b2000bd4a22db4432105ea6f921"
+    }
+  },
+  "episodes_file": {
+    "lines": 100,
+    "name": "episodes.jsonl",
+    "sha256": "38092f80938ac88a33cf85bc56b870a538ff652c910195f6061d478cf5b157d4"
+  },
+  "episodes_gz": {
+    "bytes": 3122,
+    "name": "episodes.jsonl.gz",
+    "sha256": "39168d3de7cbcbe8b4bba7a8681a70da7794261230ebe39c919155bc2a0e3015"
+  },
+  "finished": "2026-10-25T23:04:44+00:00",
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "name": "random_legal",
+    "params": {}
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v1.json",
+    "file_sha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb",
+    "manifest_sha256": "3c803d061efb97dc93501960d5601ebd98cf55a858e56789b9d6dc42d2c2f27c",
+    "n": 100,
+    "partition": "train",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 100,
+    "counts": {
+      "aborted": 0,
+      "death": 100,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 0,
+      "timeout": 0,
+      "win": 0
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 100,
+    "win_rate_95ci_wilson": [
+      0.0,
+      0.03699349820698566
+    ],
+    "win_rate_of_completed": 0.0
+  },
+  "traces": {
+    "count": 5,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 12.5,
+  "workers": 4
+}
