@@ -374,6 +374,27 @@
       "status": "VERIFIED-E1"
     },
     {
+      "id": "ANC-2",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "The opening Ancient's offer (a run without modifiers). One of the 8 costly options is drawn at random among those the player may be offered. The helpful pool (14 options) then loses the option the drawn one pairs with (Cursed Pearl: Golden Pearl; Hefty Tablet: Arcane Scroll; Leafy Poultice: New Leaf; Precarious Shears: Precise Scissors), gains one of Lava Rock or Small Capsule (neither when the costly option is Large Capsule), one of Nutritious Oyster or Stone Humidifier and one of Neow's Talisman or Pomander (each pair a fair coin), loses what the player may not be offered (Kaleidoscope needs all five classes unlocked; Scroll Boxes needs at least 4 unlocked Commons and 2 unlocked Uncommons), and two helpful options are drawn from what is left. The offer is those two and the costly one.",
+      "evidence": "E1 Models/Events/Neow.cs GenerateInitialOptions, Models/Relics/Kaleidoscope.cs, Models/Relics/ScrollBoxes.cs (IsAllowedAtNeow)",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ANC-3",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "What each opening option changes (counts and amounts; effects not listed here change no card, HP or max HP). Helpful: Arcane Scroll adds 1 random Rare of the class; Lead Paperweight, 1 of 2 Colorless cards; Lost Coffer, a class card reward (3 cards) and a random potion; Massive Scroll, 1 of 3 co-op cards; Scroll Boxes, 1 of 2 bundles of 3 cards (2 Commons and 1 Uncommon of the class); Kaleidoscope, 2 card rewards built from the other classes; Neow's Torment adds Neow's Fury; New Leaf transforms 1 card; Precise Scissors removes 1 card; Neow's Talisman upgrades 1 Strike and 1 Defend; Pomander upgrades 1 card; Fishing Rod upgrades a random card after every 3rd normal fight; Nutritious Oyster +11 max HP; Stone Humidifier +5 max HP at every rest; Golden Pearl +150 gold; Phial Holster +1 potion slot and 2 potions; Small Capsule 1 random relic; Lava Rock makes the Act 1 boss drop 2 relics; Booming Conch gives +2 cards and +1 energy on turn 1 of Elite fights; Winged Boots lets the player ignore the path lines 3 times. Costly: Precarious Shears removes 2 cards and costs 16 HP; Leafy Poultice transforms 1 Strike and 1 Defend and costs 12 max HP; Hefty Tablet adds 1 of 3 Rares and the curse Injury; Cursed Pearl adds the curse Greed and gives 333 gold; Large Capsule gives 2 random relics and adds 1 Strike and 1 Defend; Neow's Bones gives 2 random Neow relics and adds 1 random curse; Silken Tress takes all gold and enchants the first card reward with Glam; Silver Crucible upgrades the first 3 card rewards and empties the first treasure chest.",
+      "evidence": "E1 Models/Relics/<option>.cs (each option's AfterObtained and hooks)",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ACT-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Act 1 has two versions with the same act index (0), length (15 rooms before the boss row), Ancient (Neow) and number of easier encounters (3), and different pools. Overgrowth (unlocked by default): elites Bygone Effigy, Byrdonis, Phrog Parasite; bosses Vantom, Ceremonial Beast, The Kin; 4 easier and 12 ordinary encounters. Underdocks (not unlocked by default): elites Phantasmal Gardeners, Skulking Colony, Terror Eel; bosses Waterfall Giant, Soul Fysh, Lagavulin Matriarch; 4 easier and 10 ordinary encounters. Acts 2 and 3 have one version each (Hive, Glory). How Underdocks is unlocked is not recorded here (community guides disagree). The pinned simulator plays Overgrowth only (gap G12).",
+      "evidence": "E1 Models/Acts/Overgrowth.cs, Models/Acts/Underdocks.cs (GenerateAllEncounters, IsDefault, Index); simulator map/acts.py (ALL_ACTS)",
+      "status": "VERIFIED-E1"
+    },
+    {
       "id": "TRS-1",
       "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
       "text": "A treasure room gives gold, a whole number drawn uniformly from 42 to 52 (A3 Poverty: each value x 0.75, truncated: 31 to 39, mean 34.9 instead of 47), and a relic chosen from a roll with the same rarity split as the merchant's (SHOP-1: 50 / 33 / 17 %), plus whatever relics add.",

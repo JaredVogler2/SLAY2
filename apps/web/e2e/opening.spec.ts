@@ -69,7 +69,9 @@ test.describe("where your run starts", () => {
     const marked = page.locator("li", { has: page.locator("strong", { hasText: "Soul Fysh" }) });
     await expect(marked.getByText("on your map")).toBeVisible();
     await expect(
-      page.locator("li", { has: page.locator("strong", { hasText: "Waterfall Giant" }) }).getByText("on your map"),
+      page
+        .locator("li", { has: page.locator("strong", { hasText: "Waterfall Giant" }) })
+        .getByText("on your map"),
     ).toHaveCount(0);
     await expect(page.getByText(/never played Underdocks/).first()).toBeVisible();
 
@@ -110,9 +112,9 @@ test.describe("where your run starts", () => {
     await expect(page.getByLabel("3 copies")).toHaveCount(1); // Strike went from 5 to 3
 
     await page.reload();
-    await expect(page.getByRole("list", { name: "Recorded from the opening Ancient" })).toContainText(
-      "Precarious Shears",
-    );
+    await expect(
+      page.getByRole("list", { name: "Recorded from the opening Ancient" }),
+    ).toContainText("Precarious Shears");
     await expect(page.getByRole("heading", { name: "8 cards" })).toBeVisible();
   });
 
@@ -125,7 +127,9 @@ test.describe("where your run starts", () => {
     await expect(page.getByRole("list", { name: "Deck contents" })).toContainText("Neow's Fury");
     await page.getByRole("button", { name: /Undo/ }).click();
     await expect(page.getByRole("heading", { name: "10 cards" })).toBeVisible();
-    await expect(page.getByRole("list", { name: "Recorded from the opening Ancient" })).toHaveCount(0);
+    await expect(page.getByRole("list", { name: "Recorded from the opening Ancient" })).toHaveCount(
+      0,
+    );
   });
 
   test("Leafy Poultice: a Strike and a Defend become the cards the player names; max HP falls", async ({
@@ -197,13 +201,17 @@ test.describe("where your run starts", () => {
     await expect(page.getByText(/Every simulated run was played in Overgrowth/)).toBeVisible();
   });
 
-  test("the start of the run is in the exported file, and importing it brings it back", async ({ page }) => {
+  test("the start of the run is in the exported file, and importing it brings it back", async ({
+    page,
+  }) => {
     await startIronclad(page);
     await act(page, "Underdocks").click();
     await page.locator("#adv-boss").selectOption("lagavulin-matriarch");
     await page.locator("#adv-opening").selectOption("NEOWS_TALISMAN");
     await page.getByRole("button", { name: /Apply to my deck and HP/ }).click();
-    await expect(page.getByRole("list", { name: "Recorded from the opening Ancient" })).toBeVisible();
+    await expect(
+      page.getByRole("list", { name: "Recorded from the opening Ancient" }),
+    ).toBeVisible();
 
     const [download] = await Promise.all([
       page.waitForEvent("download"),
@@ -231,9 +239,9 @@ test.describe("where your run starts", () => {
       buffer: Buffer.from(text),
     });
     await expect(page.locator("#adv-boss")).toHaveValue("lagavulin-matriarch");
-    await expect(page.getByRole("list", { name: "Recorded from the opening Ancient" })).toContainText(
-      "Neow's Talisman",
-    );
+    await expect(
+      page.getByRole("list", { name: "Recorded from the opening Ancient" }),
+    ).toContainText("Neow's Talisman");
 
     // a file that names a boss of the other version is refused, not half-loaded
     const bad = { ...JSON.parse(text), act1: "overgrowth" } as Record<string, unknown>;
