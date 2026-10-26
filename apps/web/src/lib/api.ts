@@ -74,16 +74,16 @@ export async function readJsonBody(request: Request, maxBytes = MAX_BODY_BYTES):
 
 /** Best-effort per-instance limiter (real flood protection belongs to the platform firewall; see docs/DEPLOY.md). */
 const buckets = new Map<string, { tokens: number; at: number }>();
-export function rateLimit(key: string, perMinute = 120, now = Date.now()): boolean {
+export function rateLimit(key: string, perMinute = 120, now = Date.now(), cost = 1): boolean {
   const b = buckets.get(key) ?? { tokens: perMinute, at: now };
   const refill = ((now - b.at) / 60_000) * perMinute;
   b.tokens = Math.min(perMinute, b.tokens + refill);
   b.at = now;
-  if (b.tokens < 1) {
+  if (b.tokens < cost) {
     buckets.set(key, b);
     return false;
   }
-  b.tokens -= 1;
+  b.tokens -= cost;
   buckets.set(key, b);
   if (buckets.size > 5000) {
     buckets.clear();

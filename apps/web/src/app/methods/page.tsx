@@ -299,6 +299,11 @@ export default function MethodsPage() {
                   <td className="py-3 pr-3 text-muted">
                     {r.character} A{r.ascension} ·{" "}
                     {r.profile === "veteran" ? "veteran profile" : "first-run (scripted)"}
+                    {r.ancientHeal ? (
+                      <span className="block text-xs text-copper">
+                        variant: acts 2 and 3 start healed (gap G11)
+                      </span>
+                    ) : null}
                   </td>
                   <td className="num py-3 pr-3">{r.completed}</td>
                   <td className="num py-3 pr-3">{r.counts.win}</td>

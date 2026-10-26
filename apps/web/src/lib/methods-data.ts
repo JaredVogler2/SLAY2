@@ -91,7 +91,11 @@ export function pct(x: number, digits = 2): string {
  */
 export function largestReport(policy: string, character = "Ironclad"): EvidenceReport | undefined {
   const mine = ALL_REPORTS.filter(
-    (r) => r.policy === policy && r.profile === "veteran" && r.character === character,
+    (r) =>
+      r.policy === policy &&
+      r.profile === "veteran" &&
+      r.character === character &&
+      !r.ancientHeal, // a variant of the game (gap G11) is evidence about the variant, never the headline
   );
   const heldOut = mine.filter((r) => r.role === "held-out");
   return [...(heldOut.length > 0 ? heldOut : mine)].sort((x, y) => y.completed - x.completed)[0];

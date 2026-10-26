@@ -158,6 +158,19 @@ describe("comparison wording is derived from the data", () => {
     expect(largestReport("random_legal", "Silent")).toBeUndefined();
   });
 
+  it("a variant of the game (gap G11) is shown with its label and is never a headline report", () => {
+    const variants = evidence.reports.filter((r) => r.ancientHeal);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const v of variants) {
+      expect(v.id).toContain("ancientheal");
+      expect(v.role).toContain("development");
+      // the same policy, class and size as a headline candidate: the variant must still lose the choice
+      expect(largestReport(v.policy, v.character)?.ancientHeal).toBe(false);
+    }
+    // and no ordinary batch carries the flag by accident
+    expect(evidence.reports.filter((r) => !r.ancientHeal && r.id.includes("ancientheal"))).toEqual([]);
+  });
+
   it("formats exact p-values without printing a misleading zero", () => {
     expect(formatP(0.0173)).toBe("p = 0.017");
     expect(formatP(8.13e-261)).toBe("p = 8.1e-261");

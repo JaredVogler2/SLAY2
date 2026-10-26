@@ -124,6 +124,9 @@ const GoldRequest = z.strictObject({
   room: z.enum(["monster", "elite", "boss"]),
 });
 
+/** Legal worst case of a route request: two routes of ten "?" rooms take about a second (RT-10-07 bounds a request at 1.5 s). */
+export const MAX_REQUEST_UNKNOWNS = 20;
+
 const RouteRequest = z.strictObject({
   calculator: z.literal("route"),
   build: BuildIdSchema,
@@ -215,6 +218,37 @@ const dist = (m: ReadonlyMap<number, Rational>): { value: number; probability: R
   [...m.entries()]
     .sort(([a], [b]) => a - b)
     .map(([value, p]) => ({ value, probability: rationalOut(p) }));
+
+/**
+ * What a request will cost to evaluate, in units a limiter can charge before any work is done: 0 for every calculator but
+ * "route", otherwise one per route plus one per "?" room in it (a route with twelve "?" rooms takes about a second).
+ * Reads untrusted JSON defensively; whatever is malformed costs a minimum and is refused by the schema afterwards.
+ */
+export function routeCost(body: unknown): number {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    (body as { calculator?: unknown }).calculator !== "route"
+  ) {
+    return 0;
+  }
+  const routes = (body as { routes?: unknown }).routes;
+  if (!Array.isArray(routes)) {
+    return 1;
+  }
+  let cost = 0;
+  for (const route of routes.slice(0, 3)) {
+    const rooms =
+      typeof route === "object" && route !== null
+        ? (route as { rooms?: unknown }).rooms
+        : undefined;
+    const unknown = Array.isArray(rooms)
+      ? rooms.slice(0, 64).filter((r) => r === "unknown").length
+      : 0;
+    cost += 1 + Math.min(unknown, MAX_ROUTE_ROOMS);
+  }
+  return Math.max(1, cost);
+}
 
 /** The pure core of POST /api/v1/odds (no HTTP), so it can be tested directly. */
 export function computeOdds(input: unknown): Record<string, unknown> {
@@ -505,6 +539,20 @@ export function computeOdds(input: unknown): Record<string, unknown> {
           );
         }
       };
+      const questionRooms = req.routes.reduce(
+        (n, r) => n + r.rooms.filter((room) => room === "unknown").length,
+        0,
+      );
+      if (questionRooms > MAX_REQUEST_UNKNOWNS) {
+        // the time of a route grows quickly with its "?" rooms (about a second for twelve): bound a request the way
+        // every other legal request is bounded (RT-10-07); the page computes any route locally
+        throw new HttpError(
+          400,
+          "invalid_request",
+          `At most ${String(MAX_REQUEST_UNKNOWNS)} “?” rooms across the routes of one request`,
+          [{ path: "routes", message: `${String(questionRooms)} “?” rooms` }],
+        );
+      }
       one(req.counter, req.packHistory, "counter", "packHistory", "hidden rare-card counter");
       one(
         req.potionTenths,
