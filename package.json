@@ -15,7 +15,8 @@
     "test": "pnpm -r --if-present test",
     "build": "pnpm --filter @slay2/web build",
     "guard": "bash scripts/guard-third-party.sh tracked",
-    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm build",
+    "licenses:check": "node scripts/check-licenses.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
