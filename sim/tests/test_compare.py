@@ -9,12 +9,13 @@ import pytest
 
 from slay2_sim import external
 from slay2_sim.compare import build_comparison, render_text, write_comparison
+from slay2_sim.manifest import make_seed_manifest, sha256_file
 
 REPO = external.REPO_ROOT
 
 
 def make_batch(
-    root: Path, name: str, rows: list[tuple], *, seeds_sha: str = "s" * 64, profile: str = "veteran"
+    root: Path, name: str, rows: list[tuple], *, seeds_sha: str = "s" * 64, profile: str = "veteran", seeds: dict | None = None
 ) -> Path:
     """rows: (seed, outcome, floor, wall_seconds[, act]). Writes the two files build_comparison reads."""
     d = root / name
@@ -25,7 +26,7 @@ def make_batch(
                 "batch_id": name,
                 "policy": {"name": name.split("-")[0], "params": {"scope": "boss"} if name.startswith("alpha") else {}},
                 "content_sha256": "c" * 64,
-                "seeds": {"file_sha256": seeds_sha, "partition": "train"},
+                "seeds": seeds if seeds is not None else {"file_sha256": seeds_sha, "partition": "train"},
                 "config": {"character": "Ironclad", "ascension": 0, "profile": profile},
                 "simulator": {"id": "sim", "pinned": "abc", "parity_with_live_game": "UNVERIFIED"},
             }
@@ -79,6 +80,11 @@ def test_past_the_act_one_boss_endpoint_counts_later_acts_and_wins_and_pairs_by_
     lo, hi = r["a"]["wilson95"]
     assert lo < 0.75 < hi
     assert "past the Act-1 boss" in render_text(c)
+    # the second act's boss: seed 3 won and seed 4 died in the third act (A); nobody in B got there
+    r3 = c["reachedAct3"]
+    assert r3["a"]["games"] == 2 and r3["b"]["games"] == 0
+    assert r3["pairedTable"] == {"both": 0, "a_only": 2, "b_only": 0, "neither": 2, "mcnemar_p": 0.5}
+    assert "past the Act-2 boss" in render_text(c)
 
 
 def test_non_completed_episodes_are_excluded_and_counted_not_scored_as_losses(tmp_path: Path):
@@ -100,6 +106,65 @@ def test_unpaired_batches_are_refused(tmp_path: Path):
             build_comparison(a, bad)
     with pytest.raises(ValueError, match="completed"):
         build_comparison(a, disjoint)
+
+
+SIZES = {"train": 30, "val": 20, "test": 10}
+
+
+def seeds_info(root: Path, name: str, manifest: dict, partition: str, n: int) -> dict:
+    """What a batch manifest records about its seeds, with the seed manifest written under ``root`` as the repository has it."""
+    path = root / "experiments" / "seeds" / f"{name}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {"file": f"experiments/seeds/{name}.json", "file_sha256": sha256_file(path), "partition": partition, "n": n}
+
+
+def test_a_later_version_of_the_seed_manifest_pairs_when_the_partition_is_unchanged(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(external, "REPO_ROOT", tmp_path)
+    v1 = make_seed_manifest("t-v1", 7, SIZES)
+    v2 = make_seed_manifest("t-v2", 7, {**SIZES, "dev": 40})  # the same stream plus a dev partition
+    val = v1["partitions"]["val"]
+    assert val == v2["partitions"]["val"]  # what makes the pairing sound, and what the guard checks rather than assumes
+    ia, ib = seeds_info(tmp_path, "t-v1", v1, "val", 20), seeds_info(tmp_path, "t-v2", v2, "val", 8)
+    assert ia["file_sha256"] != ib["file_sha256"]
+    a = make_batch(tmp_path, "alpha-m", [(s, "death", 10 + i, 1.0) for i, s in enumerate(val)], seeds=ia)
+    b = make_batch(tmp_path, "beta-m", [(s, "death", 9 + i, 1.0) for i, s in enumerate(val[:8])], seeds=ib)  # first 8 only
+    c = build_comparison(a, b, iters=200)
+    assert c["pairedSeeds"] == 8
+    assert c["cohort"]["seedManifestSha256"] == ia["file_sha256"] and c["cohort"]["seedManifestSha256B"] == ib["file_sha256"]
+    assert "sameSeedsBy" in c["cohort"]
+    same = build_comparison(a, a, iters=200)  # one manifest: the cohort block stays what it always was
+    assert "seedManifestSha256B" not in same["cohort"] and "sameSeedsBy" not in same["cohort"]
+
+
+def test_other_seed_lists_a_changed_file_another_partition_and_the_sealed_partition_are_refused(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(external, "REPO_ROOT", tmp_path)
+    v1 = make_seed_manifest("t-v1", 7, SIZES)
+    v2 = make_seed_manifest("t-v2", 7, {**SIZES, "dev": 40})
+    other = make_seed_manifest("t-o", 8, SIZES)  # another master seed: other seeds under the same partition names
+    rows = [(s, "death", 10, 1.0) for s in v1["partitions"]["val"]]
+    a = make_batch(tmp_path, "alpha-r", rows, seeds=seeds_info(tmp_path, "t-v1", v1, "val", 20))
+    # a different list under the same partition name
+    o = make_batch(tmp_path, "beta-r", rows, seeds=seeds_info(tmp_path, "t-o", other, "val", 20))
+    with pytest.raises(ValueError, match="same seed manifest"):
+        build_comparison(a, o)
+    # the same list in another partition's name
+    t = make_batch(tmp_path, "gamma-r", rows, seeds=seeds_info(tmp_path, "t-v2", v2, "train", 20))
+    with pytest.raises(ValueError, match="same seed manifest"):
+        build_comparison(a, t)
+    # a seed file that is no longer what the batch recorded is not evidence of anything
+    ib = seeds_info(tmp_path, "t-v2", v2, "val", 20)
+    b = make_batch(tmp_path, "delta-r", rows, seeds=ib)
+    assert build_comparison(a, b, iters=100)["pairedSeeds"] == 20
+    path = tmp_path / ib["file"]
+    path.write_text(path.read_text(encoding="utf-8") + " ", encoding="utf-8")
+    with pytest.raises(ValueError, match="same seed manifest"):
+        build_comparison(a, b)
+    # the sealed partition is never read to make a pairing: two different files, both on test, are refused
+    ta = make_batch(tmp_path, "eps-r", [(s, "death", 10, 1.0) for s in v1["partitions"]["test"]], seeds=seeds_info(tmp_path, "t-v1", v1, "test", 10))
+    tb = make_batch(tmp_path, "zeta-r", [(s, "death", 10, 1.0) for s in v1["partitions"]["test"]], seeds=seeds_info(tmp_path, "t-v2b", v2, "test", 10))
+    with pytest.raises(ValueError, match="same seed manifest"):
+        build_comparison(ta, tb)
 
 
 def test_output_is_deterministic_and_round_trips(tmp_path: Path):

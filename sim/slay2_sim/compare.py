@@ -14,7 +14,9 @@ import hashlib
 import json
 from pathlib import Path
 
+from . import external
 from .batch import read_episodes
+from .manifest import load_seed_manifest, partition_seeds, sha256_file
 from .stats import paired_bootstrap_ci, paired_win_table, wilson_interval
 
 SCHEMA = 1
@@ -28,9 +30,43 @@ def _canonical(body: dict) -> str:
     return json.dumps(body, indent=2, sort_keys=True) + "\n"
 
 
+def _seeds_drawn(info: dict) -> list[int] | None:
+    """The seeds a batch drew from its partition (``run`` takes the first ``n``), read from the committed seed manifest the
+    batch names, and only if that file still has the hash the batch recorded. None when that cannot be shown: a file that is
+    missing or has changed, or the sealed ``test`` partition (which is never read here)."""
+    try:
+        path = external.REPO_ROOT / info["file"]
+        if sha256_file(path) != info["file_sha256"]:
+            return None
+        return partition_seeds(load_seed_manifest(path), info["partition"], limit=int(info["n"]))
+    except (KeyError, OSError, ValueError, PermissionError):
+        return None
+
+
+def _same_seeds(sa: dict, sb: dict) -> bool:
+    """Both batches were played on the same seeds. The same seed manifest (its hash) and partition say so. A later version of
+    a manifest that appends a partition and keeps the others (``ironclad-a0-v2`` keeps v1's ``train``, ``val`` and ``test``
+    exactly) has a different file hash, so for two different files the seeds themselves are compared: the shorter batch's
+    seeds must be the first seeds of the longer one's."""
+    if sa["partition"] != sb["partition"]:
+        return False
+    if sa["file_sha256"] == sb["file_sha256"]:
+        return True
+    xa, xb = _seeds_drawn(sa), _seeds_drawn(sb)
+    if not xa or not xb:
+        return False
+    k = min(len(xa), len(xb))
+    return xa[:k] == xb[:k]
+
+
 def _past_act_one(rec) -> bool:
     """Intermediate endpoint while wins are rare: the run got past the Act-1 boss (it ended in a later act, or won)."""
     return rec.outcome == "win" or int(rec.act) >= 1
+
+
+def _past_act_two(rec) -> bool:
+    """The run got past the Act-2 boss (it ended in the third act, or won)."""
+    return rec.outcome == "win" or int(rec.act) >= 2
 
 
 def _rate(flags: list[bool]) -> dict:
@@ -44,7 +80,7 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
     a_dir, b_dir = Path(a_dir), Path(b_dir)
     ma, mb = _manifest(a_dir), _manifest(b_dir)
     sa, sb = ma["seeds"], mb["seeds"]
-    if sa["file_sha256"] != sb["file_sha256"] or sa["partition"] != sb["partition"]:
+    if not _same_seeds(sa, sb):
         raise ValueError("batches must be played on the same seed manifest and partition to be paired")
     if ma["config"]["character"] != mb["config"]["character"] or ma["config"]["ascension"] != mb["config"]["ascension"]:
         raise ValueError("batches must share the character and ascension")
@@ -63,6 +99,8 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
     table = paired_win_table(aw, bw)
     a2 = [_past_act_one(a[s]) for s in both]
     b2 = [_past_act_one(b[s]) for s in both]
+    a3 = [_past_act_two(a[s]) for s in both]
+    b3 = [_past_act_two(b[s]) for s in both]
     fa = [float(a[s].floor) for s in both]
     fb = [float(b[s].floor) for s in both]
     mean_diff, lo, hi = paired_bootstrap_ci(fa, fb, iters=iters, seed=seed)
@@ -96,6 +134,14 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
             "profile": ma["config"]["profile"],
             "partition": sa["partition"],
             "seedManifestSha256": sa["file_sha256"],
+            **(
+                {
+                    "seedManifestSha256B": sb["file_sha256"],
+                    "sameSeedsBy": "the seed lists of the partition in the two manifests (verified against the recorded hashes)",
+                }
+                if sb["file_sha256"] != sa["file_sha256"]
+                else {}
+            ),
         },
         "pairedSeeds": len(shared),
         "bothCompleted": len(both),
@@ -106,6 +152,12 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
             "a": _rate(a2),
             "b": _rate(b2),
             "pairedTable": paired_win_table(a2, b2),
+        },
+        "reachedAct3": {
+            "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+            "a": _rate(a3),
+            "b": _rate(b3),
+            "pairedTable": paired_win_table(a3, b3),
         },
         "floorDifference": {
             "meanAMinusB": mean_diff,
@@ -145,6 +197,15 @@ def render_text(c: dict) -> str:
         f"  past the Act-1 boss: A={c['reachedAct2']['a']['rate']:.1%}  B={c['reachedAct2']['b']['rate']:.1%}  "
         f"(paired: A-only={c['reachedAct2']['pairedTable']['a_only']} B-only={c['reachedAct2']['pairedTable']['b_only']}, "
         f"McNemar exact p={c['reachedAct2']['pairedTable']['mcnemar_p']:.4g})",
+        *(
+            [
+                f"  past the Act-2 boss: A={c['reachedAct3']['a']['rate']:.1%}  B={c['reachedAct3']['b']['rate']:.1%}  "
+                f"(paired: A-only={c['reachedAct3']['pairedTable']['a_only']} B-only={c['reachedAct3']['pairedTable']['b_only']}, "
+                f"McNemar exact p={c['reachedAct3']['pairedTable']['mcnemar_p']:.4g})"
+            ]
+            if "reachedAct3" in c
+            else []
+        ),
         f"  mean floor: A={a['meanFloor']:.2f}  B={b['meanFloor']:.2f}",
         f"  floors reached, mean(A-B) = {f['meanAMinusB']:+.2f}  (95% bootstrap CI {f['ci95'][0]:+.2f} .. {f['ci95'][1]:+.2f})",
     ]
