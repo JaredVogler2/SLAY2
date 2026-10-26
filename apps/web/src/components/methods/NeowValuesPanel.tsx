@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { Tile } from "@/components/ui/Tile";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier } from "@/lib/cardvalues";
 import { formatP, pct, signed } from "@/lib/methods-data";
@@ -16,16 +17,6 @@ import type { PlayableClass } from "@slay2/game-data";
 
 const classLabel = (c: string): string => CLASS_STYLE[c as PlayableClass].label;
 const games = (n: number): string => n.toLocaleString("en-US");
-
-function Tile({ k, value, note }: { k: string; value: string; note: string }) {
-  return (
-    <li className="rounded-lg border border-line bg-ink-2 p-3">
-      <p className="text-xs text-muted">{k}</p>
-      <p className="num mt-1 font-display text-2xl text-parchment">{value}</p>
-      <p className="num mt-0.5 text-xs text-dim">{note}</p>
-    </li>
-  );
-}
 
 function MemberRow({ m }: { m: NeowMember }) {
   const t = m.reachedAct2.pairedTable;

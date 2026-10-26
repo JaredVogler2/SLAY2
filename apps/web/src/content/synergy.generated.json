@@ -1,0 +1,167 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/synergy/b1-calibration.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
+  "table": {
+    "sha256": "ed6c6952332ddf85749cf6acee7c86e8eebac5d74a76084feb21b868062efb51",
+    "cards": 367,
+    "mechanics": 27
+  },
+  "b1": {
+    "stage": "B1",
+    "file": "experiments/synergy/b1-calibration.json",
+    "sha256": "70d3fac673b830e3cd82ae4ebf3251b7578999dd43e1cc85700bf4c30a1f2c09",
+    "outcome": "the run gets past the Act-1 boss",
+    "bossFights": 19717,
+    "passRate": 0.3825,
+    "cohorts": [
+      {
+        "name": "ironclad-train",
+        "character": "Ironclad",
+        "partition": "train",
+        "bossFights": 3812
+      },
+      {
+        "name": "silent-train",
+        "character": "Silent",
+        "partition": "train",
+        "bossFights": 2332
+      },
+      {
+        "name": "regent-train",
+        "character": "Regent",
+        "partition": "train",
+        "bossFights": 2703
+      },
+      {
+        "name": "necrobinder-train",
+        "character": "Necrobinder",
+        "partition": "train",
+        "bossFights": 3389
+      },
+      {
+        "name": "defect-train",
+        "character": "Defect",
+        "partition": "train",
+        "bossFights": 3212
+      },
+      {
+        "name": "ironclad-dev",
+        "character": "Ironclad",
+        "partition": "dev",
+        "bossFights": 4269
+      }
+    ],
+    "logLoss": {
+      "index": 0.44298,
+      "indexAndSynergy": 0.43454
+    },
+    "auc": {
+      "index": 0.8633,
+      "indexAndSynergy": 0.8696
+    },
+    "synergyAdded": {
+      "mean": -0.00844,
+      "ci95": [
+        -0.01012,
+        -0.00629
+      ]
+    },
+    "enginesAdded": {
+      "mean": 0.00007,
+      "ci95": [
+        -0.00009,
+        0.00025
+      ]
+    },
+    "ratios": {
+      "needs": {
+        "toQuality": 1.162,
+        "ci95": [
+          0.979,
+          1.358
+        ]
+      },
+      "scalers": {
+        "toQuality": 0.678,
+        "ci95": [
+          0.542,
+          0.874
+        ]
+      },
+      "engines": {
+        "toQuality": 0.124,
+        "ci95": [
+          -0.01,
+          0.31
+        ]
+      },
+      "coverage": {
+        "toQuality": -0.134,
+        "ci95": [
+          -0.28,
+          0.03
+        ]
+      }
+    },
+    "beyondCards": {
+      "logLossCards": 0.3801,
+      "logLossCardsAndParts": 0.37855,
+      "gap": {
+        "mean": -0.00155,
+        "ci95": [
+          -0.00251,
+          -0.00044
+        ]
+      }
+    },
+    "perCohortGain": {
+      "ironclad-train": {
+        "mean": -0.00467,
+        "ci95": [
+          -0.00809,
+          -0.00091
+        ]
+      },
+      "silent-train": {
+        "mean": -0.00044,
+        "ci95": [
+          -0.00317,
+          0.00254
+        ]
+      },
+      "regent-train": {
+        "mean": -0.00965,
+        "ci95": [
+          -0.01522,
+          -0.0047
+        ]
+      },
+      "necrobinder-train": {
+        "mean": -0.00068,
+        "ci95": [
+          -0.00255,
+          0.00129
+        ]
+      },
+      "defect-train": {
+        "mean": -0.02365,
+        "ci95": [
+          -0.03036,
+          -0.0168
+        ]
+      },
+      "ironclad-dev": {
+        "mean": -0.01632,
+        "ci95": [
+          -0.02154,
+          -0.01054
+        ]
+      }
+    },
+    "calibratedWeights": {
+      "unmet": 1,
+      "scaler": 0.7,
+      "engines": 0.1
+    }
+  }
+}

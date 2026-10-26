@@ -58,7 +58,7 @@ export function RecommendationPanel({
       title={best.action.kind === "skip" ? "Skip this one" : `Take ${best.label}`}
       aside={
         <>
-          <Badge tone="heuristic">Heuristic v0</Badge>
+          <Badge tone="heuristic">Heuristic v1</Badge>
           <Badge tone="neutral">Not calibrated</Badge>
         </>
       }

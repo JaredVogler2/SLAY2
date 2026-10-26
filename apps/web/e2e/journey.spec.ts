@@ -27,7 +27,7 @@ test.describe("first decision", () => {
     }).toPass();
     interactions += 1;
     // the answer names an action, gives reasons, and says how sure it is
-    await expect(page.getByText("Heuristic v0").first()).toBeVisible();
+    await expect(page.getByText("Heuristic v1").first()).toBeVisible();
     await expect(page.getByRole("list", { name: "Ranked options" })).toBeVisible();
     expect(interactions).toBeLessThanOrEqual(3);
     expect(Date.now() - started).toBeLessThan(30_000);

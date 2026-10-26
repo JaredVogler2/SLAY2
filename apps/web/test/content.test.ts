@@ -5,9 +5,12 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { SYNERGY } from "@slay2/game-data";
+
 import cardvalues from "@/content/cardvalues.generated.json";
 import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
+import synergy from "@/content/synergy.generated.json";
 
 describe("generated site content", () => {
   it("is up to date with the audited sources (run: node scripts/export-site-data.mjs)", () => {
@@ -79,5 +82,35 @@ describe("generated site content", () => {
       expect(r.winRateWilson95).toHaveLength(2);
       expect(r.counts.win + r.counts.death).toBe(r.completed);
     }
+  });
+
+  it("quotes the synergy study as its report says, for the table the page computes with (ADR-050)", () => {
+    const report = JSON.parse(
+      readFileSync(
+        join(__dirname, "..", "..", "..", "experiments", "synergy", "b1-calibration.json"),
+        "utf8",
+      ),
+    ) as {
+      advisor: { synergy_table_sha256: string };
+      pooled: {
+        all_cohorts: {
+          rows: number;
+          ratios: Record<string, { to_quality: number }>;
+          loss_gaps: Record<string, { mean: number }>;
+        };
+      };
+    };
+    expect(synergy.table.sha256).toBe(SYNERGY.sha256);
+    expect(report.advisor.synergy_table_sha256).toBe(SYNERGY.sha256);
+    expect(synergy.table.cards).toBe(Object.keys(SYNERGY.cards).length);
+    const pooled = report.pooled.all_cohorts;
+    expect(synergy.b1.bossFights).toBe(pooled.rows);
+    expect(synergy.b1.cohorts.reduce((acc, c) => acc + c.bossFights, 0)).toBe(pooled.rows);
+    expect(synergy.b1.ratios.needs.toQuality).toBe(pooled.ratios.unmet?.to_quality);
+    expect(synergy.b1.ratios.scalers.toQuality).toBe(pooled.ratios.scaler?.to_quality);
+    expect(synergy.b1.ratios.engines.toQuality).toBe(pooled.ratios.engines?.to_quality);
+    expect(synergy.b1.synergyAdded.mean).toBe(pooled.loss_gaps.synergy_added_to_index?.mean);
+    // adding the term lowers the held-out error, and the interval says so (the claim the panel makes)
+    expect(synergy.b1.synergyAdded.ci95[1]).toBeLessThan(0);
   });
 });

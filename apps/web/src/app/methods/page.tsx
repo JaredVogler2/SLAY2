@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { NeowValuesPanel } from "@/components/methods/NeowValuesPanel";
+import { SynergyStudyPanel } from "@/components/methods/SynergyStudyPanel";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
@@ -41,7 +42,7 @@ const GROUP_TONE: Record<StatusGroup, BadgeTone> = {
 const NOT_EVALUATED = [
   [
     "Advisor win delta",
-    "The card advisor's own index is still a heuristic and says so. Measured values from simulated runs exist (above and on the codex) and a policy that follows them beat the hand-written ratings in simulation, but the advisor does not use them yet and nothing here is a win probability for the live game.",
+    "The card advisor's own index is still a heuristic and says so. Its synergy term is SLAY2's judgement of how cards work together, checked against simulated runs only as far as the synergy section above says. Measured values from simulated runs exist (above and on the codex) and a policy that follows them beat the hand-written ratings in simulation, but the advisor does not use them yet and nothing here is a win probability for the live game.",
   ],
   [
     "Act 1 versions",
@@ -464,6 +465,8 @@ export default function MethodsPage() {
       </Panel>
 
       <CardValuesPanel />
+
+      <SynergyStudyPanel />
 
       <NeowValuesPanel />
 

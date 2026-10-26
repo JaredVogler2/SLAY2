@@ -318,9 +318,72 @@ def table_findings() -> str:
     return "\n".join(["| Severity | Meaning (prompts/11) | Found and fixed | Ids |", "|---|---|---|---|"] + rows)
 
 
+# ---------------------------------------------------------------------------------------------------------------- synergy
+def signed(x: float, places: int = 4) -> str:
+    text = f"{x:+.{places}f}"
+    if float(text) == 0:
+        return f"{0:.{places}f}"  # a change too small to show carries no sign
+    return text.replace("-", "\u2212")
+
+
+def interval(ci: list[float], places: int = 4) -> str:
+    return f"{signed(ci[0], places)} to {signed(ci[1], places)}".replace("+", "")
+
+
+def table_synergy_b1() -> str:
+    d = load(ROOT / "experiments" / "synergy" / "b1-calibration.json")
+    p = d["pooled"]["all_cohorts"]
+    gap, ratio, cv = p["loss_gaps"]["synergy_added_to_index"], p["ratios"], p["cross_validation"]
+    beyond = d["beyond_additive_card_values"]["pooled"]
+    rows = [
+        "| What was asked | Answer (95 % interval, resampling whole seeds) |",
+        "|---|---|",
+        f"| Held-out log loss of the advisor's index without the synergy term, then with it ({p['rows']:,} runs that brought a random deck to the Act-1 boss) | {cv['index']['log_loss']:.4f}, then {cv['index+synergy']['log_loss']:.4f}: change **{signed(gap['mean'])}** ({interval(gap['ci95'])}); AUC {cv['index']['auc']:.4f} to {cv['index+synergy']['auc']:.4f} |",
+        f"| The same for a model that already knows every card (ridge logistic regression on card counts, one model per class) | {beyond['log_loss_cards']:.4f}, then {beyond['log_loss_cards_and_parts']:.4f}: change **{signed(beyond['gap']['mean'])}** ({interval(beyond['gap']['ci95'])}) |",
+    ]
+    for key, label in (("unmet", "unmet needs"), ("scaler", "Strength, Dexterity and Focus lifting the cards they help"), ("engines", "engines (sources and payoffs together)"), ("coverage", "role coverage, as the index weights it")):
+        r = ratio[key]
+        rows.append(f"| Worth of a point of {label}, relative to a point of average card rating | **{r['to_quality']:.2f}** ({r['ci95'][0]:.2f} to {r['ci95'][1]:.2f}) |".replace("-0.", "\u22120.").replace("-1.", "\u22121."))
+    return "\n".join(rows)
+
+
+def table_synergy_cohorts() -> str:
+    d = load(ROOT / "experiments" / "synergy" / "b1-calibration.json")
+    head = [
+        "| Cohort | Runs at the Act-1 boss | Passed it | Held-out log-loss change when the synergy term is added to the index | When added to a model that knows every card |",
+        "|---|---|---|---|---|",
+    ]
+    rows = []
+    for c in d["cohorts"]:
+        a = d["per_cohort"][c["name"]]["loss_gaps"]["synergy_added_to_index"]
+        b = d["beyond_additive_card_values"]["per_cohort"][c["name"]]["gap"]
+        rows.append(
+            f"| {c['name']} ({c['partition']} seeds) | {c['boss_fights']:,} | {100 * c['pass_rate']:.1f} % | {signed(a['mean'])} ({interval(a['ci95'])}) | {signed(b['mean'])} ({interval(b['ci95'])}) |"
+        )
+    return "\n".join(head + rows)
+
+
+def table_synergy_coverage() -> str:
+    cat = load(ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json")["cards"]
+    syn = load(ROOT / "packages" / "game-data" / "data" / "synergy.sts2-main-0.107.1.json")
+    head = [
+        "| Class | Reward cards | With written tags | Starting relic's supply (the table's `innate`) |",
+        "|---|---|---|---|",
+    ]
+    rows = []
+    for cls in ("ironclad", "silent", "regent", "necrobinder", "defect"):
+        pool = [c for c in cat if c["class"] == cls and c["rewardEligible"] and c["rarity"] in ("common", "uncommon", "rare")]
+        tagged = [c for c in pool if c["id"] in syn["cards"]]
+        inn = syn["innate"].get(cls)
+        supply = f"{inn['relic']}: " + ", ".join(f"{m} {w}" for m, w in inn["gives"].items()) if inn else "none (the starting relic heals after combat)"
+        rows.append(f"| {cls.capitalize()} | {len(pool)} | {len(tagged)} ({100 * len(tagged) / len(pool):.0f} %) | {supply} |")
+    rows.append(f"| All tagged cards in the table | | {len(syn['cards'])} (hash `{syn['sha256'][:12]}`) | {len(syn['mechanics'])} mechanics |")
+    return "\n".join(head + rows)
+
+
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
 }
@@ -334,6 +397,9 @@ BLOCKS = {
     "cardvalues": table_cardvalues,
     "relics": table_relics,
     "networks": table_networks,
+    "synergy_coverage": table_synergy_coverage,
+    "synergy_b1": table_synergy_b1,
+    "synergy_cohorts": table_synergy_cohorts,
 }
 
 

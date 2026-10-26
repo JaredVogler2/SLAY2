@@ -1,11 +1,14 @@
 import {
   ACT1_BRIEFS,
   CATALOG,
+  MECHANICS,
+  SYNERGY,
   getAct1Boss,
   getCard,
   rewardPool,
   ALL_UNLOCKED,
   type CardEntry,
+  type MechanicId,
   type PlayableClass,
 } from "@slay2/game-data";
 import { requireSupportedBuild } from "@slay2/game-schema";
@@ -15,6 +18,16 @@ import { must } from "./util";
 import { GROUPS, profileDeck, type DeckEntry, type DeckProfile, type Group } from "./profile";
 import { actContextTilt, MAX_TILT, tiltWeights, type ContextTilt } from "./context";
 import { baseWeights, scoreTerms, total, type Terms, type Weights } from "./quality";
+import {
+  FUTURE_SUPPORT,
+  MAX_DEPENDENCE,
+  PART_WEIGHT,
+  deckSynergy,
+  explainAddition,
+  type Need,
+  type Partner,
+  type SynergyExplanation,
+} from "./synergy";
 import {
   DraftRequestSchema,
   type DraftAction,
@@ -102,12 +115,121 @@ function withCard(entries: readonly DeckEntry[], card: CardEntry): DeckEntry[] {
   return out.some((e) => e.card.id === card.id) ? out : [...out, { card, count: 1 }];
 }
 
+function joinNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1] ?? ""}`;
+}
+
+function listWithMore(names: readonly string[], shown = 3): string {
+  const unique = [...new Set(names)];
+  if (unique.length <= shown) return joinNames(unique);
+  return `${joinNames(unique.slice(0, shown))} and ${String(unique.length - shown)} more`;
+}
+
+function needsText(needs: readonly Need[]): string {
+  return joinNames(
+    needs.map(
+      (n) =>
+        `${n.label} (${n.suppliers.length > 0 ? `from ${joinNames(n.suppliers)}` : "nothing in your deck yet"})`,
+    ),
+  );
+}
+
+const SCALER_VERB: Readonly<Partial<Record<MechanicId, readonly [string, string]>>> = {
+  strength: ["hits harder", "hit harder"],
+  dexterity: ["blocks more", "block more"],
+  focus: ["gets stronger", "get stronger"],
+};
+
+function partnerName(p: Partner): string {
+  return p.count > 1 ? `${p.name} x${String(p.count)}` : p.name;
+}
+
+/** The lines about what a card needs from the deck, what it supplies to the others and the engines it builds. */
+function synergyReasons(card: CardEntry, ex: SynergyExplanation, weight: number): Reason[] {
+  const reasons: Reason[] = [];
+  const own = ex.own.delta * weight;
+  if (Math.abs(own) >= 0.05) {
+    const parts: string[] = [];
+    if (ex.own.heldBack >= 0.02 && ex.own.needs.length > 0) {
+      parts.push(
+        `${card.name} needs ${needsText(ex.own.needs)}: about ${String(Math.round(ex.own.heldBack * 100))} % of its rating is held back until the deck supports it.`,
+      );
+    }
+    if (ex.own.scaler >= 0.02) {
+      parts.push(
+        `Your Strength, Dexterity or Focus lifts it by about ${String(Math.round(ex.own.scaler * 100))} %.`,
+      );
+    }
+    reasons.push({
+      kind: "synergy",
+      delta: own,
+      text:
+        parts.length > 0
+          ? parts.join(" ")
+          : `Its fit with the cards in your deck changes its worth by ${fmt(own)}.`,
+    });
+  }
+  const support = ex.support.delta * weight;
+  if (Math.abs(support) >= 0.05) {
+    const byMechanic = new Map<MechanicId, Partner[]>();
+    for (const p of ex.support.partners) {
+      byMechanic.set(p.mechanic, [...(byMechanic.get(p.mechanic) ?? []), p]);
+    }
+    const groups = [...byMechanic.entries()]
+      .sort(
+        (a, b) =>
+          b[1].reduce((s, p) => s + Math.abs(p.gain * p.count), 0) -
+          a[1].reduce((s, p) => s + Math.abs(p.gain * p.count), 0),
+      )
+      .slice(0, 2)
+      .map(([m, ps]) => {
+        const names = listWithMore(ps.map(partnerName));
+        const verb = SCALER_VERB[m];
+        const plural = ps.length > 1 || ps.some((p) => p.count > 1);
+        return verb
+          ? `${MECHANICS[m].label} makes ${names} ${verb[plural ? 1 : 0]}`
+          : `${MECHANICS[m].label} for ${names}`;
+      });
+    reasons.push({
+      kind: "synergy",
+      delta: support,
+      text:
+        support > 0
+          ? `Gives cards already in your deck what they need (${groups.join("; ")}).`
+          : `Takes away what cards in your deck rely on (${groups.join("; ")}).`,
+    });
+  }
+  for (const change of ex.engines.changes.slice(0, 2)) {
+    const delta = change.delta * weight;
+    if (Math.abs(delta) < 0.1) continue;
+    const sources = change.sources.slice(0, 3);
+    const payoffs = change.payoffs.slice(0, 3);
+    const say = (names: string[], one: string, many: string): string =>
+      names.length === 0 ? "" : `${joinNames(names)} ${names.length === 1 ? one : many}`;
+    const detail = [say(sources, "supplies it", "supply it"), say(payoffs, "uses it", "use it")]
+      .filter(Boolean)
+      .join("; ");
+    reasons.push({
+      kind: "synergy",
+      delta,
+      text:
+        delta > 0
+          ? `Builds your ${change.label} engine${detail ? ` (${detail})` : ""}.`
+          : `Weakens your ${change.label} engine${detail ? ` (${detail})` : ""}.`,
+    });
+  }
+  return reasons;
+}
+
 function describeDelta(
   before: Terms,
   after: Terms,
   bp: DeckProfile,
   ap: DeckProfile,
   card: CardEntry,
+  ex: SynergyExplanation,
+  synergyWeight: number,
 ): Reason[] {
   const reasons: Reason[] = [];
   const dq = after.quality - before.quality;
@@ -152,14 +274,7 @@ function describeDelta(
       text: `Deck grows to ${String(ap.size)} cards; past about 30 each extra card slows the draw cycle.`,
     });
   }
-  const dy = after.synergy - before.synergy;
-  if (Math.abs(dy) >= 0.05) {
-    reasons.push({
-      kind: "synergy",
-      delta: dy,
-      text: "Strength scaling pairs with your multi-hit attacks.",
-    });
-  }
+  reasons.push(...synergyReasons(card, ex, synergyWeight));
   return reasons.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 }
 
@@ -194,16 +309,21 @@ function labelFor(action: DraftAction): string {
   return action.kind === "skip" ? SKIP_LABEL : (getCard(action.cardId)?.name ?? action.cardId);
 }
 
-function rankWith(
+/** The offered cards and skipping, best first, each with the change in the deck index its pick makes (skip is 0 and wins ties). */
+export function rankWith(
   weights: Weights,
   base: DeckProfile,
   entries: readonly DeckEntry[],
   offered: readonly CardEntry[],
+  actIndex: 0 | 1 | 2,
+  character: PlayableClass | null = null,
 ): { action: DraftAction; delta: number }[] {
   const baseTotal = total(scoreTerms(base, weights));
   const scored: { action: DraftAction; delta: number }[] = offered.map((card) => ({
     action: pickAction(card.id),
-    delta: total(scoreTerms(profileDeck(withCard(entries, card)), weights)) - baseTotal,
+    delta:
+      total(scoreTerms(profileDeck(withCard(entries, card), actIndex, character), weights)) -
+      baseTotal,
   }));
   scored.push({ action: SKIP, delta: 0 });
   // skip wins ties: it is listed last but sorted stably after the strict comparison below
@@ -241,15 +361,15 @@ function normalize(request: DraftRequest): DraftRequest {
  */
 const CLASS_NOT_MODELLED: Readonly<Record<PlayableClass, string>> = {
   ironclad:
-    "Strength and exhaust engines are read from role tags only; their synergies are not simulated.",
+    "Strength, exhaust, block and HP-loss synergies are read from tags of what cards supply and need; sequencing, how many exhaust triggers a turn really gives and Barricade-style block engines are not simulated.",
   silent:
-    "Poison, Sly cards and shiv engines are read from role tags only; their synergies are not simulated.",
+    "Poison, shiv and discard synergies are read from tags of what cards supply and need; how many Shivs or Poison stacks you actually reach, and Sly timing, are not simulated.",
   regent:
-    "Stars and Forge are read from role tags only; resource engines and their synergies are not simulated.",
+    "Stars, Forge and card-creation synergies are read from tags of what cards supply and need; the Sovereign Blade's real damage and star budgets are not simulated.",
   necrobinder:
-    "Osty, Souls and Doom are read from role tags only; summon and curse engines are not simulated.",
+    "Osty, Souls, Doom and Ethereal synergies are read from tags of what cards supply and need; Osty's health, Doom thresholds and Ethereal timing are not simulated.",
   defect:
-    "Orbs and Focus are read from role tags only; orb ordering and engines are not simulated.",
+    "Orb, Focus and Status synergies are read from tags of what cards supply and need; orb order, slots and evoke timing are not simulated.",
 };
 
 export function evaluateDraft(input: unknown): DraftResponse {
@@ -279,7 +399,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     }
   }
 
-  const base = profileDeck(entries);
+  const base = profileDeck(entries, request.actIndex, request.character);
   const neutral = baseWeights(request.actIndex, request.riskPreference);
   let tilt: ContextTilt | null = null;
   if (request.actContext) {
@@ -301,9 +421,11 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const weights = tilt ? tiltWeights(neutral, tilt) : neutral;
   // The reasons below explain the neutral heuristic; the context is its own line, so the lines add up to the index.
   const baseTerms = scoreTerms(base, neutral);
-  const ranked = rankWith(weights, base, entries, offered);
+  const ranked = rankWith(weights, base, entries, offered, request.actIndex, request.character);
   const neutralDelta = new Map(
-    rankWith(neutral, base, entries, offered).map((r) => [actionKey(r.action), r.delta] as const),
+    rankWith(neutral, base, entries, offered, request.actIndex, request.character).map(
+      (r) => [actionKey(r.action), r.delta] as const,
+    ),
   );
 
   const options: RankedOption[] = ranked.map((r, i) => {
@@ -318,8 +440,18 @@ export function evaluateDraft(input: unknown): DraftResponse {
       ];
     } else {
       const card = must(getCard(r.action.cardId), "catalog card");
-      const after = profileDeck(withCard(entries, card));
-      reasons = describeDelta(baseTerms, scoreTerms(after, neutral), base, after, card);
+      const withIt = withCard(entries, card);
+      const after = profileDeck(withIt, request.actIndex, request.character);
+      const explained = explainAddition(entries, card, request.actIndex, withIt, request.character);
+      reasons = describeDelta(
+        baseTerms,
+        scoreTerms(after, neutral),
+        base,
+        after,
+        card,
+        explained,
+        neutral.synergy,
+      );
       if (tilt) {
         const shift = r.delta - (neutralDelta.get(actionKey(r.action)) ?? r.delta);
         if (Math.abs(shift) >= 0.05) {
@@ -354,7 +486,11 @@ export function evaluateDraft(input: unknown): DraftResponse {
       synergy: weights.synergy * jitter(),
     };
     const winner = actionKey(
-      (rankWith(perturbed, base, entries, offered)[0] as { action: DraftAction }).action,
+      (
+        rankWith(perturbed, base, entries, offered, request.actIndex, request.character)[0] as {
+          action: DraftAction;
+        }
+      ).action,
     );
     if (winner === top) {
       kept += 1;
@@ -398,7 +534,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     schema: 1,
     gameId: "STS2",
     build: build.id,
-    policyVersion: "draft-heuristic-v0",
+    policyVersion: "draft-heuristic-v1",
     method: "heuristic",
     calibrated: false,
     legalActions: legal,
@@ -412,7 +548,8 @@ export function evaluateDraft(input: unknown): DraftResponse {
     tradeoffs,
     warnings,
     assumptions: [
-      "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate.",
+      "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate. It is read as a card's worth when what the card needs is there.",
+      `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * PART_WEIGHT.needs * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.`,
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
       ...(tilt
         ? [
@@ -439,6 +576,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
       roleCounts: { ...base.groups },
       starterShare: base.starterShare,
     },
+    deckSynergy: deckSynergy(entries, request.actIndex, request.character),
     ...(request.actContext
       ? {
           actContext: {

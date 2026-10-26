@@ -27,6 +27,15 @@ describe("the start-HP note (gap G13)", () => {
     expect(note).not.toHaveTextContent("percentage");
   });
 
+  it("says both when the subject is what a study read from its runs", () => {
+    render(<StartHpNote character="necrobinder" subject="readings" data={data} />);
+    const note = screen.getByText(/gap G13/);
+    expect(note).toHaveTextContent("read every percentage below as too high for Necrobinder");
+    expect(note).toHaveTextContent(
+      "whether the readings themselves hold at the game's HP has not been measured",
+    );
+  });
+
   it("is nothing for a class that starts with the game's HP, for no class, and for no data", () => {
     const { container, rerender } = render(
       <StartHpNote character="silent" subject="values" data={data} />,

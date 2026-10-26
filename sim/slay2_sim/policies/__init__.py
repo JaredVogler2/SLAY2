@@ -27,3 +27,4 @@ from . import neow  # noqa: E402,F401  (registers rules_v2_neow: rules_v2 with a
 from . import search  # noqa: E402,F401  (registers search_v1)
 from . import search2  # noqa: E402,F401  (registers search_v2: best-first turn planner with state de-duplication)
 from . import ppo_combat  # noqa: E402,F401  (registers ppo_combat_v1; torch is imported lazily)
+from . import advisor_v1  # noqa: E402,F401  (registers advisor_v1: rules_v3 with the card rewards decided by the website's deck index, ADR-050)

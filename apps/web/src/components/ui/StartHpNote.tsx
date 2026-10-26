@@ -14,8 +14,8 @@ export function StartHpNote({
   className = "text-xs text-rose",
 }: {
   character: string;
-  /** `chances`: percentages for this class; `values`: the card values measured for it */
-  subject: "chances" | "values";
+  /** `chances`: percentages for this class; `values`: the card values measured for it; `readings`: what a study read from its runs */
+  subject: "chances" | "values" | "readings";
   data?: NeowData;
   className?: string;
 }) {
@@ -32,7 +32,9 @@ export function StartHpNote({
       {gap.pairs.toLocaleString("en-US")} paired runs instead of {onePlace(gap.simulator)},{" "}
       {subject === "chances"
         ? `so read every percentage below as too high for ${label}.`
-        : "and whether the order of these values holds at the game's HP has not been measured."}
+        : subject === "values"
+          ? "and whether the order of these values holds at the game's HP has not been measured."
+          : `so read every percentage below as too high for ${label}; whether the readings themselves hold at the game's HP has not been measured.`}
     </p>
   );
 }

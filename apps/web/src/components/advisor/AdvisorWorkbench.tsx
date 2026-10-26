@@ -33,6 +33,7 @@ import { OpeningPanel } from "./OpeningPanel";
 import { PityTracker } from "./PityTracker";
 import { RecommendationPanel } from "./RecommendationPanel";
 import { SimulationOpinion } from "./SimulationOpinion";
+import { SynergyPanel } from "./SynergyPanel";
 
 // A plausible first-fight reward: no rare, because a normal-fight pack cannot hold one at the start of a run (rule CARD-8).
 const EXAMPLE_OFFER = ["POMMEL_STRIKE", "SHRUG_IT_OFF", "INFLAME"] as const;
@@ -369,6 +370,7 @@ export function AdvisorWorkbench() {
           {outcome?.ok ? (
             <>
               <RecommendationPanel result={outcome.result} onRecord={record} />
+              <SynergyPanel synergy={outcome.result.deckSynergy} />
               <SimulationOpinion
                 run={run}
                 offered={offered}

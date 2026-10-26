@@ -26,15 +26,21 @@ Every finding has a reproduction, a fix and a regression test in [docs/ADVERSARI
 |---|---|---|---|
 | P0 | false probability certainty, wrong game, hidden information, illegal play, security | 0 | none found |
 | P1 | an unsupported simulator or model shipped as validated, or a production error | 6 | RT-3-01, RT-2-04, RT-10-07, RT-10-13, RT-10-14, RT-6-02 |
-| P2 | accessibility or user flow | 9 | RT-9-01, RT-9-02, RT-9-03, RT-9-04, RT-9-05, RT-9-07, RT-3-08, RT-6-01, RT-5-02 |
+| P2 | accessibility or user flow | 10 | RT-9-01, RT-9-02, RT-9-03, RT-9-04, RT-9-05, RT-9-07, RT-3-08, RT-3-10, RT-6-01, RT-5-02 |
 | P3 | polish | 4 | RT-9-06, RT-9-08, RT-9-09, RT-6-03 |
 <!-- table:findings:end -->
 
-No P0 was found. One finding is **open** and was reported by a user, not found by a test: the advisor has no model of synergies between cards (the next section). The two findings of the first opening-relic study are worth stating plainly: a class id in the wrong letter case made four classes play as Ironclad, and **every audit passed**, because an audit re-runs a game from its manifest and reproduces the same wrong class (RT-6-02). It was found by an independent read of the site code, not by a test; the guards that now exist (exact class ids, a per-game start check, a pairing refusal) are the answer to *that* failure, and no list of tests can promise there is no other of its kind.
+No P0 was found. One finding was reported by a user, not found by a test, and is **addressed in part**: the advisor had no model of synergies between cards (the next section). The two findings of the first opening-relic study are worth stating plainly: a class id in the wrong letter case made four classes play as Ironclad, and **every audit passed**, because an audit re-runs a game from its manifest and reproduces the same wrong class (RT-6-02). It was found by an independent read of the site code, not by a test; the guards that now exist (exact class ids, a per-game start check, a pairing refusal) are the answer to *that* failure, and no list of tests can promise there is no other of its kind.
 
-## Open finding: no synergy model (user feedback, 2026-10-26)
+## Finding addressed in part: no synergy model (user feedback, 2026-10-26)
 
-A user who knows the game gave three observations: the product is a deck-building advisor and does not cover playing cards against enemies (correct, and stated since the start); it does not evaluate card synergies, which is essential; and because it does not, it overrates card quality. The code confirms the second and third: the deck-quality index is the mean of static per-card ratings plus role-coverage, energy-curve and deck-size terms, with a single interaction term that exists only for Ironclad (Strength cards times multi-hit attacks). A card is rated by its own rating and by what role the deck lacks, not by what the cards in the deck make of it. The simulated second opinion is additive for a related reason (a card that needs partners rarely meets them in a random draft). Until this is fixed the advisor should be read as a way to check a deck's roles and a card's standalone rating, not as an evaluation of a build. It is the first item of the next steps in [docs/STATUS.md](STATUS.md).
+A user who knows the game gave three observations: the product is a deck-building advisor and does not cover playing cards against enemies (correct, and stated since the start); it does not evaluate card synergies, which is essential; and because it does not, it overrates card quality. The code confirmed the second and third: the v0 deck-quality index was the mean of static per-card ratings plus role-coverage, energy-curve and deck-size terms, with a single interaction term that existed only for Ironclad.
+
+**What changed (ADR-050, heuristic v1).** 367 cards are tagged by what they supply to a deck and what their worth depends on, over 27 mechanics, with each class's starting relic counted as a supplier; the index holds back a card whose needs the deck does not meet, lifts the cards that Strength, Dexterity and Focus help, and adds for engines; the page names the engines a deck is building and the cards still waiting for support (`/advisor`), and the study is on `/methods#synergy`. The simulated second opinion stays additive and says so.
+
+**How far it is checked.** The strengths are a judgement, not a fit. An exploratory reading of 19,717 simulated runs (stage B1; held-out by seed) found the synergy term improves the prediction of getting past the Act-1 boss (log loss lower by 0.0084, 95 % interval 0.0063 to 0.0101), supports the unmet-needs part at about the weight it was given and the Strength/Dexterity/Focus lifts at about 0.7 of it, and gives no support to an engine credit (0.12 of a rating point per index point, interval -0.01 to 0.31); the gain is clear for Ironclad, Regent and Defect, not for Silent and Necrobinder. The same reading found, and the table now corrects, three needs that ran the wrong way because a class's starting relic already supplies them. Those figures flatter the tags (read against the same runs). **The test that decides whether the term helps is registered and has not been run** (stage B2: a pilot that picks cards by the index against the same pilot without the term, held-out seeds, one exact McNemar test).
+
+**What remains true.** The advisor advises the draft only, not how to play cards against enemies; it is a judgement checked in simulation, not a measurement of the live game; and the simulator's parity with the game is unverified. Read it as a structured way to see what a deck is building and what a card still needs, not as a verdict.
 
 ## Required documentation (prompts/11)
 
@@ -95,14 +101,14 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 
 ## What a visitor can and cannot rely on today
 
-**Can:** every number from `/odds`, `/routes` and the odds API is exact for the rules recorded in the register, for main v0.107.1, with the assumptions listed; the draft advisor says what its ranking is (a labelled, uncalibrated deck-quality index) and why; the simulated second opinions say they are simulated, name the pilot, the class, the sample and the interval, and are shown only for classes where a registered held-out test supported them; nothing is stored about the visitor.
+**Can:** every number from `/odds`, `/routes` and the odds API is exact for the rules recorded in the register, for main v0.107.1, with the assumptions listed; the draft advisor says what its ranking is (a labelled deck-quality index with a synergy term that is a judgement, partly checked in simulation) and why; the simulated second opinions say they are simulated, name the pilot, the class, the sample and the interval, and are shown only for classes where a registered held-out test supported them; nothing is stored about the visitor.
 
 **Cannot:** treat any simulated rate as a rate in the live game; read a card or relic value as "this wins runs" (it is a value for one rules pilot, additive, in Overgrowth at Ascension 0); expect advice for the map, shops, rest sites, events, fights, acts two and three Ancients, co-op or the beta; expect a Necrobinder number to hold at the game's 66 HP.
 
 ## Blockers and owner decisions
 
-1. **Synergy-aware evaluation** is the priority of the work (the open finding above); it needs no owner decision.
-2. **Merge pull request #7** to put the opening-relic study on the live site; then re-check production (`/api/v1/health` reports the merge commit, `/methods#opening-ancient` shows the passed test) and measure Web Vitals again (the advisor's script is about 120 KB lighter).
+1. **Finish the synergy study** (stage B2 of ADR-050: the held-out test of the synergy term and the page's final weights; the finding above); it needs no owner decision.
+2. **Pull request #7 is merged and live** (checked 2026-10-26 22:10 UTC: `/api/v1/health` reports the merge commit `0674d54`, `/methods` carries the opening-Ancient section). **Merge pull request #8** (the synergy work) when it is green and measure Web Vitals again (the advisor's script is about 120 KB lighter since #7, and the synergy panel adds a little).
 3. **A licence for SLAY2's own code** and any monetization or donation (counsel, and Mega Crit's confirmation): until chosen the repository is visible but all rights are reserved.
 4. **Live-game parity** needs an owned copy of STS2 on the owner's machine: until then every simulator result stays labelled unverified.
 5. **Vercel**: whether non-production deployments stay behind login and the canonical URL (`NEXT_PUBLIC_SITE_URL`, deliberately unset).
@@ -119,11 +125,11 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 
 ## Next actions, in order
 
-0. **Synergy-aware card evaluation** (the user's feedback): a facts table of what each card provides and needs, a deck-context model measured in simulated runs and cross-validated, one registered held-out test, then the advisor.
-1. The owner merges pull request #7; verify production and Web Vitals as above.
+0. **Finish the synergy study** (the user's feedback). The model, the exploratory reading (B1) and the pages are done; what remains is stage B2 as registered in ADR-050: the development stage, the addendum that records the chosen configuration, the one held-out test, and the page's weights and wording set by its result.
+1. The owner merges pull request #8 (the synergy work); verify production and Web Vitals as above.
 2. Registered question with the largest use for a player: the opening-relic rule at the game's own Necrobinder HP (`--game-hp`, G13), then the full re-derivation of the older batches, then the decision on the paused network.
 3. Reduce the script that runs after first paint on `/methods` and `/codex`.
 4. A map editor that feeds Route Lab; rest-site, shop and Ancient helpers, each starting from a facts-only catalog and its own red-team campaign.
 5. Quote the fan-content policy verbatim; choose the licence.
 
-Exact next command: `Read docs/STATUS.md and docs/RELEASE-AUDIT.md. Then: (1) check that pull request #7 (JaredVogler2/SLAY2) is green and, once merged, that https://slay-part2.vercel.app/api/v1/health reports the merge commit; (2) write the registration of the next question (docs/DECISIONS.md) and push it before its first game.`
+Exact next command: `Read docs/STATUS.md and docs/RELEASE-AUDIT.md. Then: (0) finish stage B2 of ADR-050 as docs/STATUS.md (Next steps 0 and the exact next command) says; (1) check that pull request #8 (JaredVogler2/SLAY2) is green and, once merged, that https://slay-part2.vercel.app/api/v1/health reports the merge commit and /methods#synergy shows the study; (2) write the registration of the next question (docs/DECISIONS.md) and push it before its first game.`

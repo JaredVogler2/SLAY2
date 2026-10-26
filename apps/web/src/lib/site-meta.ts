@@ -2,6 +2,8 @@ import {
   CATALOG,
   CHARACTER_FACTS,
   PLAYABLE_CLASSES,
+  SYNERGY,
+  hasWrittenTags,
   rewardPool,
   type PlayableClass,
 } from "@slay2/game-data";
@@ -21,6 +23,21 @@ export function tagCoverage(cls: PlayableClass): { cards: number; tagged: number
         !["exhaust", "ethereal", "retain", "innate", "sly", "unplayable", "eternal"].includes(r),
     ),
   ).length;
+  return {
+    cards: pool.length,
+    tagged,
+    share: Math.round((tagged / Math.max(1, pool.length)) * 1000) / 1000,
+  };
+}
+
+/** Share of a class's reward cards that have a written entry in the synergy table (what they supply to the deck and what they need). */
+export function synergyCoverage(cls: PlayableClass): {
+  cards: number;
+  tagged: number;
+  share: number;
+} {
+  const pool = rewardPool(cls);
+  const tagged = pool.filter((c) => hasWrittenTags(c.id)).length;
   return {
     cards: pool.length,
     tagged,
@@ -52,7 +69,12 @@ export function capabilities() {
       id,
       startingHp: CHARACTER_FACTS.find((c) => c.id === id)?.startingHp,
       odds: "supported",
-      cardAdvisor: { status: "heuristic-v0", calibrated: false, roleTagCoverage: tagCoverage(id) },
+      cardAdvisor: {
+        status: "heuristic-v1",
+        calibrated: false,
+        roleTagCoverage: tagCoverage(id),
+        synergyTagCoverage: synergyCoverage(id),
+      },
     })),
     features: [
       {
@@ -93,7 +115,7 @@ export function capabilities() {
       },
       {
         id: "advisor.card_draft",
-        status: "heuristic-v0",
+        status: "heuristic-v1",
         method: "heuristic",
         calibrated: false,
         endpoint: "POST /api/v1/recommend",
@@ -123,6 +145,11 @@ export function manifest() {
         sources: CATALOG.provenance.sources,
       },
       ruleRegister: { rules: rules.rules.length, source: rules.generatedFrom },
+      synergyTable: {
+        sha256: SYNERGY.sha256,
+        cards: Object.keys(SYNERGY.cards).length,
+        kind: "SLAY2's judgement of how cards work together; not a measurement",
+      },
       evidenceReports: evidence.reports.length,
     },
     updateFlags: {
