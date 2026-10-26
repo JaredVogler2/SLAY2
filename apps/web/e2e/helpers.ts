@@ -1,5 +1,32 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
+
+export interface MeasuredSetInfo {
+  readonly character: string;
+  /** the label the pages print for the class */
+  readonly label: string;
+  /** the held-out test of acting on the class's values, when it has been run */
+  readonly validation: { readonly passed: boolean } | null;
+}
+
+/**
+ * The classes whose card values the site ships, read from the generated file the pages are built from, so a test follows the
+ * data (a class whose held-out test finishes changes what its pages say) instead of a hard-coded idea of which class is which.
+ */
+export function measuredSets(): readonly MeasuredSetInfo[] {
+  const file = join(__dirname, "..", "src", "content", "cardvalues.generated.json");
+  const data = JSON.parse(readFileSync(file, "utf8")) as {
+    sets: { character: string; validation: { passed: boolean } | null }[];
+  };
+  return data.sets.map((s) => ({
+    character: s.character,
+    label: s.character.charAt(0).toUpperCase() + s.character.slice(1),
+    validation: s.validation,
+  }));
+}
 
 /** Fails the test on serious/critical axe violations (WCAG 2.2 A/AA tags). */
 export async function expectNoSeriousA11yViolations(page: Page, context?: string): Promise<void> {

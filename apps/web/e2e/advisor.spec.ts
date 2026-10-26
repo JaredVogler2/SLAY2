@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { expect, test, type Page } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations } from "./helpers";
+import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, measuredSets } from "./helpers";
 
 async function addOffered(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: /offered card/i });
@@ -167,16 +167,35 @@ test.describe("advisor journey", () => {
     await expect(page.getByText("Heuristic v0").first()).toBeVisible();
   });
 
-  test("says plainly when the class on screen has no simulated opinion to offer", async ({
-    page,
-  }) => {
-    await startClass(page, "Silent");
-    await addOffered(page, "backflip");
-    const panel = page.locator("#simulation-opinion");
-    await expect(panel).toBeVisible();
-    await expect(panel).toContainText("no measurement for this offer");
-    await expect(panel).toContainText(/not measured this class|not been tested|did not beat/);
-  });
+  // The panel speaks only for a class whose held-out test passed. Which classes those are is a fact about the shipped data
+  // (it changes when a class's test finishes), so each class below is checked against what the data says about it.
+  const OFFER: Record<string, { label: string; card: string }> = {
+    silent: { label: "Silent", card: "backflip" },
+    regent: { label: "Regent", card: "astral pulse" },
+    necrobinder: { label: "Necrobinder", card: "afterlife" },
+    defect: { label: "Defect", card: "ball lightning" },
+  };
+  const byClass = new Map(measuredSets().map((s) => [s.character, s]));
+  for (const [character, { label, card }] of Object.entries(OFFER)) {
+    const set = byClass.get(character);
+    if (set?.validation?.passed === true) {
+      continue; // a validated class gives an opinion; the Ironclad test above covers that path
+    }
+    const why = !set
+      ? /not measured this class/
+      : set.validation === null
+        ? /not been tested/
+        : /did not beat/;
+    test(`${label}: says plainly why the simulated runs give no opinion`, async ({ page }) => {
+      await startClass(page, label);
+      await addOffered(page, card);
+      const panel = page.locator("#simulation-opinion");
+      await expect(panel).toBeVisible();
+      await expect(panel).toContainText("no measurement for this offer");
+      await expect(panel).toContainText(why);
+      await expect(panel).not.toContainText(/would take|would skip/);
+    });
+  }
 
   test("meets layout and accessibility basics with an offer on screen", async ({ page }) => {
     await startIronclad(page);

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations } from "./helpers";
+import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, measuredSets } from "./helpers";
 
 test.describe("methods", () => {
   test("is an honest ledger: rules with evidence, verification layers, simulator results with intervals", async ({
@@ -28,10 +28,30 @@ test.describe("methods", () => {
     const panel = page.locator("#card-values");
     await expect(panel).toBeVisible();
     await expect(panel.getByRole("heading", { level: 2 })).toContainText("randomised drafting");
-    await expect(panel.getByRole("table", { name: "Highest measured values" })).toBeVisible();
-    await expect(panel.getByRole("table", { name: "Lowest measured values" })).toBeVisible();
-    await expect(panel).toContainText(/Does acting on the \w+ values help\?/);
-    await expect(panel).toContainText(/Past the Act-1 boss: \d+\.\d% for rules_v2/);
+    const sets = measuredSets();
+    expect(sets.length).toBeGreaterThan(0);
+    // one block per measured class, each with its own tables (the names carry the class so they stay distinguishable)
+    for (const s of sets) {
+      await expect(
+        panel.getByRole("table", { name: `Highest measured values · ${s.label}` }),
+      ).toBeVisible();
+      await expect(
+        panel.getByRole("table", { name: `Lowest measured values · ${s.label}` }),
+      ).toBeVisible();
+      await expect(
+        panel.getByRole("heading", { level: 3, name: s.label, exact: true }),
+      ).toBeVisible();
+    }
+    // the result of the held-out test is printed for every class that has had one, and only for those
+    const tested = sets.filter((s) => s.validation !== null);
+    expect(tested.length).toBeGreaterThan(0);
+    for (const s of tested) {
+      await expect(panel).toContainText(`Does acting on the ${s.label} values help?`);
+    }
+    await expect(panel.getByText(/Does acting on the \w+ values help\?/)).toHaveCount(
+      tested.length,
+    );
+    await expect(panel).toContainText(/Past the Act-1 boss/);
     await expect(panel).toContainText("Simulated, not measured in the live game");
   });
 
