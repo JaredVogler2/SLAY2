@@ -28,7 +28,7 @@ export function SiteHeader() {
         </Link>
         <nav
           aria-label="Primary"
-          className="order-last -mx-2 flex w-full items-center justify-between border-t border-line pb-1 pt-1 sm:order-none sm:mx-0 sm:w-auto sm:justify-start sm:gap-2 sm:border-0 sm:p-0"
+          className="order-last -mx-2 grid w-full grid-cols-3 border-t border-line pb-1 pt-1 sm:order-none sm:mx-0 sm:flex sm:w-auto sm:items-center sm:justify-start sm:gap-2 sm:border-0 sm:p-0"
         >
           {NAV.map((item) => (
             <Link

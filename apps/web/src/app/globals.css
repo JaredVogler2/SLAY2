@@ -35,6 +35,17 @@
   color-scheme: dark;
 }
 
+/*
+ * An implicit grid column is as wide as the widest unbreakable run inside it: a file path in a list made /methods 70 px
+ * wider than a 320 px phone. A minmax(0, 1fr) column can shrink to its container, and the grid-cols-* utilities (a later
+ * layer) still decide the columns wherever a grid sets them.
+ */
+@layer base {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 html {
   background: var(--color-charcoal);
   scroll-behavior: smooth;
@@ -47,6 +58,7 @@ body {
     radial-gradient(900px 500px at -8% 12%, rgb(114 215 200 / 0.06), transparent 55%),
     var(--color-charcoal);
   color: var(--color-parchment);
+  overflow-wrap: break-word; /* a path or an id longer than its box breaks instead of widening the page */
   font-family: var(--font-sans);
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;

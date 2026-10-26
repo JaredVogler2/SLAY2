@@ -451,3 +451,21 @@ All three primary endpoints are met by a very wide margin, so the reading rule's
 **Alternatives rejected.** `swap` with only the metric-matched fallback (above); inlining the font as a data URI (30 to 120 KB on the critical CSS path, and `font-src` would need `data:`); fixed heights for the headings (breaks at every width); keeping the skeleton and tuning its heights (the right heights depend on the visitor's saved run, which the server cannot know).
 
 **Rollback.** Revert the commit: the previous fonts came from `@fontsource` CSS imports and the advisor's gate from `useHydrated`, both in git.
+
+## 2026-10-26 — ADR-043: every page fits the phones people have (320 to 412 px), and a test sweeps those widths
+
+**Context.** The suite's phone project is a Pixel 7 (412 px), which is exactly the width at which the header's six links still fit (they need 400 px). Probing every page at 320, 340, 360, 375, 390 and 412 px with the browser (document width against viewport, and every element whose box leaves the screen outside a scroll container) found three defects that no test could see: (1) the header navigation was one row of six links, so every page scrolled sideways by 10 px at 390 px (an iPhone), 25 px at 375, 40 px at 360 and 80 px at 320, and "About" (at 320 also "Methods") was cut off; (2) on `/methods` an implicit grid column took the width of its widest unbreakable run (a file path such as `experiments/cardvalue/silent-a0-v1.json` in the paired-comparison list), 16 px past a 375 px phone and 71 px past a 320 px one; (3) the long "Parity with the live game unverified" chip could not wrap (`whitespace-nowrap`), 43 px past a 320 px phone.
+
+**Decision.**
+1. *Header.* Below the `sm` breakpoint the six links are a three-column, two-row grid (each target at least 44 px tall and a third of the width); from `sm` up the row is unchanged.
+2. *Grids.* A base-layer rule gives every `.grid` a `minmax(0, 1fr)` column, so the implicit column can shrink to its container; the `grid-cols-*` utilities, which come later, still decide the columns wherever a grid sets them. `overflow-wrap: break-word` on `body` lets a path or an id longer than its box break instead of widening the page (not `anywhere`, which would also shrink table columns).
+3. *Badge.* It wraps on phones and stays on one line from `sm` up.
+4. *Pinned.* `apps/web/e2e/phone-widths.spec.ts` (the mobile project, 320 / 360 / 390 px): eleven page states (every page, the five odds calculators, the route lab with three routes), the advisor with an offer on the screen, and "every header link is on the screen and at least 44 px tall"; each asserts that the document is no wider than the viewport and that no element leaves the screen outside a scroll container. All 39 fail on the previous header, grid rule and badge, and pass now.
+
+**Measured.** After the change the probe finds no overflow at any of the six widths on any of the seven pages. The existing browser suite is unchanged.
+
+**Not covered.** Landscape phones, tablets between 640 and 768 px, browser zoom and text enlargement beyond 200 %, and iOS Safari itself (Chromium's emulation does not reproduce its address-bar and safe-area behaviour).
+
+**Alternatives rejected.** A hamburger menu (it hides the six destinations behind a tap and needs a client component with focus management for no gain at six links); a horizontally scrolling nav row (the cut-off link is what was wrong); shrinking the nav text (still 310 px of text and padding at 320 px, and smaller than the 14 px body).
+
+**Rollback.** Revert the commit; no data or API is touched.
