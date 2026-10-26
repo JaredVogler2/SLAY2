@@ -67,8 +67,11 @@ export interface UnknownInference {
  */
 export const MAX_UNKNOWN_ROOMS_PER_ACT = 20;
 
-/** Every probability here is a whole number of percent (1/10, 1/50 and 3/100 per counter step), so masses are exact integers over 100^n. */
-function percentPmf(s: UnknownState): readonly [bigint, bigint, bigint, bigint] {
+/**
+ * Every probability here is a whole number of percent (1/10, 1/50 and 3/100 per counter step), so masses are exact
+ * integers over 100^n. Order: fight, treasure, shop, event.
+ */
+export function unknownPercentPmf(s: UnknownState): readonly [bigint, bigint, bigint, bigint] {
   const cap = (x: bigint): bigint => (x > 100n ? 100n : x);
   const fight = cap(10n * BigInt(s.fight));
   const toTreasure = cap(fight + 2n * BigInt(s.treasure));
@@ -89,7 +92,7 @@ export function inferUnknownState(history: readonly UnknownObservation[]): Unkno
     const next = new Map<string, bigint>();
     for (const [key, mass] of masses) {
       const s = states.get(key) ?? UNKNOWN_START;
-      const pct = percentPmf(s);
+      const pct = unknownPercentPmf(s);
       OUTCOMES.forEach((outcome, i) => {
         const p = pct[i];
         if ((obs.outcome !== undefined && obs.outcome !== outcome) || p === undefined || p === 0n) {

@@ -1,6 +1,6 @@
 """Independent exact-arithmetic reference ("oracle") for the SLAY2 odds engines.
 
-Written from docs/game/MECHANICS-COVERAGE.md (rules CARD-*, UPG-1, POT-*, UNK-*, SHOP-*, GOLD-1, DRAW-1), NOT from the
+Written from docs/game/MECHANICS-COVERAGE.md (rules CARD-*, UPG-1, POT-*, UNK-*, SHOP-*, GOLD-1, TRS-1, DRAW-1), NOT from the
 TypeScript engine, with deliberately different structure (percent-point integers, dict DP, integer cell arithmetic for
 prices). ``python -m slay2_sim oracle`` writes ``packages/odds/test/fixtures/golden-python.json``; the TypeScript test
 suite asserts that its engines reproduce every case *exactly*. If the two implementations ever disagree, one of them has
@@ -266,6 +266,110 @@ def joint_at_least(pile: int, draws: int, groups: list[tuple[int, int]]) -> F:
     return F(fav, comb(pile, draws))
 
 
+# ----------------------------------------------------------------------------- routes (UNK-1/2, CARD-1..5, POT-1, GOLD-1, TRS-1)
+OUTCOMES = ("fight", "treasure", "shop", "event")
+
+
+def treasure_gold_pmf(ascension: int) -> dict[int, F]:
+    """TRS-1: uniform 42..52; Poverty (A3+) multiplies the value drawn by 3/4 and truncates it."""
+    out: dict[int, F] = {}
+    for rolled in range(42, 53):
+        gold = (rolled * 3) // 4 if ascension >= 3 else rolled
+        out[gold] = out.get(gold, F(0)) + F(1, 11)
+    return out
+
+
+def unknown_outcome_pmfs(posterior: dict[tuple[int, int, int], F], rooms: int) -> dict[str, list[F]]:
+    """Distribution of how many of ``rooms`` consecutive "?" turn into each outcome, by walking every outcome sequence."""
+    out = {o: [F(0)] * (rooms + 1) for o in OUTCOMES}
+
+    def walk(mult: tuple[int, int, int], depth: int, counts: tuple[int, int, int, int], p: F) -> None:
+        if depth == rooms:
+            for i, o in enumerate(OUTCOMES):
+                out[o][counts[i]] += p
+            return
+        for i, (o, po) in enumerate(unknown_pmf(mult).items()):
+            if po:
+                walk(unknown_step(mult, o), depth + 1, tuple(c + (1 if j == i else 0) for j, c in enumerate(counts)), p * po)
+
+    for mult, mass in posterior.items():
+        walk(mult, 0, (0, 0, 0, 0), mass)
+    return out
+
+
+def route_report(rooms: list[str], ascension: int, unknown_history: list[dict], pack_history: list[dict], potion_history: list[dict]) -> dict:
+    """Everything about a route, from one forward DP over the joint state (unknown counters, rare counter, potion chance,
+    has-a-rare-been-offered, has-a-potion-dropped); the TypeScript engine walks two smaller chains instead."""
+    scarcity = ascension >= 7
+    u_post, _ = unknown_posterior(unknown_history)
+    r_post, _ = rarity_posterior(pack_history, scarcity)
+    p_post, _ = potion_posterior(potion_history)
+    state: dict[tuple, F] = {}
+    for m, mu in u_post.items():
+        for k, mk in r_post.items():
+            for t, mt in p_post.items():
+                state[(m, k, t, False, False)] = mu * mk * mt
+    exp_rares = exp_potions = F(0)
+    for room in rooms:
+        if room in ("rest", "shop", "treasure"):
+            continue
+        nxt: dict[tuple, F] = {}
+
+        def add(key: tuple, mass: F) -> None:
+            nxt[key] = nxt.get(key, F(0)) + mass
+
+        for (m, k, t, seen_rare, seen_potion), mass in state.items():
+            if room == "unknown":
+                branches = [(o, po, unknown_step(m, o)) for o, po in unknown_pmf(m).items() if po]
+            else:
+                branches = [("fight", F(1), m)]
+            for o, pu, m2 in branches:
+                if o != "fight":
+                    add((m2, k, t, seen_rare, seen_potion), mass * pu)
+                    continue
+                kind = "elite" if room == "elite" else "regular"
+                p_drop = potion_roll_p(t, "elite" if room == "elite" else "monster")
+                for seq, k2, pp in pack_outcomes({"kind": "encounter", "room": kind}, k, 3, scarcity):
+                    rares = sum(1 for r in seq if r == "rare")
+                    for dropped, pd in ((True, p_drop), (False, 1 - p_drop)):
+                        if pd == 0:
+                            continue
+                        w = mass * pu * pp * pd
+                        exp_rares += w * rares
+                        exp_potions += w if dropped else F(0)
+                        add((m2, k2, t - 1 if dropped else t + 1, seen_rare or rares > 0, seen_potion or dropped), w)
+        state = nxt
+    any_rare = sum((m for key, m in state.items() if key[3]), F(0))
+    any_potion = sum((m for key, m in state.items() if key[4]), F(0))
+    n_unknown = sum(1 for r in rooms if r == "unknown")
+    pmfs = unknown_outcome_pmfs(u_post, n_unknown)
+    expected = {o: sum((F(k) * p for k, p in enumerate(pmfs[o])), F(0)) for o in OUTCOMES}
+    counts = {r: sum(1 for x in rooms if x == r) for r in ("monster", "elite", "unknown", "rest", "shop", "treasure")}
+    mon_lo, mon_hi = gold_range("monster", ascension)
+    eli_lo, eli_hi = gold_range("elite", ascension)
+    tre = treasure_gold_pmf(ascension)
+    tre_lo, tre_hi = min(tre), max(tre)
+    tre_mean = sum((F(g) * p for g, p in tre.items()), F(0))
+    from_fights = F(mon_lo + mon_hi, 2) * (counts["monster"] + expected["fight"]) + F(eli_lo + eli_hi, 2) * counts["elite"]
+    from_treasure = tre_mean * (counts["treasure"] + expected["treasure"])
+    return {
+        "counts": counts,
+        "unknownExpected": expected,
+        "unknownPmf": pmfs,
+        "fightsExpected": counts["monster"] + counts["elite"] + expected["fight"],
+        "expectedRares": exp_rares,
+        "atLeastOneRare": any_rare,
+        "expectedPotions": exp_potions,
+        "atLeastOnePotion": any_potion,
+        "goldFromFights": from_fights,
+        "goldFromTreasure": from_treasure,
+        "goldMin": mon_lo * counts["monster"] + eli_lo * counts["elite"] + tre_lo * counts["treasure"],
+        "goldMax": mon_hi * counts["monster"] + eli_hi * counts["elite"] + tre_hi * counts["treasure"] + max(mon_hi, tre_hi) * n_unknown,
+        "shopsExpected": counts["shop"] + expected["shop"],
+        "treasuresExpected": counts["treasure"] + expected["treasure"],
+    }
+
+
 # ----------------------------------------------------------------------------- golden file
 def fs(x: F) -> str:
     return f"{x.numerator}/{x.denominator}" if x.denominator != 1 else str(x.numerator)
@@ -382,6 +486,52 @@ def build_golden() -> dict:
         add("reshuffle", "-".join(map(str, q)), dict(zip(("drawPile", "targetsInDrawPile", "discardPile", "targetsInDiscard", "draws", "need"), q)), {"p": fs(reshuffle_at_least(*q))})
     for pile, draws, groups in [(40, 5, [(4, 1), (5, 1)]), (30, 6, [(3, 1), (2, 1), (4, 1)]), (20, 5, [(5, 2)]), (25, 7, [(6, 2), (3, 1)]), (12, 5, [(4, 1), (4, 1), (4, 1)])]:
         add("joint", f"{pile}-{draws}-{groups}", {"pile": pile, "draws": draws, "groups": [{"count": c, "need": n} for c, n in groups]}, {"p": fs(joint_at_least(pile, draws, groups))})
+    for asc in (0, 3, 10):
+        gold = treasure_gold_pmf(asc)
+        add("treasure_gold", f"A{asc}", {"ascension": asc}, {"pmf": _dist(gold)})
+    unk = [{"outcome": "event"}, {"outcome": "fight"}]
+    packs = [{"source": reg, "rares": 0}] * 3
+    potions_seen = [{"room": "monster", "dropped": False}, {"room": "elite", "dropped": True}]
+    route_cases = [
+        ("empty", [], 0, [], [], []),
+        ("one-monster", ["monster"], 0, [], [], []),
+        ("one-elite", ["elite"], 0, [], [], []),
+        ("one-elite-A7", ["elite"], 7, [], [], []),
+        ("no-fights", ["rest", "shop", "treasure", "rest"], 0, [], [], []),
+        ("five-unknown", ["unknown"] * 5, 0, [], [], []),
+        ("m-q-m-q-e-r", ["monster", "unknown", "monster", "unknown", "elite", "rest"], 0, [], [], []),
+        ("m-q-m-q-e-r-A3", ["monster", "unknown", "monster", "unknown", "elite", "rest"], 3, [], [], []),
+        ("m-q-m-q-e-r-A7", ["monster", "unknown", "monster", "unknown", "elite", "rest"], 7, [], [], []),
+        ("with-unknown-history", ["unknown", "monster", "unknown", "shop", "elite", "unknown"], 0, unk, [], []),
+        ("with-pack-history", ["monster", "monster", "elite", "unknown", "monster"], 0, [], packs, []),
+        ("with-pack-and-potion-history", ["elite", "unknown", "monster", "unknown", "rest"], 0, [], packs, potions_seen),
+        ("vague-histories", ["unknown", "elite", "unknown", "monster"], 0, [{}, {}, {}], [{"source": reg}] * 4, [{"room": "monster"}] * 3),
+        ("treasure-shop-mix", ["monster", "treasure", "unknown", "shop", "unknown", "elite", "rest"], 3, [{"outcome": "treasure"}], [], []),
+        ("seven-rooms-three-unknown", ["unknown", "elite", "unknown", "monster", "unknown", "monster", "rest"], 0, [], [{"source": eli, "rares": 0}] * 2, []),
+        ("long-event-run", ["unknown", "unknown", "monster", "unknown"], 0, [{"outcome": "event"}] * 6, [], []),
+    ]
+    for name, rooms, asc, uh, ph, qh in route_cases:
+        r = route_report(rooms, asc, uh, ph, qh)
+        add(
+            "route", name,
+            {"rooms": rooms, "ascension": asc, "unknownHistory": uh, "packHistory": ph, "potionHistory": qh},
+            {
+                "counts": r["counts"],
+                "unknownExpected": {o: fs(v) for o, v in r["unknownExpected"].items()},
+                "unknownPmf": {o: [fs(p) for p in v] for o, v in r["unknownPmf"].items()},
+                "fightsExpected": fs(r["fightsExpected"]),
+                "expectedRares": fs(r["expectedRares"]),
+                "atLeastOneRare": fs(r["atLeastOneRare"]),
+                "expectedPotions": fs(r["expectedPotions"]),
+                "atLeastOnePotion": fs(r["atLeastOnePotion"]),
+                "goldFromFights": fs(r["goldFromFights"]),
+                "goldFromTreasure": fs(r["goldFromTreasure"]),
+                "goldMin": r["goldMin"],
+                "goldMax": r["goldMax"],
+                "shopsExpected": fs(r["shopsExpected"]),
+                "treasuresExpected": fs(r["treasuresExpected"]),
+            },
+        )
     return {"schema": 1, "generator": "sim/slay2_sim/oracle_odds.py", "rules": "STS2 main v0.107.1 (docs/game/MECHANICS-COVERAGE.md)", "cases": cases}
 
 

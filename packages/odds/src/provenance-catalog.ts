@@ -5,7 +5,7 @@ import { COMMON_NOT_MODELLED, FLOAT_NOTE, type Provenance } from "./provenance";
  * HTTP API returns them, so the two can never disagree. Rule ids refer to docs/game/MECHANICS-COVERAGE.md (a test
  * checks that every id exists there).
  */
-export type CalculatorId = "rarity" | "potion" | "unknown_room" | "draw" | "shop";
+export type CalculatorId = "rarity" | "potion" | "unknown_room" | "draw" | "shop" | "route";
 
 const BUILD = "sts2-main-0.107.1" as const;
 
@@ -93,6 +93,39 @@ export function provenanceFor(
           ...COMMON_NOT_MODELLED,
           "Innate, retain, ethereal, exhaust-on-draw, shuffle-triggers, cards that look at or choose from the top of the pile, and orbs.",
           "Cards you will play during the turn that draw more cards (ask again with the new pile).",
+        ],
+      };
+    case "route":
+      return {
+        build: BUILD,
+        ruleIds: [
+          "UNK-1",
+          "UNK-2",
+          "CARD-1",
+          "CARD-2",
+          "CARD-3",
+          "CARD-4",
+          "POT-1",
+          "POT-5",
+          "GOLD-1",
+          "ASC-2",
+          "TRS-1",
+          "REST-1",
+        ],
+        evidence: ["E1", "E3", "E4", "E6"],
+        assumptions: [
+          "You type the rooms of the route in the order you would walk them; a “?” is resolved one at a time with the running chances of the “?” room rule, and the chances move after each one whatever it turns into.",
+          "Every fight (a monster, an elite, or a “?” that turns into a fight) pays one pack of three cards rolled against the hidden rare-card counter and one potion roll against the hidden potion chance. Elites use the elite rates.",
+          "The rare-card counter and the potion chance start from the values you give (or a fresh run) and are carried through the route exactly; “at least one” means in the whole route.",
+          "Gold counts fights and treasure rooms only (42–52 per chest; Poverty, A3+, takes 75% of each value, rounded down). Shop spending, event gold and relics that add gold are not included.",
+          "A rest site heals 30% of maximum HP, rounded down; the route does not simulate your hit points, so it says how many rests there are, not whether you survive the fights.",
+          FLOAT_NOTE,
+        ],
+        notModelled: [
+          ...COMMON_NOT_MODELLED,
+          "Your hit points, deck and relics: the route says what the rooms are and what they pay, never how likely you are to win the fights.",
+          "A profile's very first run scripts its first “?” rooms (event, event, fight); leave the history empty unless you know it is not your first run.",
+          "Boss rooms, the merchant's stock, the contents of events, and the card or relic you would take.",
         ],
       };
     case "shop":
