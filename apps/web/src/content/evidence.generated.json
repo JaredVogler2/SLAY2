@@ -1701,7 +1701,14 @@
       },
       "rederivationAudit": null,
       "canonicalProcessState": false,
-      "sampleAudit": null,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 190,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
