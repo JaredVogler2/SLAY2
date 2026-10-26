@@ -262,7 +262,9 @@ for (const [file, body] of Object.entries(outputs)) {
   if (check) {
     const current = existsSync(path) ? readFileSync(path, "utf8") : "";
     if (current !== text) {
-      console.error(`stale: ${file} (run: node scripts/export-site-data.mjs)`);
+      console.error(
+        `stale: ${file} (run: node scripts/export-site-data.mjs, or scripts/export-site-data-clean.sh when the working tree holds unfinished experiments)`,
+      );
       stale = true;
     }
   } else {
