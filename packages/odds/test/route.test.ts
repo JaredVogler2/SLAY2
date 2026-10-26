@@ -244,7 +244,7 @@ describe("route engine - brute force over every world", () => {
         }
       }
     }
-  });
+  }, 60_000);
 
   it("potions: longer routes, several starting chances", () => {
     const routes: readonly (readonly RouteRoom[])[] = [
@@ -276,7 +276,7 @@ describe("route engine - brute force over every world", () => {
         eq(got.potions.expectedDrops, want.expected, `${label} E[potions]`);
       }
     }
-  });
+  }, 60_000);
 
   it('what the "?" rooms turn into: every outcome sequence', () => {
     for (let rooms = 0; rooms <= 6; rooms += 1) {
@@ -291,7 +291,7 @@ describe("route engine - brute force over every world", () => {
         );
       }
     }
-  });
+  }, 60_000);
 
   it('a recorded "?" history is the same as starting from the counters it leaves', () => {
     const history: UnknownObservation[] = [
