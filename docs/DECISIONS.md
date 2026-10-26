@@ -483,3 +483,21 @@ All three primary endpoints are met by a very wide margin, so the reading rule's
 **Not covered.** What a link preview looks like inside each chat service (they cache, crop and sometimes ignore the tags); the hosted site's absolute image URL until it is deployed.
 
 **Rollback.** Delete the two files and the `twitter` entry; nothing else depends on them.
+
+## 2026-10-26 — ADR-045: the tuned thresholds (`rules_v3`) are tested once on held-out seeds (registered before the first `val` game of the policy)
+
+**Context.** ADR-036 fixed the tuning procedure before any game. Stage 1 (39 candidates, `dev[1000:1500]`) advanced four (`elite_value` 0.5 and 1, `elite_ok_floor` 8, `elite_ok_hp` 0.9: all four make the pilot avoid elite fights). Stage 2 (`dev[2000:3000]`, 1,000 paired games each, level 0.05 / 4) confirmed all four (`elite_value` 0.5: +1.74 floors, +11.3 points past the Act-1 boss, p = 2.2e-18; `elite_ok_floor` 8: +1.02, +7.6 points, p = 4.2e-13; `elite_value` 1: +0.90, +5.8 points; `elite_ok_hp` 0.9: +0.87, +4.7 points, p = 1.1e-6) and the rule kept `elite_value` 0.5 (the larger gain of its two values), `elite_ok_floor` 8 and `elite_ok_hp` 0.9. Stage 3 (`dev[3000:4000]`, the three at once against the base, 1,000 paired games): the three at once against the base (base mean floor 21.63; 1,000 paired games, none excluded): 73.0 % got past the Act-1 boss against 64.7 % (126 games only the candidate, 43 only the base, exact McNemar p = 1.2e-10), mean floors 22.96 against 21.63 (+1.34, 95 % bootstrap +0.94 to +1.74), 8.2 % against 6.7 % past the Act-2 boss (47 against 32, p = 0.11), **3 wins against 5** (not a difference). The stage-3 rule (higher on the endpoint at level 0.05) is met (`tune-select --stage combine`: "passes at 0.05").
+
+**Decision (fixed before the first game).**
+1. *Policy.* `rules_v3` = `rules_v2` (`threshold` 0, the Ironclad values of ADR-031, sha256 `8b3fe2f4d88b87dc…`) with `tune` {`elite_value` 0.5, `elite_ok_floor` 8, `elite_ok_hp` 0.9}; nothing else differs. The code is the code at the commit that adds this record.
+2. *Seeds and games.* The 2,000 `val` seeds of `experiments/seeds/ironclad-a0-v2.json`, Ironclad, A0, `veteran` profile, the harness's canonical process state, wall-clock limit as in the baseline batch.
+3. *Baseline.* The existing `rules_v2-ironclad-a0-veteran-val-n2000` batch (same seeds; not re-run).
+4. *Primary endpoint and test.* Got past the Act-1 boss, paired by seed, exact McNemar, two-sided, level 0.05, one test. Pairs in which either episode did not complete are excluded and counted.
+5. *Secondary, reported whatever the primary shows.* Mean floors (95 % bootstrap interval of the paired difference), got past the Act-2 boss, wins (each re-derived by `audit wins`), a 40-game sample audit.
+6. *Reading rule.* If the primary test is significant with `rules_v3` ahead, "the tuned elite thresholds improve the simulated pilot past the Act-1 boss on held-out seeds"; otherwise the study is reported as not confirmed. Nothing is re-run or re-tuned afterwards. The best `elite_value` is the lowest grid value, so a follow-up that extends the grid would be a new registration on unused seeds.
+
+**Caution recorded before the test.** The change makes the pilot skip elite fights, which also gives up their relics and extra card rewards: the three wins against five of stage 3 (and 1 against 1 in the other two development slices) are too few to say anything, but a policy that gets further more often and wins no more often is exactly what a test of the first-boss endpoint alone would not show; the secondary endpoints below are reported for that reason.
+
+**What this does not claim.** Nothing about the live game (the simulator is unverified, and avoiding elites trades their relics and extra cards, which the simulator values as it implements them), nothing about other classes, and nothing about winning (wins stay rare).
+
+**Rollback.** None needed: a new policy name; `rules_v2` is unchanged.
