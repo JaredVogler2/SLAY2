@@ -6,6 +6,7 @@ import { CardTile } from "@/components/cards/CardTile";
 import { MeasuredForCard } from "@/components/codex/MeasuredValue";
 import { Button } from "@/components/ui/Button";
 import { Segmented } from "@/components/ui/Segmented";
+import { StartHpNote } from "@/components/ui/StartHpNote";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
   CODEX_CLASSES,
@@ -217,6 +218,12 @@ export function CodexBrowser() {
               filtered ? ` match in ${CLASS_LABEL[query.cls]}` : ` in ${CLASS_LABEL[query.cls]}`
             }${results.length > visible.length ? `, showing the first ${String(visible.length)}` : ""}.`}
       </p>
+
+      <StartHpNote
+        character={query.cls === "all" ? "ironclad" : query.cls}
+        subject="values"
+        className="text-xs text-rose"
+      />
 
       {results.length === 0 ? (
         <div className="panel p-6 text-muted">

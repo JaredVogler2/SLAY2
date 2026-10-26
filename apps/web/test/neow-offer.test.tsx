@@ -2,7 +2,6 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { NeowOffer } from "@/components/advisor/NeowOffer";
-import { pct, startHpGap } from "@/lib/methods-data";
 import { newRun, withAscension } from "@/lib/run-state";
 import type { NeowData, NeowMember, NeowTest, NeowValues, RelicMeasurement } from "@/lib/neow";
 
@@ -118,6 +117,12 @@ function test(passed: boolean): NeowTest {
 }
 
 const withTest = (t: NeowTest | null): NeowData => ({ values: VALUES, test: t });
+
+// gap G13 as the exporter writes it: the same pilot with the simulator's start and with the game's, 499 paired runs
+const STARTS_HIGH = {
+  necrobinder: { simulator: 0.635, game: 0.515, pairs: 499, comparison: "g13-fixture" },
+};
+const withGap = (t: NeowTest | null): NeowData => ({ ...withTest(t), startHpGaps: STARTS_HIGH });
 
 function setup(
   data: NeowData,
@@ -344,20 +349,16 @@ describe("What did Neow offer?", () => {
   });
 
   it("warns a Necrobinder that the simulator starts the class above the game's HP, with the measured cost", () => {
-    const gap = startHpGap("necrobinder");
-    expect(gap, "the G13 comparison is committed").toBeDefined();
-    const necro = setup(withTest(test(true)), { character: "necrobinder" });
+    const necro = setup(withGap(test(true)), { character: "necrobinder" });
     const note = screen.getByText(
       /starts a Necrobinder with more HP than the game gives it \(gap G13\)/,
     );
-    expect(note).toHaveTextContent(`${pct(gap?.game ?? 0, 1)} of ${String(gap?.pairs)}`);
-    expect(note).toHaveTextContent(`instead of ${pct(gap?.simulator ?? 0, 1)}`);
-    expect(gap?.game).toBeLessThan(gap?.simulator ?? 0);
+    expect(note).toHaveTextContent("51.5% of 499 paired runs instead of 63.5%");
+    expect(note).toHaveTextContent("read every percentage below as too high for Necrobinder");
     necro.unmount();
-    // the other classes start with the game's own HP: no warning
-    setup(withTest(test(true)), { character: "silent" });
+    // the other classes start with the game's own HP: no warning, even when a gap is known for another class
+    setup(withGap(test(true)), { character: "silent" });
     expect(screen.queryByText(/gap G13/)).not.toBeInTheDocument();
-    expect(startHpGap("silent")).toBeUndefined();
   });
 
   it("warns that every simulated run was Overgrowth when the player says Underdocks", () => {

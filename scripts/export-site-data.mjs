@@ -498,6 +498,20 @@ function parseVerification() {
 
 const reports = parseEvidence();
 const comparisons = parseComparisons(reports);
+
+// Gap G13: what the game's own starting HP costs a class the simulator starts with more, from the committed development comparison of
+// the `game_hp` variant (side a) with the simulator's start (side b). A few numbers per class, written beside the opening-relic data so
+// that the client bundles that show them do not carry the whole evidence file.
+function parseStartHpGaps() {
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const out = {};
+  for (const c of comparisons) {
+    if (byId.get(c.a.batchId)?.gameHp === true && byId.get(c.b.batchId)?.gameHp === false) {
+      out[String(c.cohort.character).toLowerCase()] = { simulator: c.reachedAct2.b.rate, game: c.reachedAct2.a.rate, pairs: c.bothCompleted, comparison: c.id };
+    }
+  }
+  return out;
+}
 const outputs = {
   "rules.generated.json": {
     schema: 1,
@@ -521,6 +535,7 @@ const outputs = {
     schema: 1,
     generatedFrom: "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
     ...parseNeow(reports),
+    startHpGaps: parseStartHpGaps(),
   },
 };
 
