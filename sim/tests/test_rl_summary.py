@@ -47,3 +47,20 @@ def test_paired_evaluation_is_copied_from_a_gzip_file(tmp_path):
     rec = summary.summarize(run, path, "n")
     assert rec["paired_evaluation"]["paired"] == {"rules vs net:x": {"pairs": 4}}
     assert "rows" not in rec["paired_evaluation"]  # per-pair rows stay in the evaluation artifact, not in the summary
+
+
+def test_a_behaviour_cloning_directory_has_its_own_record_without_local_paths(tmp_path):
+    run = tmp_path / "combat-bc"
+    run.mkdir()
+    (run / "bc.json").write_text(json.dumps({
+        "args": {"out": "/home/someone/secret/combat-bc", "repeats": 6, "epochs": 8}, "net": {"d": 48},
+        "simulator": {"id": "sim", "head": "abc", "pinned": "abc", "root": "/home/someone/secret/sim"},
+        "demonstrations": {"episodes": 10, "won": 8}, "decisions_by_node": {"BOSS": 3}, "train_decisions": 90, "holdout_decisions": 5,
+        "history": [{"epoch": 1}, {"epoch": 2, "holdout": {"top1": 0.9}}],
+    }))
+    (run / "bc.pt").write_bytes(b"w")
+    rec = summary.summarize(run, None, "cloned")
+    assert rec["kind"] == "combat-network-bc" and "/home/someone" not in json.dumps(rec)
+    assert rec["config"] == {"repeats": 6, "epochs": 8}
+    assert rec["behaviour_cloning"]["final_epoch"] == {"epoch": 2, "holdout": {"top1": 0.9}}
+    assert rec["checkpoints"]["bc.pt"]["sha256"] == hashlib.sha256(b"w").hexdigest()

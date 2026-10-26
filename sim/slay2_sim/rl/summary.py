@@ -20,6 +20,7 @@ from pathlib import Path
 
 SCHEMA = 1
 SIM_KEYS = ("id", "head", "pinned", "dirty")  # never the local checkout path
+PRIVATE_ARGS = ("out", "resume")  # local paths
 
 
 def sha256_of(path: Path) -> str:
@@ -43,27 +44,36 @@ def validation_trajectory(log_lines: list[str]) -> list[dict]:
 
 
 def summarize(run: Path, eval_path: Path | None, note: str) -> dict:
-    cfg = json.loads((run / "config.json").read_text(encoding="utf-8"))
-    log = [line for line in (run / "log.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
-    last = json.loads(log[-1])
-    args = {k: v for k, v in cfg["args"].items() if k != "out"}
-    out: dict = {
-        "schema": SCHEMA, "kind": "combat-network-run", "run": run.name, "note": note,
-        "config": args, "net": cfg["net"], "libraries": cfg["libraries"], "library_nodes": cfg["nodes"],
-        "simulator": {k: cfg["simulator"].get(k) for k in SIM_KEYS if k in cfg["simulator"]},
-        "iterations_logged": last["it"], "steps": last["steps"],
-        "validation": validation_trajectory(log),
-        "checkpoints": {p.name: {"sha256": sha256_of(p), "bytes": p.stat().st_size} for p in sorted(run.glob("*.pt"))},
-    }
-    if (run / "bc.json").exists():
-        bc = json.loads((run / "bc.json").read_text(encoding="utf-8"))
+    """Record of a PPO run (config.json + log.jsonl) or of a behaviour-cloning run (bc.json only)."""
+    bc = json.loads((run / "bc.json").read_text(encoding="utf-8")) if (run / "bc.json").exists() else None
+    if (run / "config.json").exists():
+        cfg = json.loads((run / "config.json").read_text(encoding="utf-8"))
+        log = [line for line in (run / "log.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+        last = json.loads(log[-1])
+        out: dict = {
+            "schema": SCHEMA, "kind": "combat-network-run", "run": run.name, "note": note,
+            "config": {k: v for k, v in cfg["args"].items() if k not in PRIVATE_ARGS}, "net": cfg["net"],
+            "libraries": cfg["libraries"], "library_nodes": cfg["nodes"],
+            "simulator": {k: cfg["simulator"].get(k) for k in SIM_KEYS if k in cfg["simulator"]},
+            "iterations_logged": last["it"], "steps": last["steps"], "validation": validation_trajectory(log),
+        }
+    elif bc is not None:
+        out = {
+            "schema": SCHEMA, "kind": "combat-network-bc", "run": run.name, "note": note,
+            "config": {k: v for k, v in bc["args"].items() if k not in PRIVATE_ARGS}, "net": bc["net"],
+            "simulator": {k: bc["simulator"].get(k) for k in SIM_KEYS if k in bc["simulator"]},
+        }
+    else:
+        raise FileNotFoundError(f"{run} has neither config.json (PPO) nor bc.json (behaviour cloning)")
+    out["checkpoints"] = {p.name: {"sha256": sha256_of(p), "bytes": p.stat().st_size} for p in sorted(run.glob("*.pt"))}
+    if bc is not None:
         out["behaviour_cloning"] = {k: bc[k] for k in ("demonstrations", "decisions_by_node", "train_decisions", "holdout_decisions") if k in bc}
         out["behaviour_cloning"]["final_epoch"] = bc["history"][-1] if bc.get("history") else None
     if eval_path is not None:
         ev = read_json(eval_path)
         out["paired_evaluation"] = {
-            "file": eval_path.name, "partition": ev["partition"], "seeds": ev["seeds"], "repeats": ev["repeats"], "workers": ev["workers"],
-            "agents": ev["agents"], "summaries": ev["summaries"], "paired": ev["paired"],
+            "file": eval_path.name, "partition": ev["partition"], "seeds": ev["seeds"], "seed_offset": ev.get("seed_offset", 0),
+            "repeats": ev["repeats"], "workers": ev["workers"], "agents": ev["agents"], "summaries": ev["summaries"], "paired": ev["paired"],
         }
     return out
 
