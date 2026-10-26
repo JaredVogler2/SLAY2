@@ -151,6 +151,17 @@ def test_pooling_refuses_what_is_not_one_experiment(tmp_path: Path):
         build_pooled_comparison([(a1, b1), (a2, first_run)])
 
 
+def test_the_letter_case_of_the_class_does_not_matter_but_another_class_does(tmp_path: Path):
+    # manifests written before the class was normalised say "Ironclad", later ones "ironclad": one class, one pairing
+    old = make_batch(tmp_path, "alpha-c1", [(1, "death", 18, 1.0, 1)], character="Ironclad")
+    new = make_batch(tmp_path, "beta-c1", [(1, "death", 7, 1.0, 0)], character="ironclad")
+    other = make_batch(tmp_path, "beta-c2", [(1, "death", 7, 1.0, 0)], character="Silent")
+    assert build_comparison(old, new, iters=100)["bothCompleted"] == 1
+    assert build_pooled_comparison([(old, new), (make_batch(tmp_path, "alpha-c3", [(1, "death", 3, 1.0)], character="silent"), other)], iters=100)["bothCompleted"] == 2
+    with pytest.raises(ValueError, match="character"):
+        build_comparison(old, other)
+
+
 def test_non_completed_episodes_are_excluded_and_counted_not_scored_as_losses(tmp_path: Path):
     a = make_batch(tmp_path, "alpha-y", [(1, "win", 51, 1.0), (2, "timeout", 12, 1.0), (3, "death", 5, 1.0)])
     b = make_batch(tmp_path, "beta-y", [(1, "death", 9, 1.0), (2, "death", 9, 1.0), (3, "simulator_error", 0, 1.0)])
