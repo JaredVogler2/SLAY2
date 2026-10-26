@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Select } from "@/components/ui/Field";
+import { StartHpNote } from "@/components/ui/StartHpNote";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier, valueSign } from "@/lib/cardvalues";
-import { pct, startHpGap } from "@/lib/methods-data";
 import {
   NEOW,
   assessOffer,
@@ -206,7 +206,6 @@ export function NeowOffer({
     return null;
   }
   const label = CLASS_STYLE[character].label;
-  const hpGap = startHpGap(character);
   const chosen = slots.filter(Boolean);
   const assessment = assessOffer(chosen, data);
   const verdict = offerVerdict(assessment, character, data);
@@ -270,14 +269,7 @@ export function NeowOffer({
             Every simulated run was played at Ascension 0; you are at Ascension {run.ascension}.
           </p>
         ) : null}
-        {hpGap ? (
-          <p className="text-xs text-rose">
-            The simulator starts {label} with more HP than the game does (gap G13). With the
-            game&rsquo;s HP one simulated pilot got past the Act-1 boss in {pct(hpGap.game, 1)} of{" "}
-            {games(hpGap.pairs)} paired runs instead of {pct(hpGap.simulator, 1)}, so read every
-            percentage below as too high for {label}.
-          </p>
-        ) : null}
+        <StartHpNote character={character} subject="chances" data={data} />
         {run.act1 === "underdocks" ? (
           <p className="text-xs text-rose">
             You said you are in Underdocks; every simulated run was played in Overgrowth.

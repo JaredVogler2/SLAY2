@@ -387,7 +387,7 @@ test.describe("what did Neow offer?", () => {
     await expect(tiles.filter({ hasText: "Silver Crucible" })).toContainText("costly");
     await expect(tiles.filter({ hasText: "Fishing Rod" })).toContainText("helpful");
     // Ironclad's own starting point is printed beside each value
-    await expect(tiles.first()).toContainText(/got past the Act-1 boss \(95%: \d+% to \d+%\)/);
+    await expect(tiles.first()).toContainText(/getting past the Act-1 boss \(95%: \d+% to \d+%\)/);
     await expect(tiles.first()).toContainText(/The average relic: \d+%/);
 
     // what the page may say follows the registered test, not the other way round

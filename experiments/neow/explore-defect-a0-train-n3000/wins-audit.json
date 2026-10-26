@@ -1,0 +1,534 @@
+{
+  "all_verified": true,
+  "batch_id": "neow-explore-defect-a0-train-n3000",
+  "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act",
+  "policy": {
+    "effective_params": {
+      "neow_explore": 1.0,
+      "threshold": 0.0,
+      "tune": {
+        "boss_heal_below": 0.9,
+        "card_slope": 0.09,
+        "card_threshold": 3.2,
+        "danger_frac": 0.3,
+        "elite_bad_value": -2.5,
+        "elite_mid_hp": 0.65,
+        "elite_mid_value": 0.2,
+        "elite_ok_floor": 4,
+        "elite_ok_hp": 0.8,
+        "elite_value": 2.0,
+        "heal_below": 0.7,
+        "max_deck": 32,
+        "monster_hp_penalty": 0.5,
+        "monster_value": 1.0,
+        "potion_hp_abs": 6,
+        "potion_hp_frac": 0.15,
+        "rest_base": 1.0,
+        "rest_weight": 3.0,
+        "shop_base": 0.3,
+        "shop_card_threshold": 3.6,
+        "shop_mid": 0.5,
+        "shop_mid_gold": 75,
+        "shop_potion_margin": 40,
+        "shop_rich": 1.2,
+        "shop_rich_gold": 150,
+        "treasure_value": 1.8,
+        "unknown_value": 0.8
+      },
+      "values": "experiments/cardvalue/defect-a0-v1.json",
+      "values_sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
+    },
+    "name": "rules_v2_neow",
+    "params": {
+      "neow_explore": 1.0,
+      "threshold": 0.0,
+      "tune": {
+        "boss_heal_below": 0.9,
+        "card_slope": 0.09,
+        "card_threshold": 3.2,
+        "danger_frac": 0.3,
+        "elite_bad_value": -2.5,
+        "elite_mid_hp": 0.65,
+        "elite_mid_value": 0.2,
+        "elite_ok_floor": 4,
+        "elite_ok_hp": 0.8,
+        "elite_value": 2.0,
+        "heal_below": 0.7,
+        "max_deck": 32,
+        "monster_hp_penalty": 0.5,
+        "monster_value": 1.0,
+        "potion_hp_abs": 6,
+        "potion_hp_frac": 0.15,
+        "rest_base": 1.0,
+        "rest_weight": 3.0,
+        "shop_base": 0.3,
+        "shop_card_threshold": 3.6,
+        "shop_mid": 0.5,
+        "shop_mid_gold": 75,
+        "shop_potion_margin": 40,
+        "shop_rich": 1.2,
+        "shop_rich_gold": 150,
+        "treasure_value": 1.8,
+        "unknown_value": 0.8
+      },
+      "values": "experiments/cardvalue/defect-a0-v1.json",
+      "values_sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
+    }
+  },
+  "schema": 1,
+  "wins": [
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 33,
+      "floor": 45,
+      "hp": 21,
+      "max_hp": 73,
+      "relics": 5,
+      "replay_message": "499 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 18157093,
+      "steps": 499,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "38f0421d57d80f3b736b0e066ccd6f0d9f4ddcb89dce67c82a0e245a255107a0",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 30,
+      "floor": 45,
+      "hp": 23,
+      "max_hp": 75,
+      "relics": 3,
+      "replay_message": "417 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 106652194,
+      "steps": 417,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "819c3eaa7071442479b6a98f99666deaddb7729ded49624174662e6c6c12fb7c",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 31,
+      "floor": 45,
+      "hp": 12,
+      "max_hp": 118,
+      "relics": 3,
+      "replay_message": "507 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 134896642,
+      "steps": 507,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "a5623e974b91b456dfad27ec3d0b20e8833e7dabfd92489f0ebb2978bca84c8c",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 15,
+      "max_hp": 65,
+      "relics": 3,
+      "replay_message": "565 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 148374403,
+      "steps": 565,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "8925c8ac499c2db4ff16f41e3078aa445e95b098725fbc4e15a1f99500ac6cbd",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 11,
+      "max_hp": 75,
+      "relics": 3,
+      "replay_message": "616 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 375943247,
+      "steps": 616,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "14f943d62720c3e92765cfb5bcb5d373ddc5491648a8f910a80364781906d4f0",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 33,
+      "floor": 45,
+      "hp": 18,
+      "max_hp": 73,
+      "relics": 3,
+      "replay_message": "403 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 493342901,
+      "steps": 403,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "459abb3da984509569055892fb8adb1f089434260d0f72af9548c751898c41a8",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 14,
+      "max_hp": 75,
+      "relics": 3,
+      "replay_message": "504 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 516094817,
+      "steps": 504,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "3677e09a926a7f4afd32e6461af9c462d4292efd27f7b4232bc3370b41611151",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 31,
+      "floor": 45,
+      "hp": 76,
+      "max_hp": 105,
+      "relics": 6,
+      "replay_message": "434 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 521104605,
+      "steps": 434,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "33e0b6046bc8b4f1222cf965bccc0645253686f7897d97630baa24eae529ae5a",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 30,
+      "floor": 45,
+      "hp": 74,
+      "max_hp": 140,
+      "relics": 3,
+      "replay_message": "686 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 521232366,
+      "steps": 686,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "4f95a87cf257de0d33f5350811fb2cfcef77b9006dab9846af0f83ab719b68b6",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 10,
+      "max_hp": 75,
+      "relics": 3,
+      "replay_message": "482 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 616538994,
+      "steps": 482,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "6e0eb79db6b7f38d3189d79b518381fc3cbeb497216795b12acbcb7f7e883f43",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 47,
+      "max_hp": 95,
+      "relics": 3,
+      "replay_message": "464 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 641729520,
+      "steps": 464,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "05786e15ae3995a938bf6dea953fd9c7e48fb3018de2c411bcc6479aa7eafcc0",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 30,
+      "floor": 45,
+      "hp": 27,
+      "max_hp": 75,
+      "relics": 3,
+      "replay_message": "557 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 698644849,
+      "steps": 557,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "a46e390638609d299855655e43418fdda4254f0889f26a85134ffe086cca89a0",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 16,
+      "max_hp": 71,
+      "relics": 5,
+      "replay_message": "448 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 832084457,
+      "steps": 448,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "3e145936bc2dff8eddd1629958205d8d861d54065d1afe92d256036c94703ce5",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 31,
+      "floor": 45,
+      "hp": 22,
+      "max_hp": 125,
+      "relics": 6,
+      "replay_message": "482 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 841871568,
+      "steps": 482,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "b208e6db4520371fdc10af56bd2a8a59205146cdb96553c5941c366fa5d7ec05",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 42,
+      "max_hp": 95,
+      "relics": 3,
+      "replay_message": "434 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 1161610746,
+      "steps": 434,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "d85480766a690182c9bc8e664c18e57210cba1d2e89bbc0094ad2a66983e2823",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 9,
+      "max_hp": 100,
+      "relics": 3,
+      "replay_message": "490 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 1479109791,
+      "steps": 490,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "5529e7c8ffb4800c66cf70c2e6d41ed6d36d67932757b1c25e66ed9efeebd70d",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 32,
+      "floor": 45,
+      "hp": 14,
+      "max_hp": 80,
+      "relics": 3,
+      "replay_message": "483 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 1852577264,
+      "steps": 483,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "0299ba7c9c785c38c723d90dee9eb4bc7268253bb84e6bc4acf9528bb25125d2",
+      "verified": true
+    },
+    {
+      "boss_fights_entered_per_act": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "deck_size": 31,
+      "floor": 45,
+      "hp": 42,
+      "max_hp": 82,
+      "relics": 3,
+      "replay_message": "392 steps replayed bit-for-bit (observation hashes identical)",
+      "replay_ok": true,
+      "rerun_matches_stored_record": true,
+      "rerun_mismatched_fields": [],
+      "seed": 1867403196,
+      "steps": 392,
+      "terminal_state": {
+        "final_act_index": 2,
+        "is_over": true,
+        "player_won": true
+      },
+      "trace_sha256": "c066ab960c2b95f13fca86e21af730ae20ff71e0f0df4fdf9916dab5f4fabe2a",
+      "verified": true
+    }
+  ],
+  "wins_audited": 18,
+  "wins_in_batch": 18,
+  "wins_verified": 18
+}

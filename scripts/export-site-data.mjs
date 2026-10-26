@@ -24,14 +24,29 @@ function parseRules() {
   const md = readFileSync(join(root, "docs", "game", "MECHANICS-COVERAGE.md"), "utf8");
   const rules = [];
   let section = "";
+  // Only tables whose header row starts with "ID" hold rules. The register also has tables of evidence classes and an
+  // implementation map ("| Rules | Module | Layers | Notes |"), whose rows start with a rule id too (`| UPG-1 | upgrade.ts | G P |`):
+  // read as rules they put a section of file names on /methods and made the count of rules two too high.
+  let inTable = false;
+  let ruleTable = false;
   for (const line of md.split("\n")) {
-    const h = /^##\s+(.*)$/.exec(line);
+    const h = /^#{2,3}\s+(.*)$/.exec(line); // "###" too: three rules sit under a sub-heading and took the previous section's name
     if (h) {
       section = plain(h[1]);
+      inTable = false;
       continue;
     }
-    if (!line.startsWith("|")) continue;
+    if (!line.startsWith("|")) {
+      inTable = false;
+      continue;
+    }
     const cells = line.split("|").slice(1, -1).map((c) => c.trim());
+    if (!inTable) {
+      inTable = true;
+      ruleTable = cells[0] === "ID";
+      continue;
+    }
+    if (!ruleTable) continue;
     if (cells.length < 3 || !/^[A-Z]+-\d+$/.test(cells[0])) continue;
     const status = cells[3] && /(VERIFIED|CORROBORATED|SECONDARY|UNVERIFIED)/.test(cells[3]) ? plain(cells[3]) : null;
     rules.push({ id: cells[0], section: section.replace(/^\d+\.\s*/, ""), text: plain(cells[1]), evidence: plain(cells[2]), status });
@@ -408,7 +423,10 @@ function parseNeow(reports) {
   if (t.cohort?.partition !== "val" || t.role !== "held-out") throw new Error(`${where}: not a held-out comparison`);
   if (t.cohort.ascension !== v.ascension || t.cohort.profile !== v.profile) throw new Error(`${where}: played at another ascension or profile than the values were measured at`);
   const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
-  if (classesIn.length !== CLASSES.length || [...classesIn].sort().join() !== [...CLASSES].sort().join()) throw new Error(`${where}: it must pool all five classes, once each`);
+  const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
+  const everyClassOnce = (list) => list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+  // the members carry the numbers and the cohort names the classes: both must be the five classes, once each
+  if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed)) throw new Error(`${where}: it must pool all five classes, once each`);
   const byId = new Map(reports.map((r) => [r.id, r]));
   const sums = { a_only: 0, b_only: 0, both: 0, neither: 0, pairedSeeds: 0, bothCompleted: 0 };
   for (const m of t.members) {
@@ -495,6 +513,20 @@ function parseVerification() {
 
 const reports = parseEvidence();
 const comparisons = parseComparisons(reports);
+
+// Gap G13: what the game's own starting HP costs a class the simulator starts with more, from the committed development comparison of
+// the `game_hp` variant (side a) with the simulator's start (side b). A few numbers per class, written beside the opening-relic data so
+// that the client bundles that show them do not carry the whole evidence file.
+function parseStartHpGaps() {
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const out = {};
+  for (const c of comparisons) {
+    if (byId.get(c.a.batchId)?.gameHp === true && byId.get(c.b.batchId)?.gameHp === false) {
+      out[String(c.cohort.character).toLowerCase()] = { simulator: c.reachedAct2.b.rate, game: c.reachedAct2.a.rate, pairs: c.bothCompleted, comparison: c.id };
+    }
+  }
+  return out;
+}
 const outputs = {
   "rules.generated.json": {
     schema: 1,
@@ -518,6 +550,7 @@ const outputs = {
     schema: 1,
     generatedFrom: "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
     ...parseNeow(reports),
+    startHpGaps: parseStartHpGaps(),
   },
 };
 

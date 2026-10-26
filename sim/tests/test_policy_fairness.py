@@ -81,6 +81,22 @@ def test_cheap_policies_ignore_hidden_state(points, name):
         assert decide(name, a) == decide(name, b), f"{name} depends on hidden state at point {i} ({p.phase})"
 
 
+# The three pilots that produced the held-out numbers on the site, with the measured-values files they read. The points are
+# Ironclad runs from the start (the opening choice included), which is what these default parameters play.
+HEADLINE_POLICIES = [
+    ("rules_v2", {}),
+    ("rules_v3", {}),
+    ("rules_v2_neow_values", {"neow_values": "experiments/neow/neow-values-v2.json"}),
+]
+
+
+@pytest.mark.parametrize("name,params", HEADLINE_POLICIES, ids=[n for n, _ in HEADLINE_POLICIES])
+def test_the_pilots_behind_the_published_numbers_ignore_hidden_state(points, name, params):
+    for i, p in enumerate(points):
+        a, b = twins(p, 7000 + i)
+        assert decide(name, a, **params) == decide(name, b, **params), f"{name} depends on hidden state at point {i} ({p.phase})"
+
+
 def test_search_policy_ignores_hidden_state(points):
     """search_v1 clones the live simulator; its determinization must erase everything hidden."""
     combat_points = [p for p in points if p.phase == "COMBAT" and len(p.get_combat_state().draw_pile) >= 2]

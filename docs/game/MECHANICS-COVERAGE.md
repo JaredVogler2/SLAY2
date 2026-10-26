@@ -144,7 +144,7 @@ Engines live in `packages/odds/src` (BigInt rationals, ADR-013). Verification la
 | GOLD-1, ASC-2 | `gold.ts` | G P | Poverty truncates 75 % of each end separately. |
 | DRAW-1 | `draw.ts`, `combinatorics.ts` | G B Q | Plus joint draws of several card groups and the one-reshuffle case. Retain/innate/ethereal/exhaust/orbs are not modelled. |
 
-### Newly recorded facts (this session)
+### Further recorded facts (potion rolls, pack-changing relics, merchant relics)
 
 | ID | Fact | Evidence |
 |---|---|---|

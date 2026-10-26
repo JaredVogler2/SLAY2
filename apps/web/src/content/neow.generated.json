@@ -1,6 +1,726 @@
 {
   "schema": 1,
   "generatedFrom": "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
-  "values": null,
-  "test": null
+  "values": {
+    "file": "experiments/neow/neow-values-v2.json",
+    "sha256": "b1afa02c47c5bc74df31ed2d8d40ae53dc5b514c34a07e4e5399ed474845877c",
+    "outcome": "the run gets past the Act-1 boss",
+    "ascension": 0,
+    "profile": "veteran",
+    "games": 14933,
+    "excludedGames": 67,
+    "passRate": 0.5422,
+    "classes": [
+      {
+        "character": "ironclad",
+        "games": 2984,
+        "passRate": 0.6424,
+        "baselineLogOdds": 0.6214
+      },
+      {
+        "character": "silent",
+        "games": 2999,
+        "passRate": 0.1977,
+        "baselineLogOdds": -1.4175
+      },
+      {
+        "character": "regent",
+        "games": 2964,
+        "passRate": 0.4835,
+        "baselineLogOdds": -0.0471
+      },
+      {
+        "character": "necrobinder",
+        "games": 2995,
+        "passRate": 0.6297,
+        "baselineLogOdds": 0.5644
+      },
+      {
+        "character": "defect",
+        "games": 2991,
+        "passRate": 0.7583,
+        "baselineLogOdds": 1.1904
+      }
+    ],
+    "model": {
+      "l2": 10,
+      "folds": 5,
+      "bootstrapDraws": 200,
+      "minTaken": 30,
+      "seeds": 3000,
+      "cvLogLoss": 0.6003158701739628,
+      "cvAuc": 0.7242025956777872,
+      "baselineLogLoss": 0.6112108247168722
+    },
+    "batches": [
+      {
+        "id": "neow-explore-ironclad-a0-train-n3000",
+        "contentSha256": "212359e9bd5f0ce11402cc95c3a618723cb47ad5c2bb2f08cb9fe9a76891ef24"
+      },
+      {
+        "id": "neow-explore-silent-a0-train-n3000",
+        "contentSha256": "4367f6c6b434ce5a1a7a4f523b82c2b50ff1ebf38a048b169d4fe8ae952b9dbc"
+      },
+      {
+        "id": "neow-explore-regent-a0-train-n3000",
+        "contentSha256": "c5d25c54549de2ececcd7771d9c557353565f03b44e7f0361c18f1968ffb122a"
+      },
+      {
+        "id": "neow-explore-necrobinder-a0-train-n3000",
+        "contentSha256": "71bcd527e5ecd17450b1b5eabcc11574b3d75339abd950964c2f8f21ed0d1db8"
+      },
+      {
+        "id": "neow-explore-defect-a0-train-n3000",
+        "contentSha256": "38518f7ff41b2e584cd81a87e064d1eb6c4c096c9b585dd71c90c04e1651cb98"
+      }
+    ],
+    "relics": [
+      {
+        "label": "Silver Crucible",
+        "kind": "cursed",
+        "beta": 0.8966,
+        "ci95": [
+          0.6641,
+          1.159
+        ],
+        "taken": 533,
+        "offered": 1824,
+        "passRateTaken": 0.7355,
+        "passRateOfferedNotTaken": 0.5453,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Large Capsule",
+        "kind": "cursed",
+        "beta": 0.4986,
+        "ci95": [
+          0.3169,
+          0.6681
+        ],
+        "taken": 723,
+        "offered": 1935,
+        "passRateTaken": 0.6528,
+        "passRateOfferedNotTaken": 0.5305,
+        "excluded": 12,
+        "exclusionFlag": true
+      },
+      {
+        "label": "Silken Tress",
+        "kind": "cursed",
+        "beta": 0.4925,
+        "ci95": [
+          0.3391,
+          0.6924
+        ],
+        "taken": 605,
+        "offered": 1917,
+        "passRateTaken": 0.6545,
+        "passRateOfferedNotTaken": 0.5312,
+        "excluded": 5,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Nutritious Oyster",
+        "kind": "positive",
+        "beta": 0.4708,
+        "ci95": [
+          0.2695,
+          0.7187
+        ],
+        "taken": 318,
+        "offered": 962,
+        "passRateTaken": 0.6572,
+        "passRateOfferedNotTaken": 0.5435,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Neows Talisman",
+        "kind": "positive",
+        "beta": 0.3511,
+        "ci95": [
+          0.1397,
+          0.606
+        ],
+        "taken": 348,
+        "offered": 923,
+        "passRateTaken": 0.6293,
+        "passRateOfferedNotTaken": 0.5565,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Fishing Rod",
+        "kind": "positive",
+        "beta": 0.307,
+        "ci95": [
+          0.1161,
+          0.4893
+        ],
+        "taken": 603,
+        "offered": 1849,
+        "passRateTaken": 0.6153,
+        "passRateOfferedNotTaken": 0.5393,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Pomander",
+        "kind": "positive",
+        "beta": 0.1758,
+        "ci95": [
+          -0.0676,
+          0.4651
+        ],
+        "taken": 295,
+        "offered": 870,
+        "passRateTaken": 0.5898,
+        "passRateOfferedNotTaken": 0.5722,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Small Capsule",
+        "kind": "positive",
+        "beta": 0.1687,
+        "ci95": [
+          -0.062,
+          0.4506
+        ],
+        "taken": 210,
+        "offered": 738,
+        "passRateTaken": 0.5905,
+        "passRateOfferedNotTaken": 0.5587,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Lost Coffer",
+        "kind": "positive",
+        "beta": 0.1579,
+        "ci95": [
+          -0.0206,
+          0.2979
+        ],
+        "taken": 647,
+        "offered": 1980,
+        "passRateTaken": 0.5827,
+        "passRateOfferedNotTaken": 0.5544,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Stone Humidifier",
+        "kind": "positive",
+        "beta": 0.1238,
+        "ci95": [
+          -0.1292,
+          0.4506
+        ],
+        "taken": 319,
+        "offered": 1103,
+        "passRateTaken": 0.5768,
+        "passRateOfferedNotTaken": 0.5319,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Lead Paperweight",
+        "kind": "positive",
+        "beta": 0.1047,
+        "ci95": [
+          -0.0566,
+          0.2927
+        ],
+        "taken": 695,
+        "offered": 1888,
+        "passRateTaken": 0.5712,
+        "passRateOfferedNotTaken": 0.5557,
+        "excluded": 5,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Scroll Boxes",
+        "kind": "positive",
+        "beta": 0.0677,
+        "ci95": [
+          -0.0846,
+          0.226
+        ],
+        "taken": 668,
+        "offered": 1923,
+        "passRateTaken": 0.5629,
+        "passRateOfferedNotTaken": 0.5442,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Winged Boots",
+        "kind": "positive",
+        "beta": 0.0499,
+        "ci95": [
+          -0.118,
+          0.2164
+        ],
+        "taken": 647,
+        "offered": 1988,
+        "passRateTaken": 0.558,
+        "passRateOfferedNotTaken": 0.5257,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Neows Torment",
+        "kind": "positive",
+        "beta": -0.0246,
+        "ci95": [
+          -0.2478,
+          0.1483
+        ],
+        "taken": 644,
+        "offered": 1914,
+        "passRateTaken": 0.5419,
+        "passRateOfferedNotTaken": 0.563,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Phial Holster",
+        "kind": "positive",
+        "beta": -0.0324,
+        "ci95": [
+          -0.2108,
+          0.1093
+        ],
+        "taken": 729,
+        "offered": 2120,
+        "passRateTaken": 0.5405,
+        "passRateOfferedNotTaken": 0.5442,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Golden Pearl",
+        "kind": "positive",
+        "beta": -0.2257,
+        "ci95": [
+          -0.4168,
+          -0.012
+        ],
+        "taken": 529,
+        "offered": 1628,
+        "passRateTaken": 0.4953,
+        "passRateOfferedNotTaken": 0.5587,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Cursed Pearl",
+        "kind": "cursed",
+        "beta": -0.2482,
+        "ci95": [
+          -0.4315,
+          -0.0929
+        ],
+        "taken": 639,
+        "offered": 1793,
+        "passRateTaken": 0.4914,
+        "passRateOfferedNotTaken": 0.5095,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Booming Conch",
+        "kind": "positive",
+        "beta": -0.2555,
+        "ci95": [
+          -0.4512,
+          -0.0879
+        ],
+        "taken": 629,
+        "offered": 1995,
+        "passRateTaken": 0.4897,
+        "passRateOfferedNotTaken": 0.5505,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Hefty Tablet",
+        "kind": "cursed",
+        "beta": -0.2657,
+        "ci95": [
+          -0.4382,
+          -0.1089
+        ],
+        "taken": 587,
+        "offered": 1870,
+        "passRateTaken": 0.4872,
+        "passRateOfferedNotTaken": 0.5503,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Kaleidoscope",
+        "kind": "positive",
+        "beta": -0.2822,
+        "ci95": [
+          -0.4484,
+          -0.1032
+        ],
+        "taken": 635,
+        "offered": 1763,
+        "passRateTaken": 0.4835,
+        "passRateOfferedNotTaken": 0.5204,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Neows Bones",
+        "kind": "cursed",
+        "beta": -0.2902,
+        "ci95": [
+          -0.45,
+          -0.1167
+        ],
+        "taken": 644,
+        "offered": 1968,
+        "passRateTaken": 0.4814,
+        "passRateOfferedNotTaken": 0.534,
+        "excluded": 6,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Precarious Shears",
+        "kind": "cursed",
+        "beta": -0.312,
+        "ci95": [
+          -0.4662,
+          -0.1623
+        ],
+        "taken": 594,
+        "offered": 1834,
+        "passRateTaken": 0.4764,
+        "passRateOfferedNotTaken": 0.5508,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Arcane Scroll",
+        "kind": "positive",
+        "beta": -0.3359,
+        "ci95": [
+          -0.5069,
+          -0.1642
+        ],
+        "taken": 628,
+        "offered": 1744,
+        "passRateTaken": 0.4713,
+        "passRateOfferedNotTaken": 0.5618,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Lava Rock",
+        "kind": "positive",
+        "beta": -0.3386,
+        "ci95": [
+          -0.5878,
+          -0.0565
+        ],
+        "taken": 295,
+        "offered": 900,
+        "passRateTaken": 0.4644,
+        "passRateOfferedNotTaken": 0.476,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Leafy Poultice",
+        "kind": "cursed",
+        "beta": -0.3455,
+        "ci95": [
+          -0.4967,
+          -0.1682
+        ],
+        "taken": 595,
+        "offered": 1792,
+        "passRateTaken": 0.4689,
+        "passRateOfferedNotTaken": 0.5322,
+        "excluded": 5,
+        "exclusionFlag": false
+      },
+      {
+        "label": "New Leaf",
+        "kind": "positive",
+        "beta": -0.4012,
+        "ci95": [
+          -0.6169,
+          -0.2195
+        ],
+        "taken": 584,
+        "offered": 1852,
+        "passRateTaken": 0.4555,
+        "passRateOfferedNotTaken": 0.5678,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Precise Scissors",
+        "kind": "positive",
+        "beta": -0.5076,
+        "ci95": [
+          -0.6758,
+          -0.3618
+        ],
+        "taken": 590,
+        "offered": 1726,
+        "passRateTaken": 0.4305,
+        "passRateOfferedNotTaken": 0.5246,
+        "excluded": 5,
+        "exclusionFlag": false
+      }
+    ]
+  },
+  "test": {
+    "id": "pooled-neow-values-v2-vs-rules_v2-val",
+    "contentSha256": "5590d9d95a2db4cbfdc199d75e8b0f39db7018eb48dacd290a6f8f9b7fbdcdeb",
+    "valuesSha256": "b1afa02c47c5bc74df31ed2d8d40ae53dc5b514c34a07e4e5399ed474845877c",
+    "a": "rules_v2_neow_values",
+    "b": "rules_v2",
+    "cohort": {
+      "ascension": 0,
+      "characters": [
+        "Ironclad",
+        "Silent",
+        "Regent",
+        "Necrobinder",
+        "Defect"
+      ],
+      "partition": "val",
+      "profile": "veteran"
+    },
+    "alpha": 0.05,
+    "pairedSeeds": 10000,
+    "bothCompleted": 9932,
+    "excludedNotCompleted": 68,
+    "reachedAct2": {
+      "a": {
+        "games": 6063,
+        "rate": 0.61045106725735,
+        "wilson95": [
+          0.6008197350859316,
+          0.6199969928271577
+        ]
+      },
+      "b": {
+        "games": 5393,
+        "rate": 0.5429923479661699,
+        "wilson95": [
+          0.5331807138068142,
+          0.5527707381702952
+        ]
+      },
+      "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+      "pairedTable": {
+        "a_only": 1487,
+        "b_only": 817,
+        "both": 4576,
+        "mcnemar_p": 9.124720543127281e-45,
+        "neither": 3052
+      }
+    },
+    "reachedAct3": {
+      "a": {
+        "games": 381,
+        "rate": 0.03836085380587998,
+        "wilson95": [
+          0.034758564173898186,
+          0.04232010721943475
+        ]
+      },
+      "b": {
+        "games": 252,
+        "rate": 0.025372533225936366,
+        "wilson95": [
+          0.022458542835032198,
+          0.02865353065420913
+        ]
+      },
+      "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+      "pairedTable": {
+        "a_only": 242,
+        "b_only": 113,
+        "both": 139,
+        "mcnemar_p": 6.4581505352075225e-12,
+        "neither": 9438
+      }
+    },
+    "wins": {
+      "a": 29,
+      "b": 14,
+      "pairedTable": {
+        "a_only": 24,
+        "b_only": 9,
+        "both": 5,
+        "mcnemar_p": 0.013530986849218607,
+        "neither": 9894
+      }
+    },
+    "floorDifference": {
+      "ci95": [
+        1.1276681433749496,
+        1.4052557390253726
+      ],
+      "meanAMinusB": 1.2653040676600886,
+      "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+    },
+    "members": [
+      {
+        "character": "ironclad",
+        "a": {
+          "batchId": "rules_v2_neow_values-ironclad-a0-veteran-val-n2000",
+          "contentSha256": "1723229d909cbedbcd61b23f512c35b86a50091f5035f35d35d6bcca14374d20",
+          "wins": 12
+        },
+        "b": {
+          "batchId": "rules_v2-ironclad-a0-veteran-val-n2000",
+          "contentSha256": "70a62f3df49aaa236612e7c371f9f2460f074a2131d048cd242191f92c108b7a",
+          "wins": 6
+        },
+        "pairedSeeds": 2000,
+        "bothCompleted": 1982,
+        "reachedAct2": {
+          "a": 0.7119071644803229,
+          "b": 0.6513622603430878,
+          "pairedTable": {
+            "a_only": 301,
+            "b_only": 181,
+            "both": 1110,
+            "mcnemar_p": 5.108246120193204e-8,
+            "neither": 390
+          }
+        },
+        "meanFloorDifference": 1.6306760847628659
+      },
+      {
+        "character": "silent",
+        "a": {
+          "batchId": "rules_v2_neow_values-silent-a0-veteran-val-n2000",
+          "contentSha256": "f96a3564038c265da511d4eeafdad3fd067f44f2c1a0ea5b99646ada3976323d",
+          "wins": 0
+        },
+        "b": {
+          "batchId": "rules_v2-silent-a0-veteran-val-n2000",
+          "contentSha256": "b9f4863b1792fb8e4595d7678088b55cec7edd2ea42effb13187dec84d543ad7",
+          "wins": 0
+        },
+        "pairedSeeds": 2000,
+        "bothCompleted": 2000,
+        "reachedAct2": {
+          "a": 0.282,
+          "b": 0.185,
+          "pairedTable": {
+            "a_only": 307,
+            "b_only": 113,
+            "both": 257,
+            "mcnemar_p": 8.368873366281022e-22,
+            "neither": 1323
+          }
+        },
+        "meanFloorDifference": 1.1915
+      },
+      {
+        "character": "regent",
+        "a": {
+          "batchId": "rules_v2_neow_values-regent-a0-veteran-val-n2000",
+          "contentSha256": "d7107d820e9001cdbfe1086f8ddcd968b3e5b3bf2feddcf20615ce0040e981ff",
+          "wins": 1
+        },
+        "b": {
+          "batchId": "rules_v2-regent-a0-veteran-val-n2000",
+          "contentSha256": "a20b58d12a9f0e093d6f42789906bbbcd925571257ce9ffc6ebf3b18250039ad",
+          "wins": 1
+        },
+        "pairedSeeds": 2000,
+        "bothCompleted": 1969,
+        "reachedAct2": {
+          "a": 0.5855764347384459,
+          "b": 0.4972067039106145,
+          "pairedTable": {
+            "a_only": 346,
+            "b_only": 172,
+            "both": 807,
+            "mcnemar_p": 1.6726809452986997e-14,
+            "neither": 644
+          }
+        },
+        "meanFloorDifference": 1.4342305738953784
+      },
+      {
+        "character": "necrobinder",
+        "a": {
+          "batchId": "rules_v2_neow_values-necrobinder-a0-veteran-val-n2000",
+          "contentSha256": "e6686cfac1793f92707423815a22d3f34bf5f1983452aebe491aef29d7f031e4",
+          "wins": 0
+        },
+        "b": {
+          "batchId": "rules_v2-necrobinder-a0-veteran-val-n2000",
+          "contentSha256": "124099adcf748184d7294a11a72d13e2a63d2c3ede87b761cf61b68d4fd5eda6",
+          "wins": 0
+        },
+        "pairedSeeds": 2000,
+        "bothCompleted": 1992,
+        "reachedAct2": {
+          "a": 0.6746987951807228,
+          "b": 0.6214859437751004,
+          "pairedTable": {
+            "a_only": 301,
+            "b_only": 195,
+            "both": 1043,
+            "mcnemar_p": 0.0000022261160352337608,
+            "neither": 453
+          }
+        },
+        "meanFloorDifference": 0.9919678714859438
+      },
+      {
+        "character": "defect",
+        "a": {
+          "batchId": "rules_v2_neow_values-defect-a0-veteran-val-n2000",
+          "contentSha256": "68376ed1ff32e4d197e88d85764fdbf0ad5be35168ae250cbcf1bc5050be154a",
+          "wins": 16
+        },
+        "b": {
+          "batchId": "rules_v2-defect-a0-veteran-val-n2000",
+          "contentSha256": "b4a6768e1e487bc172ac55fd505a2d1dc8ebcc6c39addff20df4b2c168b9ef96",
+          "wins": 7
+        },
+        "pairedSeeds": 2000,
+        "bothCompleted": 1989,
+        "reachedAct2": {
+          "a": 0.7998994469582705,
+          "b": 0.7616892911010558,
+          "pairedTable": {
+            "a_only": 232,
+            "b_only": 156,
+            "both": 1359,
+            "mcnemar_p": 0.0001341364538620272,
+            "neither": 242
+          }
+        },
+        "meanFloorDifference": 1.0819507290095525
+      }
+    ],
+    "role": "held-out",
+    "passed": true
+  },
+  "startHpGaps": {
+    "necrobinder": {
+      "simulator": 0.6352705410821643,
+      "game": 0.5150300601202404,
+      "pairs": 499,
+      "comparison": "g13-gamehp-vs-base-necrobinder-a0-veteran-dev"
+    }
+  }
 }

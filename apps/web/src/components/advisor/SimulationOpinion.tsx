@@ -7,6 +7,7 @@ import { MeasuredValue } from "@/components/codex/MeasuredValue";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
+import { StartHpNote } from "@/components/ui/StartHpNote";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { againstText, measuredValue, setFor } from "@/lib/cardvalues";
 import type { RunState } from "@/lib/run-state";
@@ -80,6 +81,11 @@ export function SimulationOpinion({
           ? "You said you are in Underdocks. These runs were all played in Overgrowth (the simulator never plays Underdocks), so the numbers below were not measured for your Act 1: read them as a prior about the cards, not about your fights."
           : "Every simulated run was played in Overgrowth, the Act 1 every profile starts with. The simulator never plays Underdocks."}
       </p>
+      <StartHpNote
+        character={run.character ?? ""}
+        subject="values"
+        className="mt-3 text-xs text-rose"
+      />
       {sim ? (
         <p
           className={

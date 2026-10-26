@@ -117,9 +117,21 @@ export interface NeowTest {
   readonly passed: boolean;
 }
 
+/** Gap G13: the share of paired runs of one pilot that got past the Act-1 boss with the simulator's start and with the game's own. */
+export interface StartHpGap {
+  /** with the simulator's starting HP, 0 to 1 */
+  readonly simulator: number;
+  /** with the game's own starting HP, 0 to 1 */
+  readonly game: number;
+  readonly pairs: number;
+  readonly comparison: string;
+}
+
 export interface NeowData {
   readonly values: NeowValues | null;
   readonly test: NeowTest | null;
+  /** by lower-case class id; only a class whose gap was measured has an entry (empty in a test's own data) */
+  readonly startHpGaps?: Readonly<Record<string, StartHpGap>>;
 }
 
 /** The data the exporter wrote: what the pages show. Tests pass their own `NeowData` to the functions below. */
@@ -239,6 +251,14 @@ export function chanceWith(
     lo: sigmoid(base.baselineLogOdds + lo),
     hi: sigmoid(base.baselineLogOdds + hi),
   };
+}
+
+/**
+ * Gap G13: what the game's own starting HP costs a class that the simulator starts with more, measured on development seeds with
+ * the same pilot. Undefined for a class nobody measured, which is every class but one.
+ */
+export function startHpGap(character: string, data: NeowData = DATA): StartHpGap | undefined {
+  return data.startHpGaps?.[character.toLowerCase()];
 }
 
 /** A class's chance with the average relic. */
