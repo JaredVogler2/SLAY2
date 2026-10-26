@@ -13,6 +13,7 @@ simulator checkout and its environment must be in place: `PYTHONPATH=sim python 
 | B2-dev, phase 2 | `CHOSEN='"needs":1,"scalers":0.7,"engines":0' run-dev.sh 2 4`, then `compare-dev.sh m1 d<chosen>`, `compare-dev.sh m2 d<chosen>` and `python -m slay2_sim.synergydev --phase 2 --chosen d<chosen> ...` | the chosen configuration with a skip margin of 1.5 and 3 | about 35 minutes |
 | B2-val | `ASTAR='{...}' MARGIN=<m*> run-val.sh 3` | after the addendum that records `A*`: `A*`, `d0*` (no synergy term, `A*`'s margin) and, when the margin is not 0, `d0` on the 2,000 `val` seeds of each class, and the reference `rules_v3` with measured values for the four classes without one | about 100 to 130 minutes |
 | B2-val, test | `MARGIN=<m*> pool-val.sh` | the primary test, run once: `A*` against `d0*`, five classes pooled, exact McNemar; and the secondary pooled comparisons | seconds |
+| B2-val, profile | `profile-val.sh` | how often `A*` and `d0*` skipped a card reward and the parts of the index their boss decks held (`slay2_sim.synergyreport`), `A*` against `d0*` paired by class and seed | seconds |
 
 Phase 1 of B2-dev was started on 2026-10-26 at 22:08 UTC from commit `91c8a87d4f46`, in a worktree of that commit (a clean tree; the manifests record `dirty: false`).
 
