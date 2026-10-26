@@ -1,0 +1,156 @@
+{
+  "a": {
+    "batchId": "search_v3-all-ironclad-a0-veteran-val-n300",
+    "contentSha256": "307658fb33b69ba49bded4017052dfc0f6906f4827e85e17f06f9fbc0708d918",
+    "meanFloor": 24.446666666666665,
+    "meanWallSecondsPerEpisode": 121.0892,
+    "params": {
+      "scope": "all"
+    },
+    "policy": "search_v3",
+    "winRate": 0.006666666666666667,
+    "winRateWilson95": [
+      0.0018301483579117872,
+      0.023977583250306963
+    ],
+    "wins": 2
+  },
+  "b": {
+    "batchId": "rules_v2-ironclad-a0-veteran-val-n2000",
+    "contentSha256": "70a62f3df49aaa236612e7c371f9f2460f074a2131d048cd242191f92c108b7a",
+    "meanFloor": 20.513333333333332,
+    "meanWallSecondsPerEpisode": 1.153,
+    "params": {
+      "threshold": 0.0
+    },
+    "policy": "rules_v2",
+    "winRate": 0.0033333333333333335,
+    "winRateWilson95": [
+      0.0005886577218511581,
+      0.01863669369453123
+    ],
+    "wins": 1
+  },
+  "bothCompleted": 300,
+  "cohort": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "partition": "val",
+    "profile": "veteran",
+    "sameSeedsBy": "the seed lists of the partition in the two manifests (verified against the recorded hashes)",
+    "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e",
+    "seedManifestSha256B": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+  },
+  "contentSha256": "2fcc6f160d12941a043666d1f03e12003d024ba784c9b192e6a4f764d8f13699",
+  "difference": "a minus b",
+  "excludedNotCompleted": 0,
+  "floorDifference": {
+    "ci95": [
+      2.8966666666666665,
+      5.006666666666667
+    ],
+    "meanAMinusB": 3.933333333333333,
+    "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "kind": "paired-comparison",
+  "pairedSeeds": 300,
+  "pairedWinTable": {
+    "a_only": 2,
+    "b_only": 1,
+    "both": 0,
+    "mcnemar_p": 1.0,
+    "neither": 297
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 223,
+      "rate": 0.7433333333333333,
+      "wilson95": [
+        0.6910470912298479,
+        0.7894666627742062
+      ]
+    },
+    "b": {
+      "games": 194,
+      "rate": 0.6466666666666666,
+      "wilson95": [
+        0.5910330291100347,
+        0.698591699330765
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 59,
+      "b_only": 30,
+      "both": 164,
+      "mcnemar_p": 0.0027852689963042145,
+      "neither": 47
+    }
+  },
+  "reachedAct3": {
+    "a": {
+      "games": 26,
+      "rate": 0.08666666666666667,
+      "wilson95": [
+        0.059828897518043114,
+        0.12395595869424826
+      ]
+    },
+    "b": {
+      "games": 10,
+      "rate": 0.03333333333333333,
+      "wilson95": [
+        0.01820494733885482,
+        0.060261825804054814
+      ]
+    },
+    "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+    "pairedTable": {
+      "a_only": 22,
+      "b_only": 6,
+      "both": 4,
+      "mcnemar_p": 0.0037191659212112427,
+      "neither": 268
+    }
+  },
+  "role": "held-out",
+  "schema": 1,
+  "sensitivityByActReached": {
+    "a": {
+      "games": 223,
+      "rate": 0.7433333333333333,
+      "wilson95": [
+        0.6910470912298479,
+        0.7894666627742062
+      ]
+    },
+    "b": {
+      "games": 194,
+      "rate": 0.6466666666666666,
+      "wilson95": [
+        0.5910330291100347,
+        0.698591699330765
+      ]
+    },
+    "droppedPairs": 0,
+    "label": "post hoc sensitivity analysis, not the registered endpoint: timeouts counted by the act they reached",
+    "pairedTable": {
+      "a_only": 59,
+      "b_only": 30,
+      "both": 164,
+      "mcnemar_p": 0.0027852689963042145,
+      "neither": 47
+    },
+    "pairs": 300,
+    "timeouts": {
+      "a": 0,
+      "b": 0
+    }
+  },
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "parityWithLiveGame": "UNVERIFIED",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "wallTimeRatioBOverA": 0.01
+}
