@@ -28,6 +28,17 @@ def _canonical(body: dict) -> str:
     return json.dumps(body, indent=2, sort_keys=True) + "\n"
 
 
+def _past_act_one(rec) -> bool:
+    """Intermediate endpoint while wins are rare: the run got past the Act-1 boss (it ended in a later act, or won)."""
+    return rec.outcome == "win" or int(rec.act) >= 1
+
+
+def _rate(flags: list[bool]) -> dict:
+    k, n = sum(flags), len(flags)
+    lo, hi = wilson_interval(k, n)
+    return {"games": k, "rate": k / n, "wilson95": [lo, hi]}
+
+
 def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int = 0) -> dict:
     """Compare batch ``a`` with batch ``b`` seed by seed. Differences are reported as ``a - b``."""
     a_dir, b_dir = Path(a_dir), Path(b_dir)
@@ -50,6 +61,8 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
     aw = [a[s].outcome == "win" for s in both]
     bw = [b[s].outcome == "win" for s in both]
     table = paired_win_table(aw, bw)
+    a2 = [_past_act_one(a[s]) for s in both]
+    b2 = [_past_act_one(b[s]) for s in both]
     fa = [float(a[s].floor) for s in both]
     fb = [float(b[s].floor) for s in both]
     mean_diff, lo, hi = paired_bootstrap_ci(fa, fb, iters=iters, seed=seed)
@@ -87,6 +100,12 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
         "bothCompleted": len(both),
         "excludedNotCompleted": len(shared) - len(both),
         "pairedWinTable": table,
+        "reachedAct2": {
+            "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+            "a": _rate(a2),
+            "b": _rate(b2),
+            "pairedTable": paired_win_table(a2, b2),
+        },
         "floorDifference": {
             "meanAMinusB": mean_diff,
             "ci95": [lo, hi],
@@ -122,6 +141,9 @@ def render_text(c: dict) -> str:
         f"(95% Wilson CI {b['winRateWilson95'][0]:.2%} - {b['winRateWilson95'][1]:.2%})",
         f"  paired table: both={t['both']} A-only={t['a_only']} B-only={t['b_only']} neither={t['neither']}  "
         f"McNemar exact p={t['mcnemar_p']:.4g}",
+        f"  past the Act-1 boss: A={c['reachedAct2']['a']['rate']:.1%}  B={c['reachedAct2']['b']['rate']:.1%}  "
+        f"(paired: A-only={c['reachedAct2']['pairedTable']['a_only']} B-only={c['reachedAct2']['pairedTable']['b_only']}, "
+        f"McNemar exact p={c['reachedAct2']['pairedTable']['mcnemar_p']:.4g})",
         f"  mean floor: A={a['meanFloor']:.2f}  B={b['meanFloor']:.2f}",
         f"  floors reached, mean(A-B) = {f['meanAMinusB']:+.2f}  (95% bootstrap CI {f['ci95'][0]:+.2f} .. {f['ci95'][1]:+.2f})",
     ]

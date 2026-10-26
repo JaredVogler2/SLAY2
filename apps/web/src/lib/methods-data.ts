@@ -78,6 +78,22 @@ export function signed(x: number, digits = 2): string {
   return `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(digits)}`;
 }
 
+/** "p = 0.0018", or exponent form when tiny (exact paired tests reach hundreds of orders of magnitude below 1e-4). */
+export function formatP(p: number): string {
+  if (p === 0) return "p < 1e-300";
+  return `p = ${p < 1e-4 ? p.toExponential(1) : p.toPrecision(2)}`;
+}
+
+/** The intermediate endpoint: share of paired games that got past the Act-1 boss, with the exact McNemar test on the pairs. */
+export function actTwoSentence(c: Comparison): string {
+  const r = c.reachedAct2;
+  const t = r.pairedTable;
+  return (
+    `Past the Act-1 boss: ${pct(r.a.rate, 1)} for ${c.a.policy} and ${pct(r.b.rate, 1)} for ${c.b.policy} ` +
+    `(${String(t.a_only)} games only ${c.a.policy}, ${String(t.b_only)} only ${c.b.policy}; exact McNemar ${formatP(t.mcnemar_p)})`
+  );
+}
+
 /** One honest sentence per comparison, generated from the committed artifact so it cannot drift from the data. */
 export function comparisonSentence(c: Comparison): string {
   const [lo = 0, hi = 0] = c.floorDifference.ci95;
@@ -92,7 +108,7 @@ export function comparisonSentence(c: Comparison): string {
   const cost = c.wallTimeRatioBOverA
     ? `; ${c.b.policy} took ${c.wallTimeRatioBOverA.toFixed(1)}× as long per game`
     : "";
-  return `${lead}: ${gap}${cost}.`;
+  return `${lead}: ${gap}${cost}. ${actTwoSentence(c)}.`;
 }
 
 /** Wins and completed games summed over every listed batch (used for the headline sentence). */

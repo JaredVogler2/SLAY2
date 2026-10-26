@@ -14,9 +14,9 @@ REPO = external.REPO_ROOT
 
 
 def make_batch(
-    root: Path, name: str, rows: list[tuple[int, str, int, float]], *, seeds_sha: str = "s" * 64, profile: str = "veteran"
+    root: Path, name: str, rows: list[tuple], *, seeds_sha: str = "s" * 64, profile: str = "veteran"
 ) -> Path:
-    """rows: (seed, outcome, floor, wall_seconds). Writes the two files build_comparison reads."""
+    """rows: (seed, outcome, floor, wall_seconds[, act]). Writes the two files build_comparison reads."""
     d = root / name
     d.mkdir(parents=True)
     (d / "manifest.json").write_text(
@@ -33,12 +33,13 @@ def make_batch(
         encoding="utf-8",
     )
     with (d / "episodes.jsonl").open("w", encoding="utf-8") as fh:
-        for seed, outcome, floor, wall in rows:
+        for seed, outcome, floor, wall, *rest in rows:
             fh.write(
                 json.dumps(
                     {
                         "batch_id": name, "seed": seed, "character": "Ironclad", "ascension": 0, "policy": name,
                         "policy_version": "1", "outcome": outcome, "floor": floor, "wall_seconds": wall,
+                        "act": rest[0] if rest else 0,
                     }
                 )
                 + "\n"
@@ -63,6 +64,20 @@ def test_arithmetic_on_known_rows(tmp_path: Path):
     assert c["wallTimeRatioBOverA"] == 4.0
     assert c["role"].startswith("development")
     assert len(c["contentSha256"]) == 64
+
+
+def test_past_the_act_one_boss_endpoint_counts_later_acts_and_wins_and_pairs_by_seed(tmp_path: Path):
+    a = make_batch(tmp_path, "alpha-q", [(1, "death", 18, 1.0, 1), (2, "death", 9, 1.0, 0), (3, "win", 51, 1.0, 2), (4, "death", 33, 1.0, 2)])
+    b = make_batch(tmp_path, "beta-q", [(1, "death", 7, 1.0, 0), (2, "death", 10, 1.0, 0), (3, "death", 18, 1.0, 1), (4, "death", 20, 1.0, 0)])
+    c = build_comparison(a, b, iters=200)
+    r = c["reachedAct2"]
+    assert r["a"]["games"] == 3 and r["b"]["games"] == 1  # seed 1 and 4 died in a later act; seed 3 won
+    assert r["a"]["rate"] == 0.75 and r["b"]["rate"] == 0.25
+    # seed 3 reached it for both; seeds 1 and 4 only for A; seed 2 for neither. Exact McNemar, 2 vs 0 discordant pairs: p = 0.5
+    assert r["pairedTable"] == {"both": 1, "a_only": 2, "b_only": 0, "neither": 1, "mcnemar_p": 0.5}
+    lo, hi = r["a"]["wilson95"]
+    assert lo < 0.75 < hi
+    assert "past the Act-1 boss" in render_text(c)
 
 
 def test_non_completed_episodes_are_excluded_and_counted_not_scored_as_losses(tmp_path: Path):
@@ -98,16 +113,17 @@ def test_output_is_deterministic_and_round_trips(tmp_path: Path):
     assert "mean(A-B)" in render_text(first)
 
 
-COMMITTED = REPO / "experiments" / "comparisons" / "rules_v1-vs-search_v1-ironclad-a0-veteran-train.json"
+COMMITTED = sorted((REPO / "experiments" / "comparisons").glob("*.json"))
 BATCHES = REPO / "experiments" / "batches"
 
 
-def test_committed_comparison_matches_a_recomputation_from_the_committed_batches():
-    committed = json.loads(COMMITTED.read_text(encoding="utf-8"))
+@pytest.mark.parametrize("path", COMMITTED, ids=lambda p: p.stem)
+def test_committed_comparison_matches_a_recomputation_from_the_committed_batches(path: Path):
+    committed = json.loads(path.read_text(encoding="utf-8"))
     fresh = build_comparison(
         BATCHES / committed["a"]["batchId"], BATCHES / committed["b"]["batchId"], iters=2000, seed=0
     )
-    for key in ("pairedSeeds", "bothCompleted", "excludedNotCompleted", "pairedWinTable", "cohort", "role"):
+    for key in ("pairedSeeds", "bothCompleted", "excludedNotCompleted", "pairedWinTable", "reachedAct2", "cohort", "role"):
         assert fresh[key] == committed[key], key
     for side in ("a", "b"):
         for key in ("batchId", "policy", "contentSha256", "wins", "meanFloor", "meanWallSecondsPerEpisode"):

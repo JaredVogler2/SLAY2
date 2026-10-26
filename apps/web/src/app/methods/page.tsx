@@ -7,6 +7,7 @@ import evidence from "@/content/evidence.generated.json";
 import {
   GROUP_LABEL,
   comparisonSentence,
+  formatP,
   largestReport,
   pct,
   ruleSummary,
@@ -289,6 +290,9 @@ export default function MethodsPage() {
                       A − B (95% bootstrap)
                     </th>
                     <th scope="col" className="py-2 pr-3 font-medium">
+                      Past the Act-1 boss A · B
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
                       Wins A · B
                     </th>
                     <th scope="col" className="py-2 font-medium">
@@ -320,6 +324,12 @@ export default function MethodsPage() {
                         <span className="text-muted">
                           ({signed(c.floorDifference.ci95[0] ?? 0)} to{" "}
                           {signed(c.floorDifference.ci95[1] ?? 0)})
+                        </span>
+                      </td>
+                      <td className="num py-3 pr-3">
+                        {pct(c.reachedAct2.a.rate, 1)} · {pct(c.reachedAct2.b.rate, 1)}
+                        <span className="block text-xs text-muted">
+                          {formatP(c.reachedAct2.pairedTable.mcnemar_p)}
                         </span>
                       </td>
                       <td className="num py-3 pr-3">

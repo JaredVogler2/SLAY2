@@ -114,6 +114,7 @@ function parseComparisons(reports) {
       bothCompleted: c.bothCompleted,
       excludedNotCompleted: c.excludedNotCompleted,
       pairedWinTable: c.pairedWinTable,
+      reachedAct2: c.reachedAct2,
       floorDifference: c.floorDifference,
       wallTimeRatioBOverA: c.wallTimeRatioBOverA,
       role: c.role,

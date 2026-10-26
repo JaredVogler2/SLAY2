@@ -17,7 +17,9 @@ import { afterEach, describe, expect, it } from "vitest";
 import evidence from "@/content/evidence.generated.json";
 import {
   comparisonSentence,
+  actTwoSentence,
   comparisonVerdict,
+  formatP,
   largestReport,
   signed,
   type Comparison,
@@ -65,6 +67,28 @@ describe("comparison wording is derived from the data", () => {
     expect(c?.bothCompleted).toBe(200);
     expect(c?.floorDifference.meanAMinusB).toBeCloseTo(2.375, 3);
     expect(c?.pairedWinTable).toMatchObject({ both: 0, a_only: 0, b_only: 0, neither: 200 });
+  });
+
+  it("the past-the-Act-1-boss endpoint is internally consistent with its paired table and sample size", () => {
+    expect(evidence.comparisons.length).toBeGreaterThan(0);
+    for (const c of evidence.comparisons) {
+      const t = c.reachedAct2.pairedTable;
+      expect(t.both + t.a_only + t.b_only + t.neither, c.id).toBe(c.bothCompleted);
+      expect(c.reachedAct2.a.games, c.id).toBe(t.both + t.a_only);
+      expect(c.reachedAct2.b.games, c.id).toBe(t.both + t.b_only);
+      expect(c.reachedAct2.a.rate, c.id).toBeCloseTo(c.reachedAct2.a.games / c.bothCompleted, 12);
+      const [lo = 1, hi = 0] = c.reachedAct2.a.wilson95;
+      expect(lo <= c.reachedAct2.a.rate && c.reachedAct2.a.rate <= hi, c.id).toBe(true);
+      // a wins-only table must still agree: a game won is also past the Act-1 boss
+      expect(c.reachedAct2.a.games, c.id).toBeGreaterThanOrEqual(c.a.wins);
+      expect(actTwoSentence(c)).toContain(`${c.a.policy} and`);
+    }
+  });
+
+  it("formats exact p-values without printing a misleading zero", () => {
+    expect(formatP(0.0173)).toBe("p = 0.017");
+    expect(formatP(8.13e-261)).toBe("p = 8.1e-261");
+    expect(formatP(0)).toBe("p < 1e-300");
   });
 
   it("headline reports are the held-out batches, even when a development batch is as large", () => {
