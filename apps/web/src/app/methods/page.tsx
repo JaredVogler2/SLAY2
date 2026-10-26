@@ -256,6 +256,26 @@ export default function MethodsPage() {
                         </Badge>
                       </span>
                     ) : null}
+                    {r.rederivationAudit ? (
+                      <span className="mt-1 block">
+                        <Badge
+                          tone={
+                            r.rederivationAudit.exact === r.rederivationAudit.games
+                              ? "neutral"
+                              : "unverified"
+                          }
+                          title={`Complete re-derivation (campaign 6): ${r.rederivationAudit.criteria}.${
+                            r.rederivationAudit.differing.length > 0
+                              ? ` Seeds that differ: ${r.rederivationAudit.differing.join(", ")}.`
+                              : ""
+                          }`}
+                        >
+                          {r.rederivationAudit.exact.toLocaleString("en-US")} of{" "}
+                          {r.rederivationAudit.games.toLocaleString("en-US")} games re-derived
+                          exactly
+                        </Badge>
+                      </span>
+                    ) : null}
                     {r.sampleAudit ? (
                       <span className="mt-1 block">
                         <Badge

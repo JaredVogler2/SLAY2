@@ -179,6 +179,7 @@ def run_batch(
         "environment": environment_fingerprint(external.REPO_ROOT),
         "workers": workers,
         "deliberation_isolated": True,  # a policy's search leaves the live game's card-id counter alone (ADR-035)
+        "canonical_process_state": True,  # every worker plays its first game in the state all later games have (warmup.py, ADR-037)
         "summary": {**summary, "win_rate_95ci_wilson": ci},
         "wall_seconds_this_invocation": round(wall, 1),
         "episodes_file": {"name": episodes_path.name, "sha256": sha256_file(episodes_path), "lines": len(records)},

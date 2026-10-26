@@ -55,6 +55,12 @@
       "min_ascension": 0,
       "affects": "coverage",
       "summary": "Regent's Particle Wall (catalog: 0 energy and 2 stars; gains block and returns to hand) is offered again at cost 0 after every play in the pinned simulator, and the rules policies keep playing it: 33 of 5,000 Regent exploration games (0.66 %) reached the 20,000-step limit with block in the hundreds of thousands. Such games end as timeout, are excluded from card values and paired comparisons and are never read as losses. Whether the simulator charges the stars was not examined; the policies have no guard against replaying a card that returns to hand."
+    },
+    {
+      "id": "G10-first-game-card-id-shift",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "The pinned simulator caches some card lookups lazily; the first lookup of a card in a process takes the next card-instance id without returning it (e.g. the first upgrade of a Vicious card, via capture_self_mutating_card_progress). So a game's ids, and in rare situations a pile (Anger's added copy was missing from the discard pile), depended on how many games its process had already played. The harness now puts every process in the same state before its first game (warmup.py, ADR-037); batches written before that fix were produced with the first games of each worker in the other state, and are checked by `audit rederive`."
     }
   ],
   "reports": [
@@ -114,6 +120,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.43,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -184,6 +192,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.4,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -253,6 +263,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.37,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -327,6 +339,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.65,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -401,6 +415,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.62,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -475,6 +491,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.88,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -551,6 +569,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.72,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -639,6 +659,8 @@
         ],
         "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
       },
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -715,6 +737,8 @@
       ],
       "meanWallSecondsPerEpisode": 0.66,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -789,6 +813,8 @@
       ],
       "meanWallSecondsPerEpisode": 12.81,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
@@ -865,6 +891,8 @@
       ],
       "meanWallSecondsPerEpisode": 12.02,
       "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
       "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",

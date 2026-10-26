@@ -70,6 +70,12 @@ function parseEvidence() {
     if (sample && !(sample.batch_id === m.batch_id && sample.batch_content_sha256 === m.content_sha256)) {
       throw new Error(`${name}: sample-audit.json was written for other content; rerun slay2_sim audit sample --batch experiments/batches/${name}`);
     }
+    // The complete re-derivation (slay2_sim audit rederive: every game re-run and compared) is held to the same rule.
+    const rederiveFile = join(dir, name, "rederivation-audit.json");
+    const rederive = existsSync(rederiveFile) ? JSON.parse(readFileSync(rederiveFile, "utf8")) : null;
+    if (rederive && !(rederive.batch_id === m.batch_id && rederive.batch_content_sha256 === m.content_sha256)) {
+      throw new Error(`${name}: rederivation-audit.json was written for other content; rerun slay2_sim audit rederive --batch experiments/batches/${name}`);
+    }
     const completed = eps.filter((e) => e.outcome === "win" || e.outcome === "death");
     const floors = completed.map((e) => e.floor).sort((a, b) => a - b);
     const mean = floors.reduce((a, b) => a + b, 0) / Math.max(1, floors.length);
@@ -101,6 +107,10 @@ function parseEvidence() {
       winsAudit: audit
         ? { audited: audit.wins_audited, verified: audit.wins_verified, seeds: audit.wins.map((w) => w.seed), criteria: audit.criteria }
         : null,
+      rederivationAudit: rederive
+        ? { games: rederive.games, exact: rederive.rederived_exactly, differing: rederive.differing.map((d) => d.seed), criteria: rederive.criteria }
+        : null,
+      canonicalProcessState: m.canonical_process_state === true,
       sampleAudit: sample
         ? {
             drawn: sample.sample.drawn,

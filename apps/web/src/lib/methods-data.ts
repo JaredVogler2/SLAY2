@@ -12,9 +12,22 @@ export interface SampleAuditSummary {
   readonly criteria: string;
 }
 
-// The generated file has `sampleAudit: null` for every batch until one is audited, which JSON inference would freeze as `null`
-export type EvidenceReport = Omit<(typeof evidence.reports)[number], "sampleAudit"> & {
+/** What `slay2_sim audit rederive` found: every game of the batch re-run and compared with the stored record. */
+export interface RederivationAuditSummary {
+  readonly games: number;
+  readonly exact: number;
+  /** seeds whose re-run is not identical to the stored record */
+  readonly differing: readonly number[];
+  readonly criteria: string;
+}
+
+// The generated file has `null` for an audit that has not been run, which JSON inference would freeze as `null`
+export type EvidenceReport = Omit<
+  (typeof evidence.reports)[number],
+  "sampleAudit" | "rederivationAudit"
+> & {
   readonly sampleAudit: SampleAuditSummary | null;
+  readonly rederivationAudit: RederivationAuditSummary | null;
 };
 export type SimulatorGap = (typeof evidence.simulatorGaps)[number];
 export type Comparison = (typeof evidence.comparisons)[number];
