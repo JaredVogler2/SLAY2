@@ -157,7 +157,7 @@ export function RecommendationPanel({
                           {r.delta >= 0 ? "+" : ""}
                           {r.delta.toFixed(2)}
                         </span>
-                        <span>{r.text}</span>
+                        <span className="min-w-0">{r.text}</span>
                       </li>
                     ))}
                   </ul>

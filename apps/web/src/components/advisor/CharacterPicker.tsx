@@ -27,7 +27,7 @@ export function CharacterPicker({
   disabled?: boolean;
 }) {
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend className="mb-2 text-sm font-medium text-parchment">Character</legend>
       <div
         className={cn(
@@ -75,11 +75,16 @@ export function CharacterPicker({
                 <span aria-hidden="true" style={{ color: style.hue }} className="text-lg">
                   {style.glyph}
                 </span>
-                <span className="font-display text-base text-parchment">{style.label}</span>
+                <span className="wrap-anywhere min-w-0 font-display text-base text-parchment">
+                  {style.label}
+                </span>
                 {checked ? (
                   // a mark, not a word: "Necrobinder" and the word "selected" do not fit one card (203 px at 1280 px); on a card
                   // the mark sits in the corner, out of the name's way
-                  <span aria-hidden="true" className="text-gold xl:absolute xl:right-2.5 xl:top-2">
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-gold xl:absolute xl:right-2.5 xl:top-2"
+                  >
                     ✓
                   </span>
                 ) : null}

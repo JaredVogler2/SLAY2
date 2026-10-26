@@ -35,7 +35,7 @@ export function OddsWorkbench() {
   return (
     <div className="space-y-6">
       <div className="panel flex flex-wrap items-end gap-x-8 gap-y-4 p-4 sm:p-5">
-        <div className="min-w-44">
+        <div className="min-w-[min(11rem,100%)]">
           <label htmlFor="ctx-asc" className="mb-1.5 block text-sm font-medium text-parchment">
             Ascension
           </label>

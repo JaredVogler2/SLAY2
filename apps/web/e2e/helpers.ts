@@ -159,8 +159,8 @@ export async function expectNoClippedText(page: Page): Promise<void> {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
       for (let node = walker.nextNode(); node; node = walker.nextNode()) {
         const text = node.textContent?.trim() ?? "";
-        if (text === "") {
-          continue;
+        if (text === "" || node.parentElement?.closest(".sr-only") != null) {
+          continue; // screen-reader-only text is clipped by design
         }
         const range = document.createRange();
         range.selectNodeContents(node);

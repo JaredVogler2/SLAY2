@@ -107,7 +107,7 @@ export function RouteBuilder({
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-56 flex-1">
+        <div className="min-w-[min(14rem,100%)] flex-1">
           <label htmlFor={inputId} className="mb-1.5 block text-sm font-medium text-parchment">
             Or type route {name}
           </label>

@@ -72,7 +72,7 @@ export function PityDemo() {
               <span>45 · counter capped</span>
             </div>
           </div>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))] gap-4">
             <div className="rounded-xl border border-line bg-charcoal/50 p-4">
               <dt className="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-muted">
                 After a normal fight

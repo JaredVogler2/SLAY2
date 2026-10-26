@@ -173,7 +173,7 @@ export function RouteLab() {
     <div className="space-y-6">
       <div className="panel space-y-5 p-4 sm:p-5">
         <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
-          <div className="min-w-44">
+          <div className="min-w-[min(11rem,100%)]">
             <label htmlFor="route-asc" className="mb-1.5 block text-sm font-medium text-parchment">
               Ascension
             </label>
