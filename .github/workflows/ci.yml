@@ -40,6 +40,8 @@ jobs:
   e2e:
     name: e2e (production build, Playwright desktop + mobile, axe WCAG 2.2 AA)
     runs-on: ubuntu-latest
+    # the suite takes about three minutes; a step that hangs must not sit for GitHub's six-hour default
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -49,7 +51,16 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      # The browser download and the apt packages come from outside the repository and twice hung for more than ten minutes
+      # (the same commit's other jobs had finished in about a minute): the first attempt is bounded and one more is made.
       - name: Install Chromium for Playwright
+        id: chromium
+        timeout-minutes: 5
+        continue-on-error: true
+        run: pnpm --filter @slay2/web exec playwright install --with-deps chromium
+      - name: Install Chromium for Playwright (second attempt)
+        if: steps.chromium.outcome != 'success'
+        timeout-minutes: 8
         run: pnpm --filter @slay2/web exec playwright install --with-deps chromium
       - name: Run the end-to-end suite against `next start`
         run: pnpm --filter @slay2/web e2e
