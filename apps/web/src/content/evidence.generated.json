@@ -1561,6 +1561,155 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2_neow_values-defect-a0-veteran-val-n2000",
+      "policy": "rules_v2_neow_values",
+      "policyParams": {
+        "neow_values": "experiments/neow/neow-values-v1.json",
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1930,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 16,
+        "timeout": 0,
+        "win": 54
+      },
+      "completed": 1984,
+      "winRate": 0.02721774193548387,
+      "winRateWilson95": [
+        0.02092022337884759,
+        0.03534254261006842
+      ],
+      "meanFloor": 28.6,
+      "medianFloor": 31,
+      "deathsByAct": {
+        "0": 167,
+        "1": 1445,
+        "2": 372
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 339
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 215
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 187
+        },
+        {
+          "id": "AXEBOT,AXEBOT",
+          "n": 69
+        },
+        {
+          "id": "ROCKET",
+          "n": 69
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.06,
+      "winsAudit": {
+        "audited": 54,
+        "verified": 54,
+        "seeds": [
+          14204601,
+          68920110,
+          131188946,
+          132242107,
+          184233891,
+          265444507,
+          312030372,
+          383896058,
+          411840045,
+          436539575,
+          507804017,
+          584071147,
+          597748979,
+          606749904,
+          617887816,
+          651277092,
+          651911716,
+          687697136,
+          716529383,
+          781651074,
+          823245923,
+          867891459,
+          888372297,
+          926873545,
+          930877232,
+          973608673,
+          1026421380,
+          1052993715,
+          1071453307,
+          1114913864,
+          1137034221,
+          1185637675,
+          1187177677,
+          1217228316,
+          1230255683,
+          1329386833,
+          1369434754,
+          1371396048,
+          1457492597,
+          1500338787,
+          1521677610,
+          1601974739,
+          1614704061,
+          1685609755,
+          1769862811,
+          1774525248,
+          1790532306,
+          1939951773,
+          1986541492,
+          1988393596,
+          2000146395,
+          2022247805,
+          2068245559,
+          2121558014
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1984,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "2051184dbc76cb6b1f4deb50b7590077b9a877aecc7dea97576d4e3feeac09af",
+      "episodesGzSha256": "1d0521a7d9a7ababae717cad2057d872f81511d4ebe01e68df2a2bb8a16c1ba6",
+      "finished": "2026-10-26T16:12:56+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v2_neow_values-ironclad-a0-veteran-val-n2000",
       "policy": "rules_v2_neow_values",
       "policyParams": {
