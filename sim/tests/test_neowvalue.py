@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
-import numpy as np
+import json
+from pathlib import Path
 
-from slay2_sim.neowvalue import binomial_upper_tail, build_report, extract, extract_excluded, vocabulary
+import numpy as np
+import pytest
+
+from slay2_sim.classes import ClassError
+from slay2_sim.neowvalue import binomial_upper_tail, build_report, design, extract, extract_excluded, main, vocabulary
 
 POSITIVE = ["Arcane Scroll", "Booming Conch", "Fishing Rod", "Golden Pearl", "Kaleidoscope", "Lead Paperweight"]
 CURSED = ["Cursed Pearl", "Hefty Tablet", "Large Capsule"]
@@ -119,3 +124,43 @@ def test_the_exact_binomial_tail():
     assert binomial_upper_tail(0, 10, 0.3) == 1.0
     assert abs(binomial_upper_tail(10, 10, 0.5) - 0.5**10) < 1e-15
     assert abs(binomial_upper_tail(3, 5, 0.5) - (10 + 5 + 1) / 32) < 1e-15
+
+
+def test_the_games_of_one_seed_move_together_in_folds_and_bootstrap():
+    # a seed decides the offer and, under exploration, the relic taken: the same seeds in a second class are not new draws
+    games = synthetic(200)
+    both = extract(games, "ironclad") + extract(games, "silent")
+    _, _, g, _, _ = design(both, vocabulary(both, min_taken=1))
+    assert len(g) == 400 and len(np.unique(g)) == 200
+    assert g[:200].tolist() == g[200:].tolist()  # row k of one class and row k of the other share a group
+    report = build_report(both, bootstrap_draws=20, min_taken=1)
+    assert report["model"]["seeds"] == 200 and "seed" in report["model"]["resampling_unit"]
+
+
+def _batch(tmp_path: Path, name: str, character: str, *, verified: bool | None) -> Path:
+    d = tmp_path / name
+    d.mkdir()
+    manifest = {"batch_id": name, "policy": {"name": "rules_v2_neow", "params": {"neow_explore": 1.0}}, "content_sha256": "c" * 64,
+                "config": {"character": character, "ascension": 0, "profile": "veteran"}}
+    if verified is not None:
+        manifest["class_start_verified"] = verified
+    (d / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (d / "episodes.jsonl").write_text("\n".join(json.dumps(g) for g in synthetic(40)) + "\n", encoding="utf-8")
+    return d
+
+
+def test_the_fit_refuses_batches_that_were_not_played_with_the_class_check_or_whose_class_is_inexact(tmp_path):
+    out = tmp_path / "values.json"
+    for name, character, verified in (("a", "Silent", None), ("b", "Silent", False)):
+        with pytest.raises(SystemExit, match="class_start_verified"):
+            main(["--batches", str(_batch(tmp_path, name, character, verified=verified)), "--out", str(out)])
+    with pytest.raises(ClassError):
+        main(["--batches", str(_batch(tmp_path, "c", "silent", verified=True)), "--out", str(out)])  # the first study's mistake
+    assert not out.exists()
+    # an exact class with the check is accepted, and is named in lower case in the model (the site's keys)
+    ok = _batch(tmp_path, "d", "Silent", verified=True)
+    other = _batch(tmp_path, "e", "Ironclad", verified=True)
+    main(["--batches", str(ok), str(other), "--out", str(out), "--bootstrap", "5", "--min-taken", "1"])
+    body = json.loads(out.read_text(encoding="utf-8"))
+    assert set(body["classes"]) == {"silent", "ironclad"}
+    assert [b["character"] for b in body["batches"]] == ["Silent", "Ironclad"]

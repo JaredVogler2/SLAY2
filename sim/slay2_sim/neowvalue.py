@@ -4,8 +4,13 @@
 decided by chance, and records the offer and the relic it took. Because chance, not taste, decided which relic the run
 started with, the effect of taking a relic can be read from a regression: logit P(the run gets past the Act-1 boss) =
 class + sum over relics of beta_relic * [the run took that relic]. ``beta_relic`` is the change in log-odds, relative to the
-average relic taken, with a bootstrap interval that resamples whole games; the penalty shrinks relics seen in few games toward
+average relic taken, with a bootstrap interval that resamples whole *seeds*; the penalty shrinks relics seen in few games toward
 that average (the usual cure for the winner's curse when the best of many estimates is the one acted on).
+
+The unit of resampling and of cross-validation is the seed, not the game (ADR-049): the seed decides the offer and, under
+exploration, the relic taken, so the five classes' games of one seed share both and are not independent draws (15,000 games
+are 3,000 independent draws of a relic). The first version of this fit treated every game as its own group, which made the
+intervals optimistic; the point estimates, and the rule built on them, do not depend on the grouping.
 
 What this is not: a statement about the real game (the simulator is unverified, and its relic effects are what the simulator
 implements), about other pilots (the policy that plays on is rules_v2, which ignores effects it does not know how to use,
@@ -24,6 +29,7 @@ from pathlib import Path
 import numpy as np
 
 from .cardvalue import FOLDS, bootstrap, cross_validate, fit_logistic, read_episodes
+from .classes import exact_character
 
 SCHEMA = 1
 
@@ -94,7 +100,10 @@ def design(records: list[dict], vocab: dict) -> tuple[np.ndarray, np.ndarray, np
     ri = {x: 1 + len(chars) + k for k, x in enumerate(relics)}
     X = np.zeros((len(records), len(names)))
     y = np.zeros(len(records))
-    g = np.arange(len(records), dtype=np.int64)  # every game is its own group: games are independent draws
+    # the group is the seed: the offer and the relic taken are functions of it, so the games of one seed (one per class) move
+    # together in the cross-validation folds and in the bootstrap (ADR-049)
+    index = {s: k for k, s in enumerate(sorted({r["seed"] for r in records}))}
+    g = np.array([index[r["seed"]] for r in records], dtype=np.int64)
     for i, r in enumerate(records):
         X[i, 0] = 1.0
         if r["character"] in ci:
@@ -170,7 +179,8 @@ def build_report(
         "pass_rate": round(float(y.mean()), 4),
         "classes": per_class,
         "model": {"l2": l2, "folds": FOLDS, "cross_validation": cv, "bootstrap_draws": bootstrap_draws, "min_taken": min_taken,
-                  "features": len(names)},
+                  "features": len(names), "resampling_unit": "seed (the games of one seed in every class move together)",
+                  "seeds": int(len(np.unique(g)))},
         "covariates": {n: round(float(beta[j]), 4) for j, n in enumerate(names) if not n.startswith("relic:")},
         "relics": relics,
         "rule": "take the offered relic with the largest beta; a relic taken in fewer than min_taken games counts as 0 (the average)",
@@ -194,11 +204,16 @@ def main(argv: list[str] | None = None) -> int:
         mf = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
         if mf["policy"]["name"] != "rules_v2_neow" or mf["policy"]["params"].get("neow_explore", 1.0) != 1.0:
             raise SystemExit(f"{d.name}: only fully randomised rules_v2_neow batches identify the effect of a relic")
+        # the class must be one of the simulator's exact ids and the batch must have been played by a harness that checked every
+        # game's start against the class (ADR-049): the first version of this study was fitted on batches that were not
+        character = exact_character(mf["config"]["character"])
+        if mf.get("class_start_verified") is not True:
+            raise SystemExit(f"{d.name}: not played with the per-game class check (class_start_verified), so it cannot be fitted")
         cohorts.add((mf["config"]["ascension"], mf["config"]["profile"]))
         episodes = read_episodes(d)
-        records.extend(extract(episodes, mf["config"]["character"]))
-        excluded.extend(extract_excluded(episodes, mf["config"]["character"]))
-        manifests.append({"batch_id": mf["batch_id"], "character": mf["config"]["character"], "content_sha256": mf["content_sha256"],
+        records.extend(extract(episodes, character.lower()))
+        excluded.extend(extract_excluded(episodes, character.lower()))
+        manifests.append({"batch_id": mf["batch_id"], "character": character, "content_sha256": mf["content_sha256"],
                           "policy": mf["policy"], "known_simulator_gaps": [gp["id"] for gp in mf.get("known_simulator_gaps", [])]})
     if len(cohorts) != 1:
         raise SystemExit(f"batches must share one (ascension, profile); got {sorted(cohorts)}")

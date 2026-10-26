@@ -151,13 +151,10 @@ def test_pooling_refuses_what_is_not_one_experiment(tmp_path: Path):
         build_pooled_comparison([(a1, b1), (a2, first_run)])
 
 
-def test_the_letter_case_of_the_class_does_not_matter_but_another_class_does(tmp_path: Path):
-    # manifests written before the class was normalised say "Ironclad", later ones "ironclad": one class, one pairing
+def test_a_different_class_is_refused_and_so_is_a_class_string_that_is_not_exact(tmp_path: Path):
+    # the letter case is not a formatting detail: the simulator plays "silent" as Ironclad (ADR-049, test_classes.py pins the rest)
     old = make_batch(tmp_path, "alpha-c1", [(1, "death", 18, 1.0, 1)], character="Ironclad")
-    new = make_batch(tmp_path, "beta-c1", [(1, "death", 7, 1.0, 0)], character="ironclad")
     other = make_batch(tmp_path, "beta-c2", [(1, "death", 7, 1.0, 0)], character="Silent")
-    assert build_comparison(old, new, iters=100)["bothCompleted"] == 1
-    assert build_pooled_comparison([(old, new), (make_batch(tmp_path, "alpha-c3", [(1, "death", 3, 1.0)], character="silent"), other)], iters=100)["bothCompleted"] == 2
     with pytest.raises(ValueError, match="character"):
         build_comparison(old, other)
 

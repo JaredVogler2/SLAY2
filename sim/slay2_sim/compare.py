@@ -16,6 +16,7 @@ from pathlib import Path
 
 from . import external
 from .batch import read_episodes
+from .classes import exact_character
 from .manifest import load_seed_manifest, partition_seeds, sha256_file
 from .stats import paired_bootstrap_ci, paired_win_table, wilson_interval
 
@@ -99,8 +100,11 @@ def _load_pair(a_dir: Path, b_dir: Path) -> tuple[dict, dict, dict, dict, list[i
     ma, mb = _manifest(a_dir), _manifest(b_dir)
     if not _same_seeds(ma["seeds"], mb["seeds"]):
         raise ValueError("batches must be played on the same seed manifest and partition to be paired")
-    # older manifests wrote the class capitalised ("Ironclad"), newer ones lower case ("ironclad"): the same class
-    if str(ma["config"]["character"]).lower() != str(mb["config"]["character"]).lower() or ma["config"]["ascension"] != mb["config"]["ascension"]:
+    # Strings are compared as written, and each must be one of the simulator's exact class ids: the simulator plays any other
+    # string as Ironclad, so "ironclad" against "Ironclad" is a warning, not a formatting difference (ADR-049)
+    exact_character(ma["config"]["character"])
+    exact_character(mb["config"]["character"])
+    if ma["config"]["character"] != mb["config"]["character"] or ma["config"]["ascension"] != mb["config"]["ascension"]:
         raise ValueError("batches must share the character and ascension")
     if ma["config"]["profile"] != mb["config"]["profile"]:
         raise ValueError("batches must share the player profile (veteran / first_run)")

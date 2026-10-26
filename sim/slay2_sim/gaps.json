@@ -72,6 +72,15 @@
       "min_ascension": 0,
       "affects": "coverage",
       "summary": "Act 1 of the game comes in two versions, Overgrowth and Underdocks, with different elites, bosses and ordinary fights. The pinned simulator's three-act run is Overgrowth, Hive, Glory; Underdocks exists in it only as the simulator's 'extra act' (an act index beyond the third) and the harness never plays it, so every simulated game, and every card value measured from them, is an Overgrowth game. This is not a fourth act: the game has three (ADR-048)."
+    },
+    {
+      "id": "G13-necrobinder-start-hp",
+      "min_ascension": 0,
+      "affects": "results",
+      "classes": [
+        "Necrobinder"
+      ],
+      "summary": "The pinned simulator starts a Necrobinder run with 75 HP; the game's own source (CharacterModel.StartingHp of the Necrobinder) says 66. Every simulated Necrobinder result, the card values and the held-out tests among them, starts 9 HP (14 %) above the game and makes the class look sturdier than it is. Found on 2026-10-26 by comparing the simulator's starting state with the repository's class facts; the size of the effect on the results has not been measured (the other four classes' starting HP and every class's starter deck match the game)."
     }
   ]
 }

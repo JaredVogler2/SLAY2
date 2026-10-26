@@ -20,14 +20,22 @@ class Gap:
     summary: str
     min_ascension: int = 0
     affects: str = "results"  # "results" = changes what a win rate means; "coverage" = drops or biases a few episodes
+    classes: tuple[str, ...] = ()  # the exact class ids the gap is about; empty = every class
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "classes", tuple(self.classes))
 
     def to_json(self) -> dict:
-        return {"id": self.id, "summary": self.summary, "min_ascension": self.min_ascension, "affects": self.affects}
+        d = {"id": self.id, "summary": self.summary, "min_ascension": self.min_ascension, "affects": self.affects}
+        if self.classes:
+            d["classes"] = list(self.classes)  # a gap that is not class-specific keeps the shape every earlier manifest has
+        return d
 
 
 GAPS: tuple[Gap, ...] = tuple(Gap(**g) for g in json.loads(GAPS_PATH.read_text(encoding="utf-8"))["gaps"])
 
 
-def applicable(ascension: int) -> list[dict]:
-    """Gaps relevant to a run configuration (those with a higher ascension threshold are omitted)."""
-    return [g.to_json() for g in GAPS if ascension >= g.min_ascension]
+def applicable(ascension: int, character: str | None = None) -> list[dict]:
+    """Gaps relevant to a run configuration: those with a higher ascension threshold are omitted, and a gap that is about
+    particular classes is listed only for those (never when the class is not given)."""
+    return [g.to_json() for g in GAPS if ascension >= g.min_ascension and (not g.classes or character in g.classes)]

@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from .classes import ClassError, check_start, exact_character
 from .isolation import deliberation
 from .observation import obs_hash, observe
 from .outcomes import EpisodeRecord, Outcome
@@ -33,6 +34,10 @@ class RunConfig:
     # A harness variant, never the simulator's own behaviour and off in every batch written before G11 was recorded: the
     # game opens each act with an Ancient event that first heals the player (the simulator starts acts 2 and 3 on the map).
     ancient_heal: bool = False
+
+    def __post_init__(self) -> None:
+        # the simulator silently plays any class id it does not know exactly as Ironclad (classes.py, ADR-049)
+        exact_character(self.character)
 
     def describe(self) -> dict:
         d = dict(self.__dict__)
@@ -108,9 +113,11 @@ def new_run(cfg: "RunConfig", seed: int):
         rm.RunState = _veteran_run_state_cls()
     manager_cls = _ancient_heal_manager_cls() if cfg.ancient_heal else rm.RunManager
     try:
-        return manager_cls(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
+        mgr = manager_cls(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
     finally:
         rm.RunState = previous
+    check_start(mgr, cfg.character, cfg.ascension)  # the class that was asked for is the class that was played
+    return mgr
 
 
 class EpisodeWallTimeout(Exception):
@@ -271,6 +278,8 @@ def run_episode(
             rec.outcome = outcome.value
     except EpisodeWallTimeout as e:
         rec.outcome, rec.error = Outcome.TIMEOUT.value, str(e)
+    except ClassError:
+        raise  # a run that is not the class it claims to be is a wrong experiment, not a game result: stop, never record it
     except Exception as e:  # noqa: BLE001 - classification point; attribute the exception to its component
         rec.outcome = {"sim": Outcome.SIMULATOR_ERROR, "adapter": Outcome.HARNESS_ERROR, "policy": Outcome.POLICY_ERROR}[stage].value
         rec.error = f"{type(e).__name__}: {str(e)[:300]}"
