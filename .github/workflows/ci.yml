@@ -2,7 +2,9 @@ name: ci
 
 on:
   push:
-    branches: [main, "claude/**"]
+    # main only: a branch is checked through its pull request. Running both on every push of a branch with an open pull request
+    # doubled the Actions minutes (two runs of the same commit, one per event).
+    branches: [main]
   pull_request:
 
 concurrency:
