@@ -11,4 +11,4 @@ was changed so that it cannot happen again. The experiment, if it still matters,
 
 | Directory | What | Why it is void |
 |---|---|---|
-| [`2026-10-26-wrong-class-ids/`](2026-10-26-wrong-class-ids/VOID.md) | the first opening-relic (Neow) study: 15,000 exploration games, the fitted values, 10,000 held-out games and the pooled test | four of the five classes were played as Ironclad |
+| [`2026-10-26-wrong-class-ids/`](2026-10-26-wrong-class-ids/VOID.md) | the first opening-relic (Neow) study: 15,000 exploration games, the fitted values, 10,000 held-out games and the pooled test | four of the five classes were played with Ironclad's starting HP, deck and relic |

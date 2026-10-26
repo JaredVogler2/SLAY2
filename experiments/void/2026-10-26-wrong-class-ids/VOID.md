@@ -1,4 +1,4 @@
-# Void: the first opening-relic study (ADR-041), four classes were played as Ironclad
+# Void: the first opening-relic study (ADR-041), four classes were played with Ironclad's start
 
 **Status: void. Nothing in this directory is evidence about Silent, Regent, Necrobinder or Defect, and nothing computed from it may
 be quoted.** Recorded on 2026-10-26, a few hours after the study's held-out run finished.
@@ -7,19 +7,21 @@ be quoted.** Recorded on 2026-10-26, a few hours after the study's held-out run 
 
 The study measured what each of the opening Ancient's relics is worth (`neow_explore` exploration, a logistic fit, then one pooled
 held-out test; ADR-041). Its runs were started with `--character ironclad|silent|regent|necrobinder|defect` in lower case. The
-pinned third-party simulator matches the class id **exactly** and silently plays any other string as Ironclad
-(`RunManager`: `_CHARACTER_CONFIG.get(character_id, <Ironclad>)`, and the starter deck's "Fallback to Ironclad"). The existing
+pinned third-party simulator's `RunManager` matches the class id **exactly** for the run's starting configuration and silently
+falls back to Ironclad's (`_CHARACTER_CONFIG.get(character_id, <Ironclad>)`, and the starter deck's "Fallback to Ironclad"),
+while other parts of the simulator (the card pools) match it case-insensitively. A lower-case id therefore gives a hybrid:
+Ironclad's starting HP, starter deck and starting relic with the named class's card pool. It is neither class. The existing
 `rules_v2-<class>` baselines had been played with the exact ids (`Silent`, `Regent`, `Necrobinder`, `Defect`).
 
 Consequences, by file:
 
 | Files | What they are | Valid? |
 |---|---|---|
-| `neow/explore-ironclad-a0-train-n3000/` | 3,000 exploration games, Ironclad | the games are valid Ironclad games, but they are an input of a void fit |
-| `neow/explore-{silent,regent,necrobinder,defect}-a0-train-n3000/` | 12,000 exploration games | **void**: played with Ironclad's 80 HP and starter deck (the most common final maximum HP is 80 in every one of them; a real run gives 70, 75, 75 and 75) |
+| `neow/explore-ironclad-a0-train-n3000/` | 3,000 exploration games, Ironclad | nearly Ironclad games, not exactly: played again with the exact id only 624 of the 3,000 are game-for-game identical (the lower-case id changes more than the starting configuration), and they are an input of a void fit |
+| `neow/explore-{silent,regent,necrobinder,defect}-a0-train-n3000/` | 12,000 exploration games | **void**: played with Ironclad's 80 HP, starter deck and relic and the named class's card pool (the most common final maximum HP is 80 in every one of them; a real run gives 70, 75, 75 and 75) |
 | `neow/neow-values-v1.json` | the fitted relic values (SHA-256 `a0fc7103121ac4e181910468861528402e1189ff90f57b243dde72ed84572565`) | **void**: fitted on those 15,000 games |
-| `batches/rules_v2_neow_values-ironclad-a0-veteran-val-n2000/` | held-out arm, Ironclad | a valid Ironclad game played by a rule built from void values: not evidence |
-| `batches/rules_v2_neow_values-{silent,regent,necrobinder,defect}-a0-veteran-val-n2000/` | held-out arms | **void**: the wrong class again |
+| `batches/rules_v2_neow_values-ironclad-a0-veteran-val-n2000/` | held-out arm, Ironclad | nearly Ironclad games played by a rule built from void values: not evidence |
+| `batches/rules_v2_neow_values-{silent,regent,necrobinder,defect}-a0-veteran-val-n2000/` | held-out arms | **void**: the same hybrid again |
 | `neow/pooled-neow-values-vs-rules_v2-val.json` | the pooled comparison with the existing baselines | **void**: it compares an Ironclad-played arm with properly played baselines |
 
 The pooled comparison that was computed from them is recorded here only so that no one wonders whether a result was hidden: it
