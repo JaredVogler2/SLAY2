@@ -84,7 +84,7 @@ test.describe("methods", () => {
         panel.getByRole("heading", { level: 3, name: "The one held-out test" }),
       ).toBeVisible();
       await expect(panel).toContainText(
-        held.passed ? "validated in simulation" : "measurement only",
+        held.passed ? "passed its test, in simulation" : "measurement only",
       );
       await expect(panel.getByRole("table", { name: /^By class/ })).toBeVisible();
     }

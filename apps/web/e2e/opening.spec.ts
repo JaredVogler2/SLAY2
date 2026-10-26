@@ -6,6 +6,7 @@ import {
   expectNoClippedText,
   expectNoHorizontalOverflow,
   expectNoSeriousA11yViolations,
+  neowAdvisedFor,
   neowInfo,
 } from "./helpers";
 
@@ -396,11 +397,15 @@ test.describe("what did Neow offer?", () => {
     if (held === null) {
       await expect(page.getByText(/have not been tested against play yet/)).toBeVisible();
       await expect(page.getByText(/would take/)).toHaveCount(0);
-    } else if (held.passed) {
+    } else if (!held.passed) {
+      await expect(page.getByText(/does not say which relic to take/)).toBeVisible();
+      await expect(page.getByText(/would take/)).toHaveCount(0);
+    } else if (neowAdvisedFor("ironclad")) {
       await expect(page.getByText(/would take/).first()).toContainText(best);
       await expect(page.getByText(/does not say which relic/)).toHaveCount(0);
     } else {
-      await expect(page.getByText(/does not say which relic to take/)).toBeVisible();
+      // the pooled test passed, but Ironclad's own games did not clearly favour the rule: the page says so and names nothing
+      await expect(page.getByText(/does not say which relic to take for Ironclad/)).toBeVisible();
       await expect(page.getByText(/would take/)).toHaveCount(0);
     }
 

@@ -177,7 +177,19 @@ export async function expectNoClippedText(page: Page): Promise<void> {
 
 export interface NeowInfo {
   /** the held-out test of playing by the opening-relic values, when it has been run */
-  readonly test: { readonly passed: boolean; readonly bothCompleted: number } | null;
+  readonly test: {
+    readonly passed: boolean;
+    readonly bothCompleted: number;
+    readonly alpha: number;
+    readonly members: readonly {
+      readonly character: string;
+      readonly reachedAct2: {
+        readonly a: number;
+        readonly b: number;
+        readonly pairedTable: { readonly mcnemar_p: number };
+      };
+    }[];
+  } | null;
   /** measured relics by the simulator's label; empty while no valid measurement is published */
   readonly relics: readonly {
     readonly label: string;
@@ -194,4 +206,21 @@ export function neowInfo(): NeowInfo {
     test: NeowInfo["test"];
   };
   return { test: data.test, relics: data.values?.relics ?? [] };
+}
+
+/**
+ * Whether the advisor may say what the tested rule would take for a class (ADR-049): the pooled test passed and the class's own
+ * games had the rule ahead at the test's level split over its classes. The same rule as `classResult` in the web library, read
+ * from the file again so that a test does not trust the code it is testing.
+ */
+export function neowAdvisedFor(character: string): boolean {
+  const { test } = neowInfo();
+  const member = test?.members.find((m) => m.character === character);
+  if (!test || !member || !test.passed) {
+    return false;
+  }
+  return (
+    member.reachedAct2.a > member.reachedAct2.b &&
+    member.reachedAct2.pairedTable.mcnemar_p < test.alpha / test.members.length
+  );
 }
