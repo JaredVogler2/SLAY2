@@ -1,9 +1,10 @@
-import type evidence from "@/content/evidence.generated.json";
+import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
 
 export type RuleRow = (typeof rules.rules)[number];
 export type EvidenceReport = (typeof evidence.reports)[number];
 export type SimulatorGap = (typeof evidence.simulatorGaps)[number];
+export type Comparison = (typeof evidence.comparisons)[number];
 
 export const verification = rules.verification;
 
@@ -53,4 +54,50 @@ export function rulesBySection(): { section: string; rows: RuleRow[] }[] {
 
 export function pct(x: number, digits = 2): string {
   return `${(x * 100).toFixed(digits)}%`;
+}
+
+/** The largest veteran-profile batch of a policy: the best estimate we have for it. */
+export function largestReport(policy: string): EvidenceReport | undefined {
+  return evidence.reports
+    .filter((r) => r.policy === policy && r.profile === "veteran")
+    .sort((x, y) => y.completed - x.completed)[0];
+}
+
+export type ComparisonVerdict = "a-higher" | "b-higher" | "undetermined";
+
+/** Which side reached more floors, judged only by whether the 95% bootstrap interval of mean(A - B) excludes zero. */
+export function comparisonVerdict(c: Comparison): ComparisonVerdict {
+  const [lo, hi] = c.floorDifference.ci95;
+  if (lo !== undefined && lo > 0) return "a-higher";
+  if (hi !== undefined && hi < 0) return "b-higher";
+  return "undetermined";
+}
+
+export function signed(x: number, digits = 2): string {
+  return `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(digits)}`;
+}
+
+/** One honest sentence per comparison, generated from the committed artifact so it cannot drift from the data. */
+export function comparisonSentence(c: Comparison): string {
+  const [lo = 0, hi = 0] = c.floorDifference.ci95;
+  const gap = `${signed(c.floorDifference.meanAMinusB)} floors for ${c.a.policy} relative to ${c.b.policy} (95% bootstrap interval ${signed(lo)} to ${signed(hi)}, ${String(c.bothCompleted)} paired games)`;
+  const verdict = comparisonVerdict(c);
+  const lead =
+    verdict === "a-higher"
+      ? `${c.a.policy} reached more floors than ${c.b.policy}`
+      : verdict === "b-higher"
+        ? `${c.b.policy} reached more floors than ${c.a.policy}`
+        : `No difference in floors reached between ${c.a.policy} and ${c.b.policy} could be established`;
+  const cost = c.wallTimeRatioBOverA
+    ? `; ${c.b.policy} took ${c.wallTimeRatioBOverA.toFixed(1)}× as long per game`
+    : "";
+  return `${lead}: ${gap}${cost}.`;
+}
+
+/** Wins and completed games summed over every listed batch (used for the headline sentence). */
+export function totals(): { wins: number; completed: number } {
+  return evidence.reports.reduce(
+    (acc, r) => ({ wins: acc.wins + r.counts.win, completed: acc.completed + r.completed }),
+    { wins: 0, completed: 0 },
+  );
 }

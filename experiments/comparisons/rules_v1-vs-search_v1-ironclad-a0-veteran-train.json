@@ -1,0 +1,64 @@
+{
+  "a": {
+    "batchId": "rules_v1-ironclad-a0-veteran-train-n300",
+    "contentSha256": "f0b6fb7eec8f9ccce9aa71e1abebe7dbf8a764f88c6b0c5b30e945aa85e675c9",
+    "meanFloor": 18.41,
+    "meanWallSecondsPerEpisode": 0.6514,
+    "policy": "rules_v1",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.018845326377266564
+    ],
+    "wins": 0
+  },
+  "b": {
+    "batchId": "search_v1-ironclad-a0-veteran-train-n200",
+    "contentSha256": "5edbd6700442b69a7b1dc0de2513a6b18f8c9b0ab021d783350ee967eca9f71c",
+    "meanFloor": 16.035,
+    "meanWallSecondsPerEpisode": 12.8052,
+    "policy": "search_v1",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.018845326377266564
+    ],
+    "wins": 0
+  },
+  "bothCompleted": 200,
+  "cohort": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "partition": "train",
+    "profile": "veteran",
+    "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+  },
+  "contentSha256": "23838ba7ecd62c14025ccdae158ba67ceb7d0a97c66da4209771e8280425d6e8",
+  "difference": "a minus b",
+  "excludedNotCompleted": 0,
+  "floorDifference": {
+    "ci95": [
+      1.24,
+      3.535
+    ],
+    "meanAMinusB": 2.375,
+    "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "kind": "paired-comparison",
+  "pairedSeeds": 200,
+  "pairedWinTable": {
+    "a_only": 0,
+    "b_only": 0,
+    "both": 0,
+    "mcnemar_p": 1.0,
+    "neither": 200
+  },
+  "role": "development (train partition): not a held-out result",
+  "schema": 1,
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "parityWithLiveGame": "UNVERIFIED",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "wallTimeRatioBOverA": 19.659
+}

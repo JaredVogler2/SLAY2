@@ -6,10 +6,14 @@ import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import evidence from "@/content/evidence.generated.json";
 import {
   GROUP_LABEL,
+  comparisonSentence,
+  largestReport,
   pct,
   ruleSummary,
   rulesBySection,
+  signed,
   statusGroup,
+  totals,
   verification,
   type StatusGroup,
 } from "@/lib/methods-data";
@@ -54,6 +58,10 @@ export default function MethodsPage() {
   const summary = ruleSummary();
   const sections = rulesBySection();
   const reports = evidence.reports;
+  const comparisons = evidence.comparisons;
+  const total = totals();
+  const randomPolicy = largestReport("random_legal");
+  const rulesPolicy = largestReport("rules_v1");
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-10 sm:px-6">
       <header className="max-w-3xl">
@@ -187,10 +195,19 @@ export default function MethodsPage() {
           These runs use a community Python re-implementation of STS2, driven by SLAY2’s own harness
           (it classifies simulator errors and timeouts instead of counting them as losses). They are
           baselines for building better policies, not statements about real win rates.{" "}
-          <strong className="font-medium text-parchment">
-            No policy has won a single simulated game so far
-          </strong>
-          ; the intervals show how little that rules out.
+          {total.wins === 0 ? (
+            <>
+              <strong className="font-medium text-parchment">
+                No policy has won a single simulated game so far
+              </strong>
+              ; the intervals show how little that rules out.
+            </>
+          ) : (
+            <>
+              Across every batch listed, {total.wins} of {total.completed} completed games were
+              wins; the intervals below show how uncertain each batch is.
+            </>
+          )}
         </p>
         <ScrollRegion label="Simulator batches">
           <table className="w-full min-w-[56rem] text-left text-sm">
@@ -247,19 +264,90 @@ export default function MethodsPage() {
             </tbody>
           </table>
         </ScrollRegion>
+        {comparisons.length > 0 ? (
+          <div className="mt-6">
+            <h3 className="mb-2 font-display text-lg text-gold">Paired comparisons</h3>
+            <p className="mb-3 max-w-3xl text-sm text-muted">
+              Two policies played the same seeds, so the difference is measured seed by seed. Only
+              seeds where both reached a win or a death count; anything else is listed as excluded,
+              never scored as a loss.
+            </p>
+            <ScrollRegion label="Paired comparisons">
+              <table className="w-full min-w-[48rem] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-line text-muted">
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      A vs B
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      Paired games
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      Mean floor A · B
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      A − B (95% bootstrap)
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      Wins A · B
+                    </th>
+                    <th scope="col" className="py-2 font-medium">
+                      Partition
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {comparisons.map((c) => (
+                    <tr key={c.id} className="align-top">
+                      <th scope="row" className="py-3 pr-3 font-medium text-parchment">
+                        {c.a.policy} vs {c.b.policy}
+                        <span className="block font-mono text-[0.65rem] font-normal text-dim">
+                          {c.cohort.character} A{c.cohort.ascension} · {c.cohort.profile} · sha{" "}
+                          {c.contentSha256.slice(0, 10)}
+                        </span>
+                      </th>
+                      <td className="num py-3 pr-3">
+                        {c.bothCompleted}
+                        {c.excludedNotCompleted > 0
+                          ? ` (+${String(c.excludedNotCompleted)} excluded)`
+                          : ""}
+                      </td>
+                      <td className="num py-3 pr-3">
+                        {c.a.meanFloor.toFixed(2)} · {c.b.meanFloor.toFixed(2)}
+                      </td>
+                      <td className="num py-3 pr-3">
+                        {signed(c.floorDifference.meanAMinusB)}{" "}
+                        <span className="text-muted">
+                          ({signed(c.floorDifference.ci95[0] ?? 0)} to{" "}
+                          {signed(c.floorDifference.ci95[1] ?? 0)})
+                        </span>
+                      </td>
+                      <td className="num py-3 pr-3">
+                        {c.a.wins} · {c.b.wins}
+                      </td>
+                      <td className="py-3 text-muted">{c.role}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollRegion>
+          </div>
+        ) : null}
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
             <p className="font-medium text-parchment">Reading these honestly</p>
             <ul className="mt-2 list-disc space-y-1.5 pl-5">
-              <li>
-                Mean floor rises from about 4.5 (random legal moves) to about 18 (hand-written
-                rules), so the harness does measure skill.
-              </li>
-              <li>
-                A determinised combat search that looks ahead scored <em>worse</em> than the rules
-                policy (16.0 vs 18.3 mean floor on the same seeds) and is about 18× slower. It is
-                reported, not hidden.
-              </li>
+              {randomPolicy && rulesPolicy ? (
+                <li>
+                  Mean floor rises from {randomPolicy.meanFloor.toFixed(1)} (random legal moves,{" "}
+                  {randomPolicy.completed} games) to {rulesPolicy.meanFloor.toFixed(1)}{" "}
+                  (hand-written rules, {rulesPolicy.completed} games), so the harness does measure
+                  skill.
+                </li>
+              ) : null}
+              {comparisons.map((c) => (
+                <li key={c.id}>{comparisonSentence(c)}</li>
+              ))}
               <li>
                 Batches on the “train” partition are development results, not held-out evidence.
               </li>

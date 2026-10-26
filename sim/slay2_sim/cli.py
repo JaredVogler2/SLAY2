@@ -8,14 +8,14 @@ import sys
 from pathlib import Path
 
 from . import external
-from .batch import read_episodes, run_batch
+from .batch import run_batch
+from .compare import build_comparison, render_text, write_comparison
 from .manifest import (
     DEFAULT_SIZES, load_seed_manifest, make_seed_manifest, partition_seeds, save_json, sha256_file,
 )
-from .outcomes import Outcome, summarize
 from .policies import REGISTRY
 from .runner import RunConfig, replay_from_trace
-from .stats import mcnemar_exact, paired_bootstrap_ci, paired_win_table, wilson_interval
+from .stats import wilson_interval
 
 EXPERIMENTS = external.REPO_ROOT / "experiments"
 DEFAULT_SEEDS = EXPERIMENTS / "seeds" / "ironclad-a0-v1.json"
@@ -178,26 +178,11 @@ def cmd_catalog(args) -> int:
 
 
 def cmd_compare(args) -> int:
-    a = {r.seed: r for r in read_episodes(Path(args.a) / "episodes.jsonl")}
-    b = {r.seed: r for r in read_episodes(Path(args.b) / "episodes.jsonl")}
-    seeds = sorted(set(a) & set(b))
-    # only seeds where BOTH episodes completed enter the paired win comparison; the rest are reported
-    both = [s for s in seeds if a[s].completed and b[s].completed]
-    print(f"paired seeds={len(seeds)}  both completed={len(both)}  (excluded: {len(seeds) - len(both)} with a non-completed episode)")
-    for name, d in (("A", a), ("B", b)):
-        print(f"  {name}: {summarize(list(d.values()))['counts']}")
-    if not both:
-        return 0
-    aw = [a[s].outcome == Outcome.WIN.value for s in both]
-    bw = [b[s].outcome == Outcome.WIN.value for s in both]
-    print("  A win rate:", _fmt_ci(sum(aw), len(aw)))
-    print("  B win rate:", _fmt_ci(sum(bw), len(bw)))
-    t = paired_win_table(aw, bw)
-    print(f"  paired table: both={t['both']} A-only={t['a_only']} B-only={t['b_only']} neither={t['neither']}  McNemar exact p={t['mcnemar_p']:.4g}")
-    fa = [float(a[s].floor) for s in both]
-    fb = [float(b[s].floor) for s in both]
-    m, lo, hi = paired_bootstrap_ci(fa, fb)
-    print(f"  floors reached, mean(A-B) = {m:+.2f}  (95% bootstrap CI {lo:+.2f} .. {hi:+.2f})")
+    comparison = build_comparison(Path(args.a), Path(args.b), iters=args.iters, seed=args.bootstrap_seed)
+    print(render_text(comparison))
+    if args.out:
+        write_comparison(comparison, Path(args.out))
+        print(f"  wrote {args.out}  (content sha256 {comparison['contentSha256'][:16]}...)")
     return 0
 
 
@@ -256,9 +241,12 @@ def build_parser() -> argparse.ArgumentParser:
     cat.add_argument("--dry-run", action="store_true")
     cat.set_defaults(fn=cmd_catalog)
 
-    cp = sub.add_parser("compare", help="paired comparison of two batches by seed")
+    cp = sub.add_parser("compare", help="paired comparison of two batches played on the same seeds (a minus b)")
     cp.add_argument("a")
     cp.add_argument("b")
+    cp.add_argument("--out", help="write the comparison as a committed artifact, e.g. experiments/comparisons/a-vs-b.json")
+    cp.add_argument("--iters", type=int, default=20000, help="bootstrap resamples")
+    cp.add_argument("--bootstrap-seed", type=int, default=0)
     cp.set_defaults(fn=cmd_compare)
     return p
 

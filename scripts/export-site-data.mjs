@@ -2,6 +2,7 @@
 // Exports the data the website shows from the repository's own audited artifacts:
 //   apps/web/src/content/rules.generated.json     <- docs/game/MECHANICS-COVERAGE.md (the verified rule register)
 //   apps/web/src/content/evidence.generated.json  <- experiments/batches/*/manifest.json (+ episodes for summaries)
+//                                                    + experiments/comparisons/*.json (paired comparisons)
 // Nothing is typed in by hand: `pnpm --filter @slay2/web test` fails if these files are stale (see test/content.test.ts).
 // Usage: node scripts/export-site-data.mjs [--check]
 import { createHash } from "node:crypto";
@@ -10,7 +11,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+// SLAY2_ROOT lets the tests point the exporter at a tampered copy of the inputs; production always uses the repository.
+const root = process.env.SLAY2_ROOT ? resolve(process.env.SLAY2_ROOT) : resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "apps", "web", "src", "content");
 const check = process.argv.includes("--check");
 
@@ -88,6 +90,39 @@ function parseEvidence() {
   return reports;
 }
 
+// A paired comparison is only shown while both of its batches are exactly the ones it was computed from.
+function parseComparisons(reports) {
+  const dir = join(root, "experiments", "comparisons");
+  if (!existsSync(dir)) return [];
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const out = [];
+  for (const name of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
+    const c = JSON.parse(readFileSync(join(dir, name), "utf8"));
+    for (const side of [c.a, c.b]) {
+      const current = byId.get(side.batchId);
+      if (!current) throw new Error(`${name}: batch ${side.batchId} is not an evidence batch`);
+      if (current.contentSha256 !== side.contentSha256) {
+        throw new Error(`${name}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim compare --out`);
+      }
+    }
+    out.push({
+      id: name.replace(/\.json$/, ""),
+      a: c.a,
+      b: c.b,
+      cohort: c.cohort,
+      pairedSeeds: c.pairedSeeds,
+      bothCompleted: c.bothCompleted,
+      excludedNotCompleted: c.excludedNotCompleted,
+      pairedWinTable: c.pairedWinTable,
+      floorDifference: c.floorDifference,
+      wallTimeRatioBOverA: c.wallTimeRatioBOverA,
+      role: c.role,
+      contentSha256: c.contentSha256,
+    });
+  }
+  return out;
+}
+
 function parseVerification() {
   const golden = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "golden-python.json"), "utf8"));
   const published = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "published.json"), "utf8"));
@@ -101,6 +136,7 @@ function parseVerification() {
   };
 }
 
+const reports = parseEvidence();
 const outputs = {
   "rules.generated.json": {
     schema: 1,
@@ -110,9 +146,10 @@ const outputs = {
   },
   "evidence.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/batches/*/manifest.json + sim/slay2_sim/gaps.json",
+    generatedFrom: "experiments/batches/*/manifest.json + experiments/comparisons/*.json + sim/slay2_sim/gaps.json",
     simulatorGaps: JSON.parse(readFileSync(join(root, "sim", "slay2_sim", "gaps.json"), "utf8")).gaps,
-    reports: parseEvidence(),
+    reports,
+    comparisons: parseComparisons(reports),
   },
 };
 

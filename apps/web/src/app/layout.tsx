@@ -9,8 +9,12 @@ import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/shell/SiteFooter";
 import { SiteHeader } from "@/components/shell/SiteHeader";
+import { siteUrl } from "@/lib/site-config";
+
+const base = siteUrl();
 
 export const metadata: Metadata = {
+  ...(base ? { metadataBase: new URL(base) } : {}),
   title: { default: "SLAY2 — The Spire Intelligence Observatory", template: "%s · SLAY2" },
   description:
     "Independent, unofficial strategy companion for Slay the Spire 2: exact card-reward, potion, ? room and draw odds, plus an explainable card advisor. Runs in your browser.",
