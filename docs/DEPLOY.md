@@ -1,6 +1,6 @@
 # SLAY2 deployment (Vercel)
 
-**Status: NOT VERIFIED.** The owner imported this repository into a Vercel project (`slay-part2`), but no build of the application has succeeded there yet, so **no hosted URL is claimed anywhere in this repository**. The cause of the two failed attempts is understood and fixed in the repository (below); the status changes only after a build is READY *and* the smoke test at the bottom passes against it.
+**Status: VERIFIED for `main` at `453864d` (2026-10-26, about 40 minutes after the merge).** The production deployment `dpl_8EX1qaSiVT9zDQLQ61GHKAo7SBMt` of the merge commit of pull request #2 is **READY**, and **https://slay-part2.vercel.app** (the project's production alias) answers without a login. The evidence is in "Hosted smoke test (2026-10-26)" below. Not verified: performance on the hosted URL (Lighthouse / Web Vitals), and anything about the live game (simulator parity is a separate, unverified item).
 
 ## What happened on the first attempts (read from the Vercel deployment record and build log, 2026-10-26)
 
@@ -10,6 +10,8 @@
 | 2 | `main` after the first pull request was merged | **ERROR** at `pnpm install` | `ERR_PNPM_UNSUPPORTED_ENGINE`: the project runs Node **24.x**, `apps/web/package.json` required **22.x**, and `.npmrc` sets `engine-strict=true`. The project was also still on its defaults: Root Directory `./` and no framework preset, so even a passing install would have published nothing |
 
 A deployment that is READY but empty and a deployment that is ERROR both leave the production URL on a 404, which is why the second attempt looked identical to the first.
+
+**Both historical deployments still exist and are still broken, by design of the platform.** The first one (`slay-part2-pjvck2qkr-…`, built from the documents-only `main`) keeps answering Vercel's `NOT_FOUND`: opening it from the dashboard's deployment list, or from an old bookmark, shows the 404 forever, although the production alias now serves the application. The way to open the site is the alias, `https://slay-part2.vercel.app`.
 
 ## What the repository now does without any dashboard setting
 
@@ -35,7 +37,7 @@ Either layout works; nothing else is required.
 Recommended for both:
 
 1. **Production branch**: the repository default (`main`). Pull requests build as previews.
-2. **Deployment Protection**: Vercel Authentication is on for every non-custom domain by default, so a visitor who is not signed in to Vercel sees a login page (HTTP 401), not the site. Keep it on until the owner decides to publish; do not turn protection off to make a smoke test easier. To publish, change it under *Settings, Deployment Protection*.
+2. **Deployment Protection** (observed 2026-10-26): the production alias `slay-part2.vercel.app` is **public** (HTTP 200 for an anonymous request); every other URL of the project (per-deployment hostnames, the `-git-main-` and the team alias) redirects an anonymous visitor to a Vercel login (HTTP 302). Previews of a branch are therefore private unless the platform's share link is used. Whether the production alias should stay public is the owner's decision; do not change protection just to make a test easier. Settings: *Settings, Deployment Protection*.
 3. **Optional**: `ENABLE_EXPERIMENTAL_COREPACK=1` as an environment variable makes Vercel install exactly the pnpm pinned by `packageManager` (10.28.0). Confirm the pnpm version in the first build log either way.
 4. **Firewall**: add a rate-limit rule for `/api/v1/*`. The built-in limiter is an in-memory, per-instance token bucket (120 requests per minute per connecting address) and is only a courtesy; real flood protection belongs to the platform.
 5. **Plan and terms**: a Hobby team is for personal, non-commercial use, which matches the project stance (no ads, no paywall, no donations). Re-read the plan terms before any change to that stance.
@@ -74,7 +76,7 @@ Recommended for both:
 | No third-party files, text or assets in git | PASS | `pnpm guard` (pre-commit and CI) |
 | Dependency audit (high and above) | PASS on the last CI run | `pnpm audit --audit-level high` |
 | Deployment configuration is consistent | PASS | `apps/web/test/deploy-config.test.ts` |
-| Real hosted URL smoke test | **UNVERIFIED** (no successful build yet) | run the commands below against the READY deployment URL |
+| Real hosted URL smoke test | **PASS** (2026-10-26, `453864d`) | the section "Hosted smoke test" below |
 | Performance budget on the hosted URL (Lighthouse / Web Vitals) | **UNVERIFIED** | not measured yet |
 | Simulator-to-game parity | **UNVERIFIED** | needs an owned game copy; shown as such on `/methods` |
 | Beta build v0.111.0 | **UNSUPPORTED** | refused by `game-schema`, shown on the landing page and `/api/v1/capabilities` |
@@ -93,11 +95,25 @@ curl -fsS -X POST "$SITE/api/v1/odds" -H 'content-type: application/json' \
 BASE_URL="$SITE" pnpm --filter @slay2/web e2e
 ```
 
+## Hosted smoke test (2026-10-26)
+
+Against `https://slay-part2.vercel.app`, production deployment `dpl_8EX1qaSiVT9zDQLQ61GHKAo7SBMt` (commit `453864dfbf48…`, Node 22.x selected by `engines` over the project's 24.x, Next.js 16.4.3, 14 routes, build 39 s):
+
+| Check | Result |
+|---|---|
+| `GET /`, `/odds`, `/advisor`, `/codex`, `/methods`, `/about`, `/robots.txt`, `/sitemap.xml`, `/icon.svg` | 200 each (`/methods` carries the card-value panel and "6 simulated games have been won so far") |
+| `GET /api/v1/health` | `{"status":"ok", ... "commit":"453864dfbf489847d09a96140ef4f93ab54c200f"}`: the hosted build is the merged commit |
+| `GET /api/v1/capabilities`, `/api/v1/manifest` | 200; main v0.107.1 supported, beta v0.111.0 refused |
+| `POST /api/v1/odds` `{"calculator":"draw","pile":10,"targets":1,"draws":5}` | `{"n":"1","d":"2"}` as documented |
+| Unknown path | 404 with the site's own page; `/advisor/` and `/odds/` redirect (308) to the slash-less route; `/Advisor`, `/index.html`, `/docs` are 404 (paths are case-sensitive and those pages do not exist) |
+| Headers on `/` | `content-security-policy`, `strict-transport-security`, `x-content-type-options: nosniff`, `x-frame-options: DENY`, `referrer-policy: no-referrer`, `permissions-policy`, `cross-origin-opener-policy` present |
+| Full browser suite against the hosted site (`BASE_URL=https://slay-part2.vercel.app pnpm --filter @slay2/web e2e`, desktop + mobile, axe WCAG 2.2 AA, security spec) | **96 passed**, 2.6 min |
+
 ## Rollback
 
 Vercel keeps every deployment: roll back from the dashboard (Instant Rollback) or pause the project. The site holds no server state, so a rollback cannot lose user data (runs live in each visitor's browser).
 
 ## Open decisions for the owner
 
-1. Whether the first public URL stays behind Vercel Authentication or becomes a public production alias (Deployment Protection).
-2. A contact link for `/about` (`NEXT_PUBLIC_CONTACT_URL`) and the canonical origin (`NEXT_PUBLIC_SITE_URL`) once a URL is verified.
+1. Whether the public production alias stays public (it is, today, by the platform's default) or is put behind Vercel Authentication (Deployment Protection).
+2. A contact link for `/about` (`NEXT_PUBLIC_CONTACT_URL`) and the canonical origin: the URL is now verified, so `NEXT_PUBLIC_SITE_URL=https://slay-part2.vercel.app` can be set in the project's environment variables whenever the owner wants the sitemap and canonical metadata published (today `/sitemap.xml` is an empty list and `robots.txt` has no `Sitemap:` line, on purpose: that is a publicity decision, not a build fix).
