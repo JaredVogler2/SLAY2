@@ -6,15 +6,19 @@ import {
   assessOffer,
   averageChance,
   chanceWith,
+  classAlpha,
   classBaseline,
+  classResult,
   neowCoverage,
   neowTest,
   neowValues,
+  offerVerdict,
   optionIdOfLabel,
   relicValue,
   relicValues,
   ruleValidated,
   type NeowData,
+  type NeowMember,
   type NeowTest,
   type NeowValues,
   type RelicMeasurement,
@@ -56,6 +60,7 @@ function fixture(test: NeowTest | null = null): NeowData {
       folds: 5,
       bootstrapDraws: 200,
       minTaken: 30,
+      seeds: 3000,
       cvLogLoss: 0.59,
       cvAuc: 0.73,
       baselineLogLoss: 0.6,
@@ -72,7 +77,29 @@ function fixture(test: NeowTest | null = null): NeowData {
   return { values, test };
 }
 
-function testResult(passed: boolean): NeowTest {
+function member(character: string, a: number, b: number, p: number): NeowMember {
+  const table = { a_only: 300, b_only: 200, both: 1000, neither: 500, mcnemar_p: p };
+  return {
+    character,
+    a: { batchId: `a-${character}`, wins: 0 },
+    b: { batchId: `b-${character}`, wins: 0 },
+    pairedSeeds: 2000,
+    bothCompleted: 1990,
+    reachedAct2: { a, b, pairedTable: table },
+    meanFloorDifference: 0,
+  };
+}
+
+/** The test as it would ship: the rule ahead overall, and in each class as the second argument says. */
+const CLASS_RESULTS: Record<string, [number, number, number]> = {
+  ironclad: [0.7, 0.65, 0.00005],
+  silent: [0.44, 0.18, 1e-80],
+  regent: [0.57, 0.5, 0.2],
+  necrobinder: [0.41, 0.62, 1e-47],
+  defect: [0.92, 0.76, 1e-49],
+};
+
+function testResult(passed: boolean, classes = CLASS_RESULTS): NeowTest {
   const table = { a_only: 1, b_only: 1, both: 1, neither: 1, mcnemar_p: 1 };
   const rate = { games: 1, rate: 0.5, wilson95: [0.1, 0.9] };
   const endpoint = { definition: "x", a: rate, b: rate, pairedTable: table };
@@ -90,7 +117,7 @@ function testResult(passed: boolean): NeowTest {
     reachedAct3: endpoint,
     wins: { a: 0, b: 0, pairedTable: table },
     floorDifference: { meanAMinusB: 0, ci95: [-1, 1] },
-    members: [],
+    members: Object.entries(classes).map(([c, [a, b, p]]) => member(c, a, b, p)),
     role: "held-out",
     passed,
   };
@@ -300,5 +327,78 @@ describe("the coverage line for the landing page", () => {
     const a = assessOffer(["FISHING_ROD", "WINGED_BOOTS", "SILVER_CRUCIBLE"], none);
     expect(a.separation).toBe("close");
     expect(a.lines.every((l) => l.value === undefined)).toBe(true);
+  });
+});
+
+describe("what a class may be told (ADR-049)", () => {
+  const data = fixture(testResult(true));
+
+  it("splits the test's level over the classes it pooled", () => {
+    const t = testResult(true);
+    expect(classAlpha(t)).toBeCloseTo(0.01, 12);
+  });
+
+  it("helps a class only when the rule was ahead in that class's own games at the split level", () => {
+    expect(classResult("silent", data)?.helped).toBe(true);
+    expect(classResult("Silent", data)?.helped).toBe(true); // the id's letter case does not matter here
+    // ahead but not clearly (p = 0.2): no advice
+    expect(classResult("regent", data)?.helped).toBe(false);
+    // clearly behind: no advice
+    expect(classResult("necrobinder", data)?.helped).toBe(false);
+    expect(classResult("necrobinder", data)?.member.reachedAct2.a).toBeLessThan(0.5);
+    // a class that was not in the test, and no test at all
+    expect(classResult("watcher", data)).toBeUndefined();
+    expect(classResult("silent", fixture(null))).toBeUndefined();
+  });
+
+  it("names a relic as the rule's pick only for a class whose own games favoured the rule", () => {
+    const offer = ["FISHING_ROD", "WINGED_BOOTS", "ARCANE_SCROLL"];
+    const a = assessOffer(offer, data);
+    expect(offerVerdict(a, "silent", data).kind).toBe("take");
+    expect(offerVerdict(a, "necrobinder", data).kind).toBe("not-for-class");
+    expect(offerVerdict(a, "regent", data).kind).toBe("not-for-class");
+    expect(offerVerdict(a, "necrobinder", data)).toMatchObject({ result: { helped: false } });
+  });
+
+  it("gives no pick when the test failed, was never run, or was run with other values", () => {
+    const a = assessOffer(["FISHING_ROD", "WINGED_BOOTS", "ARCANE_SCROLL"], data);
+    expect(offerVerdict(a, "silent", fixture(testResult(false))).kind).toBe("not-improved");
+    expect(offerVerdict(a, "silent", fixture(null)).kind).toBe("untested");
+    const other: NeowData = {
+      values: data.values,
+      test: { ...testResult(true), valuesSha256: "f".repeat(64) },
+    };
+    expect(ruleValidated(other)).toBe(false);
+    expect(offerVerdict(a, "silent", other).kind).toBe("untested");
+  });
+
+  it("gives no pick when the relic it would take was never measured", () => {
+    // Massive Scroll counts as the average in the tested rule, but it is a co-op option a solo run never offers
+    const a = assessOffer(["WINGED_BOOTS", "MASSIVE_SCROLL"], data);
+    expect(a.best?.id).toBe("MASSIVE_SCROLL");
+    expect(offerVerdict(a, "silent", data)).toMatchObject({ kind: "unmeasured" });
+  });
+
+  it("has nothing to say about an empty or one-relic offer", () => {
+    expect(offerVerdict(assessOffer([], data), "silent", data).kind).toBe("empty");
+    expect(offerVerdict(assessOffer(["FISHING_ROD"], data), "silent", data).kind).toBe("single");
+  });
+
+  it("names the classes the rule did not clearly help in the coverage line", () => {
+    const line = neowCoverage(data);
+    expect(line.state).toBe("validated");
+    expect(line.detail).toContain("ahead in 3 of 5 classes, not in Regent, Necrobinder");
+    const everyone = neowCoverage(
+      fixture(
+        testResult(true, {
+          ironclad: [0.7, 0.65, 1e-5],
+          silent: [0.44, 0.18, 1e-80],
+          regent: [0.57, 0.5, 1e-5],
+          necrobinder: [0.7, 0.6, 1e-9],
+          defect: [0.92, 0.76, 1e-49],
+        }),
+      ),
+    );
+    expect(everyone.detail).toContain("ahead in all 5 classes");
   });
 });

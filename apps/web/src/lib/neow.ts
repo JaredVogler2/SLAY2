@@ -46,6 +46,8 @@ export interface NeowValues {
     readonly folds: number;
     readonly bootstrapDraws: number;
     readonly minTaken: number;
+    /** distinct seeds the fit resamples and cross-validates by (each seed gives one game per class) */
+    readonly seeds: number;
     readonly cvLogLoss: number;
     readonly cvAuc: number;
     readonly baselineLogLoss: number;
@@ -133,11 +135,40 @@ export function neowTest(data: NeowData = DATA): NeowTest | null {
 }
 
 /**
- * Whether taking the best-measured relic beat taking the first helpful one in the pre-registered held-out test. Until it has,
- * and when it did not, the values are shown as measurements and the site never says what a pilot "would take".
+ * Whether taking the best-measured relic beat taking the first helpful one in the pre-registered held-out test, and the test was
+ * run with the values on the page. Until it has, and when it did not, the values are shown as measurements and the site never
+ * says what a pilot "would take". Whether a class gets advice is `classResult`'s call on top of this.
  */
 export function ruleValidated(data: NeowData = DATA): boolean {
-  return data.test?.passed === true;
+  return data.test?.passed === true && data.test.valuesSha256 === data.values?.sha256;
+}
+
+/**
+ * The test's level split evenly over the classes it pooled (ADR-049). The class results were registered as secondary and
+ * descriptive; the site uses them in one way only, which can remove advice and never add it: a class gets a recommendation only
+ * if its own held-out games favoured the rule at this level.
+ */
+export function classAlpha(test: NeowTest): number {
+  return test.alpha / Math.max(1, test.members.length);
+}
+
+export interface ClassResult {
+  readonly member: NeowMember;
+  /** exact McNemar p-value of "got past the Act-1 boss" in this class's own paired games */
+  readonly p: number;
+  /** the rule was ahead of the first-helpful baseline in this class's own held-out games, at the split level */
+  readonly helped: boolean;
+}
+
+/** What the held-out test found for one class, or nothing when there was no test or the class was not in it. */
+export function classResult(character: string, data: NeowData = DATA): ClassResult | undefined {
+  const test = data.test;
+  const member = test?.members.find((m) => m.character.toLowerCase() === character.toLowerCase());
+  if (!test || !member) {
+    return undefined;
+  }
+  const p = member.reachedAct2.pairedTable.mcnemar_p;
+  return { member, p, helped: member.reachedAct2.a > member.reachedAct2.b && p < classAlpha(test) };
 }
 
 // ---- the simulator's labels onto the catalog's option ids ("Neows Talisman" is NEOWS_TALISMAN)
@@ -276,9 +307,10 @@ export function assessOffer(offered: readonly string[], data: NeowData = DATA): 
 }
 
 /**
- * What the site may say about an offer. `take` is the only verdict that names a relic as the one a simulated pilot would take,
- * and it exists only after the registered test showed that such a pilot got past the Act-1 boss more often than one that took
- * the first helpful relic (ADR-041 item 5); with a failed or missing test the measurements are shown and nothing is advised.
+ * What the site may say about an offer. `take` is the only verdict that names a relic as the one the tested rule would take, and
+ * it exists only when (1) the registered test showed that a pilot following the rule got past the Act-1 boss more often than one
+ * that took the first helpful relic, (2) that test was run with the values on the page, (3) the class's own held-out games
+ * favoured the rule, and (4) the relic was measured. With anything less the measurements are shown and nothing is advised.
  */
 export type OfferVerdict =
   | { readonly kind: "empty" }
@@ -286,14 +318,25 @@ export type OfferVerdict =
   | { readonly kind: "untested" }
   | { readonly kind: "not-improved"; readonly test: NeowTest }
   | {
+      readonly kind: "not-for-class";
+      readonly test: NeowTest;
+      readonly result: ClassResult | undefined;
+    }
+  | { readonly kind: "unmeasured"; readonly best: OfferLine }
+  | {
       readonly kind: "take";
       readonly best: OfferLine;
       readonly runnerUp: OfferLine;
       readonly separation: "clear" | "close";
       readonly test: NeowTest;
+      readonly result: ClassResult;
     };
 
-export function offerVerdict(a: OfferAssessment, data: NeowData = DATA): OfferVerdict {
+export function offerVerdict(
+  a: OfferAssessment,
+  character: string,
+  data: NeowData = DATA,
+): OfferVerdict {
   if (a.separation === "none") {
     return { kind: "empty" };
   }
@@ -301,11 +344,18 @@ export function offerVerdict(a: OfferAssessment, data: NeowData = DATA): OfferVe
     return { kind: "single" };
   }
   const test = data.test;
-  if (test === null) {
+  if (test === null || (test.passed && !ruleValidated(data))) {
     return { kind: "untested" };
   }
   if (!test.passed) {
     return { kind: "not-improved", test };
+  }
+  const result = classResult(character, data);
+  if (!result?.helped) {
+    return { kind: "not-for-class", test, result };
+  }
+  if (!a.best.value) {
+    return { kind: "unmeasured", best: a.best };
   }
   return {
     kind: "take",
@@ -313,6 +363,7 @@ export function offerVerdict(a: OfferAssessment, data: NeowData = DATA): OfferVe
     runnerUp: a.runnerUp,
     separation: a.separation,
     test,
+    result,
   };
 }
 
@@ -337,13 +388,19 @@ export function neowCoverage(data: NeowData = DATA): {
     return { state: "untested", detail: `${measured}, not tested against play yet` };
   }
   const result = `${pct1(t.reachedAct2.a.rate)} of ${t.bothCompleted.toLocaleString("en-US")} held-out simulated games got past the Act-1 boss against ${pct1(t.reachedAct2.b.rate)} when the first helpful relic was taken (${pText(t.reachedAct2.pairedTable.mcnemar_p)})`;
-  return t.passed
-    ? {
-        state: "validated",
-        detail: `${measured}; taking the best-measured relic: ${result}`,
-      }
-    : {
-        state: "measured",
-        detail: `${measured}; taking the best-measured relic did not beat the first helpful one at the pre-registered level: ${result}`,
-      };
+  if (!t.passed) {
+    return {
+      state: "measured",
+      detail: `${measured}; taking the best-measured relic did not beat the first helpful one at the pre-registered level: ${result}`,
+    };
+  }
+  const behind = t.members.filter((m) => !classResult(m.character, data)?.helped);
+  const classes =
+    behind.length === 0
+      ? `ahead in all ${String(t.members.length)} classes`
+      : `ahead in ${String(t.members.length - behind.length)} of ${String(t.members.length)} classes, not in ${behind.map((m) => m.character.charAt(0).toUpperCase() + m.character.slice(1)).join(", ")}`;
+  return {
+    state: "validated",
+    detail: `${measured}; taking the best-measured relic: ${result}; ${classes}`,
+  };
 }

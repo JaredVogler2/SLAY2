@@ -29,11 +29,10 @@ const COSTLY = OPENING_OPTIONS.filter((o) => o.kind === "cursed");
 
 const percent = (x: number): string => `${String(Math.round(x * 100))}%`;
 const games = (n: number): string => n.toLocaleString("en-US");
-const points = (x: number): string => `${x >= 0 ? "+" : "−"}${Math.abs(x * 100).toFixed(1)}`;
 const pText = (p: number): string =>
   p === 0 ? "p < 1e-300" : `p = ${p < 1e-4 ? p.toExponential(1) : p.toPrecision(2)}`;
 
-function VerdictText({ verdict }: { verdict: OfferVerdict }) {
+function VerdictText({ verdict, label }: { verdict: OfferVerdict; label: string }) {
   switch (verdict.kind) {
     case "empty":
     case "single":
@@ -58,26 +57,47 @@ function VerdictText({ verdict }: { verdict: OfferVerdict }) {
         </p>
       );
     }
+    case "not-for-class": {
+      const t = verdict.test;
+      const m = verdict.result?.member;
+      return (
+        <p className="rounded-lg border border-copper-deep/70 bg-copper/10 p-3 text-sm text-copper">
+          SLAY2 does not say which relic to take for {label}.{" "}
+          {m
+            ? `The held-out test favoured the rule over all ${String(t.members.length)} classes together, but in the ${games(m.bothCompleted)} ${label} games alone a pilot that took the best-measured relic got past the Act-1 boss in ${percent(m.reachedAct2.a)} against ${percent(m.reachedAct2.b)} for one that took the first helpful relic (${pText(m.reachedAct2.pairedTable.mcnemar_p)}), which is not clearly better.`
+            : `${label} was not part of the held-out test.`}{" "}
+          The numbers below are measurements, not advice.
+        </p>
+      );
+    }
+    case "unmeasured":
+      return (
+        <p className="text-sm text-muted">
+          SLAY2 does not say which relic to take: {verdict.best.name} was never taken in the
+          simulated runs, so there is nothing to compare it with.
+        </p>
+      );
     case "take": {
       const t = verdict.test;
-      const gain = t.reachedAct2.a.rate - t.reachedAct2.b.rate;
+      const m = verdict.result.member;
       return (
         <div className="space-y-2">
           <p className="text-parchment">
-            A simulated pilot that follows these measurements would take{" "}
-            <strong className="font-medium text-gold">{verdict.best.name}</strong>.
+            The rule that was tested (take the offered relic with the largest measured value) would
+            take <strong className="font-medium text-gold">{verdict.best.name}</strong>.
           </p>
           <p className="text-sm text-muted">
             {verdict.separation === "clear"
               ? `Its 95% interval sits clear of ${verdict.runnerUp.name}'s, the next best of the three.`
-              : `Its interval overlaps ${verdict.runnerUp.name}'s, the next best of the three: the simulated runs cannot tell the two apart, so this is close to a coin toss. Use what you know.`}
+              : `The simulated runs do not clearly separate it from ${verdict.runnerUp.name}, the next best of the three: their 95% intervals overlap. Use what you know.`}
           </p>
           <p className="text-xs text-dim">
-            That pilot got past the Act-1 boss in {percent(t.reachedAct2.a.rate)} of{" "}
-            {games(t.bothCompleted)} held-out simulated games against{" "}
-            {percent(t.reachedAct2.b.rate)} for one that took the first helpful relic (
-            {points(gain)} points, {pText(t.reachedAct2.pairedTable.mcnemar_p)}, the same seeds for
-            both).
+            In held-out simulated games that rule got past the Act-1 boss in{" "}
+            {percent(t.reachedAct2.a.rate)} of {games(t.bothCompleted)} against{" "}
+            {percent(t.reachedAct2.b.rate)} for taking the first helpful relic (
+            {pText(t.reachedAct2.pairedTable.mcnemar_p)}, the same seeds for both); in the{" "}
+            {games(m.bothCompleted)} {label} games alone, {percent(m.reachedAct2.a)} against{" "}
+            {percent(m.reachedAct2.b)}. Neither has been checked against the live game.
           </p>
         </div>
       );
@@ -121,7 +141,8 @@ function RelicTile({
           <p className="num flex flex-wrap items-baseline gap-x-2 text-base font-medium text-parchment">
             {percent(chance.mid)}
             <span className="text-xs font-normal text-muted">
-              got past the Act-1 boss (95%: {percent(chance.lo)} to {percent(chance.hi)})
+              estimated chance of getting past the Act-1 boss (95%: {percent(chance.lo)} to{" "}
+              {percent(chance.hi)})
             </span>
           </p>
           <div className="mt-1.5">
@@ -186,7 +207,7 @@ export function NeowOffer({
   const label = CLASS_STYLE[character].label;
   const chosen = slots.filter(Boolean);
   const assessment = assessOffer(chosen, data);
-  const verdict = offerVerdict(assessment, data);
+  const verdict = offerVerdict(assessment, character, data);
   const set = (i: 0 | 1 | 2, id: string): void => {
     setSlots((prev) => {
       const next: [string, string, string] = [prev[0], prev[1], prev[2]];
@@ -234,7 +255,8 @@ export function NeowOffer({
       <div className="space-y-4">
         <p>
           Say which three relics Neow showed you: two helpful and one costly. Each is shown with
-          what simulated {label} runs did after taking it.
+          what simulated runs suggest it does for {label}: an estimate from the simulated runs of
+          all five classes, assuming a relic does the same for each.
         </p>
         <div className="grid gap-3 sm:grid-cols-3">
           {slot(0, "First helpful option", HELPFUL, slots[1])}
@@ -246,8 +268,13 @@ export function NeowOffer({
             Every simulated run was played at Ascension 0; you are at Ascension {run.ascension}.
           </p>
         ) : null}
+        {run.act1 === "underdocks" ? (
+          <p className="text-xs text-rose">
+            You said you are in Underdocks; every simulated run was played in Overgrowth.
+          </p>
+        ) : null}
         <div aria-live="polite" className="space-y-3">
-          <VerdictText verdict={verdict} />
+          <VerdictText verdict={verdict} label={label} />
         </div>
         {assessment.lines.length > 0 ? (
           <ul
@@ -260,7 +287,11 @@ export function NeowOffer({
                 line={line}
                 character={character}
                 data={data}
-                isPick={verdict.kind === "take" && verdict.best.id === line.id}
+                isPick={
+                  verdict.kind === "take" &&
+                  verdict.separation === "clear" &&
+                  verdict.best.id === line.id
+                }
                 isRecorded={recorded.includes(line.id)}
                 disabled={disabled}
                 onRecord={onRecord}
@@ -273,9 +304,9 @@ export function NeowOffer({
             Measured in {games(data.values.games)} simulated Overgrowth runs ({label} among them) at
             Ascension 0 in which the relic was taken at random among the three offered; a value is
             the change in the log-odds of getting past the Act-1 boss from taking the relic instead
-            of the average one, with a 95% interval from resampling whole games. The percentages
+            of the average one, with a 95% interval from resampling whole seeds. The percentages
             move {label}&rsquo;s own starting point ({percent(averageChance(character, data) ?? 0)})
-            by that value.
+            by that value, so they are estimates, not counts of {label} runs.
           </li>
           <li>
             One rules pilot played them, the simulator has not been compared with the live game, and

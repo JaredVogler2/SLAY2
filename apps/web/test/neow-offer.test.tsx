@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { NeowOffer } from "@/components/advisor/NeowOffer";
 import { newRun, withAscension } from "@/lib/run-state";
-import type { NeowData, NeowTest, NeowValues, RelicMeasurement } from "@/lib/neow";
+import type { NeowData, NeowMember, NeowTest, NeowValues, RelicMeasurement } from "@/lib/neow";
 
 function relic(label: string, kind: string, beta: number, half = 0.1, over = {}): RelicMeasurement {
   return {
@@ -39,6 +39,7 @@ const VALUES: NeowValues = {
     folds: 5,
     bootstrapDraws: 200,
     minTaken: 30,
+    seeds: 3000,
     cvLogLoss: 0.59,
     cvAuc: 0.73,
     baselineLogLoss: 0.6,
@@ -51,6 +52,28 @@ const VALUES: NeowValues = {
     relic("Silver Crucible", "cursed", 0.8),
     relic("Large Capsule", "cursed", 0.17, 0.1, { excluded: 13, taken: 722, exclusionFlag: true }),
   ],
+};
+
+function member(character: string, a: number, b: number, p: number): NeowMember {
+  const table = { a_only: 300, b_only: 200, both: 1000, neither: 500, mcnemar_p: p };
+  return {
+    character,
+    a: { batchId: `a-${character}`, wins: 0 },
+    b: { batchId: `b-${character}`, wins: 0 },
+    pairedSeeds: 2000,
+    bothCompleted: 1990,
+    reachedAct2: { a, b, pairedTable: table },
+    meanFloorDifference: 0,
+  };
+}
+
+// the rule ahead overall; in Silent's own games clearly ahead, in Ironclad's behind
+const CLASSES_AS_TESTED: Record<string, [number, number, number]> = {
+  ironclad: [0.6, 0.65, 0.4],
+  silent: [0.44, 0.18, 1e-80],
+  regent: [0.57, 0.5, 1e-6],
+  necrobinder: [0.55, 0.5, 1e-3],
+  defect: [0.92, 0.76, 1e-49],
 };
 
 function test(passed: boolean): NeowTest {
@@ -73,7 +96,7 @@ function test(passed: boolean): NeowTest {
     pairedTable: table,
   };
   return {
-    id: "pooled-neow-values-vs-rules_v2-val",
+    id: "pooled-neow-values-v2-vs-rules_v2-val",
     contentSha256: "b".repeat(64),
     valuesSha256: "a".repeat(64),
     a: "rules_v2_neow_values",
@@ -86,7 +109,7 @@ function test(passed: boolean): NeowTest {
     reachedAct3: endpoint,
     wins: { a: 3, b: 2, pairedTable: table },
     floorDifference: { meanAMinusB: 0.1, ci95: [-0.1, 0.3] },
-    members: [],
+    members: Object.entries(CLASSES_AS_TESTED).map(([c, [a, b, p]]) => member(c, a, b, p)),
     role: "held-out",
     passed,
   };
@@ -184,7 +207,7 @@ describe("What did Neow offer?", () => {
     const pick = screen.getByText(/Simulated pilot.s pick/);
     expect(pick.closest("li")).toHaveTextContent("Silver Crucible");
     expect(
-      screen.getByText(/58% of 9,800 held-out simulated games against 55%/),
+      screen.getByText(/58% of 9,800 against 55% for taking the first helpful relic/),
     ).toBeInTheDocument();
     expect(screen.queryByText(/does not say which relic/)).toBeNull();
   });
@@ -193,7 +216,9 @@ describe("What did Neow offer?", () => {
     const s = setup(withTest(test(true)));
     fireEvent.change(s.helpful1, { target: { value: "ARCANE_SCROLL" } });
     fireEvent.change(s.helpful2, { target: { value: "WINGED_BOOTS" } });
-    expect(screen.getByText(/cannot tell the two apart/)).toBeInTheDocument();
+    expect(screen.getByText(/do not clearly separate it from/)).toBeInTheDocument();
+    // a close call is not marked as the pilot's pick
+    expect(screen.queryByText(/Simulated pilot.s pick/)).toBeNull();
   });
 
   it("gives no advice when the held-out test did not improve play, and says what it found", () => {
@@ -272,6 +297,63 @@ describe("What did Neow offer?", () => {
       />,
     );
     expect(screen.getByText(/you are at Ascension 5/)).toBeInTheDocument();
+  });
+
+  it("gives no advice to a class whose own held-out games did not clearly favour the rule, and says why", () => {
+    const run = newRun("ironclad");
+    render(
+      <NeowOffer
+        run={run}
+        disabled={false}
+        recorded={[]}
+        onRecord={() => undefined}
+        data={withTest(test(true))}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText("First helpful option"), {
+      target: { value: "FISHING_ROD" },
+    });
+    fireEvent.change(screen.getByLabelText("Second helpful option"), {
+      target: { value: "WINGED_BOOTS" },
+    });
+    fireEvent.change(screen.getByLabelText("Costly option"), {
+      target: { value: "SILVER_CRUCIBLE" },
+    });
+    const note = screen.getByText(/does not say which relic to take for Ironclad/);
+    expect(note).toHaveTextContent("in the 1,990 Ironclad games alone");
+    expect(note).toHaveTextContent("60% against 65%");
+    expect(screen.queryByText(/would take/)).toBeNull();
+    expect(screen.queryByText(/Simulated pilot.s pick/)).toBeNull();
+    // the measurements are still there
+    expect(screen.getAllByRole("listitem").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("gives no advice when the relic the rule would take was never measured", () => {
+    const s = setup(withTest(test(true)));
+    fireEvent.change(s.helpful1, { target: { value: "MASSIVE_SCROLL" } });
+    fireEvent.change(s.helpful2, { target: { value: "WINGED_BOOTS" } });
+    expect(
+      screen.getByText(/Massive Scroll was never taken in the simulated runs/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/would take/)).toBeNull();
+  });
+
+  it("warns that every simulated run was Overgrowth when the player says Underdocks", () => {
+    const run = { ...newRun("silent"), act1: "underdocks" as const };
+    render(
+      <NeowOffer
+        run={run}
+        disabled={false}
+        recorded={[]}
+        onRecord={() => undefined}
+        data={withTest(test(true))}
+      />,
+    );
+    expect(
+      screen.getByText(
+        /You said you are in Underdocks; every simulated run was played in Overgrowth/,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("disables its controls until the page is interactive", () => {

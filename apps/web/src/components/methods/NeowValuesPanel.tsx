@@ -4,7 +4,14 @@ import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier } from "@/lib/cardvalues";
 import { formatP, pct, signed } from "@/lib/methods-data";
-import { neowTest, neowValues, relicValues, type NeowMember } from "@/lib/neow";
+import {
+  classAlpha,
+  classResult,
+  neowTest,
+  neowValues,
+  relicValues,
+  type NeowMember,
+} from "@/lib/neow";
 import type { PlayableClass } from "@slay2/game-data";
 
 const classLabel = (c: string): string => CLASS_STYLE[c as PlayableClass].label;
@@ -55,6 +62,14 @@ export function NeowValuesPanel() {
   const relics = relicValues();
   const flagged = relics.filter((r) => r.exclusionFlag);
   const rederived = test ? test.members.reduce((n, m) => n + m.a.wins, 0) : 0;
+  const seedCounts = new Set(test?.members.map((m) => m.pairedSeeds));
+  const perClass = seedCounts.size === 1 ? [...seedCounts][0] : undefined;
+  const notAdvised =
+    test?.passed === true
+      ? test.members
+          .filter((m) => !classResult(m.character)?.helped)
+          .map((m) => classLabel(m.character))
+      : [];
   return (
     <Panel
       eyebrow="Simulator results · research only"
@@ -66,15 +81,16 @@ export function NeowValuesPanel() {
       <p className="max-w-3xl text-muted">
         Every run opens at Neow, who offers three relics. In simulated runs the relic was taken at
         random among the three offered, so chance rather than taste decided which relic a run began
-        with. {games(values.games)} games (3,000 for each of the five classes, Ascension 0, the
-        veteran profile, the first Act 1, Overgrowth) were fitted with one value per relic and one
-        starting point per class: a value is the change in the log-odds of getting past the Act-1
-        boss from taking that relic instead of the average one, shrunk toward zero so that the
-        largest of {relics.length} estimates is not simply the luckiest. The relic adds little to
-        what the class already says: held-out log-loss {values.model.cvLogLoss.toFixed(3)} against{" "}
+        with. {games(values.games)} games ({games(values.model.seeds)} seeds, each played by every
+        one of the {values.classes.length} classes, Ascension 0, the veteran profile, the first Act
+        1, Overgrowth) were fitted with one value per relic and one starting point per class: a
+        value is the change in the log-odds of getting past the Act-1 boss from taking that relic
+        instead of the average one, shrunk toward zero so that the largest of {relics.length}{" "}
+        estimates is not simply the luckiest. The relic adds little to what the class already says:
+        held-out log-loss {values.model.cvLogLoss.toFixed(3)} against{" "}
         {values.model.baselineLogLoss.toFixed(3)} without the relics (AUC{" "}
-        {values.model.cvAuc.toFixed(3)}). Intervals resample whole games (
-        {values.model.bootstrapDraws} draws).
+        {values.model.cvAuc.toFixed(3)}). Intervals resample whole seeds, because the games of one
+        seed share the offer and the relic taken ({values.model.bootstrapDraws} draws).
       </p>
 
       {test ? (
@@ -86,7 +102,7 @@ export function NeowValuesPanel() {
                 tone="exact"
                 title="Playing by these values beat taking the first helpful relic"
               >
-                validated in simulation
+                passed its test, in simulation
               </Badge>
             ) : (
               <Badge
@@ -121,8 +137,9 @@ export function NeowValuesPanel() {
             <strong className="font-medium text-parchment">{test.a}</strong> is{" "}
             <strong className="font-medium text-parchment">{test.b}</strong> with one change: it
             takes the offered relic with the largest measured value (a costly one is allowed)
-            instead of the first helpful one. Both played the same {games(test.pairedSeeds)}{" "}
-            held-out seeds, 2,000 for each class ({games(test.bothCompleted)} completed by both; the
+            instead of the first helpful one. Both played the same held-out seeds,{" "}
+            {games(perClass ?? test.pairedSeeds)} {perClass ? "in each class " : ""}(
+            {games(test.pairedSeeds)} pairs, {games(test.bothCompleted)} completed by both; the
             others ended in a simulator error or a timeout, which says nothing about play, and are
             left out of the pair). The primary endpoint, fixed before any of these games: the share
             of games that got past the Act-1 boss, paired by seed, pooled over the five classes,
@@ -169,6 +186,17 @@ export function NeowValuesPanel() {
               </tbody>
             </table>
           </ScrollRegion>
+          {test.passed ? (
+            <p className="mt-3">
+              The advisor says what the rule would take for a class only if that class&rsquo;s own
+              games favoured it too (ahead, exact McNemar p below {classAlpha(test).toPrecision(2)},
+              the test&rsquo;s level split over the classes): a rule written down before the games
+              were played, which can remove advice and never add it.{" "}
+              {notAdvised.length > 0
+                ? `For ${notAdvised.join(" and ")} it did not, so the advisor gives no advice there.`
+                : "In every class it did."}
+            </p>
+          ) : null}
         </section>
       ) : (
         <p className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">

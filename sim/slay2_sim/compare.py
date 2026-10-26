@@ -18,7 +18,7 @@ from . import external
 from .batch import read_episodes
 from .classes import exact_character
 from .manifest import load_seed_manifest, partition_seeds, sha256_file
-from .stats import paired_bootstrap_ci, paired_win_table, wilson_interval
+from .stats import clustered_bootstrap_ci, paired_bootstrap_ci, paired_win_table, wilson_interval
 
 SCHEMA = 1
 
@@ -217,6 +217,7 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
     if len(pairs) < 2:
         raise ValueError("a pooled comparison needs at least two cohorts")
     members, flags = [], {k: ([], []) for k in ("win", "act1", "act2")}
+    seed_ids: list[int] = []  # the seed of every pooled pair, in the order of flags: the resampling unit of the clustered check
     floors_a: list[float] = []
     floors_b: list[float] = []
     cohort_keys, policies, partitions = set(), set(), set()
@@ -235,6 +236,7 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
         for k, (x, y) in mine.items():
             flags[k][0].extend(x)
             flags[k][1].extend(y)
+        seed_ids.extend(both)
         fa, fb = [float(a[s].floor) for s in both], [float(b[s].floor) for s in both]
         floors_a.extend(fa)
         floors_b.extend(fb)
@@ -254,6 +256,9 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
     partition = next(iter(partitions))
     n = len(floors_a)
     mean_diff, lo, hi = paired_bootstrap_ci(floors_a, floors_b, iters=iters, seed=seed)
+    cl_mean, cl_lo, cl_hi = clustered_bootstrap_ci(
+        [float(x) - float(y) for x, y in zip(*flags["act1"])], seed_ids, iters=iters, seed=seed
+    )
     body = {
         "schema": SCHEMA,
         "kind": "pooled-paired-comparison",
@@ -276,6 +281,13 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
             "a": _rate(flags["act2"][0]),
             "b": _rate(flags["act2"][1]),
             "pairedTable": paired_win_table(*flags["act2"]),
+        },
+        "clusteredDifference": {
+            "definition": "pooled difference (A minus B) in the share that got past the Act-1 boss, with a bootstrap interval that "
+                          "resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
+            "meanAMinusB": cl_mean,
+            "ci95": [cl_lo, cl_hi],
+            "method": f"percentile bootstrap over seeds, {iters} resamples, rng seed {seed}",
         },
         "floorDifference": {
             "meanAMinusB": mean_diff,

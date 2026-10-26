@@ -137,6 +137,30 @@ def test_pooling_adds_the_discordant_pairs_of_every_class_and_tests_the_total_on
     assert build_pooled_comparison([iron, silent], iters=200) == pooled  # deterministic
 
 
+def test_the_pooled_difference_is_also_checked_with_whole_seeds_as_the_resampling_unit(tmp_path: Path):
+    from slay2_sim.stats import clustered_bootstrap_ci, paired_bootstrap_ci
+
+    # two classes played the same 400 seeds and the outcomes are identical in both: the second class adds rows, not information
+    rows_a = [(s, "death", 18, 1.0, 1 if s % 5 else 0) for s in range(400)]  # past the Act-1 boss on 4 seeds in 5
+    rows_b = [(s, "death", 18, 1.0, 1 if s % 2 else 0) for s in range(400)]  # on every other seed
+    pairs = [(make_batch(tmp_path, f"alpha-s{k}", rows_a, character=c), make_batch(tmp_path, f"beta-s{k}", rows_b, character=c))
+             for k, c in enumerate(("Ironclad", "Silent"))]
+    pooled = build_pooled_comparison(pairs, iters=2000)
+    cl = pooled["clusteredDifference"]
+    assert cl["meanAMinusB"] == pytest.approx(0.3, abs=0.01)  # 0.8 - 0.5
+    flags_a = [float(s % 5 != 0) for s in range(400)] * 2
+    flags_b = [float(s % 2 == 1) for s in range(400)] * 2
+    _, lo_iid, hi_iid = paired_bootstrap_ci(flags_a, flags_b, iters=2000)
+    # the duplicated rows make the plain interval look about sqrt(2) tighter than it is; resampling seeds does not
+    assert (cl["ci95"][1] - cl["ci95"][0]) > 1.2 * (hi_iid - lo_iid)
+    assert build_pooled_comparison(pairs, iters=2000)["clusteredDifference"] == cl  # deterministic
+    # rows of one cluster move together: a single cluster has nothing to resample
+    mean, lo, hi = clustered_bootstrap_ci([1.0, 0.0, 1.0, 0.0], [7, 7, 7, 7], iters=50)
+    assert mean == lo == hi == 0.5
+    with pytest.raises(ValueError):
+        clustered_bootstrap_ci([], [])
+
+
 def test_pooling_refuses_what_is_not_one_experiment(tmp_path: Path):
     a1 = make_batch(tmp_path, "alpha-p1", [(1, "death", 3, 1.0)], character="Ironclad")
     b1 = make_batch(tmp_path, "beta-p1", [(1, "death", 3, 1.0)], character="Ironclad")
@@ -271,3 +295,20 @@ def test_committed_comparison_matches_a_recomputation_from_the_committed_batches
     # the committed interval is from 20,000 resamples, this one from 2,000: allow Monte-Carlo noise only
     for got, want in zip(fresh["floorDifference"]["ci95"], committed["floorDifference"]["ci95"]):
         assert got == pytest.approx(want, abs=0.25)
+
+
+POOLED = sorted((REPO / "experiments" / "neow").glob("pooled-*.json"))
+
+
+@pytest.mark.parametrize("path", POOLED, ids=lambda p: p.stem)
+def test_committed_pooled_comparison_matches_a_recomputation_from_the_committed_batches(path: Path):
+    """The site exporter trusts a pooled file's own numbers once its batches' hashes match; this is what checks the numbers (ADR-049)."""
+    committed = json.loads(path.read_text(encoding="utf-8"))
+    pairs = [(BATCHES / m["a"]["batchId"], BATCHES / m["b"]["batchId"]) for m in committed["members"]]
+    fresh = build_pooled_comparison(pairs, iters=2000, seed=0)
+    for key in ("policies", "cohort", "pairedSeeds", "bothCompleted", "excludedNotCompleted", "wins", "reachedAct2", "reachedAct3", "role", "members"):
+        assert fresh[key] == committed[key], key
+    for key in ("floorDifference", "clusteredDifference"):
+        assert fresh[key]["meanAMinusB"] == pytest.approx(committed[key]["meanAMinusB"]), key
+        for got, want in zip(fresh[key]["ci95"], committed[key]["ci95"]):
+            assert got == pytest.approx(want, abs=0.25), key  # 2,000 resamples here against 20,000 there

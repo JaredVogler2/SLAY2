@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 from collections import Counter
+from functools import lru_cache
 
 from . import catalog
 
@@ -40,6 +41,7 @@ def exact_character(name: object) -> str:
     raise ClassError(f"unknown character {name!r}: the exact ids are {', '.join(CHARACTER_IDS)}{hint}")
 
 
+@lru_cache(maxsize=1)
 def _facts() -> dict[str, dict]:
     data = json.loads(catalog.CHARACTERS_PATH.read_text(encoding="utf-8"))
     return {c["id"].lower(): c for c in data["characters"]}

@@ -473,7 +473,7 @@ describe("site-data exporter refuses a comparison whose batches changed", () => 
   });
 });
 
-describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json")))(
+describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v2.json")))(
   "site-data exporter refuses opening-relic data that does not belong together",
   () => {
     const dirs: string[] = [];
@@ -485,7 +485,7 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
 
     const script = join(repo, "scripts", "export-site-data.mjs");
     const hasTest = existsSync(
-      join(repo, "experiments", "neow", "pooled-neow-values-vs-rules_v2-val.json"),
+      join(repo, "experiments", "neow", "pooled-neow-values-v2-vs-rules_v2-val.json"),
     );
 
     function rootWith(mutate: (neowDir: string) => void): string {
@@ -521,14 +521,14 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
 
     it("reads an untouched copy without complaint about the opening-relic files", () => {
       const result = run(rootWith(() => undefined));
-      expect(result.stderr).not.toContain("neow-values-v1.json:");
-      expect(result.stderr).not.toContain("pooled-neow-values-vs-rules_v2-val.json:");
+      expect(result.stderr).not.toContain("neow-values-v2.json:");
+      expect(result.stderr).not.toContain("pooled-neow-values-v2-vs-rules_v2-val.json:");
     });
 
     it("fails when an exploration batch changed after the values were fitted", () => {
       const result = run(
         rootWith((dir) => {
-          edit(dir, "neow-values-v1.json", (v) => {
+          edit(dir, "neow-values-v2.json", (v) => {
             const batches = v.batches as { content_sha256: string }[];
             if (batches[0]) {
               batches[0].content_sha256 = "0".repeat(64);
@@ -543,7 +543,7 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
     it("fails when two relics carry the same label", () => {
       const result = run(
         rootWith((dir) => {
-          edit(dir, "neow-values-v1.json", (v) => {
+          edit(dir, "neow-values-v2.json", (v) => {
             const relics = v.relics as { label: string }[];
             if (relics[1] && relics[0]) {
               relics[1].label = relics[0].label;
@@ -559,19 +559,19 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
       const result = run(
         rootWith((dir) => {
           // any change to the file changes its hash, which the batches of the test recorded
-          edit(dir, "neow-values-v1.json", (v) => {
+          edit(dir, "neow-values-v2.json", (v) => {
             v.pass_rate = 0.5;
           });
         }),
       );
       expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("was played with another version of neow-values-v1.json");
+      expect(result.stderr).toContain("was played with another version of neow-values-v2.json");
     });
 
     it.runIf(hasTest)("fails when a batch of the test changed after it was written", () => {
       const result = run(
         rootWith((dir) => {
-          edit(dir, "pooled-neow-values-vs-rules_v2-val.json", (t) => {
+          edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
             const members = t.members as { a: { contentSha256: string } }[];
             if (members[0]) {
               members[0].a.contentSha256 = "0".repeat(64);
@@ -588,7 +588,7 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
       () => {
         const notHeldOut = run(
           rootWith((dir) => {
-            edit(dir, "pooled-neow-values-vs-rules_v2-val.json", (t) => {
+            edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
               t.role = "development (dev partition): not a held-out result";
             });
           }),
@@ -597,7 +597,7 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
         expect(notHeldOut.stderr).toContain("not a held-out comparison");
         const fewer = run(
           rootWith((dir) => {
-            edit(dir, "pooled-neow-values-vs-rules_v2-val.json", (t) => {
+            edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
               const cohort = t.cohort as { characters: string[] };
               cohort.characters = cohort.characters.slice(1);
             });
@@ -609,3 +609,78 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v1.json
     );
   },
 );
+
+describe("site-data exporter refuses the first opening-relic study (played with the wrong class, ADR-049)", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+  const void_ = join(repo, "experiments", "void", "2026-10-26-wrong-class-ids", "neow");
+  const script = join(repo, "scripts", "export-site-data.mjs");
+
+  /** The void study's files laid out as the exporter expects a real study's, with the one thing that was wrong left as it was. */
+  function rootWithVoidStudy(mutate: (values: Record<string, unknown>) => void): string {
+    const root = mkdtempSync(join(tmpdir(), "slay2-void-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    mkdirSync(join(root, "experiments"));
+    symlinkSync(join(repo, "experiments", "batches"), join(root, "experiments", "batches"), "dir");
+    const dir = join(root, "experiments", "neow");
+    mkdirSync(dir);
+    const values = JSON.parse(readFileSync(join(void_, "neow-values-v1.json"), "utf8")) as {
+      batches: { batch_id: string }[];
+      model: Record<string, unknown>;
+    };
+    // what a correct fit would say about itself; the exploration batches below are the void ones, renamed to the new pattern
+    values.model.resampling_unit = "seed";
+    values.model.seeds = 3000;
+    for (const b of values.batches) {
+      const old = b.batch_id;
+      b.batch_id = old.replace(/^explore-neow-/, "neow-explore-");
+      const target = join(dir, b.batch_id.replace(/^neow-explore-/, "explore-"));
+      mkdirSync(target);
+      const manifest = JSON.parse(
+        readFileSync(
+          join(void_, old.replace(/^explore-neow-/, "explore-"), "manifest.json"),
+          "utf8",
+        ),
+      ) as {
+        batch_id: string;
+      };
+      manifest.batch_id = b.batch_id;
+      writeFileSync(join(target, "manifest.json"), JSON.stringify(manifest));
+    }
+    mutate(values);
+    writeFileSync(join(dir, "neow-values-v2.json"), JSON.stringify(values));
+    return root;
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  it("refuses a fit that resamples by game", () => {
+    const result = run(
+      rootWithVoidStudy((v) => {
+        delete (v.model as Record<string, unknown>).resampling_unit;
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("must resample and cross-validate by seed");
+  });
+
+  it("refuses exploration batches whose games were played as a class the simulator does not know", () => {
+    // the void batches were run with --character silent; the manifests say "silent", not "Silent"
+    const result = run(rootWithVoidStudy(() => undefined));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(
+      /was played as "(ironclad|silent|regent|necrobinder|defect)", which is not one of the simulator's exact class ids/,
+    );
+  });
+});
