@@ -1,0 +1,119 @@
+{
+  "batch_id": "explore-ironclad-a0-train-rep0",
+  "config": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "02655d2f95c30ba3be4b4d6f798f01d72b109139036b33f2d1d10c16d1b0267e",
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": false,
+      "head": "670d5fe9ecfffd3709f9be8cfd17f66accec1dd4"
+    }
+  },
+  "episodes_file": {
+    "lines": 5000,
+    "name": "episodes.jsonl",
+    "sha256": "b48e44f4e85e59e5cf461708ab4eb18c54f6a2aaddcff316e500f929d18aff6f"
+  },
+  "episodes_gz": {
+    "bytes": 310519,
+    "name": "episodes.jsonl.gz",
+    "sha256": "60f218fa516bbd54754577a69a0250904c358ef529181e6e1c7189af29d46dac"
+  },
+  "finished": "2026-10-26T03:23:55+00:00",
+  "known_simulator_gaps": [
+    {
+      "affects": "coverage",
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "results",
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "affects": "results",
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "affects": "coverage",
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+    },
+    {
+      "affects": "coverage",
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    }
+  ],
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "name": "rules_explore",
+    "params": {
+      "explore": 0.6,
+      "replicate": 0
+    }
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v1.json",
+    "file_sha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb",
+    "manifest_sha256": "3c803d061efb97dc93501960d5601ebd98cf55a858e56789b9d6dc42d2c2f27c",
+    "n": 5000,
+    "partition": "train",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 4995,
+    "counts": {
+      "aborted": 0,
+      "death": 4994,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 4,
+      "timeout": 1,
+      "win": 1
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 5000,
+    "win_rate_95ci_wilson": [
+      3.534112543817302e-05,
+      0.0011332214042629022
+    ],
+    "win_rate_of_completed": 0.0002002002002002002
+  },
+  "traces": {
+    "count": 0,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 1842.8,
+  "workers": 2
+}
