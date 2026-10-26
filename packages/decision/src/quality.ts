@@ -1,10 +1,11 @@
 import { GROUPS, type DeckProfile, type Group } from "./profile";
 
 /**
- * The v0 deck-quality index. Every number here is a hand-set heuristic weight (see docs/methods): the structure follows
+ * The deck-quality index (v1). Every number here is a hand-set heuristic weight (see docs/methods): the structure follows
  * widely shared deck-building principles (thin decks of better cards, cover the roles a run needs by act, keep the energy
- * curve payable), but the weights have NOT been fitted to outcomes. Calibration against simulated and logged runs is
- * the next milestone. The index is unit-less "points"; only differences between options are meaningful.
+ * curve payable, and let cards that need partners count only as far as the deck supplies them: `synergy`), but the
+ * weights have NOT been fitted to outcomes. The index is unit-less "points"; only differences between options are
+ * meaningful.
  */
 export interface Weights {
   readonly quality: number;
@@ -50,7 +51,7 @@ export function baseWeights(
   const coverage = Object.fromEntries(
     GROUPS.map((g) => [g, COVERAGE_BY_ACT[g][actIndex] * (RISK_MULTIPLIERS[risk][g] ?? 1)]),
   ) as Record<Group, number>;
-  return { quality: 1, coverage, curve: 6, size: 0.6, synergy: 1.2 };
+  return { quality: 1, coverage, curve: 6, size: 0.6, synergy: 1 };
 }
 
 export interface Terms {
@@ -74,7 +75,7 @@ export function scoreTerms(p: DeckProfile, w: Weights): Terms {
     0.8 * Math.max(0, p.highCostCount - 2)
   );
   const size = -(w.size * Math.max(0, p.size - 30));
-  const synergy = w.synergy * Math.min(p.strengthCards, 2) * (Math.min(p.multiHitCards, 3) / 3);
+  const synergy = w.synergy * p.synergy;
   return { quality: w.quality * p.meanPrior, coverage, curve, size, synergy };
 }
 

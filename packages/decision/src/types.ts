@@ -3,6 +3,8 @@ import { z } from "zod";
 import { AscensionSchema, BuildIdSchema } from "@slay2/game-schema";
 import { ACT1_VARIANTS, PLAYABLE_CLASSES } from "@slay2/game-data";
 
+import type { DeckSynergy } from "./synergy";
+
 export const DRAFT_SOURCES = ["regular", "elite", "boss", "shop", "event"] as const;
 export const RISK_PREFERENCES = ["safe", "balanced", "aggressive"] as const;
 
@@ -67,7 +69,7 @@ export interface DraftResponse {
   readonly schema: 1;
   readonly gameId: "STS2";
   readonly build: string;
-  readonly policyVersion: "draft-heuristic-v0";
+  readonly policyVersion: "draft-heuristic-v1";
   /** The ranking is a heuristic; nothing here is an estimate of win probability. */
   readonly method: "heuristic";
   readonly calibrated: false;
@@ -96,6 +98,8 @@ export interface DraftResponse {
     readonly roleCounts: Readonly<Record<string, number>>;
     readonly starterShare: number;
   };
+  /** What the deck is building and which cards are still waiting for support: SLAY2's judgement of mechanics, not a measurement. */
+  readonly deckSynergy: DeckSynergy;
   /** Present when the request named an Act 1 version: what it changed. */
   readonly actContext?: {
     readonly applied: boolean;

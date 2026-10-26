@@ -1,5 +1,7 @@
 import type { CardEntry } from "@slay2/game-data";
 
+import { synergyOf } from "./synergy";
+
 export const GROUPS = ["damage", "aoe", "block", "scaling", "draw", "energy", "debuff"] as const;
 export type Group = (typeof GROUPS)[number];
 
@@ -36,6 +38,11 @@ export interface DeckProfile {
   readonly strengthCards: number;
   readonly multiHitCards: number;
   readonly roleCounts: Readonly<Record<string, number>>;
+  /**
+   * How well the cards work together, in advisor index points: negative while cards' needs go unmet, positive for the
+   * engines the deck has built and for the cards Strength, Dexterity or Focus lift (see synergy.ts).
+   */
+  readonly synergy: number;
 }
 
 function energyCost(card: CardEntry): number | null {
@@ -45,7 +52,7 @@ function energyCost(card: CardEntry): number | null {
   return card.cost === "X" ? 2 : card.cost;
 }
 
-export function profileDeck(entries: readonly DeckEntry[]): DeckProfile {
+export function profileDeck(entries: readonly DeckEntry[], actIndex: 0 | 1 | 2 = 0): DeckProfile {
   let size = 0;
   let priorSum = 0;
   let playable = 0;
@@ -103,5 +110,6 @@ export function profileDeck(entries: readonly DeckEntry[]): DeckProfile {
     strengthCards,
     multiHitCards,
     roleCounts,
+    synergy: synergyOf(entries, actIndex),
   };
 }

@@ -30,12 +30,12 @@ function request(over: Partial<DraftRequest> = {}): DraftRequest {
 
 const curse = CATALOG.cards.find((c) => c.rarity === "curse");
 
-describe("draft advisor v0: contract", () => {
+describe("draft advisor v1: contract", () => {
   it("is labelled a heuristic, uncalibrated, and never reports a probability", () => {
     const r = evaluateDraft(request());
     expect(r.method).toBe("heuristic");
     expect(r.calibrated).toBe(false);
-    expect(r.policyVersion).toBe("draft-heuristic-v0");
+    expect(r.policyVersion).toBe("draft-heuristic-v1");
     expect(r.gameId).toBe("STS2");
     expect(JSON.stringify(r)).not.toMatch(/winProbability|winRate|probabilityEstimate/);
     expect(r.assumptions.length).toBeGreaterThan(2);

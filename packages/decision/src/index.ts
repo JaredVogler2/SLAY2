@@ -1,6 +1,7 @@
 export * from "./digest";
 export * from "./profile";
 export * from "./quality";
+export * from "./synergy";
 export * from "./context";
 export * from "./types";
 export * from "./draft";
