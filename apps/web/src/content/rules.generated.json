@@ -395,6 +395,13 @@
       "status": "VERIFIED-E1"
     },
     {
+      "id": "DECK-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "What can be done to a card in the deck. A card with the Eternal keyword (Ascender's Bane, Curse of the Bell, Bad Luck, Greed, Folly, Enthralled, Forbidden Grimoire) cannot be removed, and cannot be transformed while it is in the deck. A card can be upgraded once unless it says otherwise; every curse, every status and the three quest cards (Byrdonis Egg, Lantern Key, Spoils Map) have a maximum upgrade level of 0 and cannot be upgraded. From A5 the game adds Ascender's Bane (Eternal, Ethereal, Unplayable) to the starting deck when the run begins (ASC-3).",
+      "evidence": "E1 Models/CardModel.cs IsRemovable, IsTransformable, MaxUpgradeLevel, IsUpgradable, Models.Cards/*.cs MaxUpgradeLevel and CanonicalKeywords, Entities.Ascension/AscensionManager.cs ApplyEffectsTo",
+      "status": "VERIFIED-E1"
+    },
+    {
       "id": "TRS-1",
       "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
       "text": "A treasure room gives gold, a whole number drawn uniformly from 42 to 52 (A3 Poverty: each value x 0.75, truncated: 31 to 39, mean 34.9 instead of 47), and a relic chosen from a roll with the same rarity split as the merchant's (SHOP-1: 50 / 33 / 17 %), plus whatever relics add.",
