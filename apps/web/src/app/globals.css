@@ -22,10 +22,10 @@
   --color-rose: #e58b92;
   --color-rose-deep: #b4565f;
 
-  --font-display: "Cinzel", "Trajan Pro", "Palatino Linotype", Georgia, serif;
-  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono:
-    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* --font-cinzel, --font-inter and --font-jetbrains are set on <html> by next/font in layout.tsx (with metric-matched fallbacks) */
+  --font-display: var(--font-cinzel), "Trajan Pro", "Palatino Linotype", Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-panel: 14px;
   --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 18px 40px -24px rgb(0 0 0 / 0.8);

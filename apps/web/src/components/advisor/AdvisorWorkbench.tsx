@@ -34,6 +34,8 @@ import { SimulationOpinion } from "./SimulationOpinion";
 const EXAMPLE_OFFER = ["POMMEL_STRIKE", "SHRUG_IT_OFF", "INFLAME"] as const;
 
 export function AdvisorWorkbench() {
+  // The server draws the "no saved run" state, which is also what the first client render shows; a saved run replaces it
+  // after hydration. The controls are disabled until then, so a click can never land before its handler exists.
   const hydrated = useHydrated();
   const run = useRunState();
   const { canUndo, canRedo } = useRunHistory();
@@ -72,15 +74,6 @@ export function AdvisorWorkbench() {
       };
     }
   }, [run, offered, source]);
-
-  if (!hydrated) {
-    return (
-      <div className="space-y-6" aria-busy="true" aria-label="Loading your saved run">
-        <div className="panel h-48 animate-pulse" />
-        <div className="panel h-64 animate-pulse" />
-      </div>
-    );
-  }
 
   const chooseCharacter = (c: PlayableClass): void => {
     update(run ? withCharacter(run, c) : newRun(c));
@@ -177,7 +170,7 @@ export function AdvisorWorkbench() {
           <Button
             size="sm"
             variant="ghost"
-            disabled={!canUndo}
+            disabled={!hydrated || !canUndo}
             onClick={() => {
               runStore.undo();
             }}
@@ -187,17 +180,22 @@ export function AdvisorWorkbench() {
           <Button
             size="sm"
             variant="ghost"
-            disabled={!canRedo}
+            disabled={!hydrated || !canRedo}
             onClick={() => {
               runStore.redo();
             }}
           >
             ↷ Redo
           </Button>
-          <Button size="sm" variant="ghost" disabled={!run} onClick={exportRun}>
+          <Button size="sm" variant="ghost" disabled={!hydrated || !run} onClick={exportRun}>
             Export run (JSON)
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => fileRef.current?.click()}>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!hydrated}
+            onClick={() => fileRef.current?.click()}
+          >
             Import run…
           </Button>
           <input
@@ -214,7 +212,7 @@ export function AdvisorWorkbench() {
           <Button
             size="sm"
             variant="danger"
-            disabled={!run}
+            disabled={!hydrated || !run}
             onClick={() => {
               if (
                 window.confirm(
@@ -256,7 +254,7 @@ export function AdvisorWorkbench() {
           run?.character ? (
             <Badge tone="build">{run.build}</Badge>
           ) : (
-            <Button variant="secondary" size="sm" onClick={tryExample}>
+            <Button variant="secondary" size="sm" disabled={!hydrated} onClick={tryExample}>
               Try an example
             </Button>
           )
@@ -267,6 +265,7 @@ export function AdvisorWorkbench() {
             value={run?.character ?? null}
             onChange={chooseCharacter}
             compact={Boolean(run?.character)}
+            disabled={!hydrated}
           />
           {run?.character ? (
             <div className="grid gap-5 md:grid-cols-3">
@@ -330,6 +329,7 @@ export function AdvisorWorkbench() {
               Pick a character to start from its real starter deck. Or{" "}
               <button
                 type="button"
+                disabled={!hydrated}
                 onClick={tryExample}
                 className="text-teal underline decoration-dotted underline-offset-4"
               >

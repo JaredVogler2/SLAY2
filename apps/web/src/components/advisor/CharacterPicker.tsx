@@ -18,10 +18,13 @@ export function CharacterPicker({
   value,
   onChange,
   compact = false,
+  disabled = false,
 }: {
   value: PlayableClass | null;
   onChange: (c: PlayableClass) => void;
   compact?: boolean;
+  /** true until the page is interactive (the server draws this component too); looks the same, so nothing moves */
+  disabled?: boolean;
 }) {
   return (
     <fieldset>
@@ -51,6 +54,7 @@ export function CharacterPicker({
                 name="character"
                 value={c}
                 checked={checked}
+                disabled={disabled}
                 onChange={() => {
                   onChange(c);
                 }}
