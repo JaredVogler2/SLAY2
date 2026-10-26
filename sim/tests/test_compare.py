@@ -87,6 +87,27 @@ def test_past_the_act_one_boss_endpoint_counts_later_acts_and_wins_and_pairs_by_
     assert "past the Act-2 boss" in render_text(c)
 
 
+def test_the_post_hoc_sensitivity_counts_timeouts_by_the_act_they_reached_and_is_off_by_default(tmp_path: Path):
+    a = make_batch(tmp_path, "alpha-s", [
+        (1, "death", 18, 1.0, 1), (2, "timeout", 25, 1.0, 1), (3, "timeout", 6, 1.0, 0), (4, "simulator_error", 0, 1.0, 0), (5, "death", 9, 1.0, 0),
+    ])
+    b = make_batch(tmp_path, "beta-s", [
+        (1, "death", 7, 1.0, 0), (2, "death", 9, 1.0, 0), (3, "death", 20, 1.0, 1), (4, "death", 9, 1.0, 0), (5, "timeout", 30, 1.0, 1),
+    ])
+    plain = build_comparison(a, b, iters=100)
+    assert "sensitivityByActReached" not in plain  # the registered comparison is unchanged by the option
+    assert plain["bothCompleted"] == 1 and plain["excludedNotCompleted"] == 4  # only seed 1 ended in a win or a death in both
+    x = build_comparison(a, b, iters=100, sensitivity=True)["sensitivityByActReached"]
+    assert "post hoc" in x["label"]
+    # seed 4 (a simulator error) drops; seeds 2 and 3 are timeouts in A, seed 5 is one in B
+    assert x["pairs"] == 4 and x["droppedPairs"] == 1 and x["timeouts"] == {"a": 2, "b": 1}
+    # past the Act-1 boss: A = seeds 1 and 2 (act 1), B = seed 3 and 5 (act 1)
+    assert x["a"]["games"] == 2 and x["b"]["games"] == 2
+    assert x["pairedTable"] == {"both": 0, "a_only": 2, "b_only": 2, "neither": 0, "mcnemar_p": 1.0}
+    assert "[post hoc]" in render_text(build_comparison(a, b, iters=100, sensitivity=True))
+    assert "[post hoc]" not in render_text(plain)
+
+
 def test_non_completed_episodes_are_excluded_and_counted_not_scored_as_losses(tmp_path: Path):
     a = make_batch(tmp_path, "alpha-y", [(1, "win", 51, 1.0), (2, "timeout", 12, 1.0), (3, "death", 5, 1.0)])
     b = make_batch(tmp_path, "beta-y", [(1, "death", 9, 1.0), (2, "death", 9, 1.0), (3, "simulator_error", 0, 1.0)])

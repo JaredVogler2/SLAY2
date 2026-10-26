@@ -234,7 +234,7 @@ def cmd_catalog(args) -> int:
 
 
 def cmd_compare(args) -> int:
-    comparison = build_comparison(Path(args.a), Path(args.b), iters=args.iters, seed=args.bootstrap_seed)
+    comparison = build_comparison(Path(args.a), Path(args.b), iters=args.iters, seed=args.bootstrap_seed, sensitivity=args.sensitivity_by_act)
     print(render_text(comparison))
     if args.out:
         write_comparison(comparison, Path(args.out))
@@ -430,6 +430,8 @@ def build_parser() -> argparse.ArgumentParser:
     cp.add_argument("--out", help="write the comparison as a committed artifact, e.g. experiments/comparisons/a-vs-b.json")
     cp.add_argument("--iters", type=int, default=20000, help="bootstrap resamples")
     cp.add_argument("--bootstrap-seed", type=int, default=0)
+    cp.add_argument("--sensitivity-by-act", action="store_true",
+                    help="also report, labelled post hoc, the past-the-Act-1-boss comparison with wall-clock timeouts counted by the act they reached")
     cp.set_defaults(fn=cmd_compare)
     return p
 

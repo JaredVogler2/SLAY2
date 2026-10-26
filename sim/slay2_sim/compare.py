@@ -72,7 +72,27 @@ def _rate(flags: list[bool]) -> dict:
     return {"games": k, "rate": k / n, "wilson95": [lo, hi]}
 
 
-def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int = 0) -> dict:
+def _sensitivity_by_act(a: dict, b: dict, shared: list[int]) -> dict:
+    """Post hoc, labelled as such: the primary comparison drops every pair in which an episode did not reach a win or a death.
+    Here a wall-clock timeout counts too, by the act it had reached (act index 1 or more means the Act-1 boss was behind
+    it); an episode with any other non-completed outcome (a simulator or harness error carries no information about play)
+    still drops the pair."""
+    counted = ("win", "death", "timeout")
+    pairs = [s for s in shared if a[s].outcome in counted and b[s].outcome in counted]
+    fa = [_past_act_one(a[s]) for s in pairs]
+    fb = [_past_act_one(b[s]) for s in pairs]
+    return {
+        "label": "post hoc sensitivity analysis, not the registered endpoint: timeouts counted by the act they reached",
+        "pairs": len(pairs),
+        "droppedPairs": len(shared) - len(pairs),
+        "timeouts": {"a": sum(1 for s in pairs if a[s].outcome == "timeout"), "b": sum(1 for s in pairs if b[s].outcome == "timeout")},
+        "a": _rate(fa),
+        "b": _rate(fb),
+        "pairedTable": paired_win_table(fa, fb),
+    }
+
+
+def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int = 0, sensitivity: bool = False) -> dict:
     """Compare batch ``a`` with batch ``b`` seed by seed. Differences are reported as ``a - b``."""
     a_dir, b_dir = Path(a_dir), Path(b_dir)
     ma, mb = _manifest(a_dir), _manifest(b_dir)
@@ -173,6 +193,8 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
             "parityWithLiveGame": ma["simulator"]["parity_with_live_game"],
         },
     }
+    if sensitivity:
+        body["sensitivityByActReached"] = _sensitivity_by_act(a, b, shared)
     body["contentSha256"] = hashlib.sha256(_canonical(body).encode("utf-8")).hexdigest()
     return body
 
@@ -210,6 +232,14 @@ def render_text(c: dict) -> str:
         lines.append(
             f"  wall time per episode: A={a['meanWallSecondsPerEpisode']:.2f}s  "
             f"B={b['meanWallSecondsPerEpisode']:.2f}s  (B is {c['wallTimeRatioBOverA']:.1f}x A)"
+        )
+    if "sensitivityByActReached" in c:
+        x = c["sensitivityByActReached"]
+        t = x["pairedTable"]
+        lines.append(
+            f"  [post hoc] timeouts counted by the act reached ({x['pairs']} pairs, {x['timeouts']['a']} / {x['timeouts']['b']} timeouts): "
+            f"past the Act-1 boss A={x['a']['rate']:.1%} B={x['b']['rate']:.1%} "
+            f"(A-only={t['a_only']} B-only={t['b_only']}, McNemar exact p={t['mcnemar_p']:.4g})"
         )
     lines.append(f"  role: {c['role']}")
     return "\n".join(lines)
