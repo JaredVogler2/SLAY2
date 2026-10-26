@@ -15,6 +15,7 @@ from __future__ import annotations
 from . import register
 from .rules import RulesV1, _by, _first
 from .rules2 import RulesV2
+from .rules3 import RulesV3
 
 
 class ExploreMixin:
@@ -88,4 +89,14 @@ class RulesExploreV2(ExploreMixin, RulesV2):
     fitted on decks assembled the way the improved policy assembles them, not the way rules_v1 does."""
 
     name = "rules_explore_v2"
+    version = "1"
+
+
+@register
+class RulesExploreV3(ExploreMixin, RulesV3):
+    """Round two of the card-value measurement, for a stronger pilot: the exploration of ADR-031 on top of rules_v3, whose
+    non-random card picks follow the round-one values like rules_explore_v2's. No game is played with it before its study
+    is registered in docs/DECISIONS.md."""
+
+    name = "rules_explore_v3"
     version = "1"
