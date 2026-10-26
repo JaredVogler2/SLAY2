@@ -471,3 +471,15 @@ All three primary endpoints are met by a very wide margin, so the reading rule's
 **Alternatives rejected.** A hamburger menu (it hides the six destinations behind a tap and needs a client component with focus management for no gain at six links); a horizontally scrolling nav row (the cut-off link is what was wrong); shrinking the nav text (still 310 px of text and padding at 320 px, and smaller than the 14 px body); truncating the class names with an ellipsis (a name is the thing being chosen).
 
 **Rollback.** Revert the commit; no data or API is touched.
+
+## 2026-10-26 — ADR-044: a pasted link gets an original picture, and the privacy claims are a test
+
+**Context.** The community this site is for lives in Discord and Reddit, where a pasted link is judged by its preview; the site had no Open Graph image, so a link showed a bare title. Separately, the README and `/about` say that there are no accounts, cookies or analytics and that the pages do not send a visitor's run anywhere; the CSP (`connect-src 'self'`) made the strongest version of that hard to break by accident, but nothing tested the claim as a visitor experiences it.
+
+**Decision.** (1) `apps/web/src/app/opengraph-image.tsx` draws the 1200 x 630 PNG at build time with `next/og` from the site's own spire mark and colours and the Cinzel file the site already ships (no game art, no screenshot, no new dependency); the layout sets `twitter.card` to `summary_large_image`, and Next fills the Open Graph and Twitter image tags from the file. The absolute URL in the tags comes from `metadataBase`, which is deliberately unset (`NEXT_PUBLIC_SITE_URL`, DEPLOY.md); on Vercel Next derives it from the deployment's URL, which has to be checked on the hosted site after the merge. (2) `e2e/privacy.spec.ts` visits every page and the advisor's example and asserts one origin, no request that is not a plain GET, no request body, no API call from a page, no cookie set or stored, and only `slay2.` keys in local storage; `e2e/share.spec.ts` asserts the tags and a real 1200 x 630 PNG.
+
+**Measured.** A whole visit made 456 requests, all to the site's own origin, none other than GET, none with a body, none to `/api/`, and set no cookie.
+
+**Not covered.** What a link preview looks like inside each chat service (they cache, crop and sometimes ignore the tags); the hosted site's absolute image URL until it is deployed.
+
+**Rollback.** Delete the two files and the `twitter` entry; nothing else depends on them.

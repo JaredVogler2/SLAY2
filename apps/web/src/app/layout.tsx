@@ -58,6 +58,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "SLAY2",
   },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

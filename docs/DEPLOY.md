@@ -110,8 +110,15 @@ curl -fsSI "$SITE/" | grep -i -E "content-security-policy|strict-transport|x-con
 curl -fsS -X POST "$SITE/api/v1/odds" -H 'content-type: application/json' \
   -d '{"calculator":"draw","pile":10,"targets":1,"draws":5}'   # expect {"n":"1","d":"2"}: exactly 1/2 for one copy in a ten-card pile
 
-# 2. the full browser suite against the hosted site
+# 2. the picture a pasted link gets: the tag must name the hosted site (not localhost) and the file must be a 1200 x 630 PNG
+curl -fsS "$SITE/about" | grep -o '<meta property="og:image" content="[^"]*"'
+curl -fsS -o /tmp/og.png "$SITE/opengraph-image" && file /tmp/og.png     # PNG image data, 1200 x 630
+
+# 3. the full browser suite against the hosted site
 BASE_URL="$SITE" pnpm --filter @slay2/web e2e
+
+# 4. Web Vitals of the hosted site (lab numbers from where this runs; see "Web Vitals (lab)" above)
+BASE_URL="$SITE" pnpm --filter @slay2/web vitals
 ```
 
 ## Hosted smoke test (2026-10-26)
