@@ -162,7 +162,12 @@ export default function Home() {
                       ". Simulator unverified against the live game; see Evidence & methods.",
                   ],
                   [
-                    "Combat lab, map, shops, events",
+                    "Route comparison",
+                    "Supported",
+                    "Type up to three routes through an act: exact “?” outcomes, rare-card and potion odds, gold and relics along each. It compares what routes pay, never whether you would survive them.",
+                  ],
+                  [
+                    "Combat lab, map pathfinder, shops, events",
                     "Planned",
                     "Not available yet; nothing on this site pretends otherwise.",
                   ],

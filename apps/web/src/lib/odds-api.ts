@@ -9,12 +9,14 @@ import {
   drawDistribution,
   drawJointAtLeast,
   drawMean,
+  evaluateRoute,
   forecastPack,
   forecastPotions,
   forecastUnknownRoom,
   inferCounter,
   inferPotionCounter,
   inferUnknownState,
+  MAX_ROUTE_ROOMS,
   MAX_UNKNOWN_ROOMS_PER_ACT,
   nextHandWithReshuffle,
   hypergeometricDistribution,
@@ -24,8 +26,10 @@ import {
   priceDistribution,
   provenanceFor,
   rarityRulesForAscension,
+  ROUTE_ROOMS,
   type PackObservation,
   type PotionObservation,
+  type RouteReport,
   type ShopItem,
   type UnknownObservation,
 } from "@slay2/odds";
@@ -120,6 +124,41 @@ const GoldRequest = z.strictObject({
   room: z.enum(["monster", "elite", "boss"]),
 });
 
+const RouteRequest = z.strictObject({
+  calculator: z.literal("route"),
+  build: BuildIdSchema,
+  ascension: AscensionSchema,
+  /** One to three routes to compare, each the rooms in the order they would be walked. */
+  routes: z
+    .array(
+      z.strictObject({
+        name: z.string().trim().min(1).max(24).optional(),
+        rooms: z.array(z.enum(ROUTE_ROOMS)).max(MAX_ROUTE_ROOMS),
+      }),
+    )
+    .min(1)
+    .max(3),
+  /** Every "?" room met in the CURRENT act, in order. `[]` means none yet this act; omitting it is an error. */
+  unknownHistory: z
+    .array(z.strictObject({ outcome: z.enum(["fight", "treasure", "shop", "event"]).optional() }))
+    .max(MAX_UNKNOWN_ROOMS_PER_ACT),
+  /** Known number of non-rare cards since the last rare. Exactly one of `counter` and `packHistory`. */
+  counter: Count(200).optional(),
+  packHistory: z.array(PackObservationSchema).max(100).optional(),
+  /** Known stored potion chance in tenths (4 = 40 %, the start of a run). Exactly one of `potionTenths` and `potionHistory`. */
+  potionTenths: z.number().int().min(-20).max(40).optional(),
+  potionHistory: z
+    .array(
+      z.strictObject({
+        room: PotionRoom,
+        dropped: z.boolean().optional(),
+        forced: z.boolean().optional(),
+      }),
+    )
+    .max(200)
+    .optional(),
+});
+
 export const OddsRequestSchema = z.discriminatedUnion("calculator", [
   RarityRequest,
   PotionRequest,
@@ -128,8 +167,49 @@ export const OddsRequestSchema = z.discriminatedUnion("calculator", [
   PriceRequest,
   RemovalRequest,
   GoldRequest,
+  RouteRequest,
 ]);
 export type OddsRequest = z.infer<typeof OddsRequestSchema>;
+
+function routeJson(r: RouteReport): Record<string, unknown> {
+  const each = <T extends string>(o: Readonly<Record<T, Rational>>): Record<string, RationalOut> =>
+    Object.fromEntries(Object.entries<Rational>(o).map(([k, v]) => [k, rationalOut(v)]));
+  return {
+    rooms: r.rooms,
+    counts: r.counts,
+    unknown: {
+      rooms: r.unknown.rooms,
+      expected: each(r.unknown.expected),
+      pmf: Object.fromEntries(
+        Object.entries<readonly Rational[]>(r.unknown.pmf).map(([k, v]) => [k, v.map(rationalOut)]),
+      ),
+    },
+    fights: {
+      certain: r.fights.certain,
+      expected: rationalOut(r.fights.expected),
+      min: r.fights.min,
+      max: r.fights.max,
+    },
+    cardPacks: {
+      expectedRares: rationalOut(r.cardPacks.expectedRares),
+      atLeastOneRare: rationalOut(r.cardPacks.atLeastOneRare),
+    },
+    potions: {
+      expectedDrops: rationalOut(r.potions.expectedDrops),
+      atLeastOne: rationalOut(r.potions.atLeastOne),
+    },
+    gold: {
+      fromFights: rationalOut(r.gold.fromFights),
+      fromTreasure: rationalOut(r.gold.fromTreasure),
+      expected: rationalOut(r.gold.expected),
+      min: r.gold.min,
+      max: r.gold.max,
+    },
+    relics: { elites: r.relics.elites, expectedTreasure: rationalOut(r.relics.expectedTreasure) },
+    shops: { certain: r.shops.certain, expected: rationalOut(r.shops.expected) },
+    rests: r.rests,
+  };
+}
 
 const dist = (m: ReadonlyMap<number, Rational>): { value: number; probability: RationalOut }[] =>
   [...m.entries()]
@@ -406,6 +486,99 @@ export function computeOdds(input: unknown): Record<string, unknown> {
         cost: cardRemovalCost(req.removals, req.ascension),
         provenance: provenanceFor("shop"),
       };
+    case "route": {
+      const one = (given: unknown, other: unknown, a: string, b: string, what: string): void => {
+        if (given !== undefined && other !== undefined) {
+          throw new HttpError(
+            400,
+            "invalid_request",
+            `Give either \`${a}\` or \`${b}\`, not both`,
+            [{ path: a, message: `mutually exclusive with ${b}` }],
+          );
+        }
+        if (given === undefined && other === undefined) {
+          throw new HttpError(
+            400,
+            "invalid_request",
+            `Say what you know about the ${what}: give \`${a}\` (if you know it) or \`${b}\` (\`[]\` only if none has happened yet)`,
+            [{ path: b, message: `required unless ${a} is given` }],
+          );
+        }
+      };
+      one(req.counter, req.packHistory, "counter", "packHistory", "hidden rare-card counter");
+      one(
+        req.potionTenths,
+        req.potionHistory,
+        "potionTenths",
+        "potionHistory",
+        "stored potion chance",
+      );
+      const rules = rarityRulesForAscension(req.ascension);
+      const unknownHistory: UnknownObservation[] = req.unknownHistory.map((h) =>
+        h.outcome === undefined ? {} : { outcome: h.outcome },
+      );
+      if (inferUnknownState(unknownHistory).impossible) {
+        throw new HttpError(
+          422,
+          "impossible_history",
+          "That '?' room history cannot happen under the verified rules.",
+        );
+      }
+      const packs: PackObservation[] = (req.packHistory ?? []).map((h) => ({
+        source: sourceToReward(h.source),
+        ...(h.cards === undefined ? {} : { cards: h.cards }),
+        ...(h.rares === undefined ? {} : { rares: h.rares }),
+        ...(h.uncommons === undefined ? {} : { uncommons: h.uncommons }),
+      }));
+      const rare = req.counter === undefined ? inferCounter(packs, rules) : null;
+      if (rare?.impossible) {
+        throw new HttpError(
+          422,
+          "impossible_history",
+          "That card-pack history cannot happen under the verified rules (a relic or event may have changed the odds).",
+        );
+      }
+      const potionHistory: PotionObservation[] = (req.potionHistory ?? []).map((h) => ({
+        room: h.room,
+        ...(h.dropped === undefined ? {} : { dropped: h.dropped }),
+        ...(h.forced === undefined ? {} : { forced: h.forced }),
+      }));
+      const potion = req.potionTenths === undefined ? inferPotionCounter(potionHistory) : null;
+      if (potion?.impossible) {
+        throw new HttpError(
+          422,
+          "impossible_history",
+          "That potion history cannot happen under the verified rules.",
+        );
+      }
+      const rareCounter =
+        req.counter === undefined
+          ? (rare?.posterior ?? pointMass(0, rules))
+          : pointMass(req.counter, rules);
+      const potionCounter =
+        req.potionTenths === undefined
+          ? (potion?.posterior ?? new Map([[4, Rational.ONE]]))
+          : new Map([[req.potionTenths, Rational.ONE]]);
+      return {
+        calculator: "route",
+        method: "exact",
+        build: req.build,
+        ascension: req.ascension,
+        routes: req.routes.map((route, i) => ({
+          name: route.name ?? String.fromCharCode(65 + i),
+          report: routeJson(
+            evaluateRoute({
+              rooms: route.rooms,
+              ascension: req.ascension,
+              unknownHistory,
+              rareCounter,
+              potionCounter,
+            }),
+          ),
+        })),
+        provenance: provenanceFor("route", { ascension: req.ascension }),
+      };
+    }
     case "gold": {
       const g = combatGoldRange(req.room, req.ascension);
       return {

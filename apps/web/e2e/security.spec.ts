@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const PAGES = ["/", "/odds", "/advisor", "/methods", "/about"] as const;
+const PAGES = ["/", "/odds", "/routes", "/advisor", "/methods", "/about"] as const;
 
 test.describe("security headers", () => {
   test("every page carries a closed-down policy", async ({ request }) => {
