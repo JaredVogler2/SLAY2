@@ -1,7 +1,9 @@
 """Paired single-combat evaluation of agents on held-out run states.
 
 Every agent plays the *same* (snapshot, repeat) pairs with identical hidden-stream seeds, so differences are paired.
-Agents: ``rules`` (the rules_v1 baseline), ``net:<checkpoint>`` greedy, ``netsample:<checkpoint>`` sampled.
+Agents: ``rules`` (the rules_v1 baseline), ``net:<checkpoint>`` greedy, ``netsample:<checkpoint>`` sampled,
+``policy:<name>[:key=value,...]`` any registered policy (search policies get a fairly determinized forward model),
+e.g. ``policy:search_v1:nodes=200,depth=6``.
 
     python -m slay2_sim.rl.evalcombat --agents rules net:/path/best.pt --seeds 80 --repeats 3 --partition val
 """
@@ -22,10 +24,25 @@ from ..stats import mcnemar_exact, paired_bootstrap_ci, wilson_interval
 def _make_agent(spec: str):
     if spec == "rules":
         return RulesAgent()
-    kind, _, path = spec.partition(":")
+    kind, _, rest = spec.partition(":")
     if kind in ("net", "netsample"):
-        return NetAgent(path, greedy=(kind == "net"))
+        return NetAgent(rest, greedy=(kind == "net"))
+    if kind == "policy":
+        name, _, params = rest.partition(":")
+        return PolicyAgent(name, parse_params(params))
     raise ValueError(f"unknown agent {spec!r}")
+
+
+def parse_params(text: str) -> dict:
+    """``nodes=200,depth=6`` -> {"nodes": 200, "depth": 6} (values are JSON when they parse, strings otherwise)."""
+    out: dict = {}
+    for part in filter(None, (p.strip() for p in text.split(","))):
+        key, _, raw = part.partition("=")
+        try:
+            out[key.strip()] = json.loads(raw)
+        except ValueError:
+            out[key.strip()] = raw
+    return out
 
 
 def _absolute(spec: str) -> str:
@@ -35,26 +52,38 @@ def _absolute(spec: str) -> str:
     return spec
 
 
-class RulesAgent:
-    """The rules_v1 policy driving the same combat environment (it sees the same fair observation)."""
+class PolicyAgent:
+    """A registered policy driving the combat environment; it sees the same fair observation as the network does.
 
-    def __init__(self):
+    Search policies receive the same kind of forward model the full-run runner hands them: clones whose hidden state
+    is a fair sample (``ManagerForwardModel``), never the live game's future."""
+
+    def __init__(self, name: str = "rules_v1", params: dict | None = None):
         from ..policies import make_policy
 
-        self.policy = make_policy("rules_v1")
+        self.policy = make_policy(name, **(params or {}))
 
     def begin(self, env, seed: int) -> None:
         self.policy.reset(seed)
 
     def act(self, env, enc) -> int:
+        from ..runner import ManagerForwardModel
         from . import features as ft
 
         obs = env.obs
-        idx = self.policy.act(obs, env._raw, None)
+        fm = ManagerForwardModel(env.mgr) if self.policy.needs_forward_model else None
+        idx = self.policy.act(obs, env._raw, fm)
         aid = ft.action_id(obs["actions"][idx])
         if aid is None or aid not in env.table:  # outside the fixed layout (rare): fall back to any legal action
             aid = next(iter(env.table))
         return aid
+
+
+class RulesAgent(PolicyAgent):
+    """The rules_v1 baseline."""
+
+    def __init__(self):
+        super().__init__("rules_v1")
 
 
 class NetAgent:
