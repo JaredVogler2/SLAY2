@@ -28,6 +28,13 @@ def _make_agent(spec: str):
     raise ValueError(f"unknown agent {spec!r}")
 
 
+def _absolute(spec: str) -> str:
+    kind, _, path = spec.partition(":")
+    if kind in ("net", "netsample") and path:
+        return f"{kind}:{Path(path).resolve()}"
+    return spec
+
+
 class RulesAgent:
     """The rules_v1 policy driving the same combat environment (it sees the same fair observation)."""
 
@@ -78,15 +85,15 @@ class NetAgent:
 def _shard(args: tuple) -> dict:
     from .. import external
 
-    sim_root, seeds, keep_monster, wid, agent_specs, repeats, env_kwargs = args
-    external.activate(sim_root)
+    sim_root, seeds, keep_monster, wid, agent_specs, repeats, env_kwargs, loadable = args
+    external.activate(sim_root)  # changes the working directory: checkpoint paths arrive absolute in `loadable`
     from . import env as E
 
     lib = E.collect_snapshots(seeds, keep_monster=keep_monster, rng_seed=wid)
     env = E.CombatEnv(lib, seed=0, **env_kwargs)
     out: dict[str, list[dict]] = {}
     for spec in agent_specs:
-        agent = _make_agent(spec)
+        agent = _make_agent(loadable[spec])
         rows = []
         for si, snap in enumerate(lib):
             for r in range(repeats):
@@ -113,7 +120,8 @@ def evaluate(agent_specs: list[str], *, partition: str = "val", seeds: int = 80,
     sim = external.locate()
     all_seeds = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v1.json").read_text())["partitions"][partition][:seeds]
     ctx = mp.get_context("spawn")
-    jobs = [(str(sim.root), all_seeds[w::workers], keep_monster, w, agent_specs, repeats, env_kwargs or {}) for w in range(workers)]
+    loadable = {spec: _absolute(spec) for spec in agent_specs}  # results stay keyed by the spec as typed (no local paths in artifacts)
+    jobs = [(str(sim.root), all_seeds[w::workers], keep_monster, w, agent_specs, repeats, env_kwargs or {}, loadable) for w in range(workers)]
     with ctx.Pool(workers) as pool:
         parts = pool.map(_shard, jobs)
     merged: dict[str, list[dict]] = {s: [] for s in agent_specs}
