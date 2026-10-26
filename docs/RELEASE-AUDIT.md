@@ -108,7 +108,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Blockers and owner decisions
 
 1. **Finish the synergy study** (stage B2 of ADR-050: the held-out test of the synergy term and the page's final weights; the finding above); it needs no owner decision.
-2. **Pull request #7 is merged and live** (checked 2026-10-26 22:10 UTC: `/api/v1/health` reports the merge commit `0674d54`, `/methods` carries the opening-Ancient section). **Merge pull request #8** (the synergy work) when it is green and measure Web Vitals again (the advisor's script is about 120 KB lighter since #7, and the synergy panel adds a little).
+2. **Pull requests #7 and #8 are merged and live** (checked 2026-10-26 22:43 UTC: `/api/v1/health` reports the merge commit `daf5287`, `/methods` carries the synergy section and, below it, the opening-Ancient section). Measure Web Vitals again on the hosted site (the advisor's script is about 120 KB lighter since #7, and the synergy panel adds a little).
 3. **A licence for SLAY2's own code** and any monetization or donation (counsel, and Mega Crit's confirmation): until chosen the repository is visible but all rights are reserved.
 4. **Live-game parity** needs an owned copy of STS2 on the owner's machine: until then every simulator result stays labelled unverified.
 5. **Vercel**: whether non-production deployments stay behind login and the canonical URL (`NEXT_PUBLIC_SITE_URL`, deliberately unset).
@@ -126,10 +126,10 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Next actions, in order
 
 0. **Finish the synergy study** (the user's feedback). The model, the exploratory reading (B1) and the pages are done; what remains is stage B2 as registered in ADR-050: the development stage, the addendum that records the chosen configuration, the one held-out test, and the page's weights and wording set by its result.
-1. The owner merges pull request #8 (the synergy work); verify production and Web Vitals as above.
+1. Measure Web Vitals on the hosted site again now that pull request #8 (the synergy work) is live.
 2. Registered question with the largest use for a player: the opening-relic rule at the game's own Necrobinder HP (`--game-hp`, G13), then the full re-derivation of the older batches, then the decision on the paused network.
 3. Reduce the script that runs after first paint on `/methods` and `/codex`.
 4. A map editor that feeds Route Lab; rest-site, shop and Ancient helpers, each starting from a facts-only catalog and its own red-team campaign.
 5. Quote the fan-content policy verbatim; choose the licence.
 
-Exact next command: `Read docs/STATUS.md and docs/RELEASE-AUDIT.md. Then: (0) finish stage B2 of ADR-050 as docs/STATUS.md (Next steps 0 and the exact next command) says; (1) check that pull request #8 (JaredVogler2/SLAY2) is green and, once merged, that https://slay-part2.vercel.app/api/v1/health reports the merge commit and /methods#synergy shows the study; (2) write the registration of the next question (docs/DECISIONS.md) and push it before its first game.`
+Exact next command: `Read docs/STATUS.md and docs/RELEASE-AUDIT.md. Then: (0) finish stage B2 of ADR-050 as docs/STATUS.md (Next steps 0 and the exact next command) says; (1) pull request #8 is merged and live (daf5287): open a new pull request for the B2 work when there is something to merge; (2) write the registration of the next question (docs/DECISIONS.md) and push it before its first game.`
