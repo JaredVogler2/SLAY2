@@ -265,7 +265,14 @@
       "winsAudit": null,
       "rederivationAudit": null,
       "canonicalProcessState": false,
-      "sampleAudit": null,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2000,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -279,6 +286,89 @@
       "contentSha256": "6039113dcdc9ef6052f645f55adae7142fd3dcb009a19c6b80953214f5326b9c",
       "episodesGzSha256": "a26105abad3f351765fde7c10a1eb77a133470bcc7b8fb8904b6d2255ea6f1da",
       "finished": "2026-10-26T02:53:10+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v1-defect-a0-veteran-val-n2000",
+      "policy": "rules_v1",
+      "policyParams": {},
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1999,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1999,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019180044450228416
+      ],
+      "meanFloor": 15.93,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1308,
+        "1": 690,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 293
+        },
+        {
+          "id": "VANTOM",
+          "n": 249
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 215
+        },
+        {
+          "id": "TUNNELER",
+          "n": 133
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 113
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.12,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1999,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "2773566cc727fd6f9c9481e98e713b1560f1cc105dd4e9b98ff6454006bdc038",
+      "episodesGzSha256": "13cf0d651f694e02bb7af4682b890f3b0e3cc82e7c1bcb350c61a79f0a17ebbd",
+      "finished": "2026-10-26T07:50:35+00:00",
       "role": "held-out"
     },
     {
@@ -417,7 +507,14 @@
       "winsAudit": null,
       "rederivationAudit": null,
       "canonicalProcessState": false,
-      "sampleAudit": null,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1997,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -431,6 +528,172 @@
       "contentSha256": "cb67cffc76ebbb79234ac86ec8d1f405cf8da339bcf0628d38298d706778d752",
       "episodesGzSha256": "3cc0375069c440d87c9c06b9d0af3013782045bda369855a4cf306e34e2f1b00",
       "finished": "2026-10-26T02:46:56+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v1-necrobinder-a0-veteran-val-n2000",
+      "policy": "rules_v1",
+      "policyParams": {},
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1997,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 3,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1997,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019199216428463545
+      ],
+      "meanFloor": 17.63,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1043,
+        "1": 950,
+        "2": 4
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 251
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 224
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 131
+        },
+        {
+          "id": "TUNNELER",
+          "n": 123
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 118
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.23,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1997,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "ef7ce115f7371aa6b348ed0b0552865b68d96869f468a0a8cc729f05f915fda2",
+      "episodesGzSha256": "4b04f37481632cd34b061ec4e06d060ac5eb2fd11fa923a52f404afe3575c5ec",
+      "finished": "2026-10-26T07:52:21+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v1-regent-a0-veteran-val-n2000",
+      "policy": "rules_v1",
+      "policyParams": {},
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1987,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 13,
+        "win": 0
+      },
+      "completed": 1987,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019295654124912949
+      ],
+      "meanFloor": 13.54,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1707,
+        "1": 279,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 312
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 291
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 205
+        },
+        {
+          "id": "FOGMOG",
+          "n": 147
+        },
+        {
+          "id": "KIN_FOLLOWER,KIN_PRIEST",
+          "n": 77
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.1,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": false,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1987,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "20345eef47cc63dab4b7d4d67dcf04cc90674b7fb2a86a7a7ef8973ec9a65605",
+      "episodesGzSha256": "80132879ff5897612e794835a5f725f11c2d798400fc4c5225dbae421d1e1e9f",
+      "finished": "2026-10-26T07:49:26+00:00",
       "role": "held-out"
     },
     {
@@ -493,7 +756,14 @@
       "winsAudit": null,
       "rederivationAudit": null,
       "canonicalProcessState": false,
-      "sampleAudit": null,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1999,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -507,6 +777,112 @@
       "contentSha256": "ebf95798bae04a41215323ae1f23dab25eb986eec5fe7ac97ac2bc2d951a7a47",
       "episodesGzSha256": "86cf2dc1803b151f283f313d89b0731384cf0b2f6fe5126a89199db1698cd47f",
       "finished": "2026-10-26T07:03:19+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v2-defect-a0-veteran-val-n2000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1989,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 4,
+        "timeout": 0,
+        "win": 7
+      },
+      "completed": 1996,
+      "winRate": 0.0035070140280561123,
+      "winRateWilson95": [
+        0.0016998333700756004,
+        0.007221603247812715
+      ],
+      "meanFloor": 21.3,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 476,
+        "1": 1413,
+        "2": 107
+      },
+      "topKillers": [
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 135
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 128
+        },
+        {
+          "id": "TUNNELER",
+          "n": 111
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 100
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 100
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.19,
+      "winsAudit": {
+        "audited": 7,
+        "verified": 7,
+        "seeds": [
+          1079539864,
+          1144431556,
+          1230255683,
+          1291656675,
+          1315974849,
+          1764333373,
+          1809090045
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": {
+        "games": 2000,
+        "exact": 1999,
+        "differing": [
+          417516746
+        ],
+        "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record"
+      },
+      "canonicalProcessState": false,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1996,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "b4a6768e1e487bc172ac55fd505a2d1dc8ebcc6c39addff20df4b2c168b9ef96",
+      "episodesGzSha256": "20df3bc4dbb960fc5517f96f231ca174aa994bc824aa8d8923373cc5a261ed9e",
+      "finished": "2026-10-26T08:10:33+00:00",
       "role": "held-out"
     },
     {
@@ -659,9 +1035,21 @@
         ],
         "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
       },
-      "rederivationAudit": null,
+      "rederivationAudit": {
+        "games": 2000,
+        "exact": 2000,
+        "differing": [],
+        "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record"
+      },
       "canonicalProcessState": false,
-      "sampleAudit": null,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1994,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -675,6 +1063,199 @@
       "contentSha256": "70a62f3df49aaa236612e7c371f9f2460f074a2131d048cd242191f92c108b7a",
       "episodesGzSha256": "27e946d2a6b8d927753d36e169c5ed0a32285b8154a1305d5adecf119fac7af2",
       "finished": "2026-10-26T04:03:31+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v2-necrobinder-a0-veteran-val-n2000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1999,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1999,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019180044450228416
+      ],
+      "meanFloor": 19.63,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 757,
+        "1": 1227,
+        "2": 15
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 191
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 174
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 134
+        },
+        {
+          "id": "TUNNELER",
+          "n": 121
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 120
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.15,
+      "winsAudit": null,
+      "rederivationAudit": {
+        "games": 2000,
+        "exact": 1997,
+        "differing": [
+          1303472829,
+          1507301659,
+          2012744721
+        ],
+        "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record"
+      },
+      "canonicalProcessState": false,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1999,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "124099adcf748184d7294a11a72d13e2a63d2c3ede87b761cf61b68d4fd5eda6",
+      "episodesGzSha256": "744ecbf1be1595236249ad137a759128504abdce1440a4e8cebbc781f34aeee1",
+      "finished": "2026-10-26T08:11:39+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v2-regent-a0-veteran-val-n2000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1986,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 2,
+        "timeout": 11,
+        "win": 1
+      },
+      "completed": 1987,
+      "winRate": 0.0005032712632108706,
+      "winRateWilson95": [
+        0.00008884526058171131,
+        0.0028453204886861403
+      ],
+      "meanFloor": 17.84,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1001,
+        "1": 969,
+        "2": 17
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 265
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 179
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 167
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 123
+        },
+        {
+          "id": "TUNNELER",
+          "n": 115
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.13,
+      "winsAudit": {
+        "audited": 1,
+        "verified": 1,
+        "seeds": [
+          1315974849
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": {
+        "games": 2000,
+        "exact": 2000,
+        "differing": [],
+        "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record"
+      },
+      "canonicalProcessState": false,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1987,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "a20b58d12a9f0e093d6f42789906bbbcd925571257ce9ffc6ebf3b18250039ad",
+      "episodesGzSha256": "6adff94f330e5fbcdc0e5f821f43b073a88b97a18a19277fc1cbc164ab234edf",
+      "finished": "2026-10-26T08:08:19+00:00",
       "role": "held-out"
     },
     {
@@ -737,9 +1318,24 @@
       ],
       "meanWallSecondsPerEpisode": 0.66,
       "winsAudit": null,
-      "rederivationAudit": null,
+      "rederivationAudit": {
+        "games": 2000,
+        "exact": 1998,
+        "differing": [
+          1481468527,
+          1821855013
+        ],
+        "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record"
+      },
       "canonicalProcessState": false,
-      "sampleAudit": null,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2000,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -1084,6 +1680,95 @@
       "contentSha256": "fb860edec24c84bdf8205ba29b38be5ee1c6c360bf624c8179bbc4ffa4acd6b8"
     },
     {
+      "id": "rules_v2-vs-rules_v1-defect-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v2-defect-a0-veteran-val-n2000",
+        "contentSha256": "b4a6768e1e487bc172ac55fd505a2d1dc8ebcc6c39addff20df4b2c168b9ef96",
+        "meanFloor": 21.302104208416832,
+        "meanWallSecondsPerEpisode": 1.1934,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/defect-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0.0035070140280561123,
+        "winRateWilson95": [
+          0.0016998333700756004,
+          0.007221603247812715
+        ],
+        "wins": 7
+      },
+      "b": {
+        "batchId": "rules_v1-defect-a0-veteran-val-n2000",
+        "contentSha256": "2773566cc727fd6f9c9481e98e713b1560f1cc105dd4e9b98ff6454006bdc038",
+        "meanFloor": 15.934869739478957,
+        "meanWallSecondsPerEpisode": 1.1233,
+        "params": {},
+        "policy": "rules_v1",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.001920881679770471
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Defect",
+        "partition": "val",
+        "profile": "veteran",
+        "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1996,
+      "excludedNotCompleted": 4,
+      "pairedWinTable": {
+        "a_only": 7,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 0.015625,
+        "neither": 1989
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 1520,
+          "rate": 0.7615230460921844,
+          "wilson95": [
+            0.7423365960101683,
+            0.7797047865180479
+          ]
+        },
+        "b": {
+          "games": 689,
+          "rate": 0.34519038076152303,
+          "wilson95": [
+            0.32464853474830774,
+            0.3663269686976333
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 937,
+          "b_only": 106,
+          "both": 583,
+          "mcnemar_p": 7.211901524218e-167,
+          "neither": 370
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          4.9969939879759515,
+          5.745490981963928
+        ],
+        "meanAMinusB": 5.367234468937876,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.941,
+      "role": "held-out",
+      "preIsolation": false,
+      "contentSha256": "e08a4a4b15a52424aa42e9c2462d02462d5f0d1bcb8c8f00b256a73a0a625e0a"
+    },
+    {
       "id": "rules_v2-vs-rules_v1-ironclad-a0-veteran-val",
       "a": {
         "batchId": "rules_v2-ironclad-a0-veteran-val-n2000",
@@ -1170,6 +1855,184 @@
       "role": "held-out",
       "preIsolation": false,
       "contentSha256": "6c62f583794bd668aa7492dead4274ac71575a022cca5170bec7f1e3d0692ea5"
+    },
+    {
+      "id": "rules_v2-vs-rules_v1-necrobinder-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v2-necrobinder-a0-veteran-val-n2000",
+        "contentSha256": "124099adcf748184d7294a11a72d13e2a63d2c3ede87b761cf61b68d4fd5eda6",
+        "meanFloor": 19.620430645968952,
+        "meanWallSecondsPerEpisode": 1.1517,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019199216428463545
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "rules_v1-necrobinder-a0-veteran-val-n2000",
+        "contentSha256": "ef7ce115f7371aa6b348ed0b0552865b68d96869f468a0a8cc729f05f915fda2",
+        "meanFloor": 17.628442663995994,
+        "meanWallSecondsPerEpisode": 1.2303,
+        "params": {},
+        "policy": "rules_v1",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019199216428463545
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Necrobinder",
+        "partition": "val",
+        "profile": "veteran",
+        "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1997,
+      "excludedNotCompleted": 3,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 1997
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 1240,
+          "rate": 0.6209313970956435,
+          "wilson95": [
+            0.5994399471290774,
+            0.6419584894490424
+          ]
+        },
+        "b": {
+          "games": 954,
+          "rate": 0.47771657486229346,
+          "wilson95": [
+            0.45587262839191434,
+            0.4996460861930697
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 468,
+          "b_only": 182,
+          "both": 772,
+          "mcnemar_p": 5.903884191711282e-30,
+          "neither": 575
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          1.687030545818728,
+          2.301952929394091
+        ],
+        "meanAMinusB": 1.9919879819729593,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 1.068,
+      "role": "held-out",
+      "preIsolation": false,
+      "contentSha256": "c1158801ba11cdc8cb61222f184dc3ae02d1014bcf5806c845a6352118098c39"
+    },
+    {
+      "id": "rules_v2-vs-rules_v1-regent-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v2-regent-a0-veteran-val-n2000",
+        "contentSha256": "a20b58d12a9f0e093d6f42789906bbbcd925571257ce9ffc6ebf3b18250039ad",
+        "meanFloor": 17.85490394337715,
+        "meanWallSecondsPerEpisode": 1.0402,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/regent-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0.0005055611729019212,
+        "winRateWilson95": [
+          0.00008924953626487974,
+          0.002858240937655328
+        ],
+        "wins": 1
+      },
+      "b": {
+        "batchId": "rules_v1-regent-a0-veteran-val-n2000",
+        "contentSha256": "20345eef47cc63dab4b7d4d67dcf04cc90674b7fb2a86a7a7ef8973ec9a65605",
+        "meanFloor": 13.537917087967644,
+        "meanWallSecondsPerEpisode": 0.967,
+        "params": {},
+        "policy": "rules_v1",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019383280148857138
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Regent",
+        "partition": "val",
+        "profile": "veteran",
+        "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1978,
+      "excludedNotCompleted": 22,
+      "pairedWinTable": {
+        "a_only": 1,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 1977
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 983,
+          "rate": 0.4969666329625885,
+          "wilson95": [
+            0.4749596935593585,
+            0.5189853316864346
+          ]
+        },
+        "b": {
+          "games": 277,
+          "rate": 0.14004044489383216,
+          "wilson95": [
+            0.12544378825363872,
+            0.1560325409138018
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 771,
+          "b_only": 65,
+          "both": 212,
+          "mcnemar_p": 3.941974057182335e-154,
+          "neither": 930
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          3.9959428715874625,
+          4.633468149646107
+        ],
+        "meanAMinusB": 4.316986855409504,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.93,
+      "role": "held-out",
+      "preIsolation": false,
+      "contentSha256": "091ffbceb85f1b63174f3d105549e392ee6394587a5196a53caec58684304910"
     },
     {
       "id": "rules_v2-vs-rules_v1-silent-a0-veteran-val",
