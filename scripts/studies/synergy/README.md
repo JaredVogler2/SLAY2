@@ -9,8 +9,11 @@ simulator checkout and its environment must be in place: `PYTHONPATH=sim python 
 |---|---|---|---|
 | B1 | `PYTHONPATH=sim python -m slay2_sim.synergystudy --out experiments/synergy/b1-calibration.json` | the index parts read against 19,717 simulated runs that brought a random deck to the Act-1 boss, and against a model that knows every card; reproduces byte for byte | about 2 minutes |
 | B2-dev, phase 1 | `run-dev.sh 1 4` | `advisor_v1` arms `d0` to `d4` on `dev[4000:5000]`, five classes | about 90 minutes |
-| B2-dev, compare | `compare-dev.sh d1 d0` (and `d2`, `d3`, `d4`) | each arm against `d0`, per class and pooled (`experiments/synergy/dev/`) | seconds |
-| B2-dev, phase 2 | `CHOSEN='"needs":0.95,"scalers":0.7,"engines":0' run-dev.sh 2 4`, then `compare-dev.sh m1 d<chosen>` | the chosen configuration with a skip margin of 1.5 and 3 | about 35 minutes |
+| B2-dev, compare | `compare-dev.sh d1 d0` (and `d2`, `d3`, `d4`), then `python -m slay2_sim.synergydev --phase 1 --dir experiments/synergy/dev --out experiments/synergy/dev/selection-phase1.json` | each arm against `d0`, per class and pooled (`experiments/synergy/dev/`); the rule of ADR-050 applied by a program | seconds |
+| B2-dev, phase 2 | `CHOSEN='"needs":0.95,"scalers":0.7,"engines":0' run-dev.sh 2 4`, then `compare-dev.sh m1 d<chosen>`, `compare-dev.sh m2 d<chosen>` and `python -m slay2_sim.synergydev --phase 2 --chosen d<chosen> ...` | the chosen configuration with a skip margin of 1.5 and 3 | about 35 minutes |
+
+| B2-val | `ASTAR='{...}' run-val.sh 3` | after the addendum that records `A*`: `A*` and `d0` on the 2,000 `val` seeds of each class, and the reference `rules_v3` with measured values for the four classes without one | about 100 minutes |
+| B2-val, test | `pool-val.sh` | the primary test, run once: `A*` against `d0`, five classes pooled, exact McNemar; and `A*` against the reference | seconds |
 
 A batch started with a tracked file modified records `dirty`; start the runs from a clean checkout of the registered commit (a `git
 worktree` of it, with `SLAY2_EXTERNAL_ROOT` pointing at the main checkout's `external/checkouts`, keeps the working tree free for other

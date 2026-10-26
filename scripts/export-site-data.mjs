@@ -5,6 +5,7 @@
 //                                                    + experiments/comparisons/*.json (paired comparisons)
 //   apps/web/src/content/cardvalues.generated.json <- experiments/cardvalue/*.json (measured card values, ADR-031)
 //   apps/web/src/content/neow.generated.json      <- experiments/neow/*.json (the opening Ancient's relic values and the one held-out test, ADR-041, ADR-049)
+//   apps/web/src/content/synergy.generated.json   <- experiments/synergy/*.json (what simulated runs say about the synergy term, ADR-050)
 // Nothing is typed in by hand: `pnpm --filter @slay2/web test` fails if these files are stale (see test/content.test.ts).
 // Usage: node scripts/export-site-data.mjs [--check]
 import { createHash } from "node:crypto";
@@ -498,6 +499,43 @@ function parseNeow(reports) {
   return { values, test };
 }
 
+// What the simulated runs say about the advisor's synergy term (ADR-050). The page's panel quotes these numbers, so they are read from
+// the study's own reports and refused when the study was made on another table than the one the page computes with.
+function parseSynergy() {
+  const table = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "synergy.sts2-main-0.107.1.json"), "utf8"));
+  const out = { table: { sha256: table.sha256, cards: Object.keys(table.cards).length, mechanics: Object.keys(table.mechanics).length }, b1: null };
+  const b1File = join(root, "experiments", "synergy", "b1-calibration.json");
+  if (!existsSync(b1File)) return out;
+  const b1 = JSON.parse(readFileSync(b1File, "utf8"));
+  if (b1.advisor.synergy_table_sha256 !== table.sha256) {
+    throw new Error("experiments/synergy/b1-calibration.json was made on another synergy table than the page uses: run python -m slay2_sim.synergystudy");
+  }
+  const pooled = b1.pooled.all_cohorts;
+  const gap = (g) => ({ mean: g.mean, ci95: g.ci95 });
+  const ratio = (r) => ({ toQuality: r.to_quality, ci95: r.ci95 });
+  out.b1 = {
+    stage: "B1",
+    file: "experiments/synergy/b1-calibration.json",
+    outcome: b1.outcome,
+    bossFights: pooled.rows,
+    passRate: pooled.pass_rate,
+    cohorts: b1.cohorts.map((c) => ({ name: c.name, character: c.character, partition: c.partition, bossFights: c.boss_fights })),
+    logLoss: { index: pooled.cross_validation.index.log_loss, indexAndSynergy: pooled.cross_validation["index+synergy"].log_loss },
+    auc: { index: pooled.cross_validation.index.auc, indexAndSynergy: pooled.cross_validation["index+synergy"].auc },
+    synergyAdded: gap(pooled.loss_gaps.synergy_added_to_index),
+    enginesAdded: gap(pooled.loss_gaps.engines_added_to_needs_and_scalers),
+    ratios: { needs: ratio(pooled.ratios.unmet), scalers: ratio(pooled.ratios.scaler), engines: ratio(pooled.ratios.engines), coverage: ratio(pooled.ratios.coverage) },
+    beyondCards: {
+      logLossCards: b1.beyond_additive_card_values.pooled.log_loss_cards,
+      logLossCardsAndParts: b1.beyond_additive_card_values.pooled.log_loss_cards_and_parts,
+      gap: gap(b1.beyond_additive_card_values.pooled.gap),
+    },
+    perCohortGain: Object.fromEntries(Object.entries(b1.per_cohort).map(([name, a]) => [name, gap(a.loss_gaps.synergy_added_to_index)])),
+    calibratedWeights: b1.calibration.weights,
+  };
+  return out;
+}
+
 function parseVerification() {
   const golden = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "golden-python.json"), "utf8"));
   const published = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "published.json"), "utf8"));
@@ -545,6 +583,11 @@ const outputs = {
     schema: 1,
     generatedFrom: "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
     sets: parseCardValues(comparisons),
+  },
+  "synergy.generated.json": {
+    schema: 1,
+    generatedFrom: "experiments/synergy/b1-calibration.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
+    ...parseSynergy(),
   },
   "neow.generated.json": {
     schema: 1,
