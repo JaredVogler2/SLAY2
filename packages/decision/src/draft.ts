@@ -308,7 +308,8 @@ function labelFor(action: DraftAction): string {
   return action.kind === "skip" ? SKIP_LABEL : (getCard(action.cardId)?.name ?? action.cardId);
 }
 
-function rankWith(
+/** The offered cards and skipping, best first, each with the change in the deck index its pick makes (skip is 0 and wins ties). */
+export function rankWith(
   weights: Weights,
   base: DeckProfile,
   entries: readonly DeckEntry[],
