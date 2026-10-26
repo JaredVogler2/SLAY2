@@ -8,14 +8,16 @@ from pathlib import Path
 import pytest
 
 from slay2_sim import external
-from slay2_sim.compare import build_comparison, render_text, write_comparison
+from slay2_sim.compare import build_comparison, build_pooled_comparison, render_pooled_text, render_text, write_comparison
 from slay2_sim.manifest import make_seed_manifest, sha256_file
+from slay2_sim.stats import mcnemar_exact
 
 REPO = external.REPO_ROOT
 
 
 def make_batch(
-    root: Path, name: str, rows: list[tuple], *, seeds_sha: str = "s" * 64, profile: str = "veteran", seeds: dict | None = None
+    root: Path, name: str, rows: list[tuple], *, seeds_sha: str = "s" * 64, profile: str = "veteran", seeds: dict | None = None,
+    character: str = "Ironclad",
 ) -> Path:
     """rows: (seed, outcome, floor, wall_seconds[, act]). Writes the two files build_comparison reads."""
     d = root / name
@@ -27,7 +29,7 @@ def make_batch(
                 "policy": {"name": name.split("-")[0], "params": {"scope": "boss"} if name.startswith("alpha") else {}},
                 "content_sha256": "c" * 64,
                 "seeds": seeds if seeds is not None else {"file_sha256": seeds_sha, "partition": "train"},
-                "config": {"character": "Ironclad", "ascension": 0, "profile": profile},
+                "config": {"character": character, "ascension": 0, "profile": profile},
                 "simulator": {"id": "sim", "pinned": "abc", "parity_with_live_game": "UNVERIFIED"},
             }
         ),
@@ -38,7 +40,7 @@ def make_batch(
             fh.write(
                 json.dumps(
                     {
-                        "batch_id": name, "seed": seed, "character": "Ironclad", "ascension": 0, "policy": name,
+                        "batch_id": name, "seed": seed, "character": character, "ascension": 0, "policy": name,
                         "policy_version": "1", "outcome": outcome, "floor": floor, "wall_seconds": wall,
                         "act": rest[0] if rest else 0,
                     }
@@ -106,6 +108,47 @@ def test_the_post_hoc_sensitivity_counts_timeouts_by_the_act_they_reached_and_is
     assert x["pairedTable"] == {"both": 0, "a_only": 2, "b_only": 2, "neither": 0, "mcnemar_p": 1.0}
     assert "[post hoc]" in render_text(build_comparison(a, b, iters=100, sensitivity=True))
     assert "[post hoc]" not in render_text(plain)
+
+
+def test_pooling_adds_the_discordant_pairs_of_every_class_and_tests_the_total_once(tmp_path: Path):
+    def cohort(tag: str, character: str, a_rows, b_rows):
+        return (make_batch(tmp_path, f"alpha-{tag}", a_rows, character=character), make_batch(tmp_path, f"beta-{tag}", b_rows, character=character))
+
+    # Ironclad: past the Act-1 boss for A on seeds 1-4, for B on seed 4 only; Silent: A on 1-2, B on 3
+    iron = cohort("i", "Ironclad",
+        [(1, "death", 18, 1.0, 1), (2, "death", 18, 1.0, 1), (3, "death", 18, 1.0, 1), (4, "win", 51, 1.0, 2), (5, "death", 5, 1.0, 0)],
+        [(1, "death", 7, 1.0, 0), (2, "death", 7, 1.0, 0), (3, "death", 7, 1.0, 0), (4, "death", 20, 1.0, 1), (5, "death", 5, 1.0, 0)])
+    silent = cohort("s", "Silent",
+        [(1, "death", 18, 1.0, 1), (2, "death", 18, 1.0, 1), (3, "death", 5, 1.0, 0), (4, "simulator_error", 0, 1.0, 0)],
+        [(1, "death", 7, 1.0, 0), (2, "death", 7, 1.0, 0), (3, "death", 18, 1.0, 1), (4, "death", 9, 1.0, 0)])
+    pooled = build_pooled_comparison([iron, silent], iters=200)
+    t = pooled["reachedAct2"]["pairedTable"]
+    # Ironclad: a_only = seeds 1, 2, 3 (3), b_only = 0, both = seed 4; Silent: a_only = seeds 1, 2 (2), b_only = seed 3 (1)
+    assert (t["a_only"], t["b_only"], t["both"]) == (5, 1, 1)
+    assert t["mcnemar_p"] == mcnemar_exact(5, 1)  # one test on the total, not one per class
+    assert pooled["pairedSeeds"] == 9 and pooled["bothCompleted"] == 8 and pooled["excludedNotCompleted"] == 1
+    assert pooled["cohort"]["characters"] == ["Ironclad", "Silent"]
+    assert [m["character"] for m in pooled["members"]] == ["Ironclad", "Silent"]
+    assert [m["bothCompleted"] for m in pooled["members"]] == [5, 3]
+    assert pooled["wins"]["a"] == 1 and pooled["wins"]["b"] == 0
+    assert pooled["reachedAct3"]["a"]["games"] == 1  # the win
+    assert "POOLED" in render_pooled_text(pooled) and "Silent" in render_pooled_text(pooled)
+    assert len(pooled["contentSha256"]) == 64
+    assert build_pooled_comparison([iron, silent], iters=200) == pooled  # deterministic
+
+
+def test_pooling_refuses_what_is_not_one_experiment(tmp_path: Path):
+    a1 = make_batch(tmp_path, "alpha-p1", [(1, "death", 3, 1.0)], character="Ironclad")
+    b1 = make_batch(tmp_path, "beta-p1", [(1, "death", 3, 1.0)], character="Ironclad")
+    a2 = make_batch(tmp_path, "alpha-p2", [(1, "death", 3, 1.0)], character="Silent")
+    other = make_batch(tmp_path, "gamma-p2", [(1, "death", 3, 1.0)], character="Silent")  # another policy on side B
+    first_run = make_batch(tmp_path, "beta-p3", [(1, "death", 3, 1.0)], character="Silent", profile="first_run")
+    with pytest.raises(ValueError, match="at least two"):
+        build_pooled_comparison([(a1, b1)])
+    with pytest.raises(ValueError, match="two policies"):
+        build_pooled_comparison([(a1, b1), (a2, other)])
+    with pytest.raises(ValueError):  # a pair that is not itself a pairing (profiles differ)
+        build_pooled_comparison([(a1, b1), (a2, first_run)])
 
 
 def test_non_completed_episodes_are_excluded_and_counted_not_scored_as_losses(tmp_path: Path):

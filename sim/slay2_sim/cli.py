@@ -9,7 +9,7 @@ from pathlib import Path
 
 from . import external
 from .batch import run_batch
-from .compare import build_comparison, render_text, write_comparison
+from .compare import build_comparison, build_pooled_comparison, render_pooled_text, render_text, write_comparison
 from .manifest import (
     DEFAULT_SIZES, PARTITIONS, load_seed_manifest, make_seed_manifest, partition_seeds, save_json, sha256_file,
 )
@@ -242,6 +242,16 @@ def cmd_compare(args) -> int:
     return 0
 
 
+def cmd_pool(args) -> int:
+    pairs = [(Path(a), Path(b)) for a, b in args.pair]
+    pooled = build_pooled_comparison(pairs, iters=args.iters, seed=args.bootstrap_seed)
+    print(render_pooled_text(pooled))
+    if args.out:
+        write_comparison(pooled, Path(args.out))
+        print(f"  wrote {args.out}  (content sha256 {pooled['contentSha256'][:16]}...)")
+    return 0
+
+
 def cmd_tune(args) -> int:
     from .tune import expand_one_at_a_time, render, run_candidates
 
@@ -433,6 +443,12 @@ def build_parser() -> argparse.ArgumentParser:
     cp.add_argument("--sensitivity-by-act", action="store_true",
                     help="also report, labelled post hoc, the past-the-Act-1-boss comparison with wall-clock timeouts counted by the act they reached")
     cp.set_defaults(fn=cmd_compare)
+    pp = sub.add_parser("pool", help="several paired comparisons that differ in the class only, pooled into one exact test (ADR-041)")
+    pp.add_argument("--pair", nargs=2, action="append", required=True, metavar=("A", "B"), help="a pair of batches, repeated per class (a minus b)")
+    pp.add_argument("--out", help="write the pooled comparison, e.g. experiments/neow/pooled-test.json (NOT experiments/comparisons: the site reads that directory)")
+    pp.add_argument("--iters", type=int, default=20000, help="bootstrap resamples")
+    pp.add_argument("--bootstrap-seed", type=int, default=0)
+    pp.set_defaults(fn=cmd_pool)
     return p
 
 
@@ -443,6 +459,8 @@ PATH_ARGS = ("out", "seeds", "coverage_out", "batch", "a", "b", "candidates")
 
 
 def absolutize_paths(args: argparse.Namespace) -> argparse.Namespace:
+    if getattr(args, "pair", None):
+        args.pair = [[str(Path(x).resolve()) for x in pair] for pair in args.pair]
     for name in PATH_ARGS:
         value = getattr(args, name, None)
         if isinstance(value, str) and value:
