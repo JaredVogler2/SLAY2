@@ -228,7 +228,9 @@ def cmd_pickgolden(args) -> int:
     external.activate(sim.root)
     body = build_golden()
     save_json(out, body)
-    print(f"wrote {out}  cases={len(body['cases'])}  values sha256={body['valuesSha256'][:16]}...")
+    for c in body["classes"]:
+        print(f"  {c['character']:12s} cases={len(c['cases'])}  values sha256={c['valuesSha256'][:16]}...")
+    print(f"wrote {out}")
     return 0
 
 

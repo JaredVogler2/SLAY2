@@ -21,6 +21,7 @@ import {
   comparisonVerdict,
   formatP,
   largestReport,
+  policyLabel,
   signed,
   valuesValidation,
   winRows,
@@ -84,7 +85,7 @@ describe("comparison wording is derived from the data", () => {
       expect(lo <= c.reachedAct2.a.rate && c.reachedAct2.a.rate <= hi, c.id).toBe(true);
       // a wins-only table must still agree: a game won is also past the Act-1 boss
       expect(c.reachedAct2.a.games, c.id).toBeGreaterThanOrEqual(c.a.wins);
-      expect(actTwoSentence(c)).toContain(`${c.a.policy} and`);
+      expect(actTwoSentence(c)).toContain(`${policyLabel(c.a)} and`);
     }
   });
 
@@ -106,7 +107,7 @@ describe("comparison wording is derived from the data", () => {
   });
 
   it("finds the pre-registered test of the card values and it is a held-out, paired comparison", () => {
-    const test = valuesValidation();
+    const test = valuesValidation("ironclad");
     expect(test).toBeDefined();
     expect(test?.role).toBe("held-out");
     expect(test?.a.policy).toBe("rules_v2");
@@ -114,6 +115,29 @@ describe("comparison wording is derived from the data", () => {
     expect(test?.a.batchId).toMatch(/-val-/);
     expect(test?.b.batchId).toMatch(/-val-/);
     expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+  });
+
+  it("tells a policy's variants apart in the label and ignores a threshold of zero", () => {
+    expect(policyLabel({ policy: "rules_v2", params: { threshold: 0 } })).toBe("rules_v2");
+    expect(policyLabel({ policy: "rules_v1", params: {} })).toBe("rules_v1");
+    expect(policyLabel({ policy: "search_v3", params: { scope: "boss" } })).toBe(
+      "search_v3 (scope=boss)",
+    );
+    expect(
+      policyLabel({ policy: "rules_v2", params: { threshold: 0.1, tune: { heal_below: 0.6 } } }),
+    ).toBe('rules_v2 (threshold=0.1, tune={"heal_below":0.6})');
+  });
+
+  it("says which side is slower in whichever direction the comparison runs", () => {
+    const base = evidence.comparisons.find(
+      (c) => c.b.policy === "rules_v2" && c.a.policy === "search_v3",
+    );
+    expect(base).toBeDefined();
+    if (base) {
+      expect(comparisonSentence(base)).toMatch(
+        /search_v3 \(scope=boss\) took [\d.]+× as long per game/,
+      );
+    }
   });
 
   it("formats exact p-values without printing a misleading zero", () => {

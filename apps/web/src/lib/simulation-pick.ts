@@ -1,4 +1,4 @@
-import { measuredValue, type MeasuredCard } from "@/lib/cardvalues";
+import { isValidated, measuredValue, setFor, type MeasuredCard } from "@/lib/cardvalues";
 
 /** The deck size at which the validated pilot (rules_v2, ADR-031) stops taking cards. */
 export const DECK_CAP = 32;
@@ -20,7 +20,8 @@ export type SimulationPick =
  * test/fixtures/simulation-pick-golden.json come from the policy itself.
  *
  * It answers "what did the simulated pilot do", not "what should you do": the values come from a simulator that has not
- * been compared with the live game, and from one pilot's way of playing the cards.
+ * been compared with the live game, and from one pilot's way of playing the cards. It speaks only for a class whose values
+ * passed their held-out test (acting on them beat the hand-written ratings).
  */
 export function simulationPick(input: {
   character: string;
@@ -28,13 +29,23 @@ export function simulationPick(input: {
   deckSize: number;
 }): SimulationPick {
   const { character, offered, deckSize } = input;
-  if (character !== "ironclad") {
+  const set = setFor(character);
+  if (!set) {
     return {
       kind: "unmeasured",
-      reason: "Simulated runs have only measured Ironclad cards so far.",
+      reason: "Simulated runs have not measured this class's cards yet.",
     };
   }
-  const values = offered.map((id) => measuredValue(id));
+  if (!isValidated(set)) {
+    return {
+      kind: "unmeasured",
+      reason:
+        set.validation === null
+          ? "This class's card values have not been tested against play yet, so the simulated runs give no opinion."
+          : "This class's card values did not beat the hand-written ratings in the held-out test, so they are shown on the codex as measurements only, not as advice.",
+    };
+  }
+  const values = offered.map((id) => measuredValue(id, character)?.card);
   if (!values.some((v) => v !== undefined)) {
     return {
       kind: "unmeasured",

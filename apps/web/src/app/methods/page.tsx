@@ -10,6 +10,7 @@ import {
   comparisonSentence,
   formatP,
   largestReport,
+  policyLabel,
   pct,
   ruleSummary,
   rulesBySection,
@@ -243,7 +244,7 @@ export default function MethodsPage() {
               {reports.map((r) => (
                 <tr key={r.id} className="align-top">
                   <th scope="row" className="py-3 pr-3 font-medium text-parchment">
-                    {r.policy}
+                    {policyLabel({ policy: r.policy, params: r.policyParams })}
                     <span className="block font-mono text-[0.65rem] font-normal text-dim">
                       {r.id}
                     </span>
@@ -306,7 +307,7 @@ export default function MethodsPage() {
                   {comparisons.map((c) => (
                     <tr key={c.id} className="align-top">
                       <th scope="row" className="py-3 pr-3 font-medium text-parchment">
-                        {c.a.policy} vs {c.b.policy}
+                        {policyLabel(c.a)} vs {policyLabel(c.b)}
                         <span className="block font-mono text-[0.65rem] font-normal text-dim">
                           {c.cohort.character} A{c.cohort.ascension} · {c.cohort.profile} · sha{" "}
                           {c.contentSha256.slice(0, 10)}

@@ -3,56 +3,86 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { currentSet, measuredValue } from "@/lib/cardvalues";
+import { allSets, isValidated, measuredValue, setFor } from "@/lib/cardvalues";
 import { DECK_CAP, simulationPick } from "@/lib/simulation-pick";
 
 interface Golden {
-  valuesSha256: string;
   deckCap: number;
   threshold: number;
-  cases: { offered: string[]; deckSize: number; pick: string }[];
+  classes: {
+    character: string;
+    valuesSha256: string;
+    cases: { offered: string[]; deckSize: number; pick: string }[];
+  }[];
 }
 
 const golden = JSON.parse(
   readFileSync(join(__dirname, "fixtures", "simulation-pick-golden.json"), "utf8"),
 ) as Golden;
 
-// the policy's own ids carry the simulator's `_CARD` suffix; the website's catalog ids do not
-const toCatalog = (id: string): string => (measuredValue(id) ? id : id.replace(/_CARD$/, ""));
-
 describe("simulation pick follows the Python policy it describes", () => {
-  it("was generated from the values file the site ships", () => {
-    expect(golden.valuesSha256).toBe(currentSet()?.sha256);
+  it("was generated from the values files the site ships, one entry per measured class", () => {
     expect(golden.deckCap).toBe(DECK_CAP);
     expect(golden.threshold).toBe(0);
-    expect(golden.cases.length).toBeGreaterThanOrEqual(60);
+    expect(golden.classes.map((c) => c.character).sort()).toEqual(
+      allSets()
+        .map((s) => s.character)
+        .sort(),
+    );
+    for (const entry of golden.classes) {
+      expect(entry.valuesSha256, entry.character).toBe(setFor(entry.character)?.sha256);
+      expect(entry.cases.length).toBeGreaterThanOrEqual(60);
+    }
   });
 
-  it("gives the policy's answer on every golden case", () => {
-    const answers = new Set<string>();
-    for (const c of golden.cases) {
-      const offered = c.offered.map(toCatalog);
-      const got = simulationPick({ character: "ironclad", offered, deckSize: c.deckSize });
-      const expected = c.pick === "skip" ? "skip" : toCatalog(c.pick);
-      if (got.kind === "unmeasured") {
-        // the website says "no measurement" where the policy has nothing but zeros to compare: the policy skips there
-        expect(expected, JSON.stringify(c)).toBe("skip");
-        answers.add("unmeasured");
-        continue;
+  it("gives the policy's answer on every golden case of every validated class, and stays silent for the others", () => {
+    for (const entry of golden.classes) {
+      const set = setFor(entry.character);
+      // the policy's own ids carry the simulator's `_CARD` suffix; the website's catalog ids do not
+      const toCatalog = (id: string): string =>
+        set?.cards.some((c) => c.id === id) ? id : id.replace(/_CARD$/, "");
+      const answers = new Set<string>();
+      for (const c of entry.cases) {
+        const offered = c.offered.map(toCatalog);
+        const got = simulationPick({ character: entry.character, offered, deckSize: c.deckSize });
+        if (!isValidated(set)) {
+          expect(got.kind, `${entry.character} is not validated`).toBe("unmeasured");
+          continue;
+        }
+        const expected = c.pick === "skip" ? "skip" : toCatalog(c.pick);
+        if (got.kind === "unmeasured") {
+          // the website says "no measurement" where the policy has nothing but zeros to compare: the policy skips there
+          expect(expected, JSON.stringify(c)).toBe("skip");
+          answers.add("unmeasured");
+          continue;
+        }
+        expect(got.kind === "pick" ? got.cardId : "skip", JSON.stringify(c)).toBe(expected);
+        answers.add(got.kind);
       }
-      expect(got.kind === "pick" ? got.cardId : "skip", JSON.stringify(c)).toBe(expected);
-      answers.add(got.kind);
+      if (isValidated(set)) {
+        // the fixture must exercise every branch or it proves little
+        expect([...answers].sort(), entry.character).toEqual(["pick", "skip", "unmeasured"]);
+      }
     }
-    // the fixture must exercise every branch or it proves little
-    expect([...answers].sort()).toEqual(["pick", "skip", "unmeasured"]);
   });
 });
 
 describe("simulation pick, branch by branch", () => {
-  it("is only defined for Ironclad", () => {
-    expect(simulationPick({ character: "silent", offered: ["ANGER"], deckSize: 12 }).kind).toBe(
-      "unmeasured",
-    );
+  it("is silent for a class nobody has measured, and says why", () => {
+    const r = simulationPick({ character: "no-such-class", offered: ["ANGER"], deckSize: 12 });
+    expect(r.kind).toBe("unmeasured");
+    expect(r.reason).toContain("not measured this class");
+  });
+
+  it("is silent for a class whose values were not validated, even when its cards were measured", () => {
+    const set = setFor("ironclad");
+    expect(set).toBeDefined();
+    const untested = { ...set, validation: null } as NonNullable<typeof set>;
+    const failed = { ...set, validation: { ...set?.validation, passed: false } } as NonNullable<
+      typeof set
+    >;
+    expect(isValidated(untested)).toBe(false);
+    expect(isValidated(failed)).toBe(false);
   });
 
   it("says nothing when no offered card was measured", () => {
@@ -92,7 +122,7 @@ describe("simulation pick, branch by branch", () => {
   });
 
   it("sends ties to the earlier card", () => {
-    const a = measuredValue("RAMPAGE");
+    const a = measuredValue("RAMPAGE", "ironclad");
     expect(a).toBeDefined();
     const r = simulationPick({
       character: "ironclad",

@@ -88,6 +88,22 @@ def test_a_batch_manifest_names_the_resolved_policy_parameters(sim, tmp_path):
     assert "error" in _effective("rules_v2", {"values": str(tmp_path / "missing.json")})  # never hides a finished batch
 
 
+def test_values_measured_for_one_class_are_refused_for_another(sim, tmp_path):
+    f = tmp_path / "silent-a0-v1.json"
+    f.write_text(json.dumps({"kind": "card-values", "character": "Silent", "cards": [{"id": "BACKFLIP", "beta": 0.3}]}))
+    p = make_policy("rules_v2", values=str(f))
+    p.reset(1)
+    obs, actions = reward(["BACKFLIP"])
+    obs["run"]["character"] = "Silent"
+    assert p._card_reward(obs, actions) == 0
+    obs["run"]["character"] = "Ironclad"
+    with pytest.raises(ValueError, match="measured for Silent"):
+        p._card_reward(obs, actions)
+    # a file that does not say which class it is for is read from its name, and the committed Ironclad file keeps working
+    legacy = make_policy("rules_v2")
+    assert legacy.values_character == "Ironclad"
+
+
 def test_the_committed_values_file_is_what_adr_031_pre_registered():
     betas, rel, digest = load_values("experiments/cardvalue/ironclad-a0-v1.json")
     assert rel == "experiments/cardvalue/ironclad-a0-v1.json"

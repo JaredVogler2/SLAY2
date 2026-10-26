@@ -1,9 +1,19 @@
 {
   "schema": 1,
-  "generatedFrom": "experiments/cardvalue/*.json (kind card-values) + packages/game-data/data/cards.sts2-main-0.107.1.json",
+  "generatedFrom": "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
   "sets": [
     {
       "id": "ironclad-a0-v1",
+      "character": "ironclad",
+      "validation": {
+        "comparison": "rules_v2-vs-rules_v1-ironclad-a0-veteran-val",
+        "alpha": 0.05,
+        "pairedGames": 1991,
+        "passRate": 0.6509291813159217,
+        "passRateBase": 0.4334505273731793,
+        "p": 8.824346627794324e-57,
+        "passed": true
+      },
       "file": "experiments/cardvalue/ironclad-a0-v1.json",
       "sha256": "8b3fe2f4d88b87dcf7a0562df320c630a5513896832624214605a3bcf6d10d70",
       "outcome": "the run gets past the Act-1 boss",

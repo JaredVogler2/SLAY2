@@ -1,23 +1,119 @@
+import { getCard } from "@slay2/game-data";
+
 import cardvalues from "@/content/cardvalues.generated.json";
 
-/** One measured set of card values (experiments/cardvalue, ADR-031), exported by scripts/export-site-data.mjs. */
-export type CardValueSet = (typeof cardvalues.sets)[number];
-export type MeasuredCard = CardValueSet["cards"][number];
-
-/** The set the site shows. A new fit is a new file (v2) and a deliberate change here, never an edit of v1. */
-export const CURRENT_SET_ID = "ironclad-a0-v1";
-
-export function currentSet(): CardValueSet | undefined {
-  return cardvalues.sets.find((s) => s.id === CURRENT_SET_ID);
+/** The held-out test of acting on a class's values (rules_v2 against rules_v1 on the same seeds), when it has been run. */
+export interface Validation {
+  readonly comparison: string;
+  /** significance level fixed before the test (ADR-031 / ADR-034) */
+  readonly alpha: number;
+  readonly pairedGames: number;
+  readonly passRate: number;
+  readonly passRateBase: number;
+  /** exact McNemar p-value of "got past the Act-1 boss" on the shared seeds */
+  readonly p: number;
+  readonly passed: boolean;
 }
 
-const BY_ID: ReadonlyMap<string, MeasuredCard> = new Map(
-  (currentSet()?.cards ?? []).map((c) => [c.id, c]),
-);
+export interface MeasuredCard {
+  /** catalog id */
+  readonly id: string;
+  /** the simulator's own name for the card (it appends `_CARD` when the name collides with a power) */
+  readonly simId: string;
+  /** log-odds of getting past the Act-1 boss per extra copy */
+  readonly beta: number;
+  readonly ci95: readonly number[];
+  readonly gamesWithCard: number;
+  readonly staticRating: number | null;
+}
 
-/** The measurement of a catalog card id, if the simulated runs ever put that card in a deck at the Act-1 boss. */
-export function measuredValue(cardId: string): MeasuredCard | undefined {
-  return BY_ID.get(cardId);
+/** One measured set of card values for one class (experiments/cardvalue, ADR-031 / ADR-034), exported by scripts/export-site-data.mjs. */
+export interface CardValueSet {
+  readonly id: string;
+  readonly character: string;
+  readonly validation: Validation | null;
+  readonly file: string;
+  readonly sha256: string;
+  readonly outcome: string;
+  readonly games: number;
+  readonly bossFights: number;
+  readonly passRate: number;
+  readonly model: {
+    readonly l2: number;
+    readonly folds: number;
+    readonly features: number;
+    readonly bootstrapDraws: number;
+    readonly cvLogLoss: number;
+    readonly cvAuc: number;
+    readonly baselineLogLoss: number;
+  };
+  readonly spearmanWithStaticRating: number | null;
+  readonly batches: readonly { readonly id: string; readonly contentSha256: string }[];
+  readonly cards: readonly MeasuredCard[];
+}
+
+const SETS: readonly CardValueSet[] = cardvalues.sets;
+
+/** A card's measurement together with the set it came from (a colorless card can be measured once per class). */
+export interface Measurement {
+  readonly card: MeasuredCard;
+  readonly set: CardValueSet;
+}
+
+export interface ValueIndex {
+  readonly sets: readonly CardValueSet[];
+  readonly byClass: ReadonlyMap<string, CardValueSet>;
+  readonly byCard: ReadonlyMap<string, readonly Measurement[]>;
+}
+
+/** Index a list of sets; one set per class (a later file for the same class is a deliberate replacement, not a merge). */
+export function buildIndex(sets: readonly CardValueSet[]): ValueIndex {
+  const byClass = new Map<string, CardValueSet>();
+  for (const s of sets) {
+    byClass.set(s.character, s);
+  }
+  const byCard = new Map<string, Measurement[]>();
+  for (const set of byClass.values()) {
+    for (const card of set.cards) {
+      const list = byCard.get(card.id) ?? [];
+      list.push({ card, set });
+      byCard.set(card.id, list);
+    }
+  }
+  return { sets: [...byClass.values()], byClass, byCard };
+}
+
+const INDEX = buildIndex(SETS);
+
+export function allSets(index: ValueIndex = INDEX): readonly CardValueSet[] {
+  return index.sets;
+}
+
+/** The measured set of a class, or nothing when that class has not been measured. */
+export function setFor(character: string, index: ValueIndex = INDEX): CardValueSet | undefined {
+  return index.byClass.get(character);
+}
+
+/**
+ * Whether acting on a class's values beat the hand-written ratings in the pre-registered held-out test. Values of a class
+ * that was not tested, or failed the test, are still shown as measurements; they are never offered as a second opinion.
+ */
+export function isValidated(set: CardValueSet | undefined): boolean {
+  return set?.validation?.passed === true;
+}
+
+/** Every measurement of a catalog card id (the card's own class first for class cards, one per class for colorless cards). */
+export function measurementsOf(cardId: string, index: ValueIndex = INDEX): readonly Measurement[] {
+  return index.byCard.get(cardId) ?? [];
+}
+
+/** The measurement of a card within one class's set. */
+export function measuredValue(
+  cardId: string,
+  character: string,
+  index: ValueIndex = INDEX,
+): Measurement | undefined {
+  return measurementsOf(cardId, index).find((m) => m.set.character === character);
 }
 
 export type ValueSign = "helps" | "hurts" | "unclear";
@@ -41,23 +137,82 @@ export function oddsMultiplier(beta: number): string {
   return `×${x >= 10 ? x.toFixed(0) : x.toFixed(x >= 1 ? 1 : 2)}`;
 }
 
-export function measuredCount(): number {
-  return BY_ID.size;
+export function measuredCount(index: ValueIndex = INDEX): number {
+  return index.sets.reduce((n, s) => n + s.cards.length, 0);
 }
 
-/** The ``n`` best and ``n`` worst measured cards that are not starter cards (those can only be removed, never picked). */
-export function extremes(n: number): { best: MeasuredCard[]; worst: MeasuredCard[] } {
-  const cards = (currentSet()?.cards ?? []).filter(
-    (c) => c.id !== "STRIKE_IRONCLAD" && c.id !== "DEFEND_IRONCLAD",
-  );
+/** The ``n`` best and ``n`` worst measured cards of a set that are not starter cards (those can only be removed, never picked). */
+export function extremes(
+  set: CardValueSet,
+  n: number,
+): { best: readonly MeasuredCard[]; worst: readonly MeasuredCard[] } {
+  const cards = set.cards.filter((c) => getCard(c.id)?.rarity !== "basic");
   return { best: cards.slice(0, n), worst: cards.slice(-n).reverse() };
 }
 
-/** How many measured cards have an interval strictly above / below zero (the rest are unclear). */
-export function signCounts(): Record<ValueSign, number> {
+/** How many measured cards of a set have an interval strictly above / below zero (the rest are unclear). */
+export function signCounts(set: CardValueSet): Record<ValueSign, number> {
   const out: Record<ValueSign, number> = { helps: 0, hurts: 0, unclear: 0 };
-  for (const c of currentSet()?.cards ?? []) {
+  for (const c of set.cards) {
     out[valueSign(c)] += 1;
   }
   return out;
+}
+
+export const MEASURABLE_CLASSES = [
+  "ironclad",
+  "silent",
+  "regent",
+  "necrobinder",
+  "defect",
+] as const;
+
+export type CoverageState = "validated" | "measured" | "untested" | "none";
+
+export interface CoverageLine {
+  readonly character: string;
+  readonly label: string;
+  readonly state: CoverageState;
+  readonly detail: string;
+}
+
+const LABEL: Record<string, string> = {
+  ironclad: "Ironclad",
+  silent: "Silent",
+  regent: "Regent",
+  necrobinder: "Necrobinder",
+  defect: "Defect",
+};
+
+const pct1 = (x: number): string => `${(x * 100).toFixed(1)}%`;
+const pText = (p: number): string =>
+  p === 0 ? "p < 1e-300" : `p = ${p < 1e-4 ? p.toExponential(1) : p.toPrecision(2)}`;
+
+/** Where each class stands: nothing, measured but not tested, tested without improvement, or tested and improved. Read from the data. */
+export function coverage(index: ValueIndex = INDEX): CoverageLine[] {
+  return MEASURABLE_CLASSES.map((character) => {
+    const set = index.byClass.get(character);
+    const label = LABEL[character] ?? character;
+    if (!set) {
+      return { character, label, state: "none", detail: "not measured yet" };
+    }
+    const v = set.validation;
+    if (!v) {
+      return {
+        character,
+        label,
+        state: "untested",
+        detail: `${String(set.cards.length)} cards measured, not tested against play yet`,
+      };
+    }
+    const result = `got past the Act-1 boss in ${pct1(v.passRate)} of ${v.pairedGames.toLocaleString("en-US")} held-out simulated games against ${pct1(v.passRateBase)} for the hand-written ratings (${pText(v.p)})`;
+    return v.passed
+      ? { character, label, state: "validated", detail: `playing by the measured values ${result}` }
+      : {
+          character,
+          label,
+          state: "measured",
+          detail: `measured, but playing by the values did not beat the hand-written ratings at the pre-registered level (${result})`,
+        };
+  });
 }

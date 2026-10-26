@@ -78,6 +78,14 @@ export function signed(x: number, digits = 2): string {
   return `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(digits)}`;
 }
 
+/** A policy with the parameters that tell its variants apart ("search_v3 (scope=boss)"); a default threshold of 0 is not news. */
+export function policyLabel(side: { policy: string; params?: Record<string, unknown> }): string {
+  const shown = Object.entries(side.params ?? {})
+    .filter(([k, v]) => !(k === "threshold" && v === 0))
+    .map(([k, v]) => `${k}=${typeof v === "string" ? v : JSON.stringify(v)}`);
+  return shown.length > 0 ? `${side.policy} (${shown.join(", ")})` : side.policy;
+}
+
 /** "p = 0.0018", or exponent form when tiny (exact paired tests reach hundreds of orders of magnitude below 1e-4). */
 export function formatP(p: number): string {
   if (p === 0) return "p < 1e-300";
@@ -89,32 +97,39 @@ export function actTwoSentence(c: Comparison): string {
   const r = c.reachedAct2;
   const t = r.pairedTable;
   return (
-    `Past the Act-1 boss: ${pct(r.a.rate, 1)} for ${c.a.policy} and ${pct(r.b.rate, 1)} for ${c.b.policy} ` +
-    `(${String(t.a_only)} games only ${c.a.policy}, ${String(t.b_only)} only ${c.b.policy}; exact McNemar ${formatP(t.mcnemar_p)})`
+    `Past the Act-1 boss: ${pct(r.a.rate, 1)} for ${policyLabel(c.a)} and ${pct(r.b.rate, 1)} for ${policyLabel(c.b)} ` +
+    `(${String(t.a_only)} games only ${policyLabel(c.a)}, ${String(t.b_only)} only ${policyLabel(c.b)}; exact McNemar ${formatP(t.mcnemar_p)})`
   );
 }
 
 /** One honest sentence per comparison, generated from the committed artifact so it cannot drift from the data. */
 export function comparisonSentence(c: Comparison): string {
   const [lo = 0, hi = 0] = c.floorDifference.ci95;
-  const gap = `${signed(c.floorDifference.meanAMinusB)} floors for ${c.a.policy} relative to ${c.b.policy} (95% bootstrap interval ${signed(lo)} to ${signed(hi)}, ${String(c.bothCompleted)} paired games)`;
+  const gap = `${signed(c.floorDifference.meanAMinusB)} floors for ${policyLabel(c.a)} relative to ${policyLabel(c.b)} (95% bootstrap interval ${signed(lo)} to ${signed(hi)}, ${String(c.bothCompleted)} paired games)`;
   const verdict = comparisonVerdict(c);
   const lead =
     verdict === "a-higher"
-      ? `${c.a.policy} reached more floors than ${c.b.policy}`
+      ? `${policyLabel(c.a)} reached more floors than ${policyLabel(c.b)}`
       : verdict === "b-higher"
-        ? `${c.b.policy} reached more floors than ${c.a.policy}`
-        : `No difference in floors reached between ${c.a.policy} and ${c.b.policy} could be established`;
-  const cost = c.wallTimeRatioBOverA
-    ? `; ${c.b.policy} took ${c.wallTimeRatioBOverA.toFixed(1)}× as long per game`
+        ? `${policyLabel(c.b)} reached more floors than ${policyLabel(c.a)}`
+        : `No difference in floors reached between ${policyLabel(c.a)} and ${policyLabel(c.b)} could be established`;
+  const ratio = c.wallTimeRatioBOverA;
+  const cost = ratio
+    ? ratio >= 1
+      ? `; ${policyLabel(c.b)} took ${ratio.toFixed(1)}× as long per game`
+      : `; ${policyLabel(c.a)} took ${(1 / ratio).toFixed(1)}× as long per game`
     : "";
   return `${lead}: ${gap}${cost}. ${actTwoSentence(c)}.`;
 }
 
-/** The pre-registered test of the measured card values (ADR-031): the policy that follows them against the one that does not. */
-export function valuesValidation(): Comparison | undefined {
+/** The pre-registered test of one class's measured card values (ADR-031, ADR-034): the policy that follows them against the one that does not. */
+export function valuesValidation(character: string): Comparison | undefined {
   return evidence.comparisons.find(
-    (c) => c.a.policy === "rules_v2" && c.b.policy === "rules_v1" && c.role === "held-out",
+    (c) =>
+      c.a.policy === "rules_v2" &&
+      c.b.policy === "rules_v1" &&
+      c.role === "held-out" &&
+      c.cohort.character.toLowerCase() === character,
   );
 }
 

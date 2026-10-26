@@ -7,7 +7,7 @@ import {
   type Role,
 } from "@slay2/game-data";
 
-import { measuredValue } from "./cardvalues";
+import { measurementsOf } from "./cardvalues";
 
 /** The five playable classes, colourless cards, and everything that is not a collectible card (curses, statuses ...). */
 export const CODEX_CLASSES = [
@@ -91,6 +91,14 @@ function costKey(cost: CardEntry["cost"]): number {
   return cost === "X" ? 50 : cost;
 }
 
+/** The best simulated value of a card across the classes that measured it (never measured: minus infinity). */
+function bestMeasured(id: string): number {
+  return measurementsOf(id).reduce(
+    (best, m) => Math.max(best, m.card.beta),
+    Number.NEGATIVE_INFINITY,
+  );
+}
+
 /** Filter, search and sort the catalog. With text, relevance leads (ties by the chosen sort). Pure and deterministic. */
 export function filterCodex(q: CodexQuery): CardEntry[] {
   const text = q.text.trim();
@@ -129,8 +137,8 @@ export function filterCodex(q: CodexQuery): CardEntry[] {
       }
     } else if (q.sort === "value") {
       // measured cards first, best simulated value first; cards never measured keep the alphabetical order below
-      const va = measuredValue(a.id)?.beta ?? Number.NEGATIVE_INFINITY;
-      const vb = measuredValue(b.id)?.beta ?? Number.NEGATIVE_INFINITY;
+      const va = bestMeasured(a.id);
+      const vb = bestMeasured(b.id);
       if (va !== vb) {
         return vb - va;
       }

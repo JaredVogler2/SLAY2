@@ -93,3 +93,40 @@ def test_report_orders_cards_and_the_interval_covers_the_truth():
         assert lo - 0.15 <= truth <= hi + 0.15, (c, lo, hi, truth)
     assert rep["boss_fights"] == 3000 and 0.0 < rep["pass_rate"] < 1.0
     assert rep["spearman_with_static_rating"] is not None
+
+
+def test_the_committed_ironclad_values_are_what_the_current_code_computes_from_the_committed_data():
+    """ADR-031 fixed these values by hash before any held-out game was played; a change to the extraction, the design matrix
+    or the fit must not move them silently. The penalty is taken from the file (the cross-validation that chose it is the
+    slow part and is deterministic), and the intervals are not recomputed (they depend on the bootstrap draws)."""
+    import json
+    from pathlib import Path
+
+    from slay2_sim import external
+    from slay2_sim.cardvalue import design, extract, fit_logistic, read_episodes, vocabulary
+
+    root = external.REPO_ROOT / "experiments" / "cardvalue"
+    committed = json.loads((root / "ironclad-a0-v1.json").read_text(encoding="utf-8"))
+    records = extract(read_episodes(Path(root / "explore-ironclad-a0-train-rep0")))
+    assert len(records) == committed["boss_fights"]
+    vocab = vocabulary(records)
+    X, y, g, names, penalised = design(records, vocab)
+    assert round(float(y.mean()), 4) == committed["pass_rate"] and len(names) == committed["model"]["features"]
+    beta = fit_logistic(X, y, committed["model"]["l2"], penalised)
+    fresh = {n[5:]: round(float(b), 4) for n, b in zip(names, beta) if n.startswith("card:")}
+    assert fresh == {c["id"]: c["beta"] for c in committed["cards"]}
+
+
+def test_the_network_comparison_runs_and_cannot_beat_an_additive_truth():
+    """With an additive ground truth the additive model is the right one: the comparison must say so and be well formed."""
+    import pytest
+
+    pytest.importorskip("torch")
+    from slay2_sim import cardvalue_nn as nn
+
+    out = nn.compare(synthetic(n=1500, seed=3), l2=3.0, inits=1)
+    assert out["rows"] == 1500 and out["folds"] == cv.FOLDS and len(out["mlp"]) == len(nn.CONFIGS)
+    assert out["ridge"]["log_loss"] < 0.7 and 0.5 < out["ridge"]["auc"] <= 1.0
+    assert all(0.5 <= m["auc"] <= 1.0 and m["log_loss"] > 0 for m in out["mlp"])
+    assert out["ridge"]["log_loss"] <= min(m["log_loss"] for m in out["mlp"]) + 0.01
+    assert out["verdict"].startswith("no network beat")

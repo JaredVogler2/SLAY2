@@ -72,6 +72,7 @@ function parseEvidence() {
     reports.push({
       id: m.batch_id,
       policy: m.policy.name,
+      policyParams: m.policy.params ?? {},
       character: m.config.character,
       ascension: m.config.ascension,
       profile: m.config.profile,
@@ -138,7 +139,11 @@ function parseComparisons(reports) {
 
 // Measured card values (ADR-031). The simulator names a card `<ID>_CARD` when its enum name collides with a power; the
 // catalog uses the plain id, so the value is attached to the catalog card. A measured id that maps to nothing is an error.
-function parseCardValues() {
+const CLASSES = ["ironclad", "silent", "regent", "necrobinder", "defect"];
+// Significance level of the pre-registered intervention test per class (ADR-031: Ironclad alone, 0.05; ADR-034: the other four share 0.05, Bonferroni).
+const ALPHA = { ironclad: 0.05, silent: 0.0125, regent: 0.0125, necrobinder: 0.0125, defect: 0.0125 };
+
+function parseCardValues(comparisons) {
   const dir = join(root, "experiments", "cardvalue");
   if (!existsSync(dir)) return [];
   const catalog = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"), "utf8"));
@@ -152,6 +157,24 @@ function parseCardValues() {
     const raw = readFileSync(join(dir, name));
     const v = JSON.parse(raw.toString("utf8"));
     if (v.kind !== "card-values") continue;
+    const character = String(v.character ?? name.split("-")[0]).toLowerCase();
+    if (!CLASSES.includes(character)) throw new Error(`${name}: unknown class ${character}`);
+    // the held-out test of acting on these values (rules_v2 against rules_v1, same seeds), if it has been run
+    const test = comparisons.find(
+      (c) => c.a.policy === "rules_v2" && c.b.policy === "rules_v1" && c.role === "held-out" && String(c.cohort.character).toLowerCase() === character,
+    );
+    const validation = test
+      ? {
+          comparison: test.id,
+          alpha: ALPHA[character],
+          pairedGames: test.bothCompleted,
+          passRate: test.reachedAct2.a.rate,
+          passRateBase: test.reachedAct2.b.rate,
+          p: test.reachedAct2.pairedTable.mcnemar_p,
+          // improved the primary endpoint at the pre-registered level
+          passed: test.reachedAct2.a.rate > test.reachedAct2.b.rate && test.reachedAct2.pairedTable.mcnemar_p < ALPHA[character],
+        }
+      : null;
     const cv = v.model.cross_validation;
     const best = Object.entries(cv.l2).find(([k]) => Number(k) === cv.best_l2)?.[1];
     if (!best) throw new Error(`${name}: no cross-validation entry for the chosen penalty ${cv.best_l2}`);
@@ -166,6 +189,8 @@ function parseCardValues() {
     cards.sort((a, b) => b.beta - a.beta || (a.id < b.id ? -1 : 1));
     out.push({
       id: name.replace(/\.json$/, ""),
+      character,
+      validation,
       file: `experiments/cardvalue/${name}`,
       sha256: createHash("sha256").update(raw).digest("hex"),
       outcome: v.outcome,
@@ -203,6 +228,7 @@ function parseVerification() {
 }
 
 const reports = parseEvidence();
+const comparisons = parseComparisons(reports);
 const outputs = {
   "rules.generated.json": {
     schema: 1,
@@ -215,12 +241,12 @@ const outputs = {
     generatedFrom: "experiments/batches/*/manifest.json + experiments/comparisons/*.json + sim/slay2_sim/gaps.json",
     simulatorGaps: JSON.parse(readFileSync(join(root, "sim", "slay2_sim", "gaps.json"), "utf8")).gaps,
     reports,
-    comparisons: parseComparisons(reports),
+    comparisons,
   },
   "cardvalues.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/cardvalue/*.json (kind card-values) + packages/game-data/data/cards.sts2-main-0.107.1.json",
-    sets: parseCardValues(),
+    generatedFrom: "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
+    sets: parseCardValues(comparisons),
   },
 };
 

@@ -1,17 +1,22 @@
-import { getCard } from "@slay2/game-data";
+import { getCard, type PlayableClass } from "@slay2/game-data";
 
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { CLASS_STYLE } from "@/lib/card-style";
 import {
-  currentSet,
+  allSets,
   extremes,
   formatBeta,
+  isValidated,
   oddsMultiplier,
   signCounts,
+  type CardValueSet,
   type MeasuredCard,
 } from "@/lib/cardvalues";
 import { actTwoSentence, formatP, pct, signed, valuesValidation } from "@/lib/methods-data";
+
+const classLabel = (c: string): string => CLASS_STYLE[c as PlayableClass].label;
 
 function Row({ m }: { m: MeasuredCard }) {
   const [lo, hi] = m.ci95;
@@ -30,7 +35,7 @@ function Row({ m }: { m: MeasuredCard }) {
   );
 }
 
-function Table({ title, rows }: { title: string; rows: MeasuredCard[] }) {
+function Table({ title, rows }: { title: string; rows: readonly MeasuredCard[] }) {
   return (
     <ScrollRegion label={title}>
       <table className="w-full min-w-[28rem] text-left text-sm">
@@ -64,48 +69,58 @@ function Table({ title, rows }: { title: string; rows: MeasuredCard[] }) {
   );
 }
 
-/** Measured card values and the intervention test that checks them. Every number is read from committed artifacts. */
-export function CardValuesPanel() {
-  const set = currentSet();
-  if (!set) {
-    return null;
-  }
-  const { best, worst } = extremes(6);
-  const counts = signCounts();
-  const test = valuesValidation();
+/** One class: how much data, the highest and lowest values, and the held-out test of acting on them. */
+function ClassBlock({ set }: { set: CardValueSet }) {
+  const { best, worst } = extremes(set, 6);
+  const counts = signCounts(set);
+  const test = valuesValidation(set.character);
+  const label = classLabel(set.character);
   return (
-    <Panel
-      eyebrow="Simulator results · research only"
-      title="What randomised drafting says a card is worth"
-      aside={<Badge tone="unverified">Parity with the live game unverified</Badge>}
-      headingLevel={2}
-      id="card-values"
-    >
-      <div className="space-y-3 text-muted">
-        <p className="max-w-3xl">
-          In {set.games.toLocaleString("en-US")} simulated Ironclad runs the card-reward choice was
-          replaced, 60% of the time, by a random pick among the offered cards and “skip”. Chance
-          rather than taste decided which cards reached the Act-1 boss, so a regression of “got past
-          the boss” ({pct(set.passRate, 1)} of those runs) on the deck, the HP, the potions and the
-          relics gives each card a marginal value: the change in log-odds from one more copy. The
-          model predicts held-out games with AUC {set.model.cvAuc.toFixed(3)} (log-loss{" "}
-          {set.model.cvLogLoss.toFixed(3)} against {set.model.baselineLogLoss.toFixed(3)} without
-          the cards); intervals resample whole game seeds ({set.model.bootstrapDraws} draws).{" "}
-          {String(counts.helps)} of {String(set.cards.length)} measured cards have an interval above
-          zero, {String(counts.hurts)} below, {String(counts.unclear)} include it. The values
-          correlate only weakly with the hand-written rating the advisor uses (Spearman{" "}
-          {set.spearmanWithStaticRating.toFixed(2)}).
-        </p>
+    <section className="mt-8 border-t border-line pt-6" aria-labelledby={`cv-${set.character}`}>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <h3 id={`cv-${set.character}`} className="font-display text-xl text-parchment">
+          {label}
+        </h3>
+        {isValidated(set) ? (
+          <Badge
+            tone="exact"
+            title="Acting on these values beat the hand-written ratings in the held-out test"
+          >
+            validated in simulation
+          </Badge>
+        ) : test ? (
+          <Badge
+            tone="unverified"
+            title="Acting on these values did not beat the hand-written ratings at the pre-registered level"
+          >
+            measurement only
+          </Badge>
+        ) : (
+          <Badge tone="neutral" title="The held-out test has not been run">
+            not tested yet
+          </Badge>
+        )}
       </div>
-      <div className="mt-5 grid gap-6 lg:grid-cols-2">
-        <Table title="Highest measured values" rows={best} />
-        <Table title="Lowest measured values" rows={worst} />
+      <p className="max-w-3xl text-sm text-muted">
+        {set.bossFights.toLocaleString("en-US")} simulated {label} runs reached the Act-1 boss;{" "}
+        {pct(set.passRate, 1)} got past it. The model predicts held-out games with AUC{" "}
+        {set.model.cvAuc.toFixed(3)} (log-loss {set.model.cvLogLoss.toFixed(3)} against{" "}
+        {set.model.baselineLogLoss.toFixed(3)} without the cards); intervals resample whole game
+        seeds ({set.model.bootstrapDraws} draws). {String(counts.helps)} of{" "}
+        {String(set.cards.length)} measured cards have an interval above zero,{" "}
+        {String(counts.hurts)} below, {String(counts.unclear)} include it. Correlation with the
+        hand-written rating the advisor uses (Spearman):{" "}
+        {set.spearmanWithStaticRating?.toFixed(2) ?? "not computed"}.
+      </p>
+      <div className="mt-4 grid gap-6 lg:grid-cols-2">
+        <Table title={`Highest measured values · ${label}`} rows={best} />
+        <Table title={`Lowest measured values · ${label}`} rows={worst} />
       </div>
       {test ? (
         <div className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
           <ul
             className="mb-4 grid gap-3 sm:grid-cols-3"
-            aria-label="Result of the test, rules policy against measured-value policy"
+            aria-label={`Result of the ${label} test, rules policy against measured-value policy`}
           >
             {[
               [
@@ -121,18 +136,18 @@ export function CardValuesPanel() {
               [
                 "Wins",
                 `${String(test.b.wins)} → ${String(test.a.wins)}`,
-                `${formatP(test.pairedWinTable.mcnemar_p)}, each re-derived`,
+                `${formatP(test.pairedWinTable.mcnemar_p)}${test.a.wins + test.b.wins > 0 ? ", each re-derived" : ""}`,
               ],
-            ].map(([label, value, note]) => (
-              <li key={label} className="rounded-lg border border-line bg-ink-2 p-3">
-                <p className="text-xs text-muted">{label}</p>
+            ].map(([k, value, note]) => (
+              <li key={k} className="rounded-lg border border-line bg-ink-2 p-3">
+                <p className="text-xs text-muted">{k}</p>
                 <p className="num mt-1 font-display text-2xl text-parchment">{value}</p>
                 <p className="num mt-0.5 text-xs text-dim">{note}</p>
               </li>
             ))}
           </ul>
           <p className="font-medium text-parchment">
-            Does acting on the values help? (pre-registered test)
+            Does acting on the {label} values help? (pre-registered test)
           </p>
           <p className="mt-2">
             {test.a.policy} is {test.b.policy} with one change: it takes the offered card with the
@@ -143,11 +158,44 @@ export function CardValuesPanel() {
             {test.b.meanFloor.toFixed(2)} ({signed(test.floorDifference.meanAMinusB)}, 95% bootstrap
             interval {signed(test.floorDifference.ci95[0] ?? 0)} to{" "}
             {signed(test.floorDifference.ci95[1] ?? 0)}). Wins: {test.a.wins} against {test.b.wins}{" "}
-            ({formatP(test.pairedWinTable.mcnemar_p)}); each win was re-derived (see above).
+            ({formatP(test.pairedWinTable.mcnemar_p)}).{" "}
+            {set.validation
+              ? `Significance level for this class: ${String(set.validation.alpha)}; ${set.validation.passed ? "the primary endpoint passed" : "the primary endpoint did not pass"}.`
+              : ""}
           </p>
         </div>
       ) : null}
-      <ul className="mt-4 list-disc space-y-1.5 pl-5 text-sm text-muted">
+    </section>
+  );
+}
+
+/** Measured card values and the intervention tests that check them. Every number is read from committed artifacts. */
+export function CardValuesPanel() {
+  const sets = allSets();
+  if (sets.length === 0) {
+    return null;
+  }
+  return (
+    <Panel
+      eyebrow="Simulator results · research only"
+      title="What randomised drafting says a card is worth"
+      aside={<Badge tone="unverified">Parity with the live game unverified</Badge>}
+      headingLevel={2}
+      id="card-values"
+    >
+      <p className="max-w-3xl text-muted">
+        In simulated runs the card-reward choice was replaced, 60% of the time, by a random pick
+        among the offered cards and “skip”. Chance rather than taste decided which cards reached the
+        Act-1 boss, so a regression of “got past the boss” on the deck, the HP, the potions and the
+        relics gives each card a marginal value: the change in log-odds from one more copy. The
+        protocol and the way each value is judged (a held-out test of whether playing by the values
+        beats playing by the hand-written ratings, written down before the held-out games were
+        played) are the same for every class.
+      </p>
+      {sets.map((set) => (
+        <ClassBlock key={set.id} set={set} />
+      ))}
+      <ul className="mt-6 list-disc space-y-1.5 pl-5 text-sm text-muted">
         <li>
           Simulated, not measured in the live game: the simulator has not been compared with a
           running STS2 build.
@@ -155,16 +203,22 @@ export function CardValuesPanel() {
         <li>
           Specific to the pilot: the rules policy plays the cards, so a card it plays badly is
           undervalued and one it plays well is overvalued. Synergies are not modelled (the model is
-          additive).
+          additive; a small neural network did not predict held-out games better).
         </li>
         <li>
           A value is conditional on the HP, potions and relics a run brought to the boss; it is not
           a tier list, and shops, events and rests were not randomised.
         </li>
         <li>
-          Data, code and the test protocol (written before the held-out games were played) are in
-          the repository: <code className="font-mono text-xs text-parchment">{set.file}</code> (sha{" "}
-          {set.sha256.slice(0, 12)}…).
+          Data, code and the test protocols are in the repository:{" "}
+          {sets.map((s, i) => (
+            <span key={s.id}>
+              {i > 0 ? ", " : ""}
+              <code className="font-mono text-xs text-parchment">{s.file}</code> (sha{" "}
+              {s.sha256.slice(0, 12)}…)
+            </span>
+          ))}
+          .
         </li>
       </ul>
     </Panel>

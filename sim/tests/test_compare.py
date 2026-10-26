@@ -23,7 +23,7 @@ def make_batch(
         json.dumps(
             {
                 "batch_id": name,
-                "policy": {"name": name.split("-")[0]},
+                "policy": {"name": name.split("-")[0], "params": {"scope": "boss"} if name.startswith("alpha") else {}},
                 "content_sha256": "c" * 64,
                 "seeds": {"file_sha256": seeds_sha, "partition": "train"},
                 "config": {"character": "Ironclad", "ascension": 0, "profile": profile},
@@ -54,6 +54,7 @@ def test_arithmetic_on_known_rows(tmp_path: Path):
     # seeds 1,2,3 are shared; 4 and 9 are not paired
     assert c["pairedSeeds"] == 3 and c["bothCompleted"] == 3 and c["excludedNotCompleted"] == 0
     assert c["a"]["wins"] == 1 and c["b"]["wins"] == 0
+    assert c["a"]["params"] == {"scope": "boss"} and c["b"]["params"] == {}  # a variant of a policy is told apart from the policy
     assert c["pairedWinTable"] == {"both": 0, "a_only": 1, "b_only": 0, "neither": 2, "mcnemar_p": 1.0}
     # floors on the shared seeds: A = 10,51,20 (mean 27); B = 8,40,20 (mean 22.6667); mean(A-B) = (2+11+0)/3
     assert c["a"]["meanFloor"] == pytest.approx(27.0)

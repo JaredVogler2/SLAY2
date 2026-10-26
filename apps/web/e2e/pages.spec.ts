@@ -30,7 +30,7 @@ test.describe("methods", () => {
     await expect(panel.getByRole("heading", { level: 2 })).toContainText("randomised drafting");
     await expect(panel.getByRole("table", { name: "Highest measured values" })).toBeVisible();
     await expect(panel.getByRole("table", { name: "Lowest measured values" })).toBeVisible();
-    await expect(panel).toContainText("Does acting on the values help?");
+    await expect(panel).toContainText(/Does acting on the \w+ values help\?/);
     await expect(panel).toContainText(/Past the Act-1 boss: \d+\.\d% for rules_v2/);
     await expect(panel).toContainText("Simulated, not measured in the live game");
   });

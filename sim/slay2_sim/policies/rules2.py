@@ -24,8 +24,9 @@ DEFAULT_VALUES = "experiments/cardvalue/ironclad-a0-v1.json"
 MAX_DECK = 32
 
 
-def load_values(path: str) -> tuple[dict[str, float], str, str]:
-    """(card id -> beta, repo-relative path, sha256). Relative paths are resolved against the repository root."""
+def read_values(path: str) -> tuple[dict[str, float], str, str, str | None]:
+    """(card id -> beta, repo-relative path, sha256, character the values were measured for). Relative paths are resolved
+    against the repository root. A file that does not name its character is read from its name (``ironclad-a0-v1.json``)."""
     p = Path(path)
     if not p.is_absolute():
         p = external.REPO_ROOT / p
@@ -34,7 +35,13 @@ def load_values(path: str) -> tuple[dict[str, float], str, str]:
     if data.get("kind") != "card-values":
         raise ValueError(f"{p} is not a card-values file")
     rel = str(p.relative_to(external.REPO_ROOT)) if external.REPO_ROOT in p.parents else p.name
-    return {c["id"]: float(c["beta"]) for c in data["cards"]}, rel, hashlib.sha256(raw).hexdigest()
+    character = data.get("character") or (p.name.split("-")[0].capitalize() if "-a0-" in p.name else None)
+    return {c["id"]: float(c["beta"]) for c in data["cards"]}, rel, hashlib.sha256(raw).hexdigest(), character
+
+
+def load_values(path: str) -> tuple[dict[str, float], str, str]:
+    beta, rel, digest, _ = read_values(path)
+    return beta, rel, digest
 
 
 @register
@@ -43,7 +50,7 @@ class RulesV2(RulesV1):
     version = "1"
 
     def __init__(self, values: str = DEFAULT_VALUES, threshold: float = 0.0, values_sha256: str | None = None, **params):
-        self.beta, rel, digest = load_values(values)
+        self.beta, rel, digest, self.values_character = read_values(values)
         if values_sha256 is not None and values_sha256 != digest:  # a manifest's effective parameters must rebuild the same policy
             raise ValueError(f"{rel} has sha256 {digest}, but {values_sha256} was recorded")
         super().__init__(values=rel, values_sha256=digest, threshold=float(threshold), **params)
@@ -53,6 +60,10 @@ class RulesV2(RulesV1):
         picks = _by(actions, "pick_card")
         if not picks:
             return super()._card_reward(obs, actions)
+        played = obs["run"].get("character")
+        if self.values_character and played and str(played).lower() != self.values_character.lower():
+            # another class's values would read every card as unmeasured and skip every reward: never silently
+            raise ValueError(f"card values were measured for {self.values_character}, this run plays {played}")
         size = len(deck_ids(obs["run"]))
         best = max(picks, key=lambda a: (self.beta.get(a["card_id"], 0.0), -a["idx"]))
         if self.beta.get(best["card_id"], 0.0) > self.threshold and size < self.tune["max_deck"]:

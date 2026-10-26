@@ -84,16 +84,16 @@ export function SimulationOpinion({
         aria-label="Measured values of the offered cards"
       >
         {offered.map((id) => {
-          const m = measuredValue(id);
+          const m = measuredValue(id, run.character ?? "");
           return (
             <li key={id} className="min-w-0">
               <p className="truncate font-display text-parchment">{nameOf(id)}</p>
               {m ? (
-                <MeasuredValue m={m} compact />
+                <MeasuredValue m={m.card} set={m.set} compact />
               ) : (
                 <p className="mt-2 rounded-lg border border-line bg-charcoal/60 p-3 text-sm text-muted">
-                  Not measured: this card was held in too few simulated runs (or is not an Ironclad
-                  card).
+                  Not measured: this card was held in too few simulated runs of this class (or this
+                  class has not been measured).
                 </p>
               )}
             </li>

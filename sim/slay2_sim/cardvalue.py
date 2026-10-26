@@ -82,7 +82,8 @@ def vocabulary(records: list[dict], min_games: int = 30, min_relic_share: float 
     n = max(1, len(records))
     return {
         "cards": sorted(c for c, k in cards.items() if k >= min_games),
-        "relics": sorted(x for x, k in relics.items() if k / n >= min_relic_share and x != "BURNING_BLOOD"),
+        # a relic every run holds (the starting relic) is the intercept in disguise: leave it out
+        "relics": sorted(x for x, k in relics.items() if min_relic_share <= k / n <= 0.999 and x != "BURNING_BLOOD"),
         "bosses": sorted(bosses),
         "exposure": cards,
     }
@@ -262,9 +263,11 @@ def main(argv: list[str] | None = None) -> int:
     dirs = [Path(b).resolve() for b in args.batches]  # resolve before the simulator is activated
     records: list[dict] = []
     manifests = []
+    cohorts = set()
     for d in dirs:
         records.extend(extract(read_episodes(d)))
         mf = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+        cohorts.add((mf["config"]["character"], mf["config"]["ascension"], mf["config"]["profile"]))
         manifests.append({"batch_id": mf["batch_id"], "content_sha256": mf["content_sha256"], "policy": mf["policy"],
                           "simulator": {k: mf["simulator"].get(k) for k in ("id", "head", "pinned") if k in mf["simulator"]},
                           "known_simulator_gaps": [gp["id"] for gp in mf.get("known_simulator_gaps", [])]})
@@ -276,7 +279,11 @@ def main(argv: list[str] | None = None) -> int:
         from .knowledge import card_info, static_rating
 
         static = {c: static_rating(card_info(c, False)) for c in vocabulary(records)["cards"]}
+    if len(cohorts) != 1:
+        raise SystemExit(f"batches must share one cohort (character, ascension, profile); got {sorted(cohorts)}")
+    character, ascension, profile = next(iter(cohorts))
     report = build_report(records, bootstrap_draws=args.bootstrap, static=static)
+    report["character"], report["ascension"], report["profile"] = character, ascension, profile
     report["batches"] = manifests
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

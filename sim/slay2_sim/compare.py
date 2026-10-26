@@ -75,6 +75,7 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
         return {
             "batchId": manifest["batch_id"],
             "policy": manifest["policy"]["name"],
+            "params": manifest["policy"]["params"],
             "contentSha256": manifest["content_sha256"],
             "wins": k,
             "winRate": k / n,

@@ -1,13 +1,21 @@
 import { cn } from "@/lib/cn";
 import {
-  currentSet,
   formatBeta,
-  measuredValue,
+  measurementsOf,
   oddsMultiplier,
   valueSign,
+  type CardValueSet,
   type MeasuredCard,
   type ValueSign,
 } from "@/lib/cardvalues";
+
+const CLASS_NAME: Record<string, string> = {
+  ironclad: "Ironclad",
+  silent: "Silent",
+  regent: "Regent",
+  necrobinder: "Necrobinder",
+  defect: "Defect",
+};
 
 // glyph + word carry the meaning, the colour only repeats it (colour-blind safe); not the "exact" teal badge of the odds tools
 const SIGN_LABEL: Record<ValueSign, string> = {
@@ -83,14 +91,25 @@ function Whisker({ m, sign }: { m: MeasuredCard; sign: ValueSign }) {
  * What the simulated runs say about one card, with the interval, the sample and the label that says it is a simulation.
  * The words are generated from the numbers: nothing here is a verdict about the real game.
  */
-export function MeasuredValue({ m, compact = false }: { m: MeasuredCard; compact?: boolean }) {
-  const set = currentSet();
+export function MeasuredValue({
+  m,
+  set,
+  compact = false,
+  showClass = false,
+}: {
+  m: MeasuredCard;
+  set: CardValueSet;
+  compact?: boolean;
+  showClass?: boolean;
+}) {
   const sign = valueSign(m);
   const [lo, hi] = m.ci95;
   return (
     <div className="mt-2 rounded-lg border border-line bg-charcoal/60 px-3 py-2.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted">In simulated runs</p>
+        <p className="text-xs text-muted">
+          In simulated runs{showClass ? ` · ${CLASS_NAME[set.character] ?? set.character}` : ""}
+        </p>
         <span
           className={cn("font-mono text-[0.7rem] uppercase tracking-[0.12em]", SIGN_TEXT[sign])}
           title={
@@ -123,7 +142,7 @@ export function MeasuredValue({ m, compact = false }: { m: MeasuredCard; compact
           </p>
           <p className="mt-1 text-xs text-dim">
             Held in {m.gamesWithCard.toLocaleString("en-US")} of{" "}
-            {(set?.bossFights ?? 0).toLocaleString("en-US")} simulated runs that reached the boss.
+            {set.bossFights.toLocaleString("en-US")} simulated runs that reached the boss.
             Unverified against the live game.
           </p>
         </>
@@ -132,8 +151,14 @@ export function MeasuredValue({ m, compact = false }: { m: MeasuredCard; compact
   );
 }
 
-/** The measurement for a catalog card id, or nothing when the simulated runs never held that card often enough. */
+/** Every measurement of a catalog card id: one block for a class card, one per measured class for a colorless card. */
 export function MeasuredForCard({ cardId }: { cardId: string }) {
-  const m = measuredValue(cardId);
-  return m ? <MeasuredValue m={m} /> : null;
+  const all = measurementsOf(cardId);
+  return (
+    <>
+      {all.map((x) => (
+        <MeasuredValue key={x.set.id} m={x.card} set={x.set} showClass={all.length > 1} />
+      ))}
+    </>
+  );
 }

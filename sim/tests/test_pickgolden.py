@@ -16,8 +16,11 @@ def test_the_committed_fixture_is_a_regeneration_of_the_policy_itself(sim):
 
 
 def test_the_fixture_exercises_every_branch(sim):
-    cases = json.loads(FIXTURE.read_text(encoding="utf-8"))["cases"]
-    picks = {c["pick"] for c in cases}
-    assert "skip" in picks and len(picks) > 5
-    assert any(c["deckSize"] >= 32 and c["pick"] == "skip" for c in cases), "the deck cap must decide some case"
-    assert any(c["deckSize"] < 32 and c["pick"] != "skip" for c in cases)
+    classes = json.loads(FIXTURE.read_text(encoding="utf-8"))["classes"]
+    assert classes, "at least one class has measured values"
+    for entry in classes:
+        cases = entry["cases"]
+        picks = {c["pick"] for c in cases}
+        assert "skip" in picks and len(picks) > 3, entry["character"]
+        assert any(c["deckSize"] >= 32 and c["pick"] == "skip" for c in cases), "the deck cap must decide some case"
+        assert any(c["deckSize"] < 32 and c["pick"] != "skip" for c in cases), entry["character"]

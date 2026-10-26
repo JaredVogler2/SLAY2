@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "kind": "card-value-model-comparison",
+  "rows": 3812,
+  "features": 121,
+  "folds": 5,
+  "ridge": {
+    "l2": 10.0,
+    "log_loss": 0.43857553732474003,
+    "auc": 0.8706105706880649
+  },
+  "mlp": [
+    {
+      "config": {
+        "hidden": [
+          64,
+          32
+        ],
+        "weight_decay": 0.01,
+        "dropout": 0.3
+      },
+      "log_loss": 0.4491010464020958,
+      "auc": 0.8652850139065533
+    },
+    {
+      "config": {
+        "hidden": [
+          32
+        ],
+        "weight_decay": 0.01,
+        "dropout": 0.2
+      },
+      "log_loss": 0.446766162220471,
+      "auc": 0.8661760692308152
+    },
+    {
+      "config": {
+        "hidden": [
+          128,
+          64
+        ],
+        "weight_decay": 0.03,
+        "dropout": 0.5
+      },
+      "log_loss": 0.448268009292168,
+      "auc": 0.8653402246165204
+    }
+  ],
+  "verdict": "no network beat the additive ridge-logistic on held-out games (interactions are not recoverable at this sample size)"
+}

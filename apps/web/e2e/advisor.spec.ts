@@ -167,13 +167,15 @@ test.describe("advisor journey", () => {
     await expect(page.getByText("Heuristic v0").first()).toBeVisible();
   });
 
-  test("says plainly that no class but Ironclad has been measured", async ({ page }) => {
+  test("says plainly when the class on screen has no simulated opinion to offer", async ({
+    page,
+  }) => {
     await startClass(page, "Silent");
     await addOffered(page, "backflip");
     const panel = page.locator("#simulation-opinion");
     await expect(panel).toBeVisible();
     await expect(panel).toContainText("no measurement for this offer");
-    await expect(panel).toContainText("only measured Ironclad cards so far");
+    await expect(panel).toContainText(/not measured this class|not been tested|did not beat/);
   });
 
   test("meets layout and accessibility basics with an offer on screen", async ({ page }) => {
