@@ -2,11 +2,27 @@ import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
 
 export type RuleRow = (typeof rules.rules)[number];
-export type EvidenceReport = (typeof evidence.reports)[number];
+/** What `slay2_sim audit sample` found for one batch: the ledger and a replay-verified random sample of its completed games. */
+export interface SampleAuditSummary {
+  readonly drawn: number;
+  readonly verified: number;
+  readonly completedInBatch: number;
+  readonly rngSeed: number;
+  readonly ledgerOk: boolean;
+  readonly criteria: string;
+}
+
+// The generated file has `sampleAudit: null` for every batch until one is audited, which JSON inference would freeze as `null`
+export type EvidenceReport = Omit<(typeof evidence.reports)[number], "sampleAudit"> & {
+  readonly sampleAudit: SampleAuditSummary | null;
+};
 export type SimulatorGap = (typeof evidence.simulatorGaps)[number];
 export type Comparison = (typeof evidence.comparisons)[number];
 
 export const verification = rules.verification;
+
+/** Every simulator batch of the ledger, typed (see `EvidenceReport`). */
+export const ALL_REPORTS: readonly EvidenceReport[] = evidence.reports;
 
 export type StatusGroup = "verified" | "corroborated" | "secondary" | "recorded";
 
@@ -61,7 +77,7 @@ export function pct(x: number, digits = 2): string {
  * batch never outranks it). Classes are never mixed: what a policy does as Silent says nothing about it as Ironclad.
  */
 export function largestReport(policy: string, character = "Ironclad"): EvidenceReport | undefined {
-  const mine = evidence.reports.filter(
+  const mine = ALL_REPORTS.filter(
     (r) => r.policy === policy && r.profile === "veteran" && r.character === character,
   );
   const heldOut = mine.filter((r) => r.role === "held-out");

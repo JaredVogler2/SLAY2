@@ -6,6 +6,7 @@ import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import evidence from "@/content/evidence.generated.json";
 import {
+  ALL_REPORTS,
   GROUP_LABEL,
   comparisonSentence,
   formatP,
@@ -61,7 +62,7 @@ const NOT_EVALUATED = [
 export default function MethodsPage() {
   const summary = ruleSummary();
   const sections = rulesBySection();
-  const reports = evidence.reports;
+  const reports = ALL_REPORTS;
   const comparisons = evidence.comparisons;
   const total = totals();
   const randomPolicy = largestReport("random_legal");
@@ -252,6 +253,22 @@ export default function MethodsPage() {
                           title="Search on clones advanced the live game's card-id counter when this batch was produced (ADR-035): a valid simulated game, but its action trace does not replay"
                         >
                           before isolation fix
+                        </Badge>
+                      </span>
+                    ) : null}
+                    {r.sampleAudit ? (
+                      <span className="mt-1 block">
+                        <Badge
+                          tone={
+                            r.sampleAudit.ledgerOk && r.sampleAudit.verified === r.sampleAudit.drawn
+                              ? "neutral"
+                              : "unverified"
+                          }
+                          title={`Sample audit (campaign 6): ${r.sampleAudit.criteria}. Sample drawn with a fixed random seed (${String(r.sampleAudit.rngSeed)}) from ${String(r.sampleAudit.completedInBatch)} completed games.`}
+                        >
+                          {String(r.sampleAudit.verified)} of {String(r.sampleAudit.drawn)} sampled
+                          games re-derived
+                          {r.sampleAudit.ledgerOk ? "" : " · ledger inconsistent"}
                         </Badge>
                       </span>
                     ) : null}
