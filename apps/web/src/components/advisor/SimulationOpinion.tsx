@@ -56,7 +56,7 @@ export function SimulationOpinion({
 
   return (
     <Panel
-      eyebrow="Step 4 · a second opinion"
+      eyebrow="Step 5 · a second opinion"
       title="What simulated runs say"
       aside={
         <>
@@ -69,6 +69,17 @@ export function SimulationOpinion({
     >
       <p className="text-parchment">{headline}</p>
       <p className="mt-1 text-sm text-muted">{pick.reason}</p>
+      <p
+        className={
+          run.act1 === "underdocks"
+            ? "mt-3 rounded-lg border border-rose-deep/60 bg-rose/10 p-3 text-sm text-rose"
+            : "mt-3 text-xs text-dim"
+        }
+      >
+        {run.act1 === "underdocks"
+          ? "You said you are in Underdocks. These runs were all played in Overgrowth (the simulator never plays Underdocks), so the numbers below were not measured for your Act 1: read them as a prior about the cards, not about your fights."
+          : "Every simulated run was played in Overgrowth, the Act 1 every profile starts with. The simulator never plays Underdocks."}
+      </p>
       {sim ? (
         <p
           className={

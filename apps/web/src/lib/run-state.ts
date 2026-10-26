@@ -1,8 +1,11 @@
 import { z } from "zod";
 
 import {
+  ACT1_VARIANTS,
   characterFacts,
+  getAct1Boss,
   getCard,
+  getOpeningOption,
   starterDeck,
   PLAYABLE_CLASSES,
   type PlayableClass,
@@ -48,36 +51,72 @@ export const UnknownObservationSchema = z.strictObject({
   outcome: z.enum(["fight", "treasure", "shop", "event"]).optional(),
 });
 
-export const RunStateSchema = z.strictObject({
-  v: z.literal(RUN_STATE_VERSION),
-  id: z.string().regex(/^[a-z0-9-]{8,40}$/),
-  createdAt: z.string().max(40),
-  updatedAt: z.string().max(40),
-  build: BuildIdSchema,
-  character: z.enum(PLAYABLE_CLASSES).nullable(),
-  ascension: AscensionSchema,
-  /** false until the player confirms the ascension; calculators then say "assumed A0" */
-  ascensionConfirmed: z.boolean(),
-  actIndex: ActSchema,
-  hp: z
-    .strictObject({
-      current: z.number().int().min(1).max(999),
-      max: z.number().int().min(1).max(999),
-    })
-    .nullable(),
-  deck: z
-    .array(z.strictObject({ id: CardIdSchema, count: z.number().int().min(1).max(30) }))
-    .max(120),
-  packs: z.array(PackLogSchema).max(200),
-  potions: z.array(PotionObservationSchema).max(200),
-  /** "?" rooms met in the CURRENT act (the counters reset every act) */
-  unknownRooms: z.array(UnknownObservationSchema).max(MAX_UNKNOWN_ROOMS_PER_ACT),
-  profile: z.strictObject({
-    /** a profile's very first run has scripted early rewards; unknown is the honest default */
-    firstRun: z.enum(["unknown", "no", "yes"]),
-  }),
-  risk: z.enum(["safe", "balanced", "aggressive"]),
+/**
+ * One thing the opening Ancient gave the player: the option's id and what the player told us it did, as short lines (the deck
+ * and HP were changed when it was applied; the lines are the log of that). Several entries exist because Neow's Bones hands
+ * out further relics of the same kind.
+ */
+export const OpeningEntrySchema = z.strictObject({
+  id: z.string().refine((id) => getOpeningOption(id) !== undefined, "unknown opening option"),
+  lines: z.array(z.string().max(160)).max(14),
 });
+export type OpeningEntry = z.infer<typeof OpeningEntrySchema>;
+
+export const DeckEntrySchema = z
+  .strictObject({
+    id: CardIdSchema,
+    count: z.number().int().min(1).max(30),
+    /** How many of the copies are upgraded (the advisor ignores upgrades; the deck shows them). Absent means none. */
+    upgraded: z.number().int().min(0).max(30).optional(),
+  })
+  .refine(
+    (d) => (d.upgraded ?? 0) <= d.count,
+    "upgraded copies cannot exceed the copies in the deck",
+  );
+export type DeckEntryState = z.infer<typeof DeckEntrySchema>;
+
+export const RunStateSchema = z
+  .strictObject({
+    v: z.literal(RUN_STATE_VERSION),
+    id: z.string().regex(/^[a-z0-9-]{8,40}$/),
+    createdAt: z.string().max(40),
+    updatedAt: z.string().max(40),
+    build: BuildIdSchema,
+    character: z.enum(PLAYABLE_CLASSES).nullable(),
+    ascension: AscensionSchema,
+    /** false until the player confirms the ascension; calculators then say "assumed A0" */
+    ascensionConfirmed: z.boolean(),
+    actIndex: ActSchema,
+    hp: z
+      .strictObject({
+        current: z.number().int().min(1).max(999),
+        max: z.number().int().min(1).max(999),
+      })
+      .nullable(),
+    deck: z.array(DeckEntrySchema).max(120),
+    /** Which Act 1 the run is in (they have different elites and bosses); null until the player says */
+    act1: z.enum(ACT1_VARIANTS).nullable().default(null),
+    /** The Act 1 boss shown on the map, an id of that version's bosses; null when not known */
+    act1Boss: z.string().nullable().default(null),
+    /** What the opening Ancient gave the player and how the deck changed */
+    opening: z
+      .strictObject({ entries: z.array(OpeningEntrySchema).max(6) })
+      .default({ entries: [] }),
+    packs: z.array(PackLogSchema).max(200),
+    potions: z.array(PotionObservationSchema).max(200),
+    /** "?" rooms met in the CURRENT act (the counters reset every act) */
+    unknownRooms: z.array(UnknownObservationSchema).max(MAX_UNKNOWN_ROOMS_PER_ACT),
+    profile: z.strictObject({
+      /** a profile's very first run has scripted early rewards; unknown is the honest default */
+      firstRun: z.enum(["unknown", "no", "yes"]),
+    }),
+    risk: z.enum(["safe", "balanced", "aggressive"]),
+  })
+  .refine(
+    (r) =>
+      r.act1Boss === null || (r.act1 !== null && getAct1Boss(r.act1, r.act1Boss) !== undefined),
+    { message: "act1Boss must be a boss of the chosen Act 1", path: ["act1Boss"] },
+  );
 export type RunState = z.infer<typeof RunStateSchema>;
 
 function randomId(): string {
@@ -103,6 +142,9 @@ export function newRun(character: PlayableClass | null = null, now = new Date())
     actIndex: 0,
     hp: facts ? { current: facts.startingHp, max: facts.startingHp } : null,
     deck: character ? starterDeck(character) : [],
+    act1: null,
+    act1Boss: null,
+    opening: { entries: [] },
     packs: [],
     potions: [],
     unknownRooms: [],
@@ -124,6 +166,9 @@ export function withCharacter(
     createdAt: state.createdAt,
     ascension: state.ascension,
     ascensionConfirmed: state.ascensionConfirmed,
+    // the version of Act 1 and its boss are about the run, not the class; the opening's deck changes belong to the old deck
+    act1: state.act1,
+    act1Boss: state.act1Boss,
     risk: state.risk,
     profile: state.profile,
   };

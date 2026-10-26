@@ -42,6 +42,10 @@ const NOT_EVALUATED = [
     "The card advisor's own index is still a heuristic and says so. Measured values from simulated runs exist (above and on the codex) and a policy that follows them beat the hand-written ratings in simulation, but the advisor does not use them yet and nothing here is a win probability for the live game.",
   ],
   [
+    "Act 1 versions",
+    "Act 1 has two versions with different elites and bosses, Overgrowth and Underdocks. Every simulated game was played in Overgrowth: the simulator never plays Underdocks, so no card value here was measured for it. The advisor lets you say which version you are in and tilts its heuristic toward what that version's fights ask of a deck; that tilt is judgement, not a measurement.",
+  ],
+  [
     "Live-game parity of the simulator",
     "Not verified: no owned game copy was available. Simulator win rates are model output.",
   ],

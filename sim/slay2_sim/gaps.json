@@ -66,6 +66,12 @@
       "min_ascension": 0,
       "affects": "results",
       "summary": "The game opens every act with an Ancient event that first heals the player (all the missing HP, 80 % of it from Ascension 2) and then offers a boon. The pinned simulator plays the opening event of a run (Neow) but has none in acts two and three: its runs start those acts on the map with the HP the previous boss left, and the boons are not modelled. A harness variant (`ancient_heal`, off in every other batch) restores the heal. On 498 paired development games of `rules_v2` (Ironclad, A0) it removes most deaths in the first five rooms of Act 2 (135 to 53) but the games end a little later instead of not at all: 25 to 28 games reach Act 3, mean floors +0.96 (95 % bootstrap +0.53 to +1.39), wins 2 against 0 (p = 0.5). Simulated results here are therefore from a simulator that is harsher than the game at the start of acts two and three, by an amount measured to be small for this pilot (ADR-039)."
+    },
+    {
+      "id": "G12-only-overgrowth-played",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "Act 1 of the game comes in two versions, Overgrowth and Underdocks, with different elites, bosses and ordinary fights. The pinned simulator's three-act run is Overgrowth, Hive, Glory; Underdocks exists in it only as the simulator's 'extra act' (an act index beyond the third) and the harness never plays it, so every simulated game, and every card value measured from them, is an Overgrowth game. This is not a fourth act: the game has three (ADR-048)."
     }
   ]
 }

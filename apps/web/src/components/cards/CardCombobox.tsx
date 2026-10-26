@@ -17,6 +17,7 @@ export function CardCombobox({
   classes,
   rewardEligibleOnly = false,
   exclude,
+  filter,
   placeholder = "Search cards by name…",
   hint,
   className,
@@ -26,6 +27,8 @@ export function CardCombobox({
   classes?: readonly CardClass[];
   rewardEligibleOnly?: boolean;
   exclude?: ReadonlySet<string>;
+  /** A further condition on the results (for example "only Rare cards"), applied after the search. */
+  filter?: (card: CardEntry) => boolean;
   placeholder?: string;
   hint?: string;
   className?: string;
@@ -39,10 +42,10 @@ export function CardCombobox({
     const found = searchCards(query, {
       ...(classes ? { classes } : {}),
       rewardEligibleOnly,
-      limit: 30,
-    }).filter((c) => !exclude?.has(c.id));
+      limit: filter ? 600 : 30,
+    }).filter((c) => !exclude?.has(c.id) && (filter ? filter(c) : true));
     return found.slice(0, 8);
-  }, [query, classes, rewardEligibleOnly, exclude]);
+  }, [query, classes, rewardEligibleOnly, exclude, filter]);
 
   const choose = (card: CardEntry | undefined): void => {
     if (!card) {

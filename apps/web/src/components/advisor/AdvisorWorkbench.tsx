@@ -19,6 +19,7 @@ import {
   type PackSource,
   type RunState,
 } from "@/lib/run-state";
+import { deckAdd } from "@/lib/opening";
 import { runStore, useRunHistory, useRunState } from "@/lib/run-store";
 
 import { CharacterPicker } from "./CharacterPicker";
@@ -26,6 +27,7 @@ import { DeckPanel } from "./DeckPanel";
 import { HandOddsPanel } from "./HandOddsPanel";
 import { ADVISOR_SOURCES, OfferedPanel } from "./OfferedPanel";
 import { OfferCheck } from "./OfferCheck";
+import { OpeningPanel } from "./OpeningPanel";
 import { PityTracker } from "./PityTracker";
 import { RecommendationPanel } from "./RecommendationPanel";
 import { SimulationOpinion } from "./SimulationOpinion";
@@ -42,6 +44,8 @@ export function AdvisorWorkbench() {
   const [offered, setOffered] = useState<string[]>([]);
   const [source, setSource] = useState<PackSource>("regular");
   const [message, setMessage] = useState<string | null>(null);
+  // whether the Act 1 version and boss shape the ranking (a page choice, so the player can compare with and without)
+  const [useContext, setUseContext] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const update = (next: RunState): void => {
@@ -61,10 +65,13 @@ export function AdvisorWorkbench() {
           character: run.character,
           ascension: run.ascension,
           actIndex: run.actIndex,
-          deck: run.deck,
+          deck: run.deck.map(({ id, count }) => ({ id, count })),
           offered,
           source,
           riskPreference: run.risk,
+          ...(run.act1 && run.actIndex === 0 && useContext
+            ? { actContext: { variant: run.act1, boss: run.act1Boss } }
+            : {}),
         }),
       };
     } catch (e) {
@@ -73,7 +80,7 @@ export function AdvisorWorkbench() {
         error: e instanceof Error ? e.message : "Could not evaluate this offer.",
       };
     }
-  }, [run, offered, source]);
+  }, [run, offered, source, useContext]);
 
   const chooseCharacter = (c: PlayableClass): void => {
     update(run ? withCharacter(run, c) : newRun(c));
@@ -98,14 +105,7 @@ export function AdvisorWorkbench() {
       return;
     }
     const picked = action.kind === "skip" ? "skip" : action.cardId;
-    const deck =
-      action.kind === "pick"
-        ? run.deck.some((d) => d.id === action.cardId)
-          ? run.deck.map((d) =>
-              d.id === action.cardId ? { ...d, count: Math.min(30, d.count + 1) } : d,
-            )
-          : [...run.deck, { id: action.cardId, count: 1 }]
-        : run.deck;
+    const deck = action.kind === "pick" ? deckAdd(run.deck, action.cardId) : run.deck;
     update({
       ...run,
       deck,
@@ -343,6 +343,14 @@ export function AdvisorWorkbench() {
 
       {run && character ? (
         <>
+          <OpeningPanel
+            run={run}
+            onChange={update}
+            useContext={useContext}
+            onUseContextChange={setUseContext}
+            disabled={!hydrated}
+          />
+
           <OfferedPanel
             character={character}
             offered={offered}
