@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import cardvalues from "@/content/cardvalues.generated.json";
 import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
 
@@ -13,6 +14,18 @@ describe("generated site content", () => {
     const run = spawnSync(process.execPath, [script, "--check"], { encoding: "utf8" });
     expect(run.stderr).toBe("");
     expect(run.status).toBe(0);
+  });
+
+  it("shows only adopted card-value sets: one per class, never a study's file (ADR-046)", () => {
+    // Adopting a set is a decision recorded in scripts/export-site-data.mjs (SITE_VALUE_SETS) and here, not a side effect of a
+    // file appearing in experiments/cardvalue: round two for Ironclad (ironclad-a0-v2.json) stays off the site until its
+    // pre-registered test says otherwise.
+    const shown = cardvalues.sets.map((set) => set.file).sort();
+    expect(shown).toEqual(
+      ["ironclad", "silent", "regent", "necrobinder", "defect"]
+        .map((c) => `experiments/cardvalue/${c}-a0-v1.json`)
+        .sort(),
+    );
   });
 
   it("lists the verified rules with their evidence classes", () => {

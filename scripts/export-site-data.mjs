@@ -176,6 +176,10 @@ const CLASSES = ["ironclad", "silent", "regent", "necrobinder", "defect"];
 // Significance level of the pre-registered intervention test per class (ADR-031: Ironclad alone, 0.05; ADR-034: the other four share 0.05, Bonferroni).
 const ALPHA = { ironclad: 0.05, silent: 0.0125, regent: 0.0125, necrobinder: 0.0125, defect: 0.0125 };
 
+// Which value files the site shows is a decision, not a side effect of a file existing (ADR-046): a set measured for a study
+// (experiments/cardvalue/ironclad-a0-v2.json, round two) stays out of the site until it is adopted here.
+const SITE_VALUE_SETS = new Set(["ironclad-a0-v1.json", "silent-a0-v1.json", "regent-a0-v1.json", "necrobinder-a0-v1.json", "defect-a0-v1.json"]);
+
 function parseCardValues(comparisons) {
   const dir = join(root, "experiments", "cardvalue");
   if (!existsSync(dir)) return [];
@@ -186,7 +190,7 @@ function parseCardValues(comparisons) {
     return known.has(id) ? id : known.has(plain) ? plain : null;
   };
   const out = [];
-  for (const name of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
+  for (const name of readdirSync(dir).filter((f) => SITE_VALUE_SETS.has(f)).sort()) {
     const raw = readFileSync(join(dir, name));
     const v = JSON.parse(raw.toString("utf8"));
     if (v.kind !== "card-values") continue;
