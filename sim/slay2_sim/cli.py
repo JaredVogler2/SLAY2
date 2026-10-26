@@ -181,6 +181,16 @@ def cmd_audit(args) -> int:
                   f"replay: {g['replay_message']}, terminal {g['terminal_state']}")
         print(f"sample of {report['sample']['drawn']} completed games (rng seed {report['sample']['rng_seed']}): {report['verified']} verified  (wrote sample-audit.json)")
         return 0 if report["all_verified"] else 1
+    if args.what == "rederive":
+        from .winaudit import audit_rederive
+
+        sim = external.locate()
+        external.activate(sim.root)
+        report = audit_rederive(Path(args.batch), workers=args.workers)
+        for d in report["differing"][:20]:
+            print(f"  seed={d['seed']} differs in {d['fields']}: stored {d.get('stored')} / re-run {d.get('rerun')}")
+        print(f"{report['rederived_exactly']} of {report['games']} games re-derived exactly, {len(report['differing'])} differ  (wrote rederivation-audit.json)")
+        return 0 if report["all_rederived"] else 1
     print(f"audit {args.what!r} is implemented in a later milestone", file=sys.stderr)
     return 2
 
@@ -346,12 +356,13 @@ def build_parser() -> argparse.ArgumentParser:
     rn.set_defaults(fn=cmd_run)
 
     au = sub.add_parser("audit", help="audits: replay | wins | rewards | monster-hp | fairness")
-    au.add_argument("what", choices=["replay", "wins", "sample", "rewards", "monster-hp", "fairness"])
+    au.add_argument("what", choices=["replay", "wins", "sample", "rederive", "rewards", "monster-hp", "fairness"])
     au.add_argument("--batch")
     au.add_argument("--limit", type=int, default=None, help="replay: traces to verify (default 5); wins: wins to audit (default all)")
     au.add_argument("--character", default="Ironclad")
     au.add_argument("--ascension", type=int, default=0)
     au.add_argument("--profile", default="veteran", choices=["veteran", "first_run"])
+    au.add_argument("--workers", type=int, default=4, help="rederive: worker processes")
     au.set_defaults(fn=cmd_audit)
 
     tn = sub.add_parser("tune", help="paired tuning of a rules policy's thresholds on development seeds (dev/train only)")

@@ -176,3 +176,57 @@ def audit_sample(batch_dir: Path, *, n: int = 50, rng_seed: int = 0) -> dict:
     }
     save_json(batch_dir / "sample-audit.json", report)
     return report
+
+
+def audit_rederive(batch_dir: Path, *, workers: int = 4) -> dict:
+    """Re-run *every* game of a finished batch and compare it with the stored record (the complete form of ``audit_sample``).
+
+    The re-run uses the policy and parameters the manifest names, on the same seeds, in fresh worker processes (each one is put
+    in the canonical state of ``warmup.py`` before its first game). A game is *re-derived* when outcome, floor, act, HP, deck
+    size, relic count, combats won, step count and the killer are exactly the stored ones. Games that differ are listed with
+    both values; nothing is excluded. Written next to the batch as ``rederivation-audit.json``. The simulator must be activated.
+    """
+    import tempfile
+
+    from . import external
+    from .batch import run_batch
+    from .manifest import load_seed_manifest, partition_seeds
+
+    batch_dir = Path(batch_dir)
+    manifest = json.loads((batch_dir / "manifest.json").read_text(encoding="utf-8"))
+    cfg = RunConfig(**manifest["config"])
+    name, params = manifest["policy"]["name"], _policy_params(manifest)
+    stored = {r.seed: r for r in read_episodes(batch_dir)}
+    seeds_info = manifest["seeds"]
+    seeds_file = Path(seeds_info["file"])
+    if not seeds_file.is_absolute():
+        seeds_file = external.REPO_ROOT / seeds_file
+    seeds = partition_seeds(load_seed_manifest(seeds_file), seeds_info["partition"])[: seeds_info["n"]]
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "again"
+        run_batch(out_dir=out, batch_id=f"rederive-{manifest['batch_id']}", cfg=cfg, policy_name=name, policy_params=params, seeds=seeds,
+                  workers=workers, trace_first=0, sim=external.locate(), seed_info=seeds_info)
+        again = {r.seed: r for r in read_episodes(out)}
+    fields = STORED_FIELDS + ("killed_by",)
+    differing = []
+    for seed in sorted(stored):
+        rec, new = stored[seed], again.get(seed)
+        if new is None:
+            differing.append({"seed": seed, "fields": ["missing from the re-run"]})
+            continue
+        bad = [k for k in fields if getattr(new, k) != getattr(rec, k)]
+        if bad:
+            differing.append({"seed": seed, "fields": bad, "stored": {k: getattr(rec, k) for k in bad}, "rerun": {k: getattr(new, k) for k in bad}})
+    report = {
+        "schema": 1,
+        "batch_id": manifest["batch_id"],
+        "batch_content_sha256": manifest.get("content_sha256"),
+        "policy": {"name": name, "params": params},
+        "games": len(stored),
+        "rederived_exactly": len(stored) - len(differing),
+        "differing": differing,
+        "all_rederived": not differing and len(again) == len(stored),
+        "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record",
+    }
+    save_json(batch_dir / "rederivation-audit.json", report)
+    return report

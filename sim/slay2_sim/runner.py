@@ -63,6 +63,9 @@ def new_run(cfg: "RunConfig", seed: int):
         raise ValueError(f"profile must be one of {PROFILES}")
     import sts2_env.run.run_manager as rm
 
+    from .warmup import warm_simulator
+
+    warm_simulator()  # once per process: a game must not depend on how many games the process played before it (warmup.py)
     previous = rm.RunState
     if cfg.profile == "veteran":
         rm.RunState = _veteran_run_state_cls()
