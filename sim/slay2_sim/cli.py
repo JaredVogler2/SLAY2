@@ -113,7 +113,7 @@ def _resolve_seeds(args) -> tuple[list[int], dict]:
 
 
 def _default_batch_id(args, n: int) -> str:
-    variant = ("-ancientheal" if args.ancient_heal else "") + ("-gamehp" if args.game_hp else "")
+    variant = ("-ancientheal" if args.ancient_heal else "") + ("-gamehp" if getattr(args, "game_hp", False) else "")
     where = f"{args.partition}-o{args.offset}" if getattr(args, "offset", 0) else args.partition
     return f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{where}-n{n}"
 
