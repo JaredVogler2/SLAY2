@@ -50,7 +50,7 @@ const NOT_EVALUATED = [
   ],
   [
     "Neural policies",
-    "None trained or deployed. No model on this site is, or claims to be, a neural network.",
+    "None deployed, and no advice on this site comes from a neural network. A research combat network trained locally has not beaten the rules baseline on held-out simulated combats (record: experiments/rl/results in the repository).",
   ],
 ] as const;
 
