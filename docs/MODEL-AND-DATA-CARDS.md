@@ -212,7 +212,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **What:** `packages/decision`: ranks the offered cards and skip by a unit-less **deck-quality index** built from the catalog's role tags and prior, with reasons and a stability check; since step 2 it tilts the ranking by the Act 1 version and boss (at most 30 %, a judgement, labelled).
 * **Intended use:** a reasoned starting point for a draft decision. **Not for:** a win probability. The index is **not calibrated**, and the API says so in every answer; no outcome has ever been compared with it except through the simulated second opinion below (which found the hand-written ratings a poor guide: Spearman 0.07 to 0.44 with the measured values).
 * **Information:** the player's own deck, the offer, the ascension and the Act 1 version; nothing hidden.
-* **Limits:** per-class mechanics that decide cards (Strength, poison, Stars, Osty, Souls, Doom, orbs) are not modelled and the response lists them (RT-3-08).
+* **Limits:** **it has no model of synergies between cards** (reported by a user on 2026-10-26 and confirmed in `quality.ts`): the index is the mean of static per-card ratings plus role-coverage, energy-curve and deck-size terms, with one Ironclad-only interaction term (Strength cards times multi-hit attacks), so it overrates a card's standalone quality and cannot see that a card is good only with others; per-class mechanics that decide cards (Strength, poison, Stars, Osty, Souls, Doom, orbs) are not modelled and the response lists them (RT-3-08); it advises the draft only, not how to play cards against enemies. A synergy-aware evaluation is the priority of the next steps.
 
 ## M3. Card-value second opinion
 
@@ -220,7 +220,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Intended use:** a labelled second opinion beside the heuristic. **Not for:** "this card wins runs": the values are simulated, one-pilot, additive.
 * **Evaluation:** the registered held-out tests in the D6 and M5 tables. A pilot following the values got past the Act-1 boss more often than the same pilot without them in all five classes (each test significant at its registered level). It also won 6 games against none for Ironclad (p = 0.031) and 7 against none for Defect (p = 0.016); the Regent difference is one game against none, and Silent and Necrobinder won none either way.
 * **Fairness:** the same code serves all five classes; each class is shown only the values measured for it; classes with weaker pilots show weaker evidence and say so.
-* **Limits:** see D6.
+* **Limits:** see D6; the values are additive, so a card that is good only with others is undervalued and a good-in-isolation card is not penalised for a deck that cannot use it.
 
 ## M4. Opening-relic second opinion
 

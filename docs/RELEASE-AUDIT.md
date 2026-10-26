@@ -30,7 +30,11 @@ Every finding has a reproduction, a fix and a regression test in [docs/ADVERSARI
 | P3 | polish | 4 | RT-9-06, RT-9-08, RT-9-09, RT-6-03 |
 <!-- table:findings:end -->
 
-No P0 was found. The two findings of the first opening-relic study are worth stating plainly: a class id in the wrong letter case made four classes play as Ironclad, and **every audit passed**, because an audit re-runs a game from its manifest and reproduces the same wrong class (RT-6-02). It was found by an independent read of the site code, not by a test; the guards that now exist (exact class ids, a per-game start check, a pairing refusal) are the answer to *that* failure, and no list of tests can promise there is no other of its kind.
+No P0 was found. One finding is **open** and was reported by a user, not found by a test: the advisor has no model of synergies between cards (the next section). The two findings of the first opening-relic study are worth stating plainly: a class id in the wrong letter case made four classes play as Ironclad, and **every audit passed**, because an audit re-runs a game from its manifest and reproduces the same wrong class (RT-6-02). It was found by an independent read of the site code, not by a test; the guards that now exist (exact class ids, a per-game start check, a pairing refusal) are the answer to *that* failure, and no list of tests can promise there is no other of its kind.
+
+## Open finding: no synergy model (user feedback, 2026-10-26)
+
+A user who knows the game gave three observations: the product is a deck-building advisor and does not cover playing cards against enemies (correct, and stated since the start); it does not evaluate card synergies, which is essential; and because it does not, it overrates card quality. The code confirms the second and third: the deck-quality index is the mean of static per-card ratings plus role-coverage, energy-curve and deck-size terms, with a single interaction term that exists only for Ironclad (Strength cards times multi-hit attacks). A card is rated by its own rating and by what role the deck lacks, not by what the cards in the deck make of it. The simulated second opinion is additive for a related reason (a card that needs partners rarely meets them in a random draft). Until this is fixed the advisor should be read as a way to check a deck's roles and a card's standalone rating, not as an evaluation of a build. It is the first item of the next steps in [docs/STATUS.md](STATUS.md).
 
 ## Required documentation (prompts/11)
 
@@ -97,12 +101,13 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 
 ## Blockers and owner decisions
 
-1. **Merge pull request #7** to put the opening-relic study on the live site; then re-check production (`/api/v1/health` reports the merge commit, `/methods#opening-ancient` shows the passed test) and measure Web Vitals again (the advisor's script is about 120 KB lighter).
-2. **A licence for SLAY2's own code** and any monetization or donation (counsel, and Mega Crit's confirmation): until chosen the repository is visible but all rights are reserved.
-3. **Live-game parity** needs an owned copy of STS2 on the owner's machine: until then every simulator result stays labelled unverified.
-4. **Vercel**: whether non-production deployments stay behind login and the canonical URL (`NEXT_PUBLIC_SITE_URL`, deliberately unset).
-5. **Lighthouse**: permission to download and run an external package.
-6. **Beta rules** need a beta snapshot before the beta can be supported.
+1. **Synergy-aware evaluation** is the priority of the work (the open finding above); it needs no owner decision.
+2. **Merge pull request #7** to put the opening-relic study on the live site; then re-check production (`/api/v1/health` reports the merge commit, `/methods#opening-ancient` shows the passed test) and measure Web Vitals again (the advisor's script is about 120 KB lighter).
+3. **A licence for SLAY2's own code** and any monetization or donation (counsel, and Mega Crit's confirmation): until chosen the repository is visible but all rights are reserved.
+4. **Live-game parity** needs an owned copy of STS2 on the owner's machine: until then every simulator result stays labelled unverified.
+5. **Vercel**: whether non-production deployments stay behind login and the canonical URL (`NEXT_PUBLIC_SITE_URL`, deliberately unset).
+6. **Lighthouse**: permission to download and run an external package.
+7. **Beta rules** need a beta snapshot before the beta can be supported.
 
 ## Not done, and why
 
@@ -114,6 +119,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 
 ## Next actions, in order
 
+0. **Synergy-aware card evaluation** (the user's feedback): a facts table of what each card provides and needs, a deck-context model measured in simulated runs and cross-validated, one registered held-out test, then the advisor.
 1. The owner merges pull request #7; verify production and Web Vitals as above.
 2. Registered question with the largest use for a player: the opening-relic rule at the game's own Necrobinder HP (`--game-hp`, G13), then the full re-derivation of the older batches, then the decision on the paused network.
 3. Reduce the script that runs after first paint on `/methods` and `/codex`.
