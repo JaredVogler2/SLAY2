@@ -95,13 +95,26 @@ def cmd_seeds(args) -> int:
 def _resolve_seeds(args) -> tuple[list[int], dict]:
     path = Path(args.seeds)
     manifest = load_seed_manifest(path)
-    seeds = partition_seeds(manifest, args.partition, allow_sealed=args.allow_sealed, limit=args.n)
+    offset = int(getattr(args, "offset", 0) or 0)
+    if offset < 0:
+        raise SystemExit("--offset must be 0 or more")
+    seeds = partition_seeds(manifest, args.partition, allow_sealed=args.allow_sealed)[offset:]
+    if args.n is not None:
+        seeds = seeds[: args.n]
     info = {
         "file": str(path.relative_to(external.REPO_ROOT)) if path.is_absolute() and external.REPO_ROOT in path.parents else str(path),
         "manifest_sha256": manifest["sha256"], "file_sha256": sha256_file(path),
         "partition": args.partition, "n": len(seeds), "sealed_partition_used": args.partition == "test",
     }
+    if offset:  # only when used, so the manifests of the batches played without it stay what they were
+        info["offset"] = offset
     return seeds, info
+
+
+def _default_batch_id(args, n: int) -> str:
+    variant = "-ancientheal" if args.ancient_heal else ""
+    where = f"{args.partition}-o{args.offset}" if getattr(args, "offset", 0) else args.partition
+    return f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{where}-n{n}"
 
 
 def _batch_common(args, *, default_trace: int) -> int:
@@ -110,8 +123,7 @@ def _batch_common(args, *, default_trace: int) -> int:
     seeds, seed_info = _resolve_seeds(args)
     cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal)
     params = json.loads(args.policy_params) if args.policy_params else {}
-    variant = "-ancientheal" if args.ancient_heal else ""
-    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{args.partition}-n{len(seeds)}"
+    batch_id = args.batch_id or _default_batch_id(args, len(seeds))
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
     trace_first = default_trace if args.trace is None else args.trace
     manifest = run_batch(
@@ -125,8 +137,7 @@ def _batch_common(args, *, default_trace: int) -> int:
 def cmd_smoke(args) -> int:
     code = _batch_common(args, default_trace=args.n)
     # replay-verify the traces we just wrote (determinism of simulator + adapter)
-    variant = "-ancientheal" if args.ancient_heal else ""
-    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{args.partition}-n{args.n}"
+    batch_id = args.batch_id or _default_batch_id(args, args.n)
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
     return max(code, _replay_audit(out_dir, limit=3, character=args.character, ascension=args.ascension, profile=args.profile))
 
@@ -349,6 +360,7 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--partition", default="train", choices=list(PARTITIONS))
         sp.add_argument("--allow-sealed", action="store_true", help="required for the sealed test partition (recorded)")
         sp.add_argument("--n", type=int, default=n_default)
+        sp.add_argument("--offset", type=int, default=0, help="skip this many seeds of the partition (a fresh slice; recorded in the manifest)")
         sp.add_argument("--workers", type=int, default=4)
         sp.add_argument("--max-steps", type=int, default=20000)
         sp.add_argument("--wall-seconds", type=float, default=900.0)

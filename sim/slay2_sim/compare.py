@@ -30,15 +30,15 @@ def _canonical(body: dict) -> str:
     return json.dumps(body, indent=2, sort_keys=True) + "\n"
 
 
-def _seeds_drawn(info: dict) -> list[int] | None:
-    """The seeds a batch drew from its partition (``run`` takes the first ``n``), read from the committed seed manifest the
-    batch names, and only if that file still has the hash the batch recorded. None when that cannot be shown: a file that is
-    missing or has changed, or the sealed ``test`` partition (which is never read here)."""
+def _partition_list(info: dict) -> list[int] | None:
+    """The whole seed list of the partition a batch drew from, read from the committed seed manifest the batch names, and
+    only if that file still has the hash the batch recorded. None when that cannot be shown: a file that is missing or has
+    changed, or the sealed ``test`` partition (which is never read here)."""
     try:
         path = external.REPO_ROOT / info["file"]
         if sha256_file(path) != info["file_sha256"]:
             return None
-        return partition_seeds(load_seed_manifest(path), info["partition"], limit=int(info["n"]))
+        return partition_seeds(load_seed_manifest(path), info["partition"])
     except (KeyError, OSError, ValueError, PermissionError):
         return None
 
@@ -46,17 +46,14 @@ def _seeds_drawn(info: dict) -> list[int] | None:
 def _same_seeds(sa: dict, sb: dict) -> bool:
     """Both batches were played on the same seeds. The same seed manifest (its hash) and partition say so. A later version of
     a manifest that appends a partition and keeps the others (``ironclad-a0-v2`` keeps v1's ``train``, ``val`` and ``test``
-    exactly) has a different file hash, so for two different files the seeds themselves are compared: the shorter batch's
-    seeds must be the first seeds of the longer one's."""
+    exactly) has a different file hash, so for two different files the partition's whole seed list must be identical in
+    both: then any batch drawn from it, whatever its length or offset, drew the same seeds."""
     if sa["partition"] != sb["partition"]:
         return False
     if sa["file_sha256"] == sb["file_sha256"]:
         return True
-    xa, xb = _seeds_drawn(sa), _seeds_drawn(sb)
-    if not xa or not xb:
-        return False
-    k = min(len(xa), len(xb))
-    return xa[:k] == xb[:k]
+    xa, xb = _partition_list(sa), _partition_list(sb)
+    return bool(xa) and xa == xb
 
 
 def _past_act_one(rec) -> bool:
