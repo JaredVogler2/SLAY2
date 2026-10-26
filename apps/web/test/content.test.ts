@@ -61,6 +61,18 @@ describe("generated site content", () => {
     }
   });
 
+  it("exports only rules: one row per id, each with a sentence, none from the implementation map", () => {
+    // The register also has an implementation map whose rows start with a rule id too (`| UPG-1 | upgrade.ts | G P |`). Read as rules
+    // they gave /methods two repeated ids with "upgrade.ts" as the rule and a count two too high (59 rules for 57).
+    const ids = rules.rules.map((r) => r.id);
+    expect(new Set(ids).size, "repeated rule ids").toBe(ids.length);
+    for (const r of rules.rules) {
+      expect(r.text.length, `${r.id} reads like a rule`).toBeGreaterThanOrEqual(30);
+      expect(r.text, r.id).toContain(" ");
+      expect(r.section, r.id).not.toMatch(/^Implementation status/);
+    }
+  });
+
   it("never reports a win rate without its sample size and interval", () => {
     for (const r of evidence.reports) {
       expect(r.completed).toBeGreaterThan(0);

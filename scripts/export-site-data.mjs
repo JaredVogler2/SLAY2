@@ -24,14 +24,29 @@ function parseRules() {
   const md = readFileSync(join(root, "docs", "game", "MECHANICS-COVERAGE.md"), "utf8");
   const rules = [];
   let section = "";
+  // Only tables whose header row starts with "ID" hold rules. The register also has tables of evidence classes and an
+  // implementation map ("| Rules | Module | Layers | Notes |"), whose rows start with a rule id too (`| UPG-1 | upgrade.ts | G P |`):
+  // read as rules they put a section of file names on /methods and made the count of rules two too high.
+  let inTable = false;
+  let ruleTable = false;
   for (const line of md.split("\n")) {
-    const h = /^##\s+(.*)$/.exec(line);
+    const h = /^#{2,3}\s+(.*)$/.exec(line); // "###" too: three rules sit under a sub-heading and took the previous section's name
     if (h) {
       section = plain(h[1]);
+      inTable = false;
       continue;
     }
-    if (!line.startsWith("|")) continue;
+    if (!line.startsWith("|")) {
+      inTable = false;
+      continue;
+    }
     const cells = line.split("|").slice(1, -1).map((c) => c.trim());
+    if (!inTable) {
+      inTable = true;
+      ruleTable = cells[0] === "ID";
+      continue;
+    }
+    if (!ruleTable) continue;
     if (cells.length < 3 || !/^[A-Z]+-\d+$/.test(cells[0])) continue;
     const status = cells[3] && /(VERIFIED|CORROBORATED|SECONDARY|UNVERIFIED)/.test(cells[3]) ? plain(cells[3]) : null;
     rules.push({ id: cells[0], section: section.replace(/^\d+\.\s*/, ""), text: plain(cells[1]), evidence: plain(cells[2]), status });
