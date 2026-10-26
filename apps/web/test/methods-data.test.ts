@@ -617,6 +617,16 @@ describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v2.json
         );
         expect(fewer.status).not.toBe(0);
         expect(fewer.stderr).toContain("must pool all five classes");
+        // and the numbers, not only the label: a member missing from the comparison is refused the same way
+        const fewerMembers = run(
+          rootWith((dir) => {
+            edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
+              t.members = (t.members as unknown[]).slice(1);
+            });
+          }),
+        );
+        expect(fewerMembers.status).not.toBe(0);
+        expect(fewerMembers.stderr).toContain("must pool all five classes");
       },
     );
   },

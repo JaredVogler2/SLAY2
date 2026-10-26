@@ -408,7 +408,10 @@ function parseNeow(reports) {
   if (t.cohort?.partition !== "val" || t.role !== "held-out") throw new Error(`${where}: not a held-out comparison`);
   if (t.cohort.ascension !== v.ascension || t.cohort.profile !== v.profile) throw new Error(`${where}: played at another ascension or profile than the values were measured at`);
   const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
-  if (classesIn.length !== CLASSES.length || [...classesIn].sort().join() !== [...CLASSES].sort().join()) throw new Error(`${where}: it must pool all five classes, once each`);
+  const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
+  const everyClassOnce = (list) => list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+  // the members carry the numbers and the cohort names the classes: both must be the five classes, once each
+  if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed)) throw new Error(`${where}: it must pool all five classes, once each`);
   const byId = new Map(reports.map((r) => [r.id, r]));
   const sums = { a_only: 0, b_only: 0, both: 0, neither: 0, pairedSeeds: 0, bothCompleted: 0 };
   for (const m of t.members) {
