@@ -79,7 +79,8 @@ Recommended for both:
 | Real hosted URL smoke test | **PASS** (2026-10-26, `453864d`) | the section "Hosted smoke test" below |
 | Vercel builds the pull request's head (preview) | **PASS** (2026-10-26 12:49 UTC, head `20d4efe`, deployment `dpl_FRWHDADHgMsw5wmv8hr96L1kiW4r`) | build log: Node 22.x, Next.js 16.4.3, 16 static pages including `/routes` and `/opengraph-image`, 7 API routes, "Build Completed in /vercel/output [16s]"; the preview URL itself sits behind Vercel login, so the hosted page was not fetched |
 | Web Vitals on a local production build (lab) | **MEASURED** (2026-10-26, see "Web Vitals (lab)" below): layout shift 0 on all seven pages, first and largest paint 0.26 to 0.42 s on a desktop and 0.96 to 1.75 s on a throttled phone | `pnpm --filter @slay2/web vitals`; `e2e/stability.spec.ts` pins the layout shift |
-| Web Vitals and Lighthouse on the hosted URL | **UNVERIFIED** | the hosted site predates these changes; run `BASE_URL=https://slay-part2.vercel.app pnpm --filter @slay2/web vitals` after the merge. Lighthouse itself was not run (it would download and run an external package) |
+| Web Vitals on the hosted URL | **MEASURED** (2026-10-26 18:57 UTC, the site at `1c4542d`; see "Web Vitals on the hosted site" below): layout shift 0 on all seven pages; first and largest paint 0.53 to 0.95 s on a desktop and 1.4 to 2.2 s on a throttled phone; blocking time on the throttled phone 243 to 535 ms | `BASE_URL=https://slay-part2.vercel.app pnpm --filter @slay2/web vitals` |
+| Lighthouse on the hosted URL | **NOT RUN** | it would download and run an external package, which the owner has not approved |
 | Simulator-to-game parity | **UNVERIFIED** | needs an owned game copy; shown as such on `/methods` |
 | Beta build v0.111.0 | **UNSUPPORTED** | refused by `game-schema`, shown on the landing page and `/api/v1/capabilities` |
 
@@ -100,6 +101,24 @@ Measured on 2026-10-26 against a local production build (`next start`) with `pnp
 Every page transfers about 470 to 510 KB on its first load (about 270 KB of script, 9 KB of CSS, 117 KB of fonts before the unused bold Cinzel file was dropped, 102 KB after) in 38 to 39 requests; the same figure on every page is the router prefetching the other pages' payloads for the six header links. Against the Web Vitals thresholds: largest contentful paint (good: 2.5 s or less) and layout shift (good: 0.1 or less) are good everywhere, including the throttled phone; "TBT-like" is the sum, over the long tasks after the first paint, of the time beyond 50 ms, a stand-in for Total Blocking Time (good: 200 ms or less) that is **not** Lighthouse's number.
 
 What these numbers are not: field data (nobody visited); a measurement on a quiet machine (the load average was 10 to 12 on 4 cores, with simulation jobs running, so every time is pessimistic and the throttled phone's blocking time in particular is probably an over-estimate); a Lighthouse score; Interaction to Next Paint, which needs a person. The hosted site is a different measurement again (a real network and a CDN) and has not been measured with this script.
+
+## Web Vitals on the hosted site
+
+Measured on 2026-10-26 at 18:57 UTC against https://slay-part2.vercel.app, which then served `1c4542d` (the merge of pull request #6; `/api/v1/health` reports the commit), with the same script and profiles as above (three cold loads per page, medians), from this repository's sandbox: the machine was idle (load average 0.03 at the start, 1.2 at the end) and the network is the sandbox's, behind its agent proxy, to Vercel's CDN.
+
+| Page | Phone FCP = LCP (ms) | Phone TBT-like (ms) | Desktop FCP = LCP (ms) | Desktop TBT-like (ms) | Layout shift | Phone transfer (KB) |
+|---|---|---|---|---|---|---|
+| `/` | 1,716 | 309 | 656 | 0 | 0 | 527 |
+| `/advisor` | 1,660 | 268 | 548 | 0 | 0 | 508 |
+| `/odds` | 1,604 | 282 | 564 | 0 | 0 | 513 |
+| `/routes` | 1,444 | 243 | 608 | 0 | 0 | 510 |
+| `/codex` | 2,196 | 414 | 676 | 0 | 0 | 515 |
+| `/methods` | 2,196 | 535 | 952 | 0 | 0 | 451 |
+| `/about` | 1,416 | 286 | 532 | 0 | 0 | 510 |
+
+Against the Web Vitals thresholds: layout shift is 0 everywhere and largest contentful paint is good (2.5 s or less) on every page, on the throttled phone as well; `/codex` and `/methods` are the slowest at 2.2 s there. The "TBT-like" time on the throttled phone (4x CPU slowdown) is 243 to 535 ms, which is in the "needs improvement" band of the Lighthouse thresholds for Total Blocking Time (200 to 600 ms) on all seven pages; `/methods` is the heaviest (it renders the evidence tables) and `/routes` the lightest. On a desktop it is 0. A real phone is unlikely to be as slow as a 4x slowdown of this machine, but this was not measured on one.
+
+What these numbers are not: field data (nobody visited); a Lighthouse score (Lighthouse was not run); Interaction to Next Paint, which needs a person. The hosted payload is the same 451 to 527 KB per first load as the local build, in 36 to 39 requests.
 
 ## Smoke test after a READY deployment exists
 
