@@ -50,6 +50,40 @@ def paired_bootstrap_ci(
     return float(d.mean()), float(lo), float(hi)
 
 
+def clustered_bootstrap_ci(
+    d: list[float] | np.ndarray,
+    clusters: list[int] | np.ndarray,
+    *,
+    iters: int = 20000,
+    confidence: float = 0.95,
+    seed: int = 0,
+    chunk: int = 500,
+) -> tuple[float, float, float]:
+    """Mean of ``d`` with a percentile bootstrap interval that resamples whole *clusters* (rows that share a cluster move together).
+
+    Used where several rows are not independent draws: the five classes' games of one seed share the offer and, under the
+    opening-relic rule, the relic on offer (ADR-049). ``mean`` is the plain mean of the rows, the resamples weight each cluster
+    by its size, as a resample of the clusters does.
+    """
+    x = np.asarray(d, dtype=float)
+    c = np.asarray(clusters)
+    if x.ndim != 1 or x.size == 0 or c.shape != x.shape:
+        raise ValueError("d and clusters must be equal-length non-empty 1-D sequences")
+    _, inverse = np.unique(c, return_inverse=True)
+    sums = np.bincount(inverse, weights=x)
+    counts = np.bincount(inverse).astype(float)
+    k = sums.size
+    rng = np.random.default_rng(seed)
+    means = np.empty(iters)
+    for start in range(0, iters, chunk):
+        m = min(chunk, iters - start)
+        idx = rng.integers(0, k, size=(m, k))
+        means[start : start + m] = sums[idx].sum(axis=1) / counts[idx].sum(axis=1)
+    alpha = (1 - confidence) / 2
+    lo, hi = np.quantile(means, [alpha, 1 - alpha])
+    return float(x.mean()), float(lo), float(hi)
+
+
 def mcnemar_exact(a_only: int, b_only: int) -> float:
     """Two-sided exact McNemar p-value from the discordant counts.
 

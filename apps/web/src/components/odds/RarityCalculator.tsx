@@ -239,7 +239,7 @@ export function RarityCalculator({
                   did not note can be added as “unknown”.
                 </p>
                 <div className="flex flex-wrap items-end gap-3">
-                  <div className="min-w-40 flex-1">
+                  <div className="min-w-[min(10rem,100%)] flex-1">
                     <label
                       htmlFor="draft-src"
                       className="mb-1.5 block text-sm font-medium text-parchment"

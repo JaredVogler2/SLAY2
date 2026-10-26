@@ -2,7 +2,7 @@
   "schema": 1,
   "generatedFrom": "docs/game/MECHANICS-COVERAGE.md + packages/odds/test/fixtures/*.json",
   "verification": {
-    "goldenCases": 720,
+    "goldenCases": 739,
     "goldenKinds": [
       "gold",
       "hypergeometric",
@@ -15,6 +15,8 @@
       "rarity_posterior",
       "removal",
       "reshuffle",
+      "route",
+      "treasure_gold",
       "unknown_marginal",
       "unknown_posterior",
       "upgrade"
@@ -59,9 +61,9 @@
     {
       "id": "RUN-5",
       "section": "Run structure",
-      "text": "Act map: 7 columns; 17/17/16/15 floors (Overgrowth/Underdocks/Hive/Glory) in solo, one fewer room in co-op; 3 merchants; 5 elites (8 with A1); first room is a fight; elites/rests never in first five rooms; a rest site always precedes the boss.",
-      "evidence": "E3 /acts",
-      "status": "SECONDARY (E1 Map/ not yet read)"
+      "text": "Act map: 7 columns; 17/17/16/15 floors (Overgrowth/Underdocks/Hive/Glory) in solo, one fewer room in co-op; 3 merchants; 5 elites (8 with A1); first room is a fight; elites/rests never in first five rooms; a rest site always precedes the boss. Read from the source and recorded in detail as MAP-1..MAP-6 (section 11).",
+      "evidence": "E1 Map/StandardActMap.cs and the act models (see section 11); E3 /acts",
+      "status": "VERIFIED-E1"
     },
     {
       "id": "ASC-1",
@@ -101,7 +103,14 @@
     {
       "id": "ASC-6",
       "section": "Ascension (cumulative: level N includes 1..N)",
-      "text": "A2 Weary Traveler (Ancients heal 80% of missing HP), A1 (+3 elites), A8/A9 (enemy HP / damage)",
+      "text": "A2 Weary Traveler: the Ancient event heals 80 % of the missing HP instead of all of it (ANC-1). A1 Swarming Elites: 8 elites per act map instead of 5, round(5 x 1.6) (MAP-4).",
+      "evidence": "E1 Models/AncientEventModel.cs BeforeEventStarted, Map/MapPointTypeCounts.cs; E5",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ASC-7",
+      "section": "Ascension (cumulative: level N includes 1..N)",
+      "text": "A8 Tough Enemies and A9 Deadly Enemies: enemy HP and damage.",
       "evidence": "E5, E3",
       "status": "CORROBORATED (per-enemy tables are E3)"
     },
@@ -307,6 +316,97 @@
       "text": "Act-3 boss Doormaker was removed and replaced by Aeonglass (main v0.107.1).",
       "evidence": "E2",
       "status": null
+    },
+    {
+      "id": "MAP-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Every act map is a grid of 7 columns. Row 0 is the act's Ancient node and the boss is one node on row R+1, both in the middle column (A10's second boss sits one row above the first). R is 15 (Overgrowth), 15 (Underdocks), 14 (Hive) and 13 (Glory) in solo play and one fewer in co-op, so an act has R+2 floors counting the Ancient and the boss: 17 / 17 / 16 / 15. Every row-1 node is a child of the Ancient node; every row-R node is a parent of the boss.",
+      "evidence": "E1 Map/StandardActMap.cs, Models/ActModel.cs GetNumberOfRooms/GetNumberOfFloors, Models.Acts/{Overgrowth,Underdocks,Hive,Glory}.cs BaseNumberOfRooms",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "MAP-2",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Edges. Seven paths are walked from row 1 to row R. A path starts in a uniformly random column of row 1 (the second path is redrawn until its start differs from the first path's), and every step goes to the same column or one column to either side (columns 0 to 6, order shuffled), skipping a step that would cross an existing opposite diagonal edge. So an edge joins adjacent rows, its columns differ by at most one, and paths may merge. Duplicate path segments are then pruned (nodes can disappear) and the grid is re-centred and spread sideways inside the same one-column limit.",
+      "evidence": "E1 Map/StandardActMap.cs GenerateMap/PathGenerate/GenerateNextCoord/HasInvalidCrossover, Map/MapPathPruning.cs, Map/MapPostProcessing.cs",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "MAP-3",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Fixed rows. Every row-1 node is a monster fight. Every row-R node is a rest site: a rest site always comes right before the boss. Every node on row R-6 is a treasure room (row 9 in Overgrowth and Underdocks, 8 in Hive, 7 in Glory). The main game never turns the treasure row into elites (only the optional Big Game Hunter modifier does).",
+      "evidence": "E1 StandardActMap.AssignPointTypes, Runs/RunManager.cs, Models.Modifiers/BigGameHunter.cs",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "MAP-4",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Targets for the other rooms, placed on random free nodes: 3 shops; 5 elites, 8 with A1 (round(5 x 1.6)); \"?\" rooms: an integer drawn from a normal distribution with mean 12 and standard deviation 1, redrawn until it lies in 10 to 14 (Overgrowth, Underdocks), the same minus one (9 to 13) in Hive and Glory; rest sites besides row R: 6 or 7 in Overgrowth and Underdocks (about 39 % / 61 %), 6 or 7 in Hive (about 61 % / 39 %), 5 or 6 in Glory (50 % / 50 %). Every node left over is a monster fight. After pruning the generator tops the counts up by turning fight nodes into the missing types where the placement rules (MAP-5) allow, so a count can end below its target (seen: 3 elites on an Act 3 map of the simulator's port). One path crosses many nodes, so the number of rooms *on a route* is far smaller than these counts.",
+      "evidence": "E1 Map/MapPointTypeCounts.cs, Models.Acts/*.cs GetMapPointTypes, Random/Rng.cs NextGaussianInt/NextInt, Map/MapPathPruning.cs RepairPointType",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "MAP-5",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Placement rules for the random rooms. No rest site or elite on rows 1 to 5, so none among the first five rooms. No rest site on rows R-2 and R-1. An elite, rest site, treasure room or shop never has a parent or a child of its own type. Two nodes with a common parent never share a type among rest site, monster, \"?\", elite and shop when the type is assigned (fight nodes that fill what is left over are exempt). A \"?\" may follow a \"?\".",
+      "evidence": "E1 Map/StandardActMap.cs IsValidPointType/IsValidForLower/IsValidForUpper/IsValidWithParents/IsValidWithChildren/IsValidWithSiblings",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "MAP-6",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Travel. From a node the player may go only to its children; the Winged Boots relic (and the Flight modifier) allows any node of the next row. From the Ancient node the player may go to any row-1 node.",
+      "evidence": "E1 Map/MapTravel.cs, Hooks/Hook.cs ShouldAllowFreeTravel, Models.Relics/WingedBoots.cs",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "REST-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "A rest site offers Rest and Smith, plus Mend when more than one player is in the run, plus options relics or cards add: Dig (Shovel), Lift (Girya), Kindle (Pumpkin Candle), Cook (Meat Cleaver), Clone (Pael's Growth), Hatch (Byrdonis Egg). Rest heals 30 % of maximum HP: the game adds 0.3 x max HP (a decimal) to the current HP and truncates, so the whole-number heal is floor(0.3 x max HP), capped at max HP; relic hooks can change the amount (Regal Pillow and others). Smith upgrades one card and is disabled when no card can be upgraded. The Ascension 2 reduction (ANC-1) applies to Ancient events only, not to rest sites.",
+      "evidence": "E1 Entities.RestSite/{RestSiteOption,HealRestSiteOption,SmithRestSiteOption}.cs, Entities.Creatures/Creature.cs HealInternal, Models.Relics/*.cs",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ANC-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Every act starts at an Ancient event (Neow in act one). Before it offers anything, it heals the player by the missing HP times 1.0 (A0 and A1) or 0.8 (A2 Weary Traveler and above), truncated as in REST-1; Neow sets the HP to 0 first, so a run starts at full HP (A0, A1) or at floor(0.8 x max HP) (A2 and above). The pinned simulator has no Ancient node in acts two and three: its runs reach those acts with whatever HP the boss fight left (gap G11).",
+      "evidence": "E1 Models/AncientEventModel.cs BeforeEventStarted, Map/StandardActMap.cs (the start node's type); simulator run/run_manager.py _transition_next_act, map/acts.py (comment)",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ANC-2",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "The opening Ancient's offer (a run without modifiers). One of the 8 costly options is drawn at random among those the player may be offered. The helpful pool (14 options) then loses the option the drawn one pairs with (Cursed Pearl: Golden Pearl; Hefty Tablet: Arcane Scroll; Leafy Poultice: New Leaf; Precarious Shears: Precise Scissors), gains one of Lava Rock or Small Capsule (neither when the costly option is Large Capsule), one of Nutritious Oyster or Stone Humidifier and one of Neow's Talisman or Pomander (each pair a fair coin), loses what the player may not be offered (Kaleidoscope needs all five classes unlocked; Scroll Boxes needs at least 4 unlocked Commons and 2 unlocked Uncommons), and two helpful options are drawn from what is left. The offer is those two and the costly one.",
+      "evidence": "E1 Models/Events/Neow.cs GenerateInitialOptions, Models/Relics/Kaleidoscope.cs, Models/Relics/ScrollBoxes.cs (IsAllowedAtNeow)",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ANC-3",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "What each opening option changes (counts and amounts; effects not listed here change no card, HP or max HP). Helpful: Arcane Scroll adds 1 random Rare of the class; Lead Paperweight, 1 of 2 Colorless cards; Lost Coffer, a class card reward (3 cards) and a random potion; Massive Scroll, 1 of 3 co-op cards; Scroll Boxes, 1 of 2 bundles of 3 cards (2 Commons and 1 Uncommon of the class); Kaleidoscope, 2 card rewards built from the other classes; Neow's Torment adds Neow's Fury; New Leaf transforms 1 card; Precise Scissors removes 1 card; Neow's Talisman upgrades 1 Strike and 1 Defend; Pomander upgrades 1 card; Fishing Rod upgrades a random card after every 3rd normal fight; Nutritious Oyster +11 max HP; Stone Humidifier +5 max HP at every rest; Golden Pearl +150 gold; Phial Holster +1 potion slot and 2 potions; Small Capsule 1 random relic; Lava Rock makes the Act 1 boss drop 2 relics; Booming Conch gives +2 cards and +1 energy on turn 1 of Elite fights; Winged Boots lets the player ignore the path lines 3 times. Costly: Precarious Shears removes 2 cards and costs 16 HP; Leafy Poultice transforms 1 Strike and 1 Defend and costs 12 max HP; Hefty Tablet adds 1 of 3 Rares and the curse Injury; Cursed Pearl adds the curse Greed and gives 333 gold; Large Capsule gives 2 random relics and adds 1 Strike and 1 Defend; Neow's Bones gives 2 random Neow relics and adds 1 random curse; Silken Tress takes all gold and enchants the first card reward with Glam; Silver Crucible upgrades the first 3 card rewards and empties the first treasure chest.",
+      "evidence": "E1 Models/Relics/<option>.cs (each option's AfterObtained and hooks)",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "ACT-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "Act 1 has two versions with the same act index (0), length (15 rooms before the boss row), Ancient (Neow) and number of easier encounters (3), and different pools. Overgrowth (unlocked by default): elites Bygone Effigy, Byrdonis, Phrog Parasite; bosses Vantom, Ceremonial Beast, The Kin; 4 easier and 12 ordinary encounters. Underdocks (not unlocked by default): elites Phantasmal Gardeners, Skulking Colony, Terror Eel; bosses Waterfall Giant, Soul Fysh, Lagavulin Matriarch; 4 easier and 10 ordinary encounters. Acts 2 and 3 have one version each (Hive, Glory). How Underdocks is unlocked is not recorded here (community guides disagree). The pinned simulator plays Overgrowth only (gap G12).",
+      "evidence": "E1 Models/Acts/Overgrowth.cs, Models/Acts/Underdocks.cs (GenerateAllEncounters, IsDefault, Index); simulator map/acts.py (ALL_ACTS)",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "DECK-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "What can be done to a card in the deck. A card with the Eternal keyword (Ascender's Bane, Curse of the Bell, Bad Luck, Greed, Folly, Enthralled, Forbidden Grimoire) cannot be removed, and cannot be transformed while it is in the deck. A card can be upgraded once unless it says otherwise; every curse, every status and the three quest cards (Byrdonis Egg, Lantern Key, Spoils Map) have a maximum upgrade level of 0 and cannot be upgraded. From A5 the game adds Ascender's Bane (Eternal, Ethereal, Unplayable) to the starting deck when the run begins (ASC-3).",
+      "evidence": "E1 Models/CardModel.cs IsRemovable, IsTransformable, MaxUpgradeLevel, IsUpgradable, Models.Cards/*.cs MaxUpgradeLevel and CanonicalKeywords, Entities.Ascension/AscensionManager.cs ApplyEffectsTo",
+      "status": "VERIFIED-E1"
+    },
+    {
+      "id": "TRS-1",
+      "section": "Act map, rest sites, the Ancient heal and treasure (read from the game source, 2026-10-26)",
+      "text": "A treasure room gives gold, a whole number drawn uniformly from 42 to 52 (A3 Poverty: each value x 0.75, truncated: 31 to 39, mean 34.9 instead of 47), and a relic chosen from a roll with the same rarity split as the merchant's (SHOP-1: 50 / 33 / 17 %), plus whatever relics add.",
+      "evidence": "E1 Multiplayer.Game/OneOffSynchronizer.cs DoTreasureRoomRewards, TreasureRoomRelicSynchronizer.cs, Factories/RelicFactory.cs RollRarity, Helpers/AscensionHelper.cs",
+      "status": "VERIFIED-E1"
     },
     {
       "id": "UPG-1",

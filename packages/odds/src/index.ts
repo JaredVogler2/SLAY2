@@ -10,3 +10,4 @@ export * from "./gold";
 export * from "./shop";
 export * from "./draw";
 export * from "./provenance-catalog";
+export * from "./route";

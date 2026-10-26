@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { getCard } from "@slay2/game-data";
+import { ACT1_BRIEFS, getAct1Boss, getCard, isAct1Variant } from "@slay2/game-data";
 import type { DraftAction, DraftResponse, RankedOption } from "@slay2/decision";
 
 import { CardTile } from "@/components/cards/CardTile";
@@ -54,7 +54,7 @@ export function RecommendationPanel({
 
   return (
     <Panel
-      eyebrow="Step 3 · the call"
+      eyebrow="Step 4 · the call"
       title={best.action.kind === "skip" ? "Skip this one" : `Take ${best.label}`}
       aside={
         <>
@@ -157,7 +157,7 @@ export function RecommendationPanel({
                           {r.delta >= 0 ? "+" : ""}
                           {r.delta.toFixed(2)}
                         </span>
-                        <span>{r.text}</span>
+                        <span className="min-w-0">{r.text}</span>
                       </li>
                     ))}
                   </ul>
@@ -222,6 +222,37 @@ export function RecommendationPanel({
       <div className="mt-5 space-y-3">
         <Disclosure summary="How this index is built, and what it ignores">
           <div className="space-y-4">
+            {result.actContext ? (
+              <div>
+                <p className="mb-1 font-medium text-parchment">Act 1 context</p>
+                {result.actContext.applied ? (
+                  <>
+                    <p>
+                      {isAct1Variant(result.actContext.variant)
+                        ? ACT1_BRIEFS[result.actContext.variant].name
+                        : result.actContext.variant}
+                      {result.actContext.boss && isAct1Variant(result.actContext.variant)
+                        ? `, boss ${getAct1Boss(result.actContext.variant, result.actContext.boss)?.name ?? result.actContext.boss}`
+                        : ", boss not known"}
+                      . Compared with the average Act 1 (both versions together), the coverage
+                      weights below were shifted before the options were ranked:
+                    </p>
+                    <ul className="mt-1 list-disc space-y-1 pl-5">
+                      {result.actContext.adjustments.map((a) => (
+                        <li key={a.group}>
+                          {a.label}: {a.percent > 0 ? "+" : "−"}
+                          {Math.abs(a.percent)} %{" "}
+                          {a.because.length > 0
+                            ? `(${a.because.join(", ")})`
+                            : "(fewer of its fights ask for it than in the average Act 1)"}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                <p className="mt-1">{result.actContext.note}</p>
+              </div>
+            ) : null}
             <div>
               <p className="mb-1 font-medium text-parchment">Assumptions</p>
               <ul className="list-disc space-y-1 pl-5">

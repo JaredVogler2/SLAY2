@@ -140,6 +140,14 @@ describe("campaign 2 - patch contamination: an unverified build is refused every
     { calculator: "price", item: { kind: "card", rarity: "common" } },
     { calculator: "removal", ascension: 0, removals: 1 },
     { calculator: "gold", ascension: 0, room: "monster" },
+    {
+      calculator: "route",
+      ascension: 0,
+      routes: [{ rooms: ["monster"] }],
+      unknownHistory: [],
+      counter: 0,
+      potionTenths: 4,
+    },
   ];
   it.each(stateful.map((s) => [s.calculator, s]))(
     "RT-2-01 beta build refused by the %s calculator",

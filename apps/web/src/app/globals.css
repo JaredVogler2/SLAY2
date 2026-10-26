@@ -22,10 +22,10 @@
   --color-rose: #e58b92;
   --color-rose-deep: #b4565f;
 
-  --font-display: "Cinzel", "Trajan Pro", "Palatino Linotype", Georgia, serif;
-  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono:
-    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* --font-cinzel, --font-inter and --font-jetbrains are set on <html> by next/font in layout.tsx (with metric-matched fallbacks) */
+  --font-display: var(--font-cinzel), "Trajan Pro", "Palatino Linotype", Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
 
   --radius-panel: 14px;
   --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 18px 40px -24px rgb(0 0 0 / 0.8);
@@ -33,6 +33,17 @@
 
 :root {
   color-scheme: dark;
+}
+
+/*
+ * An implicit grid column is as wide as the widest unbreakable run inside it: a file path in a list made /methods 70 px
+ * wider than a 320 px phone. A minmax(0, 1fr) column can shrink to its container, and the grid-cols-* utilities (a later
+ * layer) still decide the columns wherever a grid sets them.
+ */
+@layer base {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 html {
@@ -47,6 +58,7 @@ body {
     radial-gradient(900px 500px at -8% 12%, rgb(114 215 200 / 0.06), transparent 55%),
     var(--color-charcoal);
   color: var(--color-parchment);
+  overflow-wrap: break-word; /* a path or an id longer than its box breaks instead of widening the page */
   font-family: var(--font-sans);
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;

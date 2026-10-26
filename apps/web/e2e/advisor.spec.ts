@@ -123,7 +123,7 @@ test.describe("advisor journey", () => {
       character: string;
       deck: unknown[];
     };
-    expect(saved).toMatchObject({ v: 1, character: "ironclad" });
+    expect(saved).toMatchObject({ v: 2, character: "ironclad" });
     expect(saved.deck.length).toBeGreaterThan(0);
 
     await page.getByLabel("Import a SLAY2 run file").setInputFiles({
@@ -181,7 +181,7 @@ test.describe("advisor journey", () => {
       `${ironclad.bossFights.toLocaleString("en-US")} simulated Ironclad runs that reached the Act-1 boss`,
     );
     await expect(panel).toContainText(
-      `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(0)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} held-out seeds`,
+      `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(1)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} held-out seeds`,
     );
   });
 
@@ -213,7 +213,7 @@ test.describe("advisor journey", () => {
         `${s.bossFights.toLocaleString("en-US")} simulated ${s.label} runs that reached the Act-1 boss`,
       );
       await expect(panel).toContainText(
-        `+${((v.passRate - v.passRateBase) * 100).toFixed(0)} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} held-out seeds`,
+        `+${((v.passRate - v.passRateBase) * 100).toFixed(1)} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} held-out seeds`,
       );
     });
   }

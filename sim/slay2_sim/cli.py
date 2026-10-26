@@ -9,7 +9,8 @@ from pathlib import Path
 
 from . import external
 from .batch import run_batch
-from .compare import build_comparison, render_text, write_comparison
+from .classes import CHARACTER_IDS, exact_character
+from .compare import build_comparison, build_pooled_comparison, render_pooled_text, render_text, write_comparison
 from .manifest import (
     DEFAULT_SIZES, PARTITIONS, load_seed_manifest, make_seed_manifest, partition_seeds, save_json, sha256_file,
 )
@@ -95,22 +96,35 @@ def cmd_seeds(args) -> int:
 def _resolve_seeds(args) -> tuple[list[int], dict]:
     path = Path(args.seeds)
     manifest = load_seed_manifest(path)
-    seeds = partition_seeds(manifest, args.partition, allow_sealed=args.allow_sealed, limit=args.n)
+    offset = int(getattr(args, "offset", 0) or 0)
+    if offset < 0:
+        raise SystemExit("--offset must be 0 or more")
+    seeds = partition_seeds(manifest, args.partition, allow_sealed=args.allow_sealed)[offset:]
+    if args.n is not None:
+        seeds = seeds[: args.n]
     info = {
         "file": str(path.relative_to(external.REPO_ROOT)) if path.is_absolute() and external.REPO_ROOT in path.parents else str(path),
         "manifest_sha256": manifest["sha256"], "file_sha256": sha256_file(path),
         "partition": args.partition, "n": len(seeds), "sealed_partition_used": args.partition == "test",
     }
+    if offset:  # only when used, so the manifests of the batches played without it stay what they were
+        info["offset"] = offset
     return seeds, info
+
+
+def _default_batch_id(args, n: int) -> str:
+    variant = ("-ancientheal" if args.ancient_heal else "") + ("-gamehp" if getattr(args, "game_hp", False) else "")
+    where = f"{args.partition}-o{args.offset}" if getattr(args, "offset", 0) else args.partition
+    return f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{where}-n{n}"
 
 
 def _batch_common(args, *, default_trace: int) -> int:
     sim = external.locate()
     external.activate(sim.root)
     seeds, seed_info = _resolve_seeds(args)
-    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds)
+    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal, game_hp=args.game_hp)
     params = json.loads(args.policy_params) if args.policy_params else {}
-    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}-{args.partition}-n{len(seeds)}"
+    batch_id = args.batch_id or _default_batch_id(args, len(seeds))
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
     trace_first = default_trace if args.trace is None else args.trace
     manifest = run_batch(
@@ -124,7 +138,7 @@ def _batch_common(args, *, default_trace: int) -> int:
 def cmd_smoke(args) -> int:
     code = _batch_common(args, default_trace=args.n)
     # replay-verify the traces we just wrote (determinism of simulator + adapter)
-    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}-{args.partition}-n{args.n}"
+    batch_id = args.batch_id or _default_batch_id(args, args.n)
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
     return max(code, _replay_audit(out_dir, limit=3, character=args.character, ascension=args.ascension, profile=args.profile))
 
@@ -136,7 +150,11 @@ def cmd_run(args) -> int:
 def _replay_audit(out_dir: Path, *, limit: int, character: str, ascension: int, profile: str = "veteran") -> int:
     sim = external.locate()
     external.activate(sim.root)
-    cfg = RunConfig(character=character, ascension=ascension, profile=profile)
+    manifest_path = out_dir / "manifest.json"
+    if manifest_path.exists():  # the batch says how its games were played (a variant such as ancient_heal must be replayed as it was run)
+        cfg = RunConfig(**json.loads(manifest_path.read_text(encoding="utf-8"))["config"])
+    else:
+        cfg = RunConfig(character=character, ascension=ascension, profile=profile)
     bad = 0
     traces = sorted((out_dir / "traces").glob("*.jsonl.gz"))[:limit]
     for t in traces:
@@ -217,11 +235,29 @@ def cmd_catalog(args) -> int:
 
 
 def cmd_compare(args) -> int:
-    comparison = build_comparison(Path(args.a), Path(args.b), iters=args.iters, seed=args.bootstrap_seed)
+    comparison = build_comparison(Path(args.a), Path(args.b), iters=args.iters, seed=args.bootstrap_seed, sensitivity=args.sensitivity_by_act)
     print(render_text(comparison))
     if args.out:
         write_comparison(comparison, Path(args.out))
         print(f"  wrote {args.out}  (content sha256 {comparison['contentSha256'][:16]}...)")
+    return 0
+
+
+def _character(value: str) -> str:
+    """argparse type: the simulator's exact class id, or an error that says which (it plays any other string as Ironclad)."""
+    try:
+        return exact_character(value)
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(str(e)) from e
+
+
+def cmd_pool(args) -> int:
+    pairs = [(Path(a), Path(b)) for a, b in args.pair]
+    pooled = build_pooled_comparison(pairs, iters=args.iters, seed=args.bootstrap_seed)
+    print(render_pooled_text(pooled))
+    if args.out:
+        write_comparison(pooled, Path(args.out))
+        print(f"  wrote {args.out}  (content sha256 {pooled['contentSha256'][:16]}...)")
     return 0
 
 
@@ -333,14 +369,19 @@ def build_parser() -> argparse.ArgumentParser:
     def add_run_args(sp, *, n_default=None):
         sp.add_argument("--policy", default="random_legal", choices=sorted(REGISTRY) or None)
         sp.add_argument("--policy-params", help="JSON object of policy parameters")
-        sp.add_argument("--character", default="Ironclad")
+        sp.add_argument("--character", default="Ironclad", type=_character, metavar="{" + ",".join(CHARACTER_IDS) + "}")
         sp.add_argument("--ascension", type=int, default=0)
         sp.add_argument("--profile", default="veteran", choices=["veteran", "first_run"],
                         help="veteran: no tutorial scripting (default); first_run: simulator default with scripted early content")
+        sp.add_argument("--ancient-heal", action="store_true",
+                        help="harness variant (gap G11): heal at the start of acts 2 and 3 as the game's Ancient event does; recorded in the manifest")
+        sp.add_argument("--game-hp", action="store_true",
+                        help="harness variant (gap G13): start the class with the maximum HP of the game's source (Necrobinder 66, the simulator 75); recorded in the manifest")
         sp.add_argument("--seeds", default=str(DEFAULT_SEEDS))
         sp.add_argument("--partition", default="train", choices=list(PARTITIONS))
         sp.add_argument("--allow-sealed", action="store_true", help="required for the sealed test partition (recorded)")
         sp.add_argument("--n", type=int, default=n_default)
+        sp.add_argument("--offset", type=int, default=0, help="skip this many seeds of the partition (a fresh slice; recorded in the manifest)")
         sp.add_argument("--workers", type=int, default=4)
         sp.add_argument("--max-steps", type=int, default=20000)
         sp.add_argument("--wall-seconds", type=float, default=900.0)
@@ -359,7 +400,7 @@ def build_parser() -> argparse.ArgumentParser:
     au.add_argument("what", choices=["replay", "wins", "sample", "rederive", "rewards", "monster-hp", "fairness"])
     au.add_argument("--batch")
     au.add_argument("--limit", type=int, default=None, help="replay: traces to verify (default 5); wins: wins to audit (default all)")
-    au.add_argument("--character", default="Ironclad")
+    au.add_argument("--character", default="Ironclad", type=_character, metavar="{" + ",".join(CHARACTER_IDS) + "}")
     au.add_argument("--ascension", type=int, default=0)
     au.add_argument("--profile", default="veteran", choices=["veteran", "first_run"])
     au.add_argument("--workers", type=int, default=4, help="rederive: worker processes")
@@ -410,7 +451,15 @@ def build_parser() -> argparse.ArgumentParser:
     cp.add_argument("--out", help="write the comparison as a committed artifact, e.g. experiments/comparisons/a-vs-b.json")
     cp.add_argument("--iters", type=int, default=20000, help="bootstrap resamples")
     cp.add_argument("--bootstrap-seed", type=int, default=0)
+    cp.add_argument("--sensitivity-by-act", action="store_true",
+                    help="also report, labelled post hoc, the past-the-Act-1-boss comparison with wall-clock timeouts counted by the act they reached")
     cp.set_defaults(fn=cmd_compare)
+    pp = sub.add_parser("pool", help="several paired comparisons that differ in the class only, pooled into one exact test (ADR-041)")
+    pp.add_argument("--pair", nargs=2, action="append", required=True, metavar=("A", "B"), help="a pair of batches, repeated per class (a minus b)")
+    pp.add_argument("--out", help="write the pooled comparison, e.g. experiments/neow/pooled-test.json (NOT experiments/comparisons: the site reads that directory)")
+    pp.add_argument("--iters", type=int, default=20000, help="bootstrap resamples")
+    pp.add_argument("--bootstrap-seed", type=int, default=0)
+    pp.set_defaults(fn=cmd_pool)
     return p
 
 
@@ -421,6 +470,8 @@ PATH_ARGS = ("out", "seeds", "coverage_out", "batch", "a", "b", "candidates")
 
 
 def absolutize_paths(args: argparse.Namespace) -> argparse.Namespace:
+    if getattr(args, "pair", None):
+        args.pair = [[str(Path(x).resolve()) for x in pair] for pair in args.pair]
     for name in PATH_ARGS:
         value = getattr(args, name, None)
         if isinstance(value, str) and value:

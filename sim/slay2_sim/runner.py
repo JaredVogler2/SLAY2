@@ -15,9 +15,13 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from .classes import ClassError, check_start, exact_character, game_start_hp
 from .isolation import deliberation
 from .observation import obs_hash, observe
 from .outcomes import EpisodeRecord, Outcome
+
+
+MAX_ASCENSION = 10  # STS2's highest Ascension (rule ASC-1); there is no A11 to A20
 
 
 @dataclass(frozen=True)
@@ -30,9 +34,26 @@ class RunConfig:
     wall_seconds: float = 900.0     # hard wall-clock cap per episode (SIGALRM)
     start_with_neow: bool = True    # the real game always opens with the Ancient event (hazard 4)
     profile: str = "veteran"        # "veteran" (no tutorial scripting) | "first_run" (simulator default: scripted early content)
+    # A harness variant, never the simulator's own behaviour and off in every batch written before G11 was recorded: the
+    # game opens each act with an Ancient event that first heals the player (the simulator starts acts 2 and 3 on the map).
+    ancient_heal: bool = False
+    # A harness variant for gap G13, never the simulator's own behaviour and off in every other batch: start the class with the
+    # maximum HP the game's source gives it (Necrobinder 66, the simulator says 75; the other four classes are equal).
+    game_hp: bool = False
+
+    def __post_init__(self) -> None:
+        # the simulator silently plays any class id it does not know exactly as Ironclad (classes.py, ADR-049)
+        exact_character(self.character)
+        # STS2 has Ascension 0 to 10 and nothing above (rule ASC-1); a higher number would be played as something else without a word
+        if not isinstance(self.ascension, int) or isinstance(self.ascension, bool) or not 0 <= self.ascension <= MAX_ASCENSION:
+            raise ValueError(f"ascension must be an integer from 0 to {MAX_ASCENSION}, got {self.ascension!r}")
 
     def describe(self) -> dict:
-        return dict(self.__dict__)
+        d = dict(self.__dict__)
+        for variant in ("ancient_heal", "game_hp"):
+            if not d[variant]:
+                del d[variant]  # the fingerprint of every earlier batch stays what it was
+        return d
 
 
 # A veteran profile = "not the profile's first-ever run" and "some epochs unlocked". In the simulator this only
@@ -57,6 +78,37 @@ def _veteran_run_state_cls():
     return _VET_CLS
 
 
+def ancient_heal_amount(missing_hp: int, ascension: int) -> int:
+    """Hit points the Ancient event restores before it offers anything (E1 ``AncientEventModel.BeforeEventStarted``).
+
+    All the missing hit points, and 80 % of them from Ascension 2 (Weary Traveler). The game adds the decimal product to
+    the current HP and truncates, so the amount is the integer part of ``0.8 * missing``.
+    """
+    if missing_hp <= 0:
+        return 0
+    return missing_hp if ascension < 2 else (missing_hp * 4) // 5
+
+
+_HEAL_MANAGER_CLS = None
+
+
+def _ancient_heal_manager_cls():
+    """A manager that heals as the Ancient event does when an act begins (a method, not a closure: ``clone_manager`` keeps the class)."""
+    global _HEAL_MANAGER_CLS
+    if _HEAL_MANAGER_CLS is None:
+        import sts2_env.run.run_manager as rm
+
+        class AncientHealRunManager(rm.RunManager):
+            def _transition_next_act(self) -> None:
+                super()._transition_next_act()
+                if not self.is_over:  # the transition after the last act is the victory, not a new act
+                    player = self.run_state.player
+                    player.heal(ancient_heal_amount(player.max_hp - player.current_hp, self.run_state.ascension_level))
+
+        _HEAL_MANAGER_CLS = AncientHealRunManager
+    return _HEAL_MANAGER_CLS
+
+
 def new_run(cfg: "RunConfig", seed: int):
     """Construct a run for ``cfg`` (profile applied before the opening Ancient event)."""
     if cfg.profile not in PROFILES:
@@ -69,10 +121,16 @@ def new_run(cfg: "RunConfig", seed: int):
     previous = rm.RunState
     if cfg.profile == "veteran":
         rm.RunState = _veteran_run_state_cls()
+    manager_cls = _ancient_heal_manager_cls() if cfg.ancient_heal else rm.RunManager
     try:
-        return rm.RunManager(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
+        mgr = manager_cls(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
     finally:
         rm.RunState = previous
+    if cfg.game_hp:
+        player = mgr.run_state.player
+        player.max_hp = player.current_hp = game_start_hp(cfg.character)
+    check_start(mgr, cfg.character, cfg.ascension, cfg.game_hp)  # the class that was asked for is the class that was played
+    return mgr
 
 
 class EpisodeWallTimeout(Exception):
@@ -233,10 +291,19 @@ def run_episode(
             rec.outcome = outcome.value
     except EpisodeWallTimeout as e:
         rec.outcome, rec.error = Outcome.TIMEOUT.value, str(e)
+    except ClassError:
+        raise  # a run that is not the class it claims to be is a wrong experiment, not a game result: stop, never record it
     except Exception as e:  # noqa: BLE001 - classification point; attribute the exception to its component
         rec.outcome = {"sim": Outcome.SIMULATOR_ERROR, "adapter": Outcome.HARNESS_ERROR, "policy": Outcome.POLICY_ERROR}[stage].value
         rec.error = f"{type(e).__name__}: {str(e)[:300]}"
     finally:
+        if getattr(policy, "stats_on_failure", False):
+            # a policy that measures something about the run (the Neow study: which relic it took) says so for a run that
+            # ended in an error or a wall-clock timeout too, so those games can be counted against what they took
+            try:
+                rec.extra.update(policy.episode_stats())
+            except Exception:  # noqa: BLE001 - the record of a failed run is still written
+                pass
         if mgr is not None:
             try:
                 _fill_final_state(rec, mgr)

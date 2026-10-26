@@ -1,0 +1,160 @@
+{
+  "base": {
+    "threshold": 0.0,
+    "values": "experiments/cardvalue/ironclad-a0-v1.json"
+  },
+  "baselineMeanFloor": 20.736418511066397,
+  "candidates": [
+    {
+      "excluded": 6,
+      "floorDiff": 1.7364185110663983,
+      "floorDiffCi95": [
+        1.360135814889336,
+        2.1247736418511063
+      ],
+      "meanFloor": 22.472837022132797,
+      "meanFloorBase": 20.736418511066397,
+      "name": "elite_value=0.5",
+      "paired": 994,
+      "params": {
+        "threshold": 0.0,
+        "tune": {
+          "elite_value": 0.5
+        },
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "pastAct1Boss": {
+        "mcnemarP": 2.15173065332086e-18,
+        "onlyBase": 31,
+        "onlyCandidate": 143,
+        "rate": 0.7293762575452716,
+        "rateBase": 0.6167002012072434
+      },
+      "pastAct2Boss": {
+        "mcnemarP": 0.060370037339928545,
+        "onlyBase": 28,
+        "onlyCandidate": 45,
+        "rate": 0.06438631790744467,
+        "rateBase": 0.047283702213279676
+      },
+      "wins": 3,
+      "winsBase": 4
+    },
+    {
+      "excluded": 6,
+      "floorDiff": 0.9014084507042254,
+      "floorDiffCi95": [
+        0.6307595573440644,
+        1.1770875251509052
+      ],
+      "meanFloor": 21.637826961770624,
+      "meanFloorBase": 20.736418511066397,
+      "name": "elite_value=1",
+      "paired": 994,
+      "params": {
+        "threshold": 0.0,
+        "tune": {
+          "elite_value": 1
+        },
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "pastAct1Boss": {
+        "mcnemarP": 4.337366633421638e-09,
+        "onlyBase": 21,
+        "onlyCandidate": 79,
+        "rate": 0.6750503018108652,
+        "rateBase": 0.6167002012072434
+      },
+      "pastAct2Boss": {
+        "mcnemarP": 0.05946337525377032,
+        "onlyBase": 17,
+        "onlyCandidate": 31,
+        "rate": 0.0613682092555332,
+        "rateBase": 0.047283702213279676
+      },
+      "wins": 4,
+      "winsBase": 4
+    },
+    {
+      "excluded": 6,
+      "floorDiff": 1.0241448692152917,
+      "floorDiffCi95": [
+        0.6951710261569416,
+        1.3571428571428572
+      ],
+      "meanFloor": 21.780684104627767,
+      "meanFloorBase": 20.756539235412475,
+      "name": "elite_ok_floor=8",
+      "paired": 994,
+      "params": {
+        "threshold": 0.0,
+        "tune": {
+          "elite_ok_floor": 8
+        },
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "pastAct1Boss": {
+        "mcnemarP": 4.2487356182284046e-13,
+        "onlyBase": 20,
+        "onlyCandidate": 96,
+        "rate": 0.6941649899396378,
+        "rateBase": 0.6177062374245473
+      },
+      "pastAct2Boss": {
+        "mcnemarP": 0.42959050784338615,
+        "onlyBase": 17,
+        "onlyCandidate": 23,
+        "rate": 0.05432595573440644,
+        "rateBase": 0.0482897384305835
+      },
+      "wins": 2,
+      "winsBase": 4
+    },
+    {
+      "excluded": 5,
+      "floorDiff": 0.8733668341708543,
+      "floorDiffCi95": [
+        0.6060301507537689,
+        1.1487939698492455
+      ],
+      "meanFloor": 21.618090452261306,
+      "meanFloorBase": 20.744723618090454,
+      "name": "elite_ok_hp=0.9",
+      "paired": 995,
+      "params": {
+        "threshold": 0.0,
+        "tune": {
+          "elite_ok_hp": 0.9
+        },
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "pastAct1Boss": {
+        "mcnemarP": 1.1026255560645484e-06,
+        "onlyBase": 23,
+        "onlyCandidate": 70,
+        "rate": 0.664321608040201,
+        "rateBase": 0.6170854271356784
+      },
+      "pastAct2Boss": {
+        "mcnemarP": 0.1538599441628321,
+        "onlyBase": 15,
+        "onlyCandidate": 25,
+        "rate": 0.05728643216080402,
+        "rateBase": 0.04723618090452261
+      },
+      "wins": 3,
+      "winsBase": 4
+    }
+  ],
+  "policy": "rules_v2",
+  "schema": 1,
+  "seeds": {
+    "file": "/home/user/SLAY2/experiments/seeds/ironclad-a0-v2.json",
+    "file_sha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e",
+    "manifest_sha256": "83340c3bad2eb48d369674172922646fc5c39fd8baa345908cd0f36e97e9f2e3",
+    "n": 1000,
+    "offset": 2000,
+    "partition": "dev",
+    "sealed_partition_used": false
+  }
+}

@@ -43,7 +43,7 @@ export function OfferedPanel({
   const taken = useMemo(() => new Set(offered), [offered]);
   const full = offered.length >= 5;
   return (
-    <Panel eyebrow="Step 2" title="What are you being offered?" headingLevel={2}>
+    <Panel eyebrow="Step 3" title="What are you being offered?" headingLevel={2}>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <div className="space-y-5">
           <Segmented

@@ -1,9 +1,11 @@
 // @vitest-environment node
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import cardvalues from "@/content/cardvalues.generated.json";
 import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
 
@@ -13,6 +15,31 @@ describe("generated site content", () => {
     const run = spawnSync(process.execPath, [script, "--check"], { encoding: "utf8" });
     expect(run.stderr).toBe("");
     expect(run.status).toBe(0);
+  });
+
+  it("shows only adopted card-value sets: one per class, the ones experiments/cardvalue/site-sets.json lists (ADR-046)", () => {
+    // Adopting a set is a decision recorded in experiments/cardvalue/site-sets.json, not a side effect of a file appearing in
+    // experiments/cardvalue. Round two for Ironclad (ironclad-a0-v2.json) was adopted after its pre-registered test; the first
+    // measurement (ironclad-a0-v1.json) stays in the repository and off the site.
+    const listing = JSON.parse(
+      readFileSync(
+        join(__dirname, "..", "..", "..", "experiments", "cardvalue", "site-sets.json"),
+        "utf8",
+      ),
+    ) as { sets: { file: string }[] };
+    const shown = cardvalues.sets.map((set) => set.file).sort();
+    expect(shown).toEqual(listing.sets.map((s) => `experiments/cardvalue/${s.file}`).sort());
+    expect(shown).toEqual(
+      [
+        "ironclad-a0-v2.json",
+        "silent-a0-v1.json",
+        "regent-a0-v1.json",
+        "necrobinder-a0-v1.json",
+        "defect-a0-v1.json",
+      ]
+        .map((f) => `experiments/cardvalue/${f}`)
+        .sort(),
+    );
   });
 
   it("lists the verified rules with their evidence classes", () => {

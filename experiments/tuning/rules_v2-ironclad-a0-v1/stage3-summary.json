@@ -1,0 +1,57 @@
+{
+  "base": {
+    "threshold": 0.0,
+    "values": "experiments/cardvalue/ironclad-a0-v1.json"
+  },
+  "baselineMeanFloor": 21.628,
+  "candidates": [
+    {
+      "excluded": 0,
+      "floorDiff": 1.336,
+      "floorDiffCi95": [
+        0.942975,
+        1.7430249999999998
+      ],
+      "meanFloor": 22.964,
+      "meanFloorBase": 21.628,
+      "name": "combined",
+      "paired": 1000,
+      "params": {
+        "threshold": 0.0,
+        "tune": {
+          "elite_ok_floor": 8,
+          "elite_ok_hp": 0.9,
+          "elite_value": 0.5
+        },
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "pastAct1Boss": {
+        "mcnemarP": 1.1945380237494967e-10,
+        "onlyBase": 43,
+        "onlyCandidate": 126,
+        "rate": 0.73,
+        "rateBase": 0.647
+      },
+      "pastAct2Boss": {
+        "mcnemarP": 0.11466035574580126,
+        "onlyBase": 32,
+        "onlyCandidate": 47,
+        "rate": 0.082,
+        "rateBase": 0.067
+      },
+      "wins": 3,
+      "winsBase": 5
+    }
+  ],
+  "policy": "rules_v2",
+  "schema": 1,
+  "seeds": {
+    "file": "/home/user/SLAY2/experiments/seeds/ironclad-a0-v2.json",
+    "file_sha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e",
+    "manifest_sha256": "83340c3bad2eb48d369674172922646fc5c39fd8baa345908cd0f36e97e9f2e3",
+    "n": 1000,
+    "offset": 3000,
+    "partition": "dev",
+    "sealed_partition_used": false
+  }
+}

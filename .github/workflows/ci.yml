@@ -40,6 +40,8 @@ jobs:
   e2e:
     name: e2e (production build, Playwright desktop + mobile, axe WCAG 2.2 AA)
     runs-on: ubuntu-latest
+    # the suite takes about three minutes; a step that hangs must not sit for GitHub's six-hour default
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -49,8 +51,27 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      # Only the browser is installed, not `--with-deps`. The browser download and the apt packages come from outside the
+      # repository and have hung (the same commit's other jobs had finished in about a minute): with `--with-deps` the apt
+      # step spent five minutes fetching CJK and Thai fonts this suite never renders from a slow Ubuntu mirror, the step's
+      # timeout killed playwright but not the apt-get it had started, and the second attempt then died on the dpkg lock that
+      # process still held. The runner image already has every system library Chromium needs; if one ever goes missing,
+      # the first browser launch of the suite fails and says which. The first attempt is bounded and one more is made.
       - name: Install Chromium for Playwright
-        run: pnpm --filter @slay2/web exec playwright install --with-deps chromium
+        id: chromium
+        timeout-minutes: 5
+        continue-on-error: true
+        run: pnpm --filter @slay2/web exec playwright install chromium
+      - name: Install Chromium for Playwright (second attempt)
+        if: steps.chromium.outcome != 'success'
+        timeout-minutes: 8
+        run: pnpm --filter @slay2/web exec playwright install chromium
+      - name: Check that Chromium starts (its system libraries are installed only if it does not)
+        timeout-minutes: 8
+        run: |
+          if ! pnpm --filter @slay2/web exec node -e "const { chromium } = require('@playwright/test'); chromium.launch().then((b) => b.close())"; then
+            pnpm --filter @slay2/web exec playwright install-deps chromium
+          fi
       - name: Run the end-to-end suite against `next start`
         run: pnpm --filter @slay2/web e2e
       - name: Keep traces of failures

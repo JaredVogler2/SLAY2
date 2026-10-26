@@ -11,6 +11,7 @@ import {
   drawDistribution,
   drawJointAtLeast,
   enumeratePack,
+  evaluateRoute,
   forecastPotions,
   forecastUnknownRoom,
   inferCounter,
@@ -22,11 +23,13 @@ import {
   rarityRulesForAscension,
   rewardUpgradeChance,
   summarizePack,
+  treasureGoldPmf,
   type PackObservation,
   type PotionObservation,
   type PotionRoom,
   type Rarity,
   type RewardSource,
+  type RouteRoom,
   type ShopItem,
   type UnknownObservation,
 } from "../src/index";
@@ -245,6 +248,61 @@ describe("golden (independent Python oracle) - economy and draws", () => {
       expect(drawJointAtLeast(i.pile, i.draws, i.groups).toString(), c.name).toBe(
         frac(c.output.p).toString(),
       );
+    }
+  });
+
+  it("treasure gold matches exactly (TRS-1)", () => {
+    for (const c of byKind("treasure_gold")) {
+      const i = c.input as { ascension: number };
+      expectDist(treasureGoldPmf(i.ascension), c.output.pmf as Record<string, unknown>, c.name);
+    }
+  });
+
+  it("route reports match exactly (every case of the independent oracle)", () => {
+    const cases = byKind("route");
+    expect(cases.length).toBeGreaterThanOrEqual(16);
+    for (const c of cases) {
+      const i = c.input as {
+        rooms: RouteRoom[];
+        ascension: number;
+        unknownHistory: UnknownObservation[];
+        packHistory: PackObservation[];
+        potionHistory: PotionObservation[];
+      };
+      const rare = inferCounter(i.packHistory, rarityRulesForAscension(i.ascension));
+      const potion = inferPotionCounter(i.potionHistory);
+      const r = evaluateRoute({
+        rooms: i.rooms,
+        ascension: i.ascension,
+        unknownHistory: i.unknownHistory,
+        rareCounter: rare.posterior,
+        potionCounter: potion.posterior,
+      });
+      const o = c.output;
+      expect(r.counts, c.name).toEqual(o.counts);
+      for (const outcome of ["fight", "treasure", "shop", "event"] as const) {
+        expect(r.unknown.expected[outcome].toString(), `${c.name} E[${outcome}]`).toBe(
+          frac((o.unknownExpected as Record<string, unknown>)[outcome]).toString(),
+        );
+        expect(r.unknown.pmf[outcome].map(String), `${c.name} pmf ${outcome}`).toEqual(
+          ((o.unknownPmf as Record<string, unknown[]>)[outcome] ?? []).map((x) =>
+            frac(x).toString(),
+          ),
+        );
+      }
+      const same = (got: Rational, want: unknown, what: string): void => {
+        expect(got.toString(), `${c.name} ${what}`).toBe(frac(want).toString());
+      };
+      same(r.fights.expected, o.fightsExpected, "fights");
+      same(r.cardPacks.expectedRares, o.expectedRares, "expected rares");
+      same(r.cardPacks.atLeastOneRare, o.atLeastOneRare, "P(a rare)");
+      same(r.potions.expectedDrops, o.expectedPotions, "expected potions");
+      same(r.potions.atLeastOne, o.atLeastOnePotion, "P(a potion)");
+      same(r.gold.fromFights, o.goldFromFights, "gold from fights");
+      same(r.gold.fromTreasure, o.goldFromTreasure, "gold from treasure");
+      same(r.shops.expected, o.shopsExpected, "shops");
+      same(r.relics.expectedTreasure, o.treasuresExpected, "treasures");
+      expect([r.gold.min, r.gold.max], `${c.name} gold bounds`).toEqual([o.goldMin, o.goldMax]);
     }
   });
 

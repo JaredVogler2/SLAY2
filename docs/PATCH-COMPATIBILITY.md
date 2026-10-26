@@ -86,3 +86,29 @@ Computed by `python -m slay2_sim patchdiff 0.103.2 0.107.1 --coverage` against t
 4. Re-derive the catalog and re-run the exact-odds fixtures; check every rule row whose evidence is a source file.
 5. Re-run the simulator audits and a canary batch on the new build; keep champion policies tied to the build they were trained on (never blend patch-inconsistent cohorts).
 6. Only then add the build to the supported list and refresh `/methods`.
+
+## 7. Noticing that a patch shipped (patch-watch, ADR-047)
+
+Step 1 above starts with someone reading the announcement. `scripts/patch-watch.mjs` is what makes sure that someone is told:
+it reads the **official** announcements of Slay the Spire 2 from Steam's public news API (`ISteamNews/GetNewsForApp`, app 2868840,
+the `steam_community_announcements` feed, so only posts Mega Crit wrote), takes the version from titles such as `Beta Patch Notes -
+v0.111.0` or `Major Update #2 - v0.107.1`, and compares them with the builds in `packages/game-schema/src/builds.ts`.
+
+| Result | Exit | Meaning |
+|---|---:|---|
+| current | 0 | no main-channel version newer than the supported build was announced |
+| newer-beta | 0 | a beta newer than the newest known one exists: a warning; beta stays unsupported |
+| **STALE** | 1 | a main-channel version newer than the supported build was announced: do section 6 |
+| unchecked | 2 | the feed was unreachable or no official post named a version: never read as "current" |
+
+`.github/workflows/patch-watch.yml` runs it on Mondays at 06:41 UTC, by hand (`workflow_dispatch`) and in a pull request that
+changes the script, the workflow, its fixture or `builds.ts` (where "unchecked" is only a warning: a network blip must not block a
+merge). A scheduled failure is the notification; the schedule runs from the default branch, so it starts when this is merged.
+Eight tests run the script on a saved copy of the real feed (`scripts/fixtures/steam-news-2026-10-26.json`: titles, dates and links
+of the 40 newest official posts) and on copies with one post added.
+
+**What it cannot see.** A change that Mega Crit does not announce (a silent hotfix; Steam's build id moves with no post), and a post
+whose title does not carry the version. The build id in `builds.ts` is recorded, not checked: the official ways to read it need a
+Steam client. As of 2026-10-26 the newest main post is `Major Update #2 - v0.107.1` (2026-06-19) and the newest beta
+`Beta Patch Notes - v0.111.0` (2026-08-14): the supported build is current.
+

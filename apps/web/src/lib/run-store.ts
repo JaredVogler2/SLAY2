@@ -4,7 +4,13 @@ import { useSyncExternalStore } from "react";
 
 import { parseRunState, touch, type RunState } from "./run-state";
 
-const KEY = "slay2.run.v1";
+/**
+ * The run lives under a key named after its schema version. Version 1 (before the Act 1 version, the opening Ancient and
+ * upgraded copies) is read once when there is no version 2 and never written: a page loaded before this deployment keeps
+ * working on its own copy under the old key instead of failing on fields it does not know and dropping the run.
+ */
+const KEY = "slay2.run.v2";
+const LEGACY_KEY = "slay2.run.v1";
 const MAX_UNDO = 50;
 
 type Listener = () => void;
@@ -55,7 +61,7 @@ class RunStore {
     }
     this.loaded = true;
     try {
-      const text = window.localStorage.getItem(KEY);
+      const text = window.localStorage.getItem(KEY) ?? window.localStorage.getItem(LEGACY_KEY);
       if (text) {
         const parsed = parseRunState(text);
         this.state = parsed.ok ? parsed.state : null;
@@ -84,7 +90,9 @@ class RunStore {
       if (this.state) {
         window.localStorage.setItem(KEY, JSON.stringify(this.state));
       } else {
+        // clearing the run clears the old copy too, or it would come back at the next load
         window.localStorage.removeItem(KEY);
+        window.localStorage.removeItem(LEGACY_KEY);
       }
     } catch {
       this.storageOk = false;

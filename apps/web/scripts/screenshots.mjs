@@ -23,8 +23,10 @@ const pages = [
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ }).waitFor();
   } },
-  { name: "codex", path: "/codex" },
-  { name: "methods", path: "/methods" },
+  { name: "routes", path: "/routes?a=M%3FMER&b=M%3F%3FRE&c=ESRT" },
+  // the two long pages are shown from the top only: a full-page image of them is several megabytes in git
+  { name: "codex", path: "/codex", fullPage: false },
+  { name: "methods", path: "/methods", fullPage: false },
   { name: "about", path: "/about" },
 ];
 
@@ -40,7 +42,7 @@ for (const vp of viewports) {
     }
     await page.waitForTimeout(400);
     const file = join(out, `${p.name}-${vp.name}.jpg`);
-    await page.screenshot({ path: file, fullPage: true, type: "jpeg", quality: 70 });
+    await page.screenshot({ path: file, fullPage: p.fullPage ?? true, type: "jpeg", quality: 70 });
     console.log("wrote", file);
     await page.close();
   }

@@ -20,7 +20,7 @@ export function Disclosure({
       className={cn("group rounded-lg border border-line bg-charcoal/40", className)}
     >
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-sm font-medium text-parchment marker:hidden hover:text-gold [&::-webkit-details-marker]:hidden">
-        <span>{summary}</span>
+        <span className="min-w-0 flex-1">{summary}</span>
         <span aria-hidden="true" className="text-copper transition-transform group-open:rotate-90">
           ›
         </span>

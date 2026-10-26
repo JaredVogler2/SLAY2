@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
+import { NeowValuesPanel } from "@/components/methods/NeowValuesPanel";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
@@ -12,6 +13,7 @@ import {
   formatP,
   largestReport,
   policyLabel,
+  sideLabel,
   pct,
   ruleSummary,
   rulesBySection,
@@ -40,6 +42,10 @@ const NOT_EVALUATED = [
   [
     "Advisor win delta",
     "The card advisor's own index is still a heuristic and says so. Measured values from simulated runs exist (above and on the codex) and a policy that follows them beat the hand-written ratings in simulation, but the advisor does not use them yet and nothing here is a win probability for the live game.",
+  ],
+  [
+    "Act 1 versions",
+    "Act 1 has two versions with different elites and bosses, Overgrowth and Underdocks. Every simulated game was played in Overgrowth: the simulator never plays Underdocks, so no card value here was measured for it. The advisor lets you say which version you are in and tilts its heuristic toward what that version's fights ask of a deck; that tilt is judgement, not a measurement.",
   ],
   [
     "Live-game parity of the simulator",
@@ -299,6 +305,16 @@ export default function MethodsPage() {
                   <td className="py-3 pr-3 text-muted">
                     {r.character} A{r.ascension} ·{" "}
                     {r.profile === "veteran" ? "veteran profile" : "first-run (scripted)"}
+                    {r.ancientHeal ? (
+                      <span className="block text-xs text-copper">
+                        variant: acts 2 and 3 start healed (gap G11)
+                      </span>
+                    ) : null}
+                    {r.gameHp ? (
+                      <span className="block text-xs text-copper">
+                        variant: starts with the game&apos;s own maximum HP (gap G13)
+                      </span>
+                    ) : null}
                   </td>
                   <td className="num py-3 pr-3">{r.completed}</td>
                   <td className="num py-3 pr-3">{r.counts.win}</td>
@@ -354,7 +370,7 @@ export default function MethodsPage() {
                   {comparisons.map((c) => (
                     <tr key={c.id} className="align-top">
                       <th scope="row" className="py-3 pr-3 font-medium text-parchment">
-                        {policyLabel(c.a)} vs {policyLabel(c.b)}
+                        {sideLabel(c.a)} vs {sideLabel(c.b)}
                         {c.preIsolation ? (
                           <span className="mt-1 block">
                             <Badge
@@ -448,6 +464,8 @@ export default function MethodsPage() {
       </Panel>
 
       <CardValuesPanel />
+
+      <NeowValuesPanel />
 
       <Panel eyebrow="Not yet evaluated" title="Things this site does not know" headingLevel={2}>
         <dl className="grid gap-3 md:grid-cols-2">

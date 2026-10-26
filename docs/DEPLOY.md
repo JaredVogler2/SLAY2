@@ -77,9 +77,29 @@ Recommended for both:
 | Dependency audit (high and above) | PASS on the last CI run | `pnpm audit --audit-level high` |
 | Deployment configuration is consistent | PASS | `apps/web/test/deploy-config.test.ts` |
 | Real hosted URL smoke test | **PASS** (2026-10-26, `453864d`) | the section "Hosted smoke test" below |
-| Performance budget on the hosted URL (Lighthouse / Web Vitals) | **UNVERIFIED** | not measured yet |
+| Vercel builds the pull request's head (preview) | **PASS** (2026-10-26 12:49 UTC, head `20d4efe`, deployment `dpl_FRWHDADHgMsw5wmv8hr96L1kiW4r`) | build log: Node 22.x, Next.js 16.4.3, 16 static pages including `/routes` and `/opengraph-image`, 7 API routes, "Build Completed in /vercel/output [16s]"; the preview URL itself sits behind Vercel login, so the hosted page was not fetched |
+| Web Vitals on a local production build (lab) | **MEASURED** (2026-10-26, see "Web Vitals (lab)" below): layout shift 0 on all seven pages, first and largest paint 0.26 to 0.42 s on a desktop and 0.96 to 1.75 s on a throttled phone | `pnpm --filter @slay2/web vitals`; `e2e/stability.spec.ts` pins the layout shift |
+| Web Vitals and Lighthouse on the hosted URL | **UNVERIFIED** | the hosted site predates these changes; run `BASE_URL=https://slay-part2.vercel.app pnpm --filter @slay2/web vitals` after the merge. Lighthouse itself was not run (it would download and run an external package) |
 | Simulator-to-game parity | **UNVERIFIED** | needs an owned game copy; shown as such on `/methods` |
 | Beta build v0.111.0 | **UNSUPPORTED** | refused by `game-schema`, shown on the landing page and `/api/v1/capabilities` |
+
+## Web Vitals (lab)
+
+Measured on 2026-10-26 against a local production build (`next start`) with `pnpm --filter @slay2/web vitals` (`apps/web/scripts/vitals.mjs`: Chromium's own `paint`, `largest-contentful-paint`, `layout-shift` and `longtask` observers and the resource timings, an empty cache for every load, three loads per page, medians; no third-party package). "Phone" is a 390 x 844 screen with a 4x CPU slowdown and the slow-4G profile Lighthouse uses (150 ms round trip, 1.6 Mbit/s); "desktop" is 1440 x 900 without throttling.
+
+| Page | Phone FCP = LCP (ms) | Phone TBT-like (ms) | Desktop FCP = LCP (ms) | Desktop TBT-like (ms) | Layout shift |
+|---|---|---|---|---|---|
+| `/` | 956 | 447 | 340 | 80 | 0 |
+| `/advisor` | 1,080 | 263 | 288 | 16 | 0 |
+| `/odds` | 1,152 | 518 | 328 | 30 | 0 |
+| `/routes` | 1,076 | 476 | 324 | 17 | 0 |
+| `/codex` | 1,748 | 416 | 388 | 0 | 0 |
+| `/methods` | 1,300 | 460 | 424 | 0 | 0 |
+| `/about` | 1,072 | 365 | 256 | 0 | 0 |
+
+Every page transfers about 470 to 510 KB on its first load (about 270 KB of script, 9 KB of CSS, 117 KB of fonts before the unused bold Cinzel file was dropped, 102 KB after) in 38 to 39 requests; the same figure on every page is the router prefetching the other pages' payloads for the six header links. Against the Web Vitals thresholds: largest contentful paint (good: 2.5 s or less) and layout shift (good: 0.1 or less) are good everywhere, including the throttled phone; "TBT-like" is the sum, over the long tasks after the first paint, of the time beyond 50 ms, a stand-in for Total Blocking Time (good: 200 ms or less) that is **not** Lighthouse's number.
+
+What these numbers are not: field data (nobody visited); a measurement on a quiet machine (the load average was 10 to 12 on 4 cores, with simulation jobs running, so every time is pessimistic and the throttled phone's blocking time in particular is probably an over-estimate); a Lighthouse score; Interaction to Next Paint, which needs a person. The hosted site is a different measurement again (a real network and a CDN) and has not been measured with this script.
 
 ## Smoke test after a READY deployment exists
 
@@ -91,8 +111,15 @@ curl -fsSI "$SITE/" | grep -i -E "content-security-policy|strict-transport|x-con
 curl -fsS -X POST "$SITE/api/v1/odds" -H 'content-type: application/json' \
   -d '{"calculator":"draw","pile":10,"targets":1,"draws":5}'   # expect {"n":"1","d":"2"}: exactly 1/2 for one copy in a ten-card pile
 
-# 2. the full browser suite against the hosted site
+# 2. the picture a pasted link gets: the tag must name the hosted site (not localhost) and the file must be a 1200 x 630 PNG
+curl -fsS "$SITE/about" | grep -o '<meta property="og:image" content="[^"]*"'
+curl -fsS -o /tmp/og.png "$SITE/opengraph-image" && file /tmp/og.png     # PNG image data, 1200 x 630
+
+# 3. the full browser suite against the hosted site
 BASE_URL="$SITE" pnpm --filter @slay2/web e2e
+
+# 4. Web Vitals of the hosted site (lab numbers from where this runs; see "Web Vitals (lab)" above)
+BASE_URL="$SITE" pnpm --filter @slay2/web vitals
 ```
 
 ## Hosted smoke test (2026-10-26)

@@ -86,6 +86,12 @@ export function capabilities() {
         endpoint: "POST /api/v1/odds {calculator:'price'|'removal'|'gold'}",
       },
       {
+        id: "odds.route",
+        status: "supported",
+        method: "exact",
+        endpoint: "POST /api/v1/odds {calculator:'route'}",
+      },
+      {
         id: "advisor.card_draft",
         status: "heuristic-v0",
         method: "heuristic",

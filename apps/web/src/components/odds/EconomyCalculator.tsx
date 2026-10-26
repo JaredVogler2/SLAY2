@@ -16,6 +16,7 @@ import { ExactValue } from "@/components/ui/ExactValue";
 import { MethodNote } from "@/components/ui/MethodNote";
 import { NumberStepper } from "@/components/ui/NumberStepper";
 import { Panel } from "@/components/ui/Panel";
+import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { Segmented } from "@/components/ui/Segmented";
 import { Stat } from "@/components/ui/Stat";
 
@@ -146,38 +147,42 @@ export function EconomyCalculator({ ascension }: { ascension: number }) {
           </ol>
         </Panel>
         <Panel eyebrow="Combat gold" title="What a fight pays" headingLevel={3}>
-          <table className="w-full text-left text-sm">
-            <caption className="sr-only">Combat gold ranges</caption>
-            <thead>
-              <tr className="border-b border-line text-muted">
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  Room
-                </th>
-                <th scope="col" className="py-2 pr-3 font-medium">
-                  Range
-                </th>
-                <th scope="col" className="py-2 font-medium">
-                  Average
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {(["monster", "elite", "boss"] as const).map((room) => {
-                const g = combatGoldRange(room, ascension);
-                return (
-                  <tr key={room}>
-                    <th scope="row" className="py-2 pr-3 font-medium capitalize text-parchment">
-                      {room === "monster" ? "Normal fight" : room}
-                    </th>
-                    <td className="num py-2 pr-3">
-                      {g.min === g.max ? `${String(g.min)}g` : `${String(g.min)}–${String(g.max)}g`}
-                    </td>
-                    <td className="num py-2 text-teal">{g.mean.toFixed(1)}g</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <ScrollRegion label="Combat gold ranges">
+            <table className="w-full text-left text-sm">
+              <caption className="sr-only">Combat gold ranges</caption>
+              <thead>
+                <tr className="border-b border-line text-muted">
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Room
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Range
+                  </th>
+                  <th scope="col" className="py-2 font-medium">
+                    Average
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {(["monster", "elite", "boss"] as const).map((room) => {
+                  const g = combatGoldRange(room, ascension);
+                  return (
+                    <tr key={room}>
+                      <th scope="row" className="py-2 pr-3 font-medium capitalize text-parchment">
+                        {room === "monster" ? "Normal fight" : room}
+                      </th>
+                      <td className="num py-2 pr-3">
+                        {g.min === g.max
+                          ? `${String(g.min)}g`
+                          : `${String(g.min)}–${String(g.max)}g`}
+                      </td>
+                      <td className="num py-2 text-teal">{g.mean.toFixed(1)}g</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </ScrollRegion>
           <p className="mt-3 text-sm text-muted">
             {ascension >= 3 ? "Poverty (A3+) is applied." : "Poverty (A3+) would reduce these."} The
             final boss of the last act pays nothing.

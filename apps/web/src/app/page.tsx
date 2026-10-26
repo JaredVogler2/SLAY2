@@ -8,6 +8,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { coverage } from "@/lib/cardvalues";
+import { neowCoverage, neowValues } from "@/lib/neow";
 
 export const metadata: Metadata = {
   title: { absolute: "SLAY2 — The Spire Intelligence Observatory" },
@@ -162,7 +163,26 @@ export default function Home() {
                       ". Simulator unverified against the live game; see Evidence & methods.",
                   ],
                   [
-                    "Combat lab, map, shops, events",
+                    "Start of the run",
+                    "Supported",
+                    "Say which Act 1 you are in (Overgrowth or Underdocks) and what the opening Ancient gave you; the effect on your deck and HP is applied as you report it, Ascension rules included. Which Act 1 tilts the advisor’s weights by at most 30 %: a labelled judgement, not a measurement.",
+                  ],
+                  ...(neowValues()
+                    ? [
+                        [
+                          "Simulated opening-relic values",
+                          "Research",
+                          `${neowCoverage().detail}. Simulator unverified against the live game; see Evidence & methods.`,
+                        ],
+                      ]
+                    : []),
+                  [
+                    "Route comparison",
+                    "Supported",
+                    "Type up to three routes through an act: exact “?” outcomes, rare-card and potion odds, gold and relics along each. It compares what routes pay, never whether you would survive them.",
+                  ],
+                  [
+                    "Combat lab, map pathfinder, shops, events",
                     "Planned",
                     "Not available yet; nothing on this site pretends otherwise.",
                   ],

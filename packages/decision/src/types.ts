@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { AscensionSchema, BuildIdSchema } from "@slay2/game-schema";
-import { PLAYABLE_CLASSES } from "@slay2/game-data";
+import { ACT1_VARIANTS, PLAYABLE_CLASSES } from "@slay2/game-data";
 
 export const DRAFT_SOURCES = ["regular", "elite", "boss", "shop", "event"] as const;
 export const RISK_PREFERENCES = ["safe", "balanced", "aggressive"] as const;
@@ -27,6 +27,20 @@ export const DraftRequestSchema = z.strictObject({
     })
     .refine((h) => h.current <= h.max, "current HP cannot exceed max HP")
     .optional(),
+  /**
+   * Which Act 1 the run is in and, if known, the boss on its map (ADR-048). Only Act 1 has two versions with different
+   * elites and bosses; the context tilts the heuristic's coverage weights and is ignored, with a warning, in other acts.
+   */
+  actContext: z
+    .strictObject({
+      variant: z.enum(ACT1_VARIANTS),
+      boss: z
+        .string()
+        .regex(/^[a-z]+(-[a-z]+)*$/)
+        .nullable()
+        .optional(),
+    })
+    .optional(),
 });
 export type DraftRequest = z.infer<typeof DraftRequestSchema>;
 
@@ -34,7 +48,7 @@ export type DraftAction =
   { readonly kind: "pick"; readonly cardId: string } | { readonly kind: "skip" };
 
 export interface Reason {
-  readonly kind: "quality" | "coverage" | "curve" | "size" | "synergy";
+  readonly kind: "quality" | "coverage" | "curve" | "size" | "synergy" | "context";
   /** Signed contribution to the advisor index, in index points. */
   readonly delta: number;
   readonly text: string;
@@ -81,6 +95,21 @@ export interface DraftResponse {
     readonly averageEnergyCost: number;
     readonly roleCounts: Readonly<Record<string, number>>;
     readonly starterShare: number;
+  };
+  /** Present when the request named an Act 1 version: what it changed. */
+  readonly actContext?: {
+    readonly applied: boolean;
+    readonly variant: string;
+    readonly boss: string | null;
+    /** Each coverage group whose weight was tilted, with the fights that drive it. */
+    readonly adjustments: readonly {
+      readonly group: string;
+      readonly label: string;
+      /** Signed change of the group's weight, in percent. */
+      readonly percent: number;
+      readonly because: readonly string[];
+    }[];
+    readonly note: string;
   };
   readonly stateDigest: string;
 }

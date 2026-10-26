@@ -1,5 +1,7 @@
 import {
+  ACT1_BRIEFS,
   CATALOG,
+  getAct1Boss,
   getCard,
   rewardPool,
   ALL_UNLOCKED,
@@ -11,6 +13,7 @@ import { requireSupportedBuild } from "@slay2/game-schema";
 import { mulberry32, stateDigest } from "./digest";
 import { must } from "./util";
 import { GROUPS, profileDeck, type DeckEntry, type DeckProfile, type Group } from "./profile";
+import { actContextTilt, MAX_TILT, tiltWeights, type ContextTilt } from "./context";
 import { baseWeights, scoreTerms, total, type Terms, type Weights } from "./quality";
 import {
   DraftRequestSchema,
@@ -160,6 +163,33 @@ function describeDelta(
   return reasons.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 }
 
+function percent(multiplier: number): number {
+  return Math.round((multiplier - 1) * 100);
+}
+
+/** One line for the part of a card's score that comes from the Act 1 context, naming the fights behind it. */
+function contextReason(
+  tilt: ContextTilt,
+  shift: number,
+  before: DeckProfile,
+  after: DeckProfile,
+): Reason {
+  const touched = tilt.adjustments
+    .filter((a) => after.groups[a.group] > before.groups[a.group])
+    .slice(0, 2);
+  const where = `${tilt.variantName}${tilt.boss ? `, boss ${tilt.boss.name}` : ""}`;
+  const text =
+    touched.length > 0
+      ? `Act 1 context (${where}): ${touched
+          .map(
+            (a) =>
+              `${GROUP_LABELS[a.group]} counts ${String(Math.abs(percent(a.multiplier)))} % ${a.multiplier > 1 ? "more" : "less"} (${a.because.length > 0 ? a.because.join(", ") : "fewer of its fights ask for it than in the average Act 1"})`,
+          )
+          .join("; ")}.`
+      : `Act 1 context (${where}): a smaller effect through the deck's other needs.`;
+  return { kind: "context", delta: shift, text };
+}
+
 function labelFor(action: DraftAction): string {
   return action.kind === "skip" ? SKIP_LABEL : (getCard(action.cardId)?.name ?? action.cardId);
 }
@@ -250,9 +280,31 @@ export function evaluateDraft(input: unknown): DraftResponse {
   }
 
   const base = profileDeck(entries);
-  const weights = baseWeights(request.actIndex, request.riskPreference);
-  const baseTerms = scoreTerms(base, weights);
+  const neutral = baseWeights(request.actIndex, request.riskPreference);
+  let tilt: ContextTilt | null = null;
+  if (request.actContext) {
+    const { variant, boss } = request.actContext;
+    if (boss && !getAct1Boss(variant, boss)) {
+      throw new InvalidDraftRequestError(
+        `boss ${boss} is not a boss of ${ACT1_BRIEFS[variant].name}`,
+        [{ path: "actContext.boss", message: `unknown boss ${boss} for ${variant}` }],
+      );
+    }
+    if (request.actIndex === 0) {
+      tilt = actContextTilt({ variant, boss: boss ?? null });
+    } else {
+      warnings.push(
+        "An Act 1 context was given for a later act and is ignored: only Act 1 has two versions with different elites and bosses.",
+      );
+    }
+  }
+  const weights = tilt ? tiltWeights(neutral, tilt) : neutral;
+  // The reasons below explain the neutral heuristic; the context is its own line, so the lines add up to the index.
+  const baseTerms = scoreTerms(base, neutral);
   const ranked = rankWith(weights, base, entries, offered);
+  const neutralDelta = new Map(
+    rankWith(neutral, base, entries, offered).map((r) => [actionKey(r.action), r.delta] as const),
+  );
 
   const options: RankedOption[] = ranked.map((r, i) => {
     let reasons: Reason[];
@@ -267,7 +319,13 @@ export function evaluateDraft(input: unknown): DraftResponse {
     } else {
       const card = must(getCard(r.action.cardId), "catalog card");
       const after = profileDeck(withCard(entries, card));
-      reasons = describeDelta(baseTerms, scoreTerms(after, weights), base, after, card);
+      reasons = describeDelta(baseTerms, scoreTerms(after, neutral), base, after, card);
+      if (tilt) {
+        const shift = r.delta - (neutralDelta.get(actionKey(r.action)) ?? r.delta);
+        if (Math.abs(shift) >= 0.05) {
+          reasons = [contextReason(tilt, shift, base, after), ...reasons];
+        }
+      }
     }
     return {
       action: r.action,
@@ -326,6 +384,11 @@ export function evaluateDraft(input: unknown): DraftResponse {
   if (!request.hp) {
     missingInputs.push("Current and max HP (survivability is not weighed in v0).");
   }
+  if (request.actIndex === 0 && !request.actContext) {
+    missingInputs.push(
+      "Which Act 1 you are in (Overgrowth or Underdocks, with different elites and bosses) and the boss on your map: neither is weighed.",
+    );
+  }
   missingInputs.push(
     "Relics, potions, gold and the upcoming map (not used by the v0 draft heuristic).",
   );
@@ -351,12 +414,19 @@ export function evaluateDraft(input: unknown): DraftResponse {
     assumptions: [
       "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate.",
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
+      ...(tilt
+        ? [
+            `Act 1 context (${tilt.variantName}${tilt.boss ? `, boss ${tilt.boss.name}` : ", boss not known"}): coverage weights are tilted, by at most ${String(Math.round(MAX_TILT * 100))} % and usually a few, by how what its elites and bosses ask of a deck differs from the average Act 1 (both versions together). That is SLAY2's judgement of the fights, not a measurement (ADR-048).`,
+          ]
+        : []),
       "Card upgrades and enchantments in the deck are ignored; every copy counts as the base card.",
       `Catalog ${CATALOG.sha256.slice(0, 12)} for ${CATALOG.build}; the advisor index is unit-less and only differences matter.`,
     ],
     notModelled: [
       "Relics, potions, gold, shops, rest sites and the map ahead.",
-      "Specific enemy matchups, bosses and elites you will face.",
+      tilt
+        ? "Specific enemy matchups beyond the tagged asks of this Act 1's elites and bosses."
+        : "Specific enemy matchups, bosses and elites you will face.",
       "Card text beyond SLAY2's role tags: conditional or engine cards without tags are treated neutrally.",
       "Future card packs and the value of keeping a slot open.",
       CLASS_NOT_MODELLED[request.character],
@@ -369,6 +439,25 @@ export function evaluateDraft(input: unknown): DraftResponse {
       roleCounts: { ...base.groups },
       starterShare: base.starterShare,
     },
+    ...(request.actContext
+      ? {
+          actContext: {
+            applied: tilt !== null,
+            variant: request.actContext.variant,
+            boss: request.actContext.boss ?? null,
+            adjustments: (tilt?.adjustments ?? []).map((a) => ({
+              group: a.group,
+              label: GROUP_LABELS[a.group],
+              percent: percent(a.multiplier),
+              because: a.because,
+            })),
+            note:
+              tilt === null
+                ? "Ignored: only Act 1 has two versions."
+                : "A judgement of what the fights ask of a deck, not a measurement; it can be switched off.",
+          },
+        }
+      : {}),
     stateDigest: digest,
   };
 }

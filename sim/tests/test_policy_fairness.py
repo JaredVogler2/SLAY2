@@ -74,7 +74,7 @@ def test_sample_is_diverse_and_the_perturbation_is_real(points):
     assert real >= 10, "too few decision points with a hidden draw order that the perturbation actually changed"
 
 
-@pytest.mark.parametrize("name", ["random_legal", "rules_v1", "rules_explore"])
+@pytest.mark.parametrize("name", ["random_legal", "rules_v1", "rules_explore", "rules_v2_neow"])
 def test_cheap_policies_ignore_hidden_state(points, name):
     for i, p in enumerate(points):
         a, b = twins(p, 5000 + i)

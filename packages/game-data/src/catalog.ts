@@ -17,6 +17,26 @@ export function getCard(id: string): CardEntry | undefined {
   return BY_ID.get(id);
 }
 
+/**
+ * Whether a card in the deck can be removed (or transformed): not when it carries the Eternal keyword (Ascender's Bane,
+ * Curse of the Bell, Bad Luck, Greed, Folly, Enthralled, Forbidden Grimoire). DECK-1.
+ */
+export function isRemovable(id: string): boolean {
+  const card = BY_ID.get(id);
+  return card !== undefined && !card.keywords.includes("Eternal");
+}
+
+/**
+ * Whether a card can be upgraded: every curse, status and quest card has a maximum upgrade level of 0 in the game; all
+ * the others can be upgraded once. DECK-1.
+ */
+export function isUpgradable(id: string): boolean {
+  const card = BY_ID.get(id);
+  return (
+    card !== undefined && card.type !== "curse" && card.type !== "status" && card.type !== "quest"
+  );
+}
+
 export function cardsOfClass(cls: PlayableClass | "colorless"): readonly CardEntry[] {
   return CATALOG.cards.filter((c) => c.class === cls);
 }

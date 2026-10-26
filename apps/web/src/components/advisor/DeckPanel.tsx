@@ -2,22 +2,26 @@
 
 import { useMemo } from "react";
 
-import { getCard, starterDeck, type CardEntry } from "@slay2/game-data";
+import { getCard, type CardEntry } from "@slay2/game-data";
 import { profileDeck, type DeckEntry } from "@slay2/decision";
 
 import { CardCombobox } from "@/components/cards/CardCombobox";
 import { CardTile } from "@/components/cards/CardTile";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
+import { deckAdd, deckRemove, deckSetUpgraded } from "@/lib/opening";
 import type { RunState } from "@/lib/run-state";
 
 /** Deck editor: counts per card, add by name, reset to the starter deck. Everything is a canonical catalog id. */
 export function DeckPanel({
   run,
   onChange,
+  onReset,
 }: {
   run: RunState;
   onChange: (deck: RunState["deck"]) => void;
+  /** Back to how the run starts: the starter deck and HP of this class and ascension, and nothing recorded from Neow. */
+  onReset: () => void;
 }) {
   const entries: DeckEntry[] = useMemo(
     () =>
@@ -28,23 +32,22 @@ export function DeckPanel({
     [run.deck],
   );
   const profile = useMemo(() => profileDeck(entries), [entries]);
+  const upgradedOf = (id: string): number => run.deck.find((d) => d.id === id)?.upgraded ?? 0;
   const character = run.character;
-  const classes = character ? ([character, "colorless", "curse", "status"] as const) : undefined;
+  // event cards (Neow's Fury) and curses reach the deck from the opening Ancient and from events
+  const classes = character
+    ? ([character, "colorless", "curse", "status", "event"] as const)
+    : undefined;
 
   const bump = (id: string, delta: number): void => {
-    const next = run.deck
-      .map((d) => (d.id === id ? { ...d, count: d.count + delta } : d))
-      .filter((d) => d.count > 0)
-      .map((d) => ({ ...d, count: Math.min(d.count, 30) }));
-    onChange(next);
+    onChange(delta > 0 ? deckAdd(run.deck, id, delta) : deckRemove(run.deck, id, -delta));
+  };
+  const upgrade = (id: string, delta: number): void => {
+    const now = run.deck.find((d) => d.id === id)?.upgraded ?? 0;
+    onChange(deckSetUpgraded(run.deck, id, now + delta));
   };
   const add = (card: CardEntry): void => {
-    const exists = run.deck.some((d) => d.id === card.id);
-    onChange(
-      exists
-        ? run.deck.map((d) => (d.id === card.id ? { ...d, count: Math.min(30, d.count + 1) } : d))
-        : [...run.deck, { id: card.id, count: 1 }],
-    );
+    onChange(deckAdd(run.deck, card.id));
   };
 
   return (
@@ -53,14 +56,8 @@ export function DeckPanel({
       title={`${String(profile.size)} cards`}
       aside={
         character ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              onChange(starterDeck(character));
-            }}
-          >
-            Reset to starter deck
+          <Button size="sm" variant="ghost" onClick={onReset}>
+            Reset to the start of the run
           </Button>
         ) : null
       }
@@ -113,6 +110,37 @@ export function DeckPanel({
                     bump(card.id, 1);
                   }}
                   className="min-h-9 min-w-9 rounded-md border border-line-strong bg-charcoal text-parchment hover:border-teal"
+                >
+                  +
+                </button>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted">
+                <span id={`up-${card.id}`}>Upgraded</span>
+                <button
+                  type="button"
+                  aria-label={`One fewer ${card.name} upgraded`}
+                  aria-describedby={`up-${card.id}`}
+                  onClick={() => {
+                    upgrade(card.id, -1);
+                  }}
+                  className="min-h-9 min-w-9 rounded-md border border-line bg-charcoal text-parchment hover:border-rose"
+                >
+                  −
+                </button>
+                <span
+                  className="num min-w-6 text-center text-parchment"
+                  aria-label={`${String(upgradedOf(card.id))} upgraded`}
+                >
+                  {upgradedOf(card.id)}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`One more ${card.name} upgraded`}
+                  aria-describedby={`up-${card.id}`}
+                  onClick={() => {
+                    upgrade(card.id, 1);
+                  }}
+                  className="min-h-9 min-w-9 rounded-md border border-line bg-charcoal text-parchment hover:border-teal"
                 >
                   +
                 </button>

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations } from "./helpers";
+import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, neowInfo } from "./helpers";
 
 test.describe("landing", () => {
   test("renders the promise, a working live demo and honest coverage", async ({ page }) => {
@@ -12,6 +12,29 @@ test.describe("landing", () => {
     await expect(page.getByText("Main v0.107.1 verified")).toBeVisible();
     await expect(page.getByText("Beta v0.111.0 is refused")).toBeVisible();
     await expect(page.getByRole("cell", { name: "Not supported" }).first()).toBeVisible();
+  });
+
+  test("the coverage table lists the start of the run, and the opening-relic values only when a valid measurement is published", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const start = page.getByRole("row", { name: /^Start of the run/ });
+    await expect(start).toContainText("Overgrowth or Underdocks");
+    const relics = page.getByRole("row", { name: /^Simulated opening-relic values/ });
+    const { test: held, relics: measured } = neowInfo();
+    if (measured.length === 0) {
+      await expect(relics).toHaveCount(0);
+      return;
+    }
+    await expect(relics).toContainText("Research");
+    await expect(relics).toContainText("Simulator unverified against the live game");
+    if (held === null) {
+      await expect(relics).toContainText("not tested against play yet");
+    } else {
+      await expect(relics).toContainText(
+        held.passed ? "taking the best-measured relic:" : "did not beat the first helpful one",
+      );
+    }
   });
 
   test("the pity demo recomputes with the real engine", async ({ page }) => {

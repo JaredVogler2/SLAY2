@@ -15,10 +15,13 @@ import {
   MAX_IMPORT_BYTES,
   newRun,
   parseRunState,
+  resetToStart,
+  withAscension,
   withCharacter,
   type PackSource,
   type RunState,
 } from "@/lib/run-state";
+import { deckAdd } from "@/lib/opening";
 import { runStore, useRunHistory, useRunState } from "@/lib/run-store";
 
 import { CharacterPicker } from "./CharacterPicker";
@@ -26,6 +29,7 @@ import { DeckPanel } from "./DeckPanel";
 import { HandOddsPanel } from "./HandOddsPanel";
 import { ADVISOR_SOURCES, OfferedPanel } from "./OfferedPanel";
 import { OfferCheck } from "./OfferCheck";
+import { OpeningPanel } from "./OpeningPanel";
 import { PityTracker } from "./PityTracker";
 import { RecommendationPanel } from "./RecommendationPanel";
 import { SimulationOpinion } from "./SimulationOpinion";
@@ -34,12 +38,16 @@ import { SimulationOpinion } from "./SimulationOpinion";
 const EXAMPLE_OFFER = ["POMMEL_STRIKE", "SHRUG_IT_OFF", "INFLAME"] as const;
 
 export function AdvisorWorkbench() {
+  // The server draws the "no saved run" state, which is also what the first client render shows; a saved run replaces it
+  // after hydration. The controls are disabled until then, so a click can never land before its handler exists.
   const hydrated = useHydrated();
   const run = useRunState();
   const { canUndo, canRedo } = useRunHistory();
   const [offered, setOffered] = useState<string[]>([]);
   const [source, setSource] = useState<PackSource>("regular");
   const [message, setMessage] = useState<string | null>(null);
+  // whether the Act 1 version and boss shape the ranking (a page choice, so the player can compare with and without)
+  const [useContext, setUseContext] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const update = (next: RunState): void => {
@@ -59,10 +67,13 @@ export function AdvisorWorkbench() {
           character: run.character,
           ascension: run.ascension,
           actIndex: run.actIndex,
-          deck: run.deck,
+          deck: run.deck.map(({ id, count }) => ({ id, count })),
           offered,
           source,
           riskPreference: run.risk,
+          ...(run.act1 && run.actIndex === 0 && useContext
+            ? { actContext: { variant: run.act1, boss: run.act1Boss } }
+            : {}),
         }),
       };
     } catch (e) {
@@ -71,16 +82,7 @@ export function AdvisorWorkbench() {
         error: e instanceof Error ? e.message : "Could not evaluate this offer.",
       };
     }
-  }, [run, offered, source]);
-
-  if (!hydrated) {
-    return (
-      <div className="space-y-6" aria-busy="true" aria-label="Loading your saved run">
-        <div className="panel h-48 animate-pulse" />
-        <div className="panel h-64 animate-pulse" />
-      </div>
-    );
-  }
+  }, [run, offered, source, useContext]);
 
   const chooseCharacter = (c: PlayableClass): void => {
     update(run ? withCharacter(run, c) : newRun(c));
@@ -105,14 +107,7 @@ export function AdvisorWorkbench() {
       return;
     }
     const picked = action.kind === "skip" ? "skip" : action.cardId;
-    const deck =
-      action.kind === "pick"
-        ? run.deck.some((d) => d.id === action.cardId)
-          ? run.deck.map((d) =>
-              d.id === action.cardId ? { ...d, count: Math.min(30, d.count + 1) } : d,
-            )
-          : [...run.deck, { id: action.cardId, count: 1 }]
-        : run.deck;
+    const deck = action.kind === "pick" ? deckAdd(run.deck, action.cardId) : run.deck;
     update({
       ...run,
       deck,
@@ -177,7 +172,7 @@ export function AdvisorWorkbench() {
           <Button
             size="sm"
             variant="ghost"
-            disabled={!canUndo}
+            disabled={!hydrated || !canUndo}
             onClick={() => {
               runStore.undo();
             }}
@@ -187,17 +182,22 @@ export function AdvisorWorkbench() {
           <Button
             size="sm"
             variant="ghost"
-            disabled={!canRedo}
+            disabled={!hydrated || !canRedo}
             onClick={() => {
               runStore.redo();
             }}
           >
             ↷ Redo
           </Button>
-          <Button size="sm" variant="ghost" disabled={!run} onClick={exportRun}>
+          <Button size="sm" variant="ghost" disabled={!hydrated || !run} onClick={exportRun}>
             Export run (JSON)
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => fileRef.current?.click()}>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!hydrated}
+            onClick={() => fileRef.current?.click()}
+          >
             Import run…
           </Button>
           <input
@@ -214,7 +214,7 @@ export function AdvisorWorkbench() {
           <Button
             size="sm"
             variant="danger"
-            disabled={!run}
+            disabled={!hydrated || !run}
             onClick={() => {
               if (
                 window.confirm(
@@ -256,7 +256,7 @@ export function AdvisorWorkbench() {
           run?.character ? (
             <Badge tone="build">{run.build}</Badge>
           ) : (
-            <Button variant="secondary" size="sm" onClick={tryExample}>
+            <Button variant="secondary" size="sm" disabled={!hydrated} onClick={tryExample}>
               Try an example
             </Button>
           )
@@ -267,6 +267,7 @@ export function AdvisorWorkbench() {
             value={run?.character ?? null}
             onChange={chooseCharacter}
             compact={Boolean(run?.character)}
+            disabled={!hydrated}
           />
           {run?.character ? (
             <div className="grid gap-5 md:grid-cols-3">
@@ -281,7 +282,7 @@ export function AdvisorWorkbench() {
                   id="adv-asc"
                   value={run.ascensionConfirmed ? String(run.ascension) : ""}
                   onChange={(e) => {
-                    update({ ...run, ascension: Number(e.target.value), ascensionConfirmed: true });
+                    update(withAscension(run, Number(e.target.value)));
                   }}
                 >
                   {!run.ascensionConfirmed ? (
@@ -330,6 +331,7 @@ export function AdvisorWorkbench() {
               Pick a character to start from its real starter deck. Or{" "}
               <button
                 type="button"
+                disabled={!hydrated}
                 onClick={tryExample}
                 className="text-teal underline decoration-dotted underline-offset-4"
               >
@@ -343,6 +345,14 @@ export function AdvisorWorkbench() {
 
       {run && character ? (
         <>
+          <OpeningPanel
+            run={run}
+            onChange={update}
+            useContext={useContext}
+            onUseContextChange={setUseContext}
+            disabled={!hydrated}
+          />
+
           <OfferedPanel
             character={character}
             offered={offered}
@@ -378,7 +388,13 @@ export function AdvisorWorkbench() {
             <DeckPanel
               run={run}
               onChange={(deck) => {
-                update({ ...run, deck: deck.length > 0 ? deck : starterDeck(character) });
+                update({
+                  ...run,
+                  deck: deck.length > 0 ? deck : starterDeck(character, run.ascension),
+                });
+              }}
+              onReset={() => {
+                update(resetToStart(run));
               }}
             />
             <div className="min-w-0 space-y-6">

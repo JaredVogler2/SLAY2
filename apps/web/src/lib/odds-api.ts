@@ -9,12 +9,14 @@ import {
   drawDistribution,
   drawJointAtLeast,
   drawMean,
+  evaluateRoute,
   forecastPack,
   forecastPotions,
   forecastUnknownRoom,
   inferCounter,
   inferPotionCounter,
   inferUnknownState,
+  MAX_ROUTE_ROOMS,
   MAX_UNKNOWN_ROOMS_PER_ACT,
   nextHandWithReshuffle,
   hypergeometricDistribution,
@@ -24,8 +26,10 @@ import {
   priceDistribution,
   provenanceFor,
   rarityRulesForAscension,
+  ROUTE_ROOMS,
   type PackObservation,
   type PotionObservation,
+  type RouteReport,
   type ShopItem,
   type UnknownObservation,
 } from "@slay2/odds";
@@ -120,6 +124,44 @@ const GoldRequest = z.strictObject({
   room: z.enum(["monster", "elite", "boss"]),
 });
 
+/** Legal worst case of a route request: two routes of ten "?" rooms take about a second (RT-10-07 bounds a request at 1.5 s). */
+export const MAX_REQUEST_UNKNOWNS = 20;
+
+const RouteRequest = z.strictObject({
+  calculator: z.literal("route"),
+  build: BuildIdSchema,
+  ascension: AscensionSchema,
+  /** One to three routes to compare, each the rooms in the order they would be walked. */
+  routes: z
+    .array(
+      z.strictObject({
+        name: z.string().trim().min(1).max(24).optional(),
+        rooms: z.array(z.enum(ROUTE_ROOMS)).max(MAX_ROUTE_ROOMS),
+      }),
+    )
+    .min(1)
+    .max(3),
+  /** Every "?" room met in the CURRENT act, in order. `[]` means none yet this act; omitting it is an error. */
+  unknownHistory: z
+    .array(z.strictObject({ outcome: z.enum(["fight", "treasure", "shop", "event"]).optional() }))
+    .max(MAX_UNKNOWN_ROOMS_PER_ACT),
+  /** Known number of non-rare cards since the last rare. Exactly one of `counter` and `packHistory`. */
+  counter: Count(200).optional(),
+  packHistory: z.array(PackObservationSchema).max(100).optional(),
+  /** Known stored potion chance in tenths (4 = 40 %, the start of a run). Exactly one of `potionTenths` and `potionHistory`. */
+  potionTenths: z.number().int().min(-20).max(40).optional(),
+  potionHistory: z
+    .array(
+      z.strictObject({
+        room: PotionRoom,
+        dropped: z.boolean().optional(),
+        forced: z.boolean().optional(),
+      }),
+    )
+    .max(200)
+    .optional(),
+});
+
 export const OddsRequestSchema = z.discriminatedUnion("calculator", [
   RarityRequest,
   PotionRequest,
@@ -128,13 +170,85 @@ export const OddsRequestSchema = z.discriminatedUnion("calculator", [
   PriceRequest,
   RemovalRequest,
   GoldRequest,
+  RouteRequest,
 ]);
 export type OddsRequest = z.infer<typeof OddsRequestSchema>;
+
+function routeJson(r: RouteReport): Record<string, unknown> {
+  const each = <T extends string>(o: Readonly<Record<T, Rational>>): Record<string, RationalOut> =>
+    Object.fromEntries(Object.entries<Rational>(o).map(([k, v]) => [k, rationalOut(v)]));
+  return {
+    rooms: r.rooms,
+    counts: r.counts,
+    unknown: {
+      rooms: r.unknown.rooms,
+      expected: each(r.unknown.expected),
+      pmf: Object.fromEntries(
+        Object.entries<readonly Rational[]>(r.unknown.pmf).map(([k, v]) => [k, v.map(rationalOut)]),
+      ),
+    },
+    fights: {
+      certain: r.fights.certain,
+      expected: rationalOut(r.fights.expected),
+      min: r.fights.min,
+      max: r.fights.max,
+    },
+    cardPacks: {
+      expectedRares: rationalOut(r.cardPacks.expectedRares),
+      atLeastOneRare: rationalOut(r.cardPacks.atLeastOneRare),
+    },
+    potions: {
+      expectedDrops: rationalOut(r.potions.expectedDrops),
+      atLeastOne: rationalOut(r.potions.atLeastOne),
+    },
+    gold: {
+      fromFights: rationalOut(r.gold.fromFights),
+      fromTreasure: rationalOut(r.gold.fromTreasure),
+      expected: rationalOut(r.gold.expected),
+      min: r.gold.min,
+      max: r.gold.max,
+    },
+    relics: { elites: r.relics.elites, expectedTreasure: rationalOut(r.relics.expectedTreasure) },
+    shops: { certain: r.shops.certain, expected: rationalOut(r.shops.expected) },
+    rests: r.rests,
+  };
+}
 
 const dist = (m: ReadonlyMap<number, Rational>): { value: number; probability: RationalOut }[] =>
   [...m.entries()]
     .sort(([a], [b]) => a - b)
     .map(([value, p]) => ({ value, probability: rationalOut(p) }));
+
+/**
+ * What a request will cost to evaluate, in units a limiter can charge before any work is done: 0 for every calculator but
+ * "route", otherwise one per route plus one per "?" room in it (a route with twelve "?" rooms takes about a second).
+ * Reads untrusted JSON defensively; whatever is malformed costs a minimum and is refused by the schema afterwards.
+ */
+export function routeCost(body: unknown): number {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    (body as { calculator?: unknown }).calculator !== "route"
+  ) {
+    return 0;
+  }
+  const routes = (body as { routes?: unknown }).routes;
+  if (!Array.isArray(routes)) {
+    return 1;
+  }
+  let cost = 0;
+  for (const route of routes.slice(0, 3)) {
+    const rooms =
+      typeof route === "object" && route !== null
+        ? (route as { rooms?: unknown }).rooms
+        : undefined;
+    const unknown = Array.isArray(rooms)
+      ? rooms.slice(0, 64).filter((r) => r === "unknown").length
+      : 0;
+    cost += 1 + Math.min(unknown, MAX_ROUTE_ROOMS);
+  }
+  return Math.max(1, cost);
+}
 
 /** The pure core of POST /api/v1/odds (no HTTP), so it can be tested directly. */
 export function computeOdds(input: unknown): Record<string, unknown> {
@@ -406,6 +520,113 @@ export function computeOdds(input: unknown): Record<string, unknown> {
         cost: cardRemovalCost(req.removals, req.ascension),
         provenance: provenanceFor("shop"),
       };
+    case "route": {
+      const one = (given: unknown, other: unknown, a: string, b: string, what: string): void => {
+        if (given !== undefined && other !== undefined) {
+          throw new HttpError(
+            400,
+            "invalid_request",
+            `Give either \`${a}\` or \`${b}\`, not both`,
+            [{ path: a, message: `mutually exclusive with ${b}` }],
+          );
+        }
+        if (given === undefined && other === undefined) {
+          throw new HttpError(
+            400,
+            "invalid_request",
+            `Say what you know about the ${what}: give \`${a}\` (if you know it) or \`${b}\` (\`[]\` only if none has happened yet)`,
+            [{ path: b, message: `required unless ${a} is given` }],
+          );
+        }
+      };
+      const questionRooms = req.routes.reduce(
+        (n, r) => n + r.rooms.filter((room) => room === "unknown").length,
+        0,
+      );
+      if (questionRooms > MAX_REQUEST_UNKNOWNS) {
+        // the time of a route grows quickly with its "?" rooms (about a second for twelve): bound a request the way
+        // every other legal request is bounded (RT-10-07); the page computes any route locally
+        throw new HttpError(
+          400,
+          "invalid_request",
+          `At most ${String(MAX_REQUEST_UNKNOWNS)} “?” rooms across the routes of one request`,
+          [{ path: "routes", message: `${String(questionRooms)} “?” rooms` }],
+        );
+      }
+      one(req.counter, req.packHistory, "counter", "packHistory", "hidden rare-card counter");
+      one(
+        req.potionTenths,
+        req.potionHistory,
+        "potionTenths",
+        "potionHistory",
+        "stored potion chance",
+      );
+      const rules = rarityRulesForAscension(req.ascension);
+      const unknownHistory: UnknownObservation[] = req.unknownHistory.map((h) =>
+        h.outcome === undefined ? {} : { outcome: h.outcome },
+      );
+      if (inferUnknownState(unknownHistory).impossible) {
+        throw new HttpError(
+          422,
+          "impossible_history",
+          "That '?' room history cannot happen under the verified rules.",
+        );
+      }
+      const packs: PackObservation[] = (req.packHistory ?? []).map((h) => ({
+        source: sourceToReward(h.source),
+        ...(h.cards === undefined ? {} : { cards: h.cards }),
+        ...(h.rares === undefined ? {} : { rares: h.rares }),
+        ...(h.uncommons === undefined ? {} : { uncommons: h.uncommons }),
+      }));
+      const rare = req.counter === undefined ? inferCounter(packs, rules) : null;
+      if (rare?.impossible) {
+        throw new HttpError(
+          422,
+          "impossible_history",
+          "That card-pack history cannot happen under the verified rules (a relic or event may have changed the odds).",
+        );
+      }
+      const potionHistory: PotionObservation[] = (req.potionHistory ?? []).map((h) => ({
+        room: h.room,
+        ...(h.dropped === undefined ? {} : { dropped: h.dropped }),
+        ...(h.forced === undefined ? {} : { forced: h.forced }),
+      }));
+      const potion = req.potionTenths === undefined ? inferPotionCounter(potionHistory) : null;
+      if (potion?.impossible) {
+        throw new HttpError(
+          422,
+          "impossible_history",
+          "That potion history cannot happen under the verified rules.",
+        );
+      }
+      const rareCounter =
+        req.counter === undefined
+          ? (rare?.posterior ?? pointMass(0, rules))
+          : pointMass(req.counter, rules);
+      const potionCounter =
+        req.potionTenths === undefined
+          ? (potion?.posterior ?? new Map([[4, Rational.ONE]]))
+          : new Map([[req.potionTenths, Rational.ONE]]);
+      return {
+        calculator: "route",
+        method: "exact",
+        build: req.build,
+        ascension: req.ascension,
+        routes: req.routes.map((route, i) => ({
+          name: route.name ?? String.fromCharCode(65 + i),
+          report: routeJson(
+            evaluateRoute({
+              rooms: route.rooms,
+              ascension: req.ascension,
+              unknownHistory,
+              rareCounter,
+              potionCounter,
+            }),
+          ),
+        })),
+        provenance: provenanceFor("route", { ascension: req.ascension }),
+      };
+    }
     case "gold": {
       const g = combatGoldRange(req.room, req.ascension);
       return {

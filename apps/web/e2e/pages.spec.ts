@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, measuredSets } from "./helpers";
+import {
+  expectNoHorizontalOverflow,
+  expectNoSeriousA11yViolations,
+  measuredSets,
+  neowInfo,
+} from "./helpers";
 
 test.describe("methods", () => {
   test("is an honest ledger: rules with evidence, verification layers, simulator results with intervals", async ({
@@ -53,6 +58,36 @@ test.describe("methods", () => {
     );
     await expect(panel).toContainText(/Past the Act-1 boss/);
     await expect(panel).toContainText("Simulated, not measured in the live game");
+  });
+
+  test("lists every measured opening relic with its interval, and reports the one test whichever way it came out", async ({
+    page,
+  }) => {
+    test.skip(
+      neowInfo().relics.length === 0,
+      "no valid opening-relic measurement is published (the first one was void, ADR-049)",
+    );
+    await page.goto("/methods#opening-ancient");
+    const panel = page.locator("#opening-ancient");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole("heading", { level: 2 })).toContainText("opening choices");
+    const { test: held, relics } = neowInfo();
+    expect(relics.length).toBeGreaterThan(20);
+    const table = panel.getByRole("table", { name: "Every measured relic, best first" });
+    await expect(table.getByRole("row")).toHaveCount(relics.length + 1);
+    await expect(table).toContainText("Silver Crucible");
+    await expect(panel).toContainText("Massive Scroll, a co-op option");
+    if (held === null) {
+      await expect(panel).toContainText("has not been run");
+    } else {
+      await expect(
+        panel.getByRole("heading", { level: 3, name: "The one held-out test" }),
+      ).toBeVisible();
+      await expect(panel).toContainText(
+        held.passed ? "passed its test, in simulation" : "measurement only",
+      );
+      await expect(panel.getByRole("table", { name: /^By class/ })).toBeVisible();
+    }
   });
 
   test("every rule is a deep-linkable anchor", async ({ page }) => {

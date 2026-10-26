@@ -41,7 +41,7 @@ export function PityTracker({ run }: { run: RunState }) {
     >
       {next ? (
         <div className="space-y-3">
-          <dl className="grid grid-cols-2 gap-3">
+          <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))] gap-3">
             <div className="rounded-xl border border-line bg-charcoal/40 p-3">
               <dt className="text-xs text-muted">Normal fight: ≥1 rare</dt>
               <dd className="font-display text-2xl text-teal">

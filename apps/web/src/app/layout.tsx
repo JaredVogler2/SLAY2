@@ -1,10 +1,7 @@
-import "@fontsource-variable/inter";
-import "@fontsource-variable/jetbrains-mono";
-import "@fontsource/cinzel/500.css";
-import "@fontsource/cinzel/700.css";
 import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/shell/SiteFooter";
@@ -12,6 +9,42 @@ import { SiteHeader } from "@/components/shell/SiteHeader";
 import { siteUrl } from "@/lib/site-config";
 
 const base = siteUrl();
+
+/*
+ * The three families are served from this site (the files ship in the @fontsource packages; CSP font-src stays 'self').
+ * next/font preloads them and draws the fallback with the real font's metrics (size-adjust and the ascent / descent
+ * overrides). `optional` means a font that is not there within the first ~100 ms is not swapped in half way through the
+ * page: a swap re-wraps the headings, and on a slow connection the landing page then shifted by 0.12 (0.31 on the advisor
+ * with its old loading skeleton). The font is cached for the next page load, so it only costs the very first view.
+ */
+const cinzel = localFont({
+  // one file: the headings ask for weight 400 and the site never asks for a bolder Cinzel (the 700 file was fetched on every
+  // page and used on none); declaring the range keeps the browser from drawing a fake bold if a heading ever does
+  src: "../../node_modules/@fontsource/cinzel/files/cinzel-latin-500-normal.woff2",
+  weight: "400 700",
+  variable: "--font-cinzel",
+  display: "optional",
+  adjustFontFallback: "Times New Roman",
+  fallback: ["Trajan Pro", "Palatino Linotype", "Georgia", "serif"],
+});
+
+const inter = localFont({
+  src: "../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
+  weight: "100 900",
+  variable: "--font-inter",
+  display: "optional",
+  adjustFontFallback: "Arial",
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+});
+
+const jetbrainsMono = localFont({
+  src: "../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2",
+  weight: "100 800",
+  variable: "--font-jetbrains",
+  display: "optional",
+  adjustFontFallback: false,
+  fallback: ["ui-monospace", "SF Mono", "Menlo", "monospace"],
+});
 
 export const metadata: Metadata = {
   ...(base ? { metadataBase: new URL(base) } : {}),
@@ -25,6 +58,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "SLAY2",
   },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
@@ -36,8 +70,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${cinzel.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
+        <noscript>
+          <p className="border-b border-rose-deep/70 bg-rose/10 px-4 py-3 text-center text-sm text-rose">
+            SLAY2 does its arithmetic in your browser, so the calculators and the advisor need
+            JavaScript. Your run is never uploaded.
+          </p>
+        </noscript>
         <SiteHeader />
         <main id="main" tabIndex={-1} className="outline-none">
           {children}

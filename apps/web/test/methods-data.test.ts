@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -21,8 +22,11 @@ import {
   comparisonVerdict,
   formatP,
   largestReport,
+  newValuesSentence,
   policyLabel,
+  sideLabel,
   signed,
+  ratingsValidation,
   valuesValidation,
   winRows,
   winSentence,
@@ -63,6 +67,25 @@ describe("comparison wording is derived from the data", () => {
     expect(real).toMatch(/× as long per game/);
   });
 
+  it("says how the wins split whenever either side has any, and nothing when neither does", () => {
+    const tuned = evidence.comparisons.find(
+      (x) => x.a.policy === "rules_v3" && x.b.policy === "rules_v2" && x.role === "held-out",
+    );
+    expect(tuned).toBeDefined();
+    if (tuned) {
+      // the tuned pilot gets further and does not win more: the sentence must not leave the second half out
+      expect(comparisonSentence(tuned)).toContain(
+        `Wins: ${String(tuned.a.wins)} for rules_v3 and ${String(tuned.b.wins)} for rules_v2 (exact McNemar p = `,
+      );
+      expect(tuned.pairedWinTable.mcnemar_p).toBeGreaterThan(0.05);
+    }
+    const none = evidence.comparisons.find((x) => x.a.wins + x.b.wins === 0);
+    expect(none).toBeDefined();
+    if (none) {
+      expect(comparisonSentence(none)).not.toContain("Wins:");
+    }
+  });
+
   it("matches the committed rules-vs-search comparison (numbers are read, not typed)", () => {
     const c = evidence.comparisons.find(
       (x) => x.a.policy === "rules_v1" && x.b.policy === "search_v1",
@@ -85,7 +108,7 @@ describe("comparison wording is derived from the data", () => {
       expect(lo <= c.reachedAct2.a.rate && c.reachedAct2.a.rate <= hi, c.id).toBe(true);
       // a wins-only table must still agree: a game won is also past the Act-1 boss
       expect(c.reachedAct2.a.games, c.id).toBeGreaterThanOrEqual(c.a.wins);
-      expect(actTwoSentence(c)).toContain(`${policyLabel(c.a)} and`);
+      expect(actTwoSentence(c)).toContain(`${sideLabel(c.a)} and`);
     }
   });
 
@@ -106,20 +129,49 @@ describe("comparison wording is derived from the data", () => {
     expect(rows.filter((r) => r.held).length).toBe(held);
   });
 
-  it("finds the pre-registered test of the card values and it is a held-out, paired comparison", () => {
+  it("finds the pre-registered test of the card values the site shows, and it is a held-out, paired comparison", () => {
+    // Ironclad's shown set is round two, tested against the pilot that follows round one (ADR-046): the same policy twice
     const test = valuesValidation("ironclad");
     expect(test).toBeDefined();
     expect(test?.role).toBe("held-out");
-    expect(test?.a.policy).toBe("rules_v2");
-    expect(test?.b.policy).toBe("rules_v1");
+    expect(test?.a.policy).toBe("rules_v3");
+    expect(test?.b.policy).toBe("rules_v3");
     expect(test?.a.batchId).toMatch(/-val-/);
     expect(test?.b.batchId).toMatch(/-val-/);
+    expect(test?.a.batchId).not.toBe(test?.b.batchId);
     expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+    // and the first measurement's own test, against the hand-written ratings
+    const first = ratingsValidation("ironclad");
+    expect(first?.role).toBe("held-out");
+    expect(first?.a.policy).toBe("rules_v2");
+    expect(first?.b.policy).toBe("rules_v1");
+    expect(first?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+    // the other classes are first measurements: their test is the one against the ratings
+    expect(valuesValidation("silent")?.a.policy).toBe("rules_v2");
+    expect(valuesValidation("silent")?.b.policy).toBe("rules_v1");
+  });
+
+  it("names the arms of a test between two sets of values by their values, not by the policy they share", () => {
+    const test = valuesValidation("ironclad");
+    expect(test).toBeDefined();
+    if (!test) return;
+    const text = newValuesSentence(test);
+    expect(text).toContain("with the new values");
+    expect(text).toContain("with the earlier ones");
+    expect(text).not.toContain("rules_v3");
+    expect(text).toContain(formatP(test.reachedAct2.pairedTable.mcnemar_p));
   });
 
   it("tells a policy's variants apart in the label and ignores a threshold of zero", () => {
     expect(policyLabel({ policy: "rules_v2", params: { threshold: 0 } })).toBe("rules_v2");
     expect(policyLabel({ policy: "rules_v1", params: {} })).toBe("rules_v1");
+    // a values file is named by its file, not by its path
+    expect(
+      policyLabel({
+        policy: "rules_v3",
+        params: { threshold: 0, values: "experiments/cardvalue/ironclad-a0-v2.json" },
+      }),
+    ).toBe("rules_v3 (values=ironclad-a0-v2)");
     expect(policyLabel({ policy: "search_v3", params: { scope: "boss" } })).toBe(
       "search_v3 (scope=boss)",
     );
@@ -129,13 +181,15 @@ describe("comparison wording is derived from the data", () => {
   });
 
   it("says which side is slower in whichever direction the comparison runs", () => {
-    const base = evidence.comparisons.find(
+    const searches = evidence.comparisons.filter(
       (c) => c.b.policy === "rules_v2" && c.a.policy === "search_v3",
     );
-    expect(base).toBeDefined();
-    if (base) {
-      expect(comparisonSentence(base)).toMatch(
-        /search_v3 \(scope=boss\) took [\d.]+× as long per game/,
+    expect(searches.length).toBeGreaterThan(0);
+    for (const c of searches) {
+      // the sentence names the search side the way its label does (the scope differs between the comparisons)
+      const label = policyLabel(c.a).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      expect(comparisonSentence(c), c.id).toMatch(
+        new RegExp(`${label} took [\\d.]+× as long per game`),
       );
     }
   });
@@ -156,6 +210,32 @@ describe("comparison wording is derived from the data", () => {
     expect(largestReport("rules_v1")?.character).toBe("Ironclad");
     // nothing was played by this policy as this class
     expect(largestReport("random_legal", "Silent")).toBeUndefined();
+  });
+
+  it("a variant of the game (gap G11) is shown with its label and is never a headline report", () => {
+    const variants = evidence.reports.filter((r) => r.ancientHeal);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const v of variants) {
+      expect(v.id).toContain("ancientheal");
+      expect(v.role).toContain("development");
+      // the same policy, class and size as a headline candidate: the variant must still lose the choice
+      expect(largestReport(v.policy, v.character)?.ancientHeal).toBe(false);
+    }
+    // and no ordinary batch carries the flag by accident
+    expect(evidence.reports.filter((r) => !r.ancientHeal && r.id.includes("ancientheal"))).toEqual(
+      [],
+    );
+  });
+
+  it("the start-HP variant (gap G13) is shown with its label and is never a headline report either", () => {
+    const variants = evidence.reports.filter((r) => r.gameHp);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const v of variants) {
+      expect(v.id).toContain("gamehp");
+      expect(v.role).toContain("development");
+      expect(largestReport(v.policy, v.character)?.gameHp).toBe(false);
+    }
+    expect(evidence.reports.filter((r) => !r.gameHp && r.id.includes("gamehp"))).toEqual([]);
   });
 
   it("formats exact p-values without printing a misleading zero", () => {
@@ -402,5 +482,217 @@ describe("site-data exporter refuses a comparison whose batches changed", () => 
   it("reads an untouched copy without complaint about the comparison", () => {
     const result = run(tamperedRoot(() => undefined));
     expect(result.stderr).not.toContain("changed after the comparison was written");
+  });
+});
+
+describe.runIf(existsSync(join(repo, "experiments", "neow", "neow-values-v2.json")))(
+  "site-data exporter refuses opening-relic data that does not belong together",
+  () => {
+    const dirs: string[] = [];
+    afterEach(() => {
+      for (const d of dirs.splice(0)) {
+        rmSync(d, { recursive: true, force: true });
+      }
+    });
+
+    const script = join(repo, "scripts", "export-site-data.mjs");
+    const hasTest = existsSync(
+      join(repo, "experiments", "neow", "pooled-neow-values-v2-vs-rules_v2-val.json"),
+    );
+
+    function rootWith(mutate: (neowDir: string) => void): string {
+      const root = mkdtempSync(join(tmpdir(), "slay2-neow-"));
+      dirs.push(root);
+      for (const name of ["docs", "packages", "sim"]) {
+        symlinkSync(join(repo, name), join(root, name), "dir");
+      }
+      mkdirSync(join(root, "experiments"));
+      symlinkSync(
+        join(repo, "experiments", "batches"),
+        join(root, "experiments", "batches"),
+        "dir",
+      );
+      const neowDir = join(root, "experiments", "neow");
+      cpSync(join(repo, "experiments", "neow"), neowDir, { recursive: true });
+      mutate(neowDir);
+      return root;
+    }
+
+    function edit(neowDir: string, file: string, change: (body: Record<string, unknown>) => void) {
+      const path = join(neowDir, file);
+      const body = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+      change(body);
+      writeFileSync(path, JSON.stringify(body));
+    }
+
+    const run = (root: string) =>
+      spawnSync(process.execPath, [script, "--check"], {
+        encoding: "utf8",
+        env: { ...process.env, SLAY2_ROOT: root },
+      });
+
+    it("reads an untouched copy without complaint about the opening-relic files", () => {
+      const result = run(rootWith(() => undefined));
+      expect(result.stderr).not.toContain("neow-values-v2.json:");
+      expect(result.stderr).not.toContain("pooled-neow-values-v2-vs-rules_v2-val.json:");
+    });
+
+    it("fails when an exploration batch changed after the values were fitted", () => {
+      const result = run(
+        rootWith((dir) => {
+          edit(dir, "neow-values-v2.json", (v) => {
+            const batches = v.batches as { content_sha256: string }[];
+            if (batches[0]) {
+              batches[0].content_sha256 = "0".repeat(64);
+            }
+          });
+        }),
+      );
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("changed after the values were fitted");
+    });
+
+    it("fails when two relics carry the same label", () => {
+      const result = run(
+        rootWith((dir) => {
+          edit(dir, "neow-values-v2.json", (v) => {
+            const relics = v.relics as { label: string }[];
+            if (relics[1] && relics[0]) {
+              relics[1].label = relics[0].label;
+            }
+          });
+        }),
+      );
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("is measured twice");
+    });
+
+    it.runIf(hasTest)("fails when the test was run with another version of the values", () => {
+      const result = run(
+        rootWith((dir) => {
+          // any change to the file changes its hash, which the batches of the test recorded
+          edit(dir, "neow-values-v2.json", (v) => {
+            v.pass_rate = 0.5;
+          });
+        }),
+      );
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("was played with another version of neow-values-v2.json");
+    });
+
+    it.runIf(hasTest)("fails when a batch of the test changed after it was written", () => {
+      const result = run(
+        rootWith((dir) => {
+          edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
+            const members = t.members as { a: { contentSha256: string } }[];
+            if (members[0]) {
+              members[0].a.contentSha256 = "0".repeat(64);
+            }
+          });
+        }),
+      );
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain("changed after the comparison was written");
+    });
+
+    it.runIf(hasTest)(
+      "fails when the test is not a held-out comparison of all five classes",
+      () => {
+        const notHeldOut = run(
+          rootWith((dir) => {
+            edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
+              t.role = "development (dev partition): not a held-out result";
+            });
+          }),
+        );
+        expect(notHeldOut.status).not.toBe(0);
+        expect(notHeldOut.stderr).toContain("not a held-out comparison");
+        const fewer = run(
+          rootWith((dir) => {
+            edit(dir, "pooled-neow-values-v2-vs-rules_v2-val.json", (t) => {
+              const cohort = t.cohort as { characters: string[] };
+              cohort.characters = cohort.characters.slice(1);
+            });
+          }),
+        );
+        expect(fewer.status).not.toBe(0);
+        expect(fewer.stderr).toContain("must pool all five classes");
+      },
+    );
+  },
+);
+
+describe("site-data exporter refuses the first opening-relic study (played with the wrong class, ADR-049)", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+  const void_ = join(repo, "experiments", "void", "2026-10-26-wrong-class-ids", "neow");
+  const script = join(repo, "scripts", "export-site-data.mjs");
+
+  /** The void study's files laid out as the exporter expects a real study's, with the one thing that was wrong left as it was. */
+  function rootWithVoidStudy(mutate: (values: Record<string, unknown>) => void): string {
+    const root = mkdtempSync(join(tmpdir(), "slay2-void-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    mkdirSync(join(root, "experiments"));
+    symlinkSync(join(repo, "experiments", "batches"), join(root, "experiments", "batches"), "dir");
+    const dir = join(root, "experiments", "neow");
+    mkdirSync(dir);
+    const values = JSON.parse(readFileSync(join(void_, "neow-values-v1.json"), "utf8")) as {
+      batches: { batch_id: string }[];
+      model: Record<string, unknown>;
+    };
+    // what a correct fit would say about itself; the exploration batches below are the void ones, renamed to the new pattern
+    values.model.resampling_unit = "seed";
+    values.model.seeds = 3000;
+    for (const b of values.batches) {
+      const old = b.batch_id;
+      b.batch_id = old.replace(/^explore-neow-/, "neow-explore-");
+      const target = join(dir, b.batch_id.replace(/^neow-explore-/, "explore-"));
+      mkdirSync(target);
+      const manifest = JSON.parse(
+        readFileSync(
+          join(void_, old.replace(/^explore-neow-/, "explore-"), "manifest.json"),
+          "utf8",
+        ),
+      ) as {
+        batch_id: string;
+      };
+      manifest.batch_id = b.batch_id;
+      writeFileSync(join(target, "manifest.json"), JSON.stringify(manifest));
+    }
+    mutate(values);
+    writeFileSync(join(dir, "neow-values-v2.json"), JSON.stringify(values));
+    return root;
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  it("refuses a fit that resamples by game", () => {
+    const result = run(
+      rootWithVoidStudy((v) => {
+        delete (v.model as Record<string, unknown>).resampling_unit;
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("must resample and cross-validate by seed");
+  });
+
+  it("refuses exploration batches whose games were played as a class the simulator does not know", () => {
+    // the void batches were run with --character silent; the manifests say "silent", not "Silent"
+    const result = run(rootWithVoidStudy(() => undefined));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toMatch(
+      /was played as "(ironclad|silent|regent|necrobinder|defect)", which is not one of the simulator's exact class ids/,
+    );
   });
 });

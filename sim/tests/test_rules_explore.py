@@ -53,3 +53,11 @@ def test_a_replicate_replays_the_game_seed_with_different_picks(sim):
     c = play(sim, "rules_explore", 105, explore=1.0, replicate=1)
     assert (b.steps, b.floor, b.extra["random_picks"]) == (c.steps, c.floor, c.extra["random_picks"])
     assert (a.steps, a.floor) != (b.steps, b.floor) or a.extra["boss_fights"] != b.extra["boss_fights"]
+
+
+def test_without_exploration_the_v3_explorer_is_exactly_rules_v3(sim):
+    for seed in SEEDS[:4]:
+        a, b = play(sim, "rules_v3", seed), play(sim, "rules_explore_v3", seed, explore=0.0)
+        assert (a.outcome, a.floor, a.steps, a.killed_by, a.hp) == (b.outcome, b.floor, b.steps, b.killed_by, b.hp), seed
+    explorer = make_policy("rules_explore_v3")
+    assert explorer.tune["elite_value"] == 0.5 and explorer.explore == 0.6  # the stronger pilot, the round-one exploration rate
