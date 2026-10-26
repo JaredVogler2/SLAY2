@@ -1,0 +1,96 @@
+{
+  "a": {
+    "batchId": "search_v3-all-ironclad-a0-veteran-dev-n200",
+    "contentSha256": "9f9eca42fb36dc781c3114caef641954992ec37b4b740df49dadc88fa5a2d81d",
+    "meanFloor": 24.476190476190474,
+    "meanWallSecondsPerEpisode": 90.784,
+    "params": {
+      "scope": "all"
+    },
+    "policy": "search_v3",
+    "winRate": 0.005291005291005291,
+    "winRateWilson95": [
+      0.0009346037378160626,
+      0.029356905444997007
+    ],
+    "wins": 1
+  },
+  "b": {
+    "batchId": "rules_v2-ironclad-a0-veteran-dev-n500",
+    "contentSha256": "c6d0120c6c5991b254a3b40590bf880a79ac2e3b0a7f4ba937838899c156ea74",
+    "meanFloor": 21.396825396825395,
+    "meanWallSecondsPerEpisode": 0.7293,
+    "params": {
+      "threshold": 0.0
+    },
+    "policy": "rules_v2",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.019920295377281655
+    ],
+    "wins": 0
+  },
+  "bothCompleted": 189,
+  "cohort": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "partition": "dev",
+    "profile": "veteran",
+    "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+  },
+  "contentSha256": "646cdef0c1bd875bbee778cf1f0aa3363981bdb6085e74746fd70aba85996074",
+  "difference": "a minus b",
+  "excludedNotCompleted": 11,
+  "floorDifference": {
+    "ci95": [
+      1.7195767195767195,
+      4.4392857142857025
+    ],
+    "meanAMinusB": 3.0793650793650795,
+    "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "kind": "paired-comparison",
+  "pairedSeeds": 200,
+  "pairedWinTable": {
+    "a_only": 1,
+    "b_only": 0,
+    "both": 0,
+    "mcnemar_p": 1.0,
+    "neither": 188
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 136,
+      "rate": 0.7195767195767195,
+      "wilson95": [
+        0.6516513672971589,
+        0.7787540056323947
+      ]
+    },
+    "b": {
+      "games": 116,
+      "rate": 0.6137566137566137,
+      "wilson95": [
+        0.5427342470543515,
+        0.6802468497645737
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 39,
+      "b_only": 19,
+      "both": 97,
+      "mcnemar_p": 0.011928139715763175,
+      "neither": 34
+    }
+  },
+  "role": "development (dev partition): not a held-out result",
+  "schema": 1,
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "parityWithLiveGame": "UNVERIFIED",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "wallTimeRatioBOverA": 0.008
+}
