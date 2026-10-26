@@ -21,6 +21,9 @@ from .observation import obs_hash, observe
 from .outcomes import EpisodeRecord, Outcome
 
 
+MAX_ASCENSION = 10  # STS2's highest Ascension (rule ASC-1); there is no A11 to A20
+
+
 @dataclass(frozen=True)
 class RunConfig:
     character: str = "Ironclad"
@@ -38,6 +41,9 @@ class RunConfig:
     def __post_init__(self) -> None:
         # the simulator silently plays any class id it does not know exactly as Ironclad (classes.py, ADR-049)
         exact_character(self.character)
+        # STS2 has Ascension 0 to 10 and nothing above (rule ASC-1); a higher number would be played as something else without a word
+        if not isinstance(self.ascension, int) or isinstance(self.ascension, bool) or not 0 <= self.ascension <= MAX_ASCENSION:
+            raise ValueError(f"ascension must be an integer from 0 to {MAX_ASCENSION}, got {self.ascension!r}")
 
     def describe(self) -> dict:
         d = dict(self.__dict__)

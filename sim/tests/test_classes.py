@@ -40,6 +40,14 @@ def test_a_run_configuration_refuses_an_inexact_class_before_anything_runs():
         RunConfig(**{"character": "necrobinder", "ascension": 0, "profile": "veteran"})
 
 
+def test_a_run_configuration_refuses_an_ascension_the_game_does_not_have():
+    for ok in (0, 5, 10):
+        assert RunConfig(ascension=ok).ascension == ok
+    for bad in (-1, 11, 20, 1.5, "5", None, True):
+        with pytest.raises(ValueError, match="ascension"):
+            RunConfig(ascension=bad)
+
+
 def test_the_command_line_refuses_an_inexact_class_for_runs_and_audits(capsys):
     parser = cli.build_parser()
     for argv in (["run", "--policy", "random_legal", "--character", "silent"], ["audit", "sample", "--character", "defect"]):
