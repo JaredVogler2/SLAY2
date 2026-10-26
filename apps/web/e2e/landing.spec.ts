@@ -14,16 +14,20 @@ test.describe("landing", () => {
     await expect(page.getByRole("cell", { name: "Not supported" }).first()).toBeVisible();
   });
 
-  test("the coverage table lists the start of the run and the opening-relic values as the data says they stand", async ({
+  test("the coverage table lists the start of the run, and the opening-relic values only when a valid measurement is published", async ({
     page,
   }) => {
     await page.goto("/");
     const start = page.getByRole("row", { name: /^Start of the run/ });
     await expect(start).toContainText("Overgrowth or Underdocks");
     const relics = page.getByRole("row", { name: /^Simulated opening-relic values/ });
+    const { test: held, relics: measured } = neowInfo();
+    if (measured.length === 0) {
+      await expect(relics).toHaveCount(0);
+      return;
+    }
     await expect(relics).toContainText("Research");
     await expect(relics).toContainText("Simulator unverified against the live game");
-    const { test: held } = neowInfo();
     if (held === null) {
       await expect(relics).toContainText("not tested against play yet");
     } else {

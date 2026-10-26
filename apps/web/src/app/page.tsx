@@ -8,7 +8,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { coverage } from "@/lib/cardvalues";
-import { neowCoverage } from "@/lib/neow";
+import { neowCoverage, neowValues } from "@/lib/neow";
 
 export const metadata: Metadata = {
   title: { absolute: "SLAY2 — The Spire Intelligence Observatory" },
@@ -167,11 +167,15 @@ export default function Home() {
                     "Supported",
                     "Say which Act 1 you are in (Overgrowth or Underdocks) and what the opening Ancient gave you; the effect on your deck and HP is applied as you report it, Ascension rules included. Which Act 1 tilts the advisor’s weights by at most 30 %: a labelled judgement, not a measurement.",
                   ],
-                  [
-                    "Simulated opening-relic values",
-                    "Research",
-                    `${neowCoverage().detail}. Simulator unverified against the live game; see Evidence & methods.`,
-                  ],
+                  ...(neowValues()
+                    ? [
+                        [
+                          "Simulated opening-relic values",
+                          "Research",
+                          `${neowCoverage().detail}. Simulator unverified against the live game; see Evidence & methods.`,
+                        ],
+                      ]
+                    : []),
                   [
                     "Route comparison",
                     "Supported",

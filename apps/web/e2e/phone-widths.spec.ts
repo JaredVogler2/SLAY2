@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { expectNoClippedText, expectNoHorizontalOverflow } from "./helpers";
+import { expectNoClippedText, expectNoHorizontalOverflow, neowInfo } from "./helpers";
 
 /**
  * Every page, at the widths phones really have. The suite's mobile project is a Pixel 7 (412 px), which is exactly the
@@ -23,6 +23,8 @@ const PAGES = [
   "/methods",
   "/about",
 ];
+
+const NO_RELIC_VALUES = neowInfo().relics.length === 0;
 
 /** The advisor with Neow's three relics set beside the simulated values: three tiles, a verdict and the caveats on the screen. */
 async function compareNeowOffer(page: Page): Promise<void> {
@@ -70,6 +72,7 @@ test.describe("phone widths", () => {
       });
 
       test("the advisor with Neow's three relics compared fits", async ({ page }) => {
+        test.skip(NO_RELIC_VALUES, "no valid opening-relic measurement is published");
         await compareNeowOffer(page);
         expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
         await expectNoHorizontalOverflow(page);
@@ -129,6 +132,7 @@ test.describe("tablet and small laptop widths", () => {
       test("the advisor with Neow's three relics compared fits and cuts nothing off", async ({
         page,
       }) => {
+        test.skip(NO_RELIC_VALUES, "no valid opening-relic measurement is published");
         await compareNeowOffer(page);
         expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
         await expectNoClippedText(page);

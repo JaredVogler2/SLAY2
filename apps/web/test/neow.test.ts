@@ -96,7 +96,7 @@ function testResult(passed: boolean): NeowTest {
   };
 }
 
-describe("the shipped opening-relic values", () => {
+describe.runIf(neowValues() !== null)("the shipped opening-relic values", () => {
   const values = neowValues();
 
   it("are present, fitted before the test, with the facts needed to read them", () => {
@@ -135,7 +135,7 @@ describe("the shipped opening-relic values", () => {
   });
 
   it("are exactly what the exporter wrote (no hand-typed number reaches the page)", () => {
-    expect(neowJson.values.relics.length).toBe(values?.relics.length);
+    expect((neowJson as NeowData).values?.relics.length).toBe(values?.relics.length);
     expect(relicValue("SILVER_CRUCIBLE")?.label).toBe("Silver Crucible");
   });
 });
@@ -281,8 +281,24 @@ describe("the coverage line for the landing page", () => {
 
   it("follows the shipped data", () => {
     const line = neowCoverage();
-    expect(line.state).toBe(
-      neowTest() === null ? "untested" : neowTest()?.passed ? "validated" : "measured",
-    );
+    const expected =
+      neowValues() === null
+        ? "none"
+        : neowTest() === null
+          ? "untested"
+          : neowTest()?.passed
+            ? "validated"
+            : "measured";
+    expect(line.state).toBe(expected);
+  });
+
+  it("says nothing, and gives no advice, while no valid measurement is published", () => {
+    const none: NeowData = { values: null, test: null };
+    expect(ruleValidated(none)).toBe(false);
+    expect(relicValues(none)).toEqual([]);
+    // every relic is "not measured" and counts as the average: nothing can be called best with any support
+    const a = assessOffer(["FISHING_ROD", "WINGED_BOOTS", "SILVER_CRUCIBLE"], none);
+    expect(a.separation).toBe("close");
+    expect(a.lines.every((l) => l.value === undefined)).toBe(true);
   });
 });

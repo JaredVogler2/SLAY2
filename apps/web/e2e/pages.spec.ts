@@ -63,6 +63,10 @@ test.describe("methods", () => {
   test("lists every measured opening relic with its interval, and reports the one test whichever way it came out", async ({
     page,
   }) => {
+    test.skip(
+      neowInfo().relics.length === 0,
+      "no valid opening-relic measurement is published (the first one was void, ADR-049)",
+    );
     await page.goto("/methods#opening-ancient");
     const panel = page.locator("#opening-ancient");
     await expect(panel).toBeVisible();

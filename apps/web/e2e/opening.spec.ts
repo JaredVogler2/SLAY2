@@ -342,6 +342,11 @@ test.describe("where your run starts", () => {
 });
 
 test.describe("what did Neow offer?", () => {
+  test.skip(
+    neowInfo().relics.length === 0,
+    "no valid opening-relic measurement is published (the first one was void, ADR-049)",
+  );
+
   test.beforeEach(async ({ context }) => {
     await context.clearCookies();
   });

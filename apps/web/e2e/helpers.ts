@@ -178,7 +178,7 @@ export async function expectNoClippedText(page: Page): Promise<void> {
 export interface NeowInfo {
   /** the held-out test of playing by the opening-relic values, when it has been run */
   readonly test: { readonly passed: boolean; readonly bothCompleted: number } | null;
-  /** measured relics by the simulator's label */
+  /** measured relics by the simulator's label; empty while no valid measurement is published */
   readonly relics: readonly {
     readonly label: string;
     readonly beta: number;
@@ -190,8 +190,8 @@ export interface NeowInfo {
 export function neowInfo(): NeowInfo {
   const file = join(__dirname, "..", "src", "content", "neow.generated.json");
   const data = JSON.parse(readFileSync(file, "utf8")) as {
-    values: { relics: NeowInfo["relics"] };
+    values: { relics: NeowInfo["relics"] } | null;
     test: NeowInfo["test"];
   };
-  return { test: data.test, relics: data.values.relics };
+  return { test: data.test, relics: data.values?.relics ?? [] };
 }
