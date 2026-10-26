@@ -1,4 +1,10 @@
-import { isValidated, measuredValue, setFor, type MeasuredCard } from "@/lib/cardvalues";
+import {
+  againstText,
+  isValidated,
+  measuredValue,
+  setFor,
+  type MeasuredCard,
+} from "@/lib/cardvalues";
 
 /** The deck size at which the validated pilot (rules_v2, ADR-031) stops taking cards. */
 export const DECK_CAP = 32;
@@ -42,7 +48,7 @@ export function simulationPick(input: {
       reason:
         set.validation === null
           ? "This class's card values have not been tested against play yet, so the simulated runs give no opinion."
-          : "This class's card values did not beat the hand-written ratings in the held-out test, so they are shown on the codex as measurements only, not as advice.",
+          : `This class's card values did not beat ${againstText(set.validation)} in the held-out test, so they are shown on the codex as measurements only, not as advice.`,
     };
   }
   const values = offered.map((id) => measuredValue(id, character)?.card);

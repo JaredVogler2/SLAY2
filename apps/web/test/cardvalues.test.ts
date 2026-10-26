@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import cardvalues from "@/content/cardvalues.generated.json";
 import {
+  againstText,
   allSets,
   buildIndex,
   coverage,
@@ -43,7 +44,34 @@ describe("measured card values", () => {
       expect(set.model.cvAuc).toBeGreaterThan(0.5);
       expect(set.model.cvLogLoss).toBeLessThan(set.model.baselineLogLoss);
     }
-    expect(ironclad?.id).toBe("ironclad-a0-v1");
+    // round two replaced round one for Ironclad after its pre-registered test (ADR-046); the others are still round one
+    expect(ironclad?.id).toBe("ironclad-a0-v2");
+    expect(setFor("silent")?.id).toBe("silent-a0-v1");
+  });
+
+  it("a set that replaces an earlier one says what it was tested against and how far it moved", () => {
+    expect(ironclad?.supersedes).toBe("ironclad-a0-v1");
+    const v = ironclad?.validation;
+    expect(v?.against).toBe("first-values");
+    expect(v ? againstText(v) : "").toBe("the first measurement of the values");
+    expect(v?.passed).toBe(true);
+    expect(v?.alpha).toBe(0.05);
+    const d = ironclad?.drift;
+    expect(d?.previous).toBe("ironclad-a0-v1");
+    expect(d?.previousSha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(d?.cardsInBoth).toBeGreaterThan(50);
+    // two measurements of the same pilot agree more than two pilots do
+    expect(d && d.noiseSpearmanBrown > d.spearman).toBe(true);
+    // the others are first measurements, tested against the hand-written ratings, and moved from nothing
+    for (const c of ["silent", "regent", "necrobinder", "defect"]) {
+      const other = setFor(c);
+      expect(other?.supersedes, c).toBeNull();
+      expect(other?.drift, c).toBeNull();
+      expect(other?.validation?.against, c).toBe("ratings");
+      expect(other?.validation && againstText(other.validation), c).toBe(
+        "the hand-written ratings",
+      );
+    }
   });
 
   it("attaches every measurement to exactly one catalog card per class (simulator `_CARD` ids included)", () => {
@@ -207,6 +235,7 @@ describe("coverage of the five classes", () => {
       ["defect", "none"],
     ]);
     expect(lines[0]?.detail).toContain("held-out simulated games");
+    expect(lines[0]?.detail).toContain("for the first measurement of the values");
     expect(lines[2]?.detail).toContain("did not beat");
     expect(lines[3]?.detail).toBe("not measured yet");
   });

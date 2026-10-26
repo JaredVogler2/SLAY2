@@ -23,6 +23,7 @@ import {
   largestReport,
   policyLabel,
   signed,
+  ratingsValidation,
   valuesValidation,
   winRows,
   winSentence,
@@ -125,20 +126,38 @@ describe("comparison wording is derived from the data", () => {
     expect(rows.filter((r) => r.held).length).toBe(held);
   });
 
-  it("finds the pre-registered test of the card values and it is a held-out, paired comparison", () => {
+  it("finds the pre-registered test of the card values the site shows, and it is a held-out, paired comparison", () => {
+    // Ironclad's shown set is round two, tested against the pilot that follows round one (ADR-046): the same policy twice
     const test = valuesValidation("ironclad");
     expect(test).toBeDefined();
     expect(test?.role).toBe("held-out");
-    expect(test?.a.policy).toBe("rules_v2");
-    expect(test?.b.policy).toBe("rules_v1");
+    expect(test?.a.policy).toBe("rules_v3");
+    expect(test?.b.policy).toBe("rules_v3");
     expect(test?.a.batchId).toMatch(/-val-/);
     expect(test?.b.batchId).toMatch(/-val-/);
+    expect(test?.a.batchId).not.toBe(test?.b.batchId);
     expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+    // and the first measurement's own test, against the hand-written ratings
+    const first = ratingsValidation("ironclad");
+    expect(first?.role).toBe("held-out");
+    expect(first?.a.policy).toBe("rules_v2");
+    expect(first?.b.policy).toBe("rules_v1");
+    expect(first?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+    // the other classes are first measurements: their test is the one against the ratings
+    expect(valuesValidation("silent")?.a.policy).toBe("rules_v2");
+    expect(valuesValidation("silent")?.b.policy).toBe("rules_v1");
   });
 
   it("tells a policy's variants apart in the label and ignores a threshold of zero", () => {
     expect(policyLabel({ policy: "rules_v2", params: { threshold: 0 } })).toBe("rules_v2");
     expect(policyLabel({ policy: "rules_v1", params: {} })).toBe("rules_v1");
+    // a values file is named by its file, not by its path
+    expect(
+      policyLabel({
+        policy: "rules_v3",
+        params: { threshold: 0, values: "experiments/cardvalue/ironclad-a0-v2.json" },
+      }),
+    ).toBe("rules_v3 (values=ironclad-a0-v2)");
     expect(policyLabel({ policy: "search_v3", params: { scope: "boss" } })).toBe(
       "search_v3 (scope=boss)",
     );

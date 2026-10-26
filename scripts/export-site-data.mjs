@@ -176,13 +176,15 @@ const CLASSES = ["ironclad", "silent", "regent", "necrobinder", "defect"];
 // Significance level of the pre-registered intervention test per class (ADR-031: Ironclad alone, 0.05; ADR-034: the other four share 0.05, Bonferroni).
 const ALPHA = { ironclad: 0.05, silent: 0.0125, regent: 0.0125, necrobinder: 0.0125, defect: 0.0125 };
 
-// Which value files the site shows is a decision, not a side effect of a file existing (ADR-046): a set measured for a study
-// (experiments/cardvalue/ironclad-a0-v2.json, round two) stays out of the site until it is adopted here.
-const SITE_VALUE_SETS = new Set(["ironclad-a0-v1.json", "silent-a0-v1.json", "regent-a0-v1.json", "necrobinder-a0-v1.json", "defect-a0-v1.json"]);
-
+// Which value files the site shows is a decision, not a side effect of a file existing (ADR-046): experiments/cardvalue/
+// site-sets.json lists them, and the golden cases of the simulation panel (sim/slay2_sim/pickgolden.py) read the same list.
+// A set measured for a study stays out of the site until it is listed there.
 function parseCardValues(comparisons) {
   const dir = join(root, "experiments", "cardvalue");
   if (!existsSync(dir)) return [];
+  if (!existsSync(join(dir, "site-sets.json"))) throw new Error("experiments/cardvalue/site-sets.json is missing: it lists the value files the site shows");
+  const SITE_SETS = JSON.parse(readFileSync(join(dir, "site-sets.json"), "utf8"));
+  if (SITE_SETS.schema !== 1) throw new Error("experiments/cardvalue/site-sets.json: unknown schema");
   const catalog = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"), "utf8"));
   const known = new Set(catalog.cards.map((c) => c.id));
   const canonical = (id) => {
@@ -190,16 +192,25 @@ function parseCardValues(comparisons) {
     return known.has(id) ? id : known.has(plain) ? plain : null;
   };
   const out = [];
-  for (const name of readdirSync(dir).filter((f) => SITE_VALUE_SETS.has(f)).sort()) {
+  const listed = new Map(SITE_SETS.sets.map((entry) => [entry.file, entry]));
+  for (const file of listed.keys()) {
+    if (!existsSync(join(dir, file))) throw new Error(`site-sets.json lists ${file}, which does not exist`);
+  }
+  for (const name of readdirSync(dir).filter((f) => listed.has(f)).sort()) {
+    const entry = listed.get(name);
     const raw = readFileSync(join(dir, name));
     const v = JSON.parse(raw.toString("utf8"));
     if (v.kind !== "card-values") continue;
     const character = String(v.character ?? name.split("-")[0]).toLowerCase();
     if (!CLASSES.includes(character)) throw new Error(`${name}: unknown class ${character}`);
-    // the held-out test of acting on these values (rules_v2 against rules_v1, same seeds), if it has been run
-    const test = comparisons.find(
-      (c) => c.a.policy === "rules_v2" && c.b.policy === "rules_v1" && c.role === "held-out" && String(c.cohort.character).toLowerCase() === character,
-    );
+    // the held-out test of acting on these values, if it has been run: by default rules_v2 against rules_v1 on the same seeds
+    // (the values against the hand-written ratings); a set that replaces an earlier one names its own test
+    const test = entry.test
+      ? comparisons.find((c) => c.id === entry.test.comparison && c.role === "held-out")
+      : comparisons.find(
+          (c) => c.a.policy === "rules_v2" && c.b.policy === "rules_v1" && c.role === "held-out" && String(c.cohort.character).toLowerCase() === character,
+        );
+    if (entry.test && !test) throw new Error(`${name}: its test ${entry.test.comparison} is not a held-out comparison in experiments/comparisons`);
     const validation = test
       ? {
           comparison: test.id,
@@ -208,10 +219,36 @@ function parseCardValues(comparisons) {
           passRate: test.reachedAct2.a.rate,
           passRateBase: test.reachedAct2.b.rate,
           p: test.reachedAct2.pairedTable.mcnemar_p,
+          // what the pilot that followed these values was compared with
+          against: entry.test?.against ?? "ratings",
           // improved the primary endpoint at the pre-registered level
           passed: test.reachedAct2.a.rate > test.reachedAct2.b.rate && test.reachedAct2.pairedTable.mcnemar_p < ALPHA[character],
         }
       : null;
+    // how far a set that replaces an earlier one moved from it (a descriptive comparison, not a test)
+    let drift = null;
+    if (entry.drift) {
+      const d = JSON.parse(readFileSync(join(dir, entry.drift), "utf8"));
+      const sha = createHash("sha256").update(raw).digest("hex");
+      if (d.kind !== "card-value-comparison" || d.b.sha256 !== sha) throw new Error(`${name}: ${entry.drift} does not describe this version of the file`);
+      const previous = readFileSync(join(dir, entry.supersedes));
+      if (d.a.sha256 !== createHash("sha256").update(previous).digest("hex")) throw new Error(`${name}: ${entry.drift} compares another version of ${entry.supersedes}`);
+      drift = {
+        previous: entry.supersedes.replace(/\.json$/, ""),
+        previousSha256: d.a.sha256,
+        previousBossFights: d.a.boss_fights,
+        previousPassRate: d.a.pass_rate,
+        cardsInBoth: d.comparison.cards_in_both,
+        spearman: d.comparison.spearman,
+        k: d.comparison.k,
+        bestShared: d.comparison.best_k_in_both,
+        worstShared: d.comparison.worst_k_in_both,
+        disjointIntervals: d.comparison.disjoint_ci95,
+        noiseCards: d.noise_reference.cards_in_both,
+        noiseSpearman: d.noise_reference.spearman,
+        noiseSpearmanBrown: d.noise_reference.spearman_brown,
+      };
+    }
     const cv = v.model.cross_validation;
     const best = Object.entries(cv.l2).find(([k]) => Number(k) === cv.best_l2)?.[1];
     if (!best) throw new Error(`${name}: no cross-validation entry for the chosen penalty ${cv.best_l2}`);
@@ -228,6 +265,8 @@ function parseCardValues(comparisons) {
       id: name.replace(/\.json$/, ""),
       character,
       validation,
+      supersedes: entry.supersedes ? entry.supersedes.replace(/\.json$/, "") : null,
+      drift,
       file: `experiments/cardvalue/${name}`,
       sha256: createHash("sha256").update(raw).digest("hex"),
       outcome: v.outcome,

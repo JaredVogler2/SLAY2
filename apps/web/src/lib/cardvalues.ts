@@ -2,17 +2,53 @@ import { getCard } from "@slay2/game-data";
 
 import cardvalues from "@/content/cardvalues.generated.json";
 
-/** The held-out test of acting on a class's values (rules_v2 against rules_v1 on the same seeds), when it has been run. */
+/**
+ * The held-out test of acting on a class's values, when it has been run: by default the policy that follows them against
+ * the one that follows the hand-written ratings (rules_v2 against rules_v1 on the same seeds); a set that replaces an
+ * earlier measurement is tested against the pilot that follows the earlier one (ADR-046).
+ */
 export interface Validation {
   readonly comparison: string;
-  /** significance level fixed before the test (ADR-031 / ADR-034) */
+  /** significance level fixed before the test (ADR-031 / ADR-034 / ADR-046) */
   readonly alpha: number;
   readonly pairedGames: number;
   readonly passRate: number;
   readonly passRateBase: number;
   /** exact McNemar p-value of "got past the Act-1 boss" on the shared seeds */
   readonly p: number;
+  /** what the pilot that followed these values was compared with: "ratings" (the hand-written ones) or "first-values" */
+  readonly against: string;
   readonly passed: boolean;
+}
+
+/** The baseline of a held-out test, in words. */
+export function againstText(v: Validation): string {
+  return v.against === "first-values"
+    ? "the first measurement of the values"
+    : "the hand-written ratings";
+}
+
+/** How far a set that replaces an earlier one moved from it (a descriptive comparison, ADR-046; not a test). */
+export interface Drift {
+  readonly previous: string;
+  readonly previousSha256: string;
+  readonly previousBossFights: number;
+  readonly previousPassRate: number;
+  /** cards measured in both */
+  readonly cardsInBoth: number;
+  /** Spearman correlation of the two sets of values over those cards */
+  readonly spearman: number;
+  /** the k best and k worst cards of one compared with the other's */
+  readonly k: number;
+  readonly bestShared: number;
+  readonly worstShared: number;
+  /** cards whose 95 % intervals do not overlap */
+  readonly disjointIntervals: number;
+  /** two measurements of the same pilot: the games split by seed, cards fitted in both halves */
+  readonly noiseCards: number;
+  readonly noiseSpearman: number;
+  /** the same corrected to the full number of games, 2r / (1 + r) */
+  readonly noiseSpearmanBrown: number;
 }
 
 export interface MeasuredCard {
@@ -32,6 +68,9 @@ export interface CardValueSet {
   readonly id: string;
   readonly character: string;
   readonly validation: Validation | null;
+  /** the id of the set this one replaces, and how far it moved from it */
+  readonly supersedes: string | null;
+  readonly drift: Drift | null;
   readonly file: string;
   readonly sha256: string;
   readonly outcome: string;
@@ -95,8 +134,9 @@ export function setFor(character: string, index: ValueIndex = INDEX): CardValueS
 }
 
 /**
- * Whether acting on a class's values beat the hand-written ratings in the pre-registered held-out test. Values of a class
- * that was not tested, or failed the test, are still shown as measurements; they are never offered as a second opinion.
+ * Whether acting on a class's values beat their baseline (the hand-written ratings, or for a set that replaces an earlier
+ * one that earlier measurement) in the pre-registered held-out test. Values of a class that was not tested, or failed the
+ * test, are still shown as measurements; they are never offered as a second opinion.
  */
 export function isValidated(set: CardValueSet | undefined): boolean {
   return set?.validation?.passed === true;
@@ -205,14 +245,14 @@ export function coverage(index: ValueIndex = INDEX): CoverageLine[] {
         detail: `${String(set.cards.length)} cards measured, not tested against play yet`,
       };
     }
-    const result = `got past the Act-1 boss in ${pct1(v.passRate)} of ${v.pairedGames.toLocaleString("en-US")} held-out simulated games against ${pct1(v.passRateBase)} for the hand-written ratings (${pText(v.p)})`;
+    const result = `got past the Act-1 boss in ${pct1(v.passRate)} of ${v.pairedGames.toLocaleString("en-US")} held-out simulated games against ${pct1(v.passRateBase)} for ${againstText(v)} (${pText(v.p)})`;
     return v.passed
       ? { character, label, state: "validated", detail: `playing by the measured values ${result}` }
       : {
           character,
           label,
           state: "measured",
-          detail: `measured, but playing by the values did not beat the hand-written ratings at the pre-registered level (${result})`,
+          detail: `measured, but playing by the values did not beat ${againstText(v)} at the pre-registered level (${result})`,
         };
   });
 }

@@ -5,6 +5,7 @@ import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
+  againstText,
   allSets,
   extremes,
   formatBeta,
@@ -14,7 +15,14 @@ import {
   type CardValueSet,
   type MeasuredCard,
 } from "@/lib/cardvalues";
-import { actTwoSentence, formatP, pct, signed, valuesValidation } from "@/lib/methods-data";
+import {
+  actTwoSentence,
+  formatP,
+  pct,
+  ratingsValidation,
+  signed,
+  valuesValidation,
+} from "@/lib/methods-data";
 
 const classLabel = (c: string): string => CLASS_STYLE[c as PlayableClass].label;
 
@@ -75,6 +83,10 @@ function ClassBlock({ set }: { set: CardValueSet }) {
   const counts = signCounts(set);
   const test = valuesValidation(set.character);
   const label = classLabel(set.character);
+  // the baseline the pilot that follows these values was compared with
+  const against = set.validation ? againstText(set.validation) : "the hand-written ratings";
+  // a set that replaces an earlier one: the earlier set's own test, and how far this one moved from it
+  const earlier = set.supersedes ? ratingsValidation(set.character) : undefined;
   return (
     <section className="mt-8 border-t border-line pt-6" aria-labelledby={`cv-${set.character}`}>
       <div className="mb-3 flex flex-wrap items-center gap-3">
@@ -82,16 +94,13 @@ function ClassBlock({ set }: { set: CardValueSet }) {
           {label}
         </h3>
         {isValidated(set) ? (
-          <Badge
-            tone="exact"
-            title="Acting on these values beat the hand-written ratings in the held-out test"
-          >
+          <Badge tone="exact" title={`Acting on these values beat ${against} in the held-out test`}>
             validated in simulation
           </Badge>
         ) : test ? (
           <Badge
             tone="unverified"
-            title="Acting on these values did not beat the hand-written ratings at the pre-registered level"
+            title={`Acting on these values did not beat ${against} at the pre-registered level`}
           >
             measurement only
           </Badge>
@@ -120,7 +129,7 @@ function ClassBlock({ set }: { set: CardValueSet }) {
         <div className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
           <ul
             className="mb-4 grid gap-3 sm:grid-cols-3"
-            aria-label={`Result of the ${label} test, rules policy against measured-value policy`}
+            aria-label={`Result of the ${label} test, ${against} against the measured values`}
           >
             {[
               [
@@ -150,17 +159,53 @@ function ClassBlock({ set }: { set: CardValueSet }) {
             Does acting on the {label} values help? (pre-registered test)
           </p>
           <p className="mt-2">
-            {test.a.policy} is {test.b.policy} with one change: it takes the offered card with the
-            largest measured value if that value is above zero (and the deck is under 32 cards),
-            otherwise it skips. Both played the same {test.pairedSeeds.toLocaleString("en-US")}{" "}
-            held-out seeds ({test.bothCompleted.toLocaleString("en-US")} completed by both).{" "}
-            {actTwoSentence(test)}. Mean floor reached {test.a.meanFloor.toFixed(2)} against{" "}
-            {test.b.meanFloor.toFixed(2)} ({signed(test.floorDifference.meanAMinusB)}, 95% bootstrap
-            interval {signed(test.floorDifference.ci95[0] ?? 0)} to{" "}
+            {set.validation?.against === "first-values" ? (
+              <>
+                Both arms are {test.a.policy}, the same pilot with the same thresholds, and each
+                takes the offered card with the largest measured value if that value is above zero
+                (and the deck is under 32 cards), otherwise it skips. The one change is which values
+                it follows: {set.id} against the earlier {set.supersedes}.
+              </>
+            ) : (
+              <>
+                {test.a.policy} is {test.b.policy} with one change: it takes the offered card with
+                the largest measured value if that value is above zero (and the deck is under 32
+                cards), otherwise it skips.
+              </>
+            )}{" "}
+            Both played the same {test.pairedSeeds.toLocaleString("en-US")} held-out seeds (
+            {test.bothCompleted.toLocaleString("en-US")} completed by both). {actTwoSentence(test)}.
+            Mean floor reached {test.a.meanFloor.toFixed(2)} against {test.b.meanFloor.toFixed(2)} (
+            {signed(test.floorDifference.meanAMinusB)}, 95% bootstrap interval{" "}
+            {signed(test.floorDifference.ci95[0] ?? 0)} to{" "}
             {signed(test.floorDifference.ci95[1] ?? 0)}). Wins: {test.a.wins} against {test.b.wins}{" "}
             ({formatP(test.pairedWinTable.mcnemar_p)}).{" "}
             {set.validation
               ? `Significance level for this class: ${String(set.validation.alpha)}; ${set.validation.passed ? "the primary endpoint passed" : "the primary endpoint did not pass"}.`
+              : ""}
+          </p>
+        </div>
+      ) : null}
+      {set.drift ? (
+        <div className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
+          <p className="font-medium text-parchment">
+            How these values moved when the pilot got stronger
+          </p>
+          <p className="mt-2">
+            These values replace the first measurement ({set.drift.previous}), which was made while
+            a weaker pilot played: {set.drift.previousBossFights.toLocaleString("en-US")} runs
+            reached the Act-1 boss and {pct(set.drift.previousPassRate, 1)} got past it, against{" "}
+            {pct(set.passRate, 1)} now. Over the {set.drift.cardsInBoth} cards measured in both, the
+            two sets of values correlate at {set.drift.spearman.toFixed(2)}, where two measurements
+            of the same pilot agree at {set.drift.noiseSpearmanBrown.toFixed(2)} (the new games
+            split by seed, {set.drift.noiseCards} cards fitted in both halves, corrected to the full
+            number of games). {set.drift.bestShared} of the {set.drift.k} best and{" "}
+            {set.drift.worstShared} of the {set.drift.k} worst cards are shared, and{" "}
+            {set.drift.disjointIntervals} cards have intervals that do not overlap (about one would
+            by chance). The values depend on the pilot, moderately; this is a description, not a
+            test.
+            {earlier
+              ? ` In its own test the first measurement took the pilot from ${pct(earlier.reachedAct2.b.rate, 1)} to ${pct(earlier.reachedAct2.a.rate, 1)} past the Act-1 boss against the hand-written ratings (${formatP(earlier.reachedAct2.pairedTable.mcnemar_p)}).`
               : ""}
           </p>
         </div>

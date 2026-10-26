@@ -1,5 +1,6 @@
 import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
+import { setFor } from "@/lib/cardvalues";
 
 export type RuleRow = (typeof rules.rules)[number];
 /** What `slay2_sim audit sample` found for one batch: the ledger and a replay-verified random sample of its completed games. */
@@ -116,7 +117,13 @@ export function signed(x: number, digits = 2): string {
 export function policyLabel(side: { policy: string; params?: Record<string, unknown> }): string {
   const shown = Object.entries(side.params ?? {})
     .filter(([k, v]) => !(k === "threshold" && v === 0))
-    .map(([k, v]) => `${k}=${typeof v === "string" ? v : JSON.stringify(v)}`);
+    .map(([k, v]) => {
+      // a values file is named by its file, not by its path
+      if (k === "values" && typeof v === "string") {
+        return `values=${v.replace(/^.*\//, "").replace(/\.json$/, "")}`;
+      }
+      return `${k}=${typeof v === "string" ? v : JSON.stringify(v)}`;
+    });
   return shown.length > 0 ? `${side.policy} (${shown.join(", ")})` : side.policy;
 }
 
@@ -163,8 +170,18 @@ export function winsClause(c: Comparison): string {
   return ` Wins: ${String(c.a.wins)} for ${policyLabel(c.a)} and ${String(c.b.wins)} for ${policyLabel(c.b)} (exact McNemar ${formatP(t.mcnemar_p)}).`;
 }
 
-/** The pre-registered test of one class's measured card values (ADR-031, ADR-034): the policy that follows them against the one that does not. */
+/**
+ * The pre-registered held-out test of the card values the site shows for one class (ADR-031, ADR-034, ADR-046): the
+ * comparison its set names, which is the pilot that follows the values against the one that follows the hand-written
+ * ratings, or for a set that replaces an earlier one against the pilot that follows the earlier one.
+ */
 export function valuesValidation(character: string): Comparison | undefined {
+  const id = setFor(character)?.validation?.comparison;
+  return id ? evidence.comparisons.find((c) => c.id === id) : undefined;
+}
+
+/** The test of a class's first measurement: the pilot that follows the values against the one that follows the hand-written ratings. */
+export function ratingsValidation(character: string): Comparison | undefined {
   return evidence.comparisons.find(
     (c) =>
       c.a.policy === "rules_v2" &&

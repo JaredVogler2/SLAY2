@@ -1,8 +1,9 @@
 """Golden cases for the website's "what simulated runs say" panel.
 
 The panel replays, in TypeScript, the card-reward rule of ``rules_v2`` (the pilot the measured values were validated with,
-ADR-031). This module asks the Python policy itself what it would do on a fixed set of offers and decks, so the TypeScript
-port is tested against the original instead of against its own reading of it:
+ADR-031; ``rules_v3`` follows the same rule and differs only in its elite thresholds, ADR-045). This module asks the
+Python policy itself what it would do on a fixed set of offers and decks, so the TypeScript port is tested against the
+original instead of against its own reading of it:
 
     python -m slay2_sim pickgolden --out apps/web/test/fixtures/simulation-pick-golden.json
 """
@@ -22,12 +23,13 @@ UNMEASURED = ("BASH", "SOME_UNLISTED_CARD")  # a starter card and an id the valu
 
 
 def values_files() -> list[Path]:
-    """Every committed card-values file, in a fixed order (one per class measured)."""
-    out = []
-    for f in sorted((external.REPO_ROOT / "experiments" / "cardvalue").glob("*.json")):
-        if json.loads(f.read_text(encoding="utf-8")).get("kind") == "card-values":
-            out.append(f)
-    return out
+    """The card-values files the website shows (experiments/cardvalue/site-sets.json, ADR-046), in a fixed order.
+
+    The website's exporter reads the same list, so the cases here and the values the panel uses cannot name different files;
+    a values file that exists only because a study measured it (a round-two fit before it is adopted) is not in it.
+    """
+    listing = json.loads((external.REPO_ROOT / "experiments" / "cardvalue" / "site-sets.json").read_text(encoding="utf-8"))
+    return sorted(external.REPO_ROOT / "experiments" / "cardvalue" / entry["file"] for entry in listing["sets"])
 
 
 def build_class(values: str, *, cases: int, seed: int) -> dict:
