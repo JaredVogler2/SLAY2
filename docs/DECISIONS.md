@@ -118,3 +118,31 @@ Original new **Slay the Spire 2**, solo-first, 5-character / 3-act / Ascension A
 **Decision.** `sim/slay2_sim/gaps.json` is the single source of truth (read by the harness and by the website exporter). Every batch manifest records the gaps that apply to its configuration (ascension thresholds); `/methods` prints them beside the results; the A10 Double Boss gap has a **strict xfail** test, so fixing the simulator (or our harness) turns the test red until the gap record is removed deliberately.
 
 **Consequence.** Results from ascension 10 from this simulator cannot be described as Double Boss results.
+
+## 2026-10-26 — ADR-025: patch diffs record ids and field names, never content
+
+**Context.** Early Access patches change numbers weekly, and the only versioned data we may touch is rights-restricted (ADR-011). We still need to know *what to re-verify* after a patch.
+
+**Decision.** `python -m slay2_sim patchdiff <old> <new>` compares the pinned spire-archive snapshots (0.99.1, 0.103.2, 0.107.1) and writes ids added/removed, categorical facts that changed (class, rarity, cost, type, target, tier) with old/new values, and only the **names** of other fields that changed (`text`, `vars`, `upgrade`, ...). Names, descriptions and numbers are never copied. A field the archive populated later is reported as `extraction_only`; a field present in one snapshot only is a schema difference; neither counts as a game change. `--coverage` lists v0.107.1 ids missing from the pinned simulator (after normalising the `_CARD`/`_STATUS` suffix the simulator adds).
+
+**Evidence.** 0.103.2 -> 0.107.1: cards +2/-1 with five categorical changes that the committed catalog already carries; relics +3; potions unchanged. Simulator id coverage of v0.107.1: 577/577 cards, 296/296 relics (id coverage only; parity stays UNVERIFIED). Tests cover the semantics with synthetic snapshots, prove no content leaks, and check invariants of the committed diffs.
+
+**Alternatives rejected.** Committing before/after values (content); trusting the archive's own change log text (content and unverifiable); diffing the simulator instead (it would hide the simulator's own errors).
+
+**Rollback.** Delete `docs/patches/`; nothing else depends on the files at run time.
+
+## 2026-10-26 — ADR-026: combat policy is learned from real run states with a fair encoding, and judged by paired evaluation
+
+**Context.** Diagnostics over 160 simulated runs show the rules policy loses ~58 of ~74 HP to the Act 1 boss and dies there 48% of the time, and dies in 20% of Act 2 ordinary fights. Combat quality is the first limit on any simulated win and on any simulation-based card evidence. Search over the simulator is too slow (a clone costs ~2.5 ms), so a learned policy is the practical lever.
+
+**Decision.**
+1. *Environment* (`sim/slay2_sim/rl/env.py`): a single-combat environment whose start states are snapshots of real runs taken **before the entering action**; `reset` clones one, re-randomises every hidden stream, and enters the fight. Decks, relics, potions and HP are therefore realistic, and each reset has a new opening hand. Reward per decision is `-0.5 * HP lost / max HP`, `-0.1` per potion, `+1` win, `-1` death or step cap.
+2. *Fairness*: the network input is `features.encode(observation)`, a pure function of the allow-listed observation (draw pile as a multiset, no RNG, no future). A test perturbs the draw order and every RNG stream and requires bit-identical encodings.
+3. *Model*: a small transformer over entity tokens (player, hand cards, enemies, piles, relics, potions, pending choices) with slot-pointer action heads, so one set of weights serves every hand position and target. Illegal actions are masked.
+4. *Training*: synchronous PPO (GAE 0.95, clip 0.2) with local-inference worker processes; training libraries come from the `train` seed partition only.
+5. *Judging*: paired greedy evaluation of `rules` and the network on identical (held-out `val` snapshot, hidden-stream seed) pairs, McNemar for wins and a paired bootstrap for HP lost; then run-level paired batches (`ppo_combat_v1` vs `rules_v1`) on `val`; the sealed `test` partition is read once, for the final candidate.
+6. *Artifacts*: checkpoints are never committed (weights derived from a third-party simulator are audited separately); a finished run is summarised by config, metrics and the checkpoint SHA-256.
+
+**Alternatives rejected.** Training from scratch on the starter deck only (not the distribution the policy will meet); a flat MLP over concatenated slots (no weight sharing across slots, slow to learn); end-to-end full-run RL first (sparse reward, the combat part dominates the variance); the simulator's own gym wrapper (turns exceptions and timeouts into losses, ADR-012).
+
+**What would count as success.** A paired improvement on held-out combats with the confidence interval excluding zero **and** a run-level improvement in mean floor on `val`. Anything less is reported as a negative result.

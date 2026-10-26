@@ -10,28 +10,30 @@
 | Card advisor | **Heuristic v0, uncalibrated** (`/advisor`, `POST /api/v1/recommend`). Ranks the offered cards and skip by a unit-less deck-quality index, with reasons and a stability check. It is **not** a win probability and **no outcome-based evaluation exists yet**. |
 | Evidence-grade completed simulation games (third-party simulator, Ironclad A0, `veteran` profile) | `random_legal` **1,999** completed of 2,000 seeds: **0 wins**, mean floor **4.47**. `rules_v1` **300**: **0 wins** (95 % Wilson upper bound 1.26 %), mean floor **18.29**, deaths by act 173 / 121 / 6. `search_v1` **200**: **0 wins**, mean floor **16.04**. All on the `train` partition (development, not held-out). The 10- and 100-game batches are prefixes of the 2,000-game seed set, not extra games. |
 | Paired comparison, `rules_v1` vs `search_v1` (200 shared seeds) | Mean floor **+2.38** for `rules_v1` (95 % bootstrap +1.24 to +3.54); `search_v1` takes **19.7x** longer per game. No policy has won a single simulated game, so no win-rate comparison is possible yet. |
-| Trained SLAY2 models | **0** (no neural network exists or is claimed) |
+| Trained SLAY2 models | **0 evaluated.** A combat network (PPO, `sim/slay2_sim/rl`) is being trained; at 490k steps it is still *below* `rules_v1` on held-out combats (win 78.9 % vs 86.6 % on the same 796 pairs; HP lost on bosses 61 % vs 70 %). No result is claimed until the run finishes and the paired evaluation in ADR-026 is done. |
+| Patch compatibility | `slay2_sim patchdiff` diffs the archived 0.99.1 / 0.103.2 / 0.107.1 snapshots by id and field name (no content); 577/577 card and 296/296 relic ids of v0.107.1 exist in the pinned simulator (id coverage, not parity). See `docs/PATCH-COMPATIBILITY.md`. |
 | Deployed website | **none** (production build verified locally and in CI; no hosting project connected, no URL) |
 | Simulator parity with the live game | **UNVERIFIED** (no owned game in this environment) |
 | Maturity (VALIDATION-PLAN levels) | L0 rules register + provenance done; L1 exact calculators verified three ways; L2 harness running on an *unverified* third-party simulator; policies are baselines, not competitive; advisor uncalibrated |
 
 ## What exists (committed)
 
-* **Rule register** `docs/game/MECHANICS-COVERAGE.md`, `docs/game/CATALOG-CROSSCHECK.md`, `docs/sources/SOURCE-REGISTRY.md`, `docs/IP-COMPLIANCE.md`, `docs/INFORMATION-FAIRNESS.md`, `docs/SIMULATOR-CANDIDATE-MATRIX.md`, `docs/RESEARCH-OPEN-QUESTIONS.md`, `docs/DECISIONS.md` (ADR-011..024), `docs/DEPLOY.md`.
+* **Rule register** `docs/game/MECHANICS-COVERAGE.md`, `docs/game/CATALOG-CROSSCHECK.md`, `docs/sources/SOURCE-REGISTRY.md`, `docs/IP-COMPLIANCE.md`, `docs/INFORMATION-FAIRNESS.md`, `docs/SIMULATOR-CANDIDATE-MATRIX.md`, `docs/RESEARCH-OPEN-QUESTIONS.md`, `docs/DECISIONS.md` (ADR-011..026), `docs/DEPLOY.md`, `docs/PATCH-COMPATIBILITY.md`.
 * **Provenance guards**: `external/pins.json`, `scripts/external-fetch.sh`, `scripts/guard-third-party.sh` (+ self-test, pre-commit hook, CI).
-* **`packages/`** (TypeScript, strict): `game-schema` (versioned builds, ids, zod schemas; refuses the beta build), `odds` (exact engines), `game-data` (facts-only card catalog of **577** cards: ids, names, class, rarity, cost, type, our own role tags; no card text; character starting facts; solo reward pools), `decision` (draft advisor v0).
-* **`apps/web`** (Next.js 16, React 19): landing, `/odds` (5 calculators with the exact fraction one click away), `/advisor` (character, deck, offered cards, recommendation with reasons, rare-pity tracker, impossible-offer check, local-first run with undo/redo and JSON export/import), `/methods` (every rule with its evidence, verification layers, simulator ledger with intervals and paired comparisons, known gaps, what is not evaluated), `/about` (rights, provenance, privacy, open decisions), 404 and error boundaries, API v1 (`health`, `capabilities`, `manifest`, `odds`, `recommend`, `catalog/cards`, `experiments`), security headers, favicon, robots, sitemap.
-* **`sim/` research harness (original code)**: outcome taxonomy, fair allow-listed observation adapter, closure-aware clone + fair determinization, runner with step/stall/turn/wall limits, resumable parallel batches with checksummed manifests, trace replay verification, seed manifests with a sealed `test` partition, Wilson / paired bootstrap / exact McNemar, the paired-comparison artifact (`experiments/comparisons/`), a registry of known simulator gaps (`sim/slay2_sim/gaps.json`), policies `random_legal`, `rules_v1`, `search_v1`, CLI (`doctor`, `seeds`, `smoke`, `run`, `audit`, `compare`, `oracle`, `catalog`).
+* **`packages/`** (TypeScript, strict): `game-schema` (versioned builds, ids, zod schemas; refuses the beta build), `odds` (exact engines), `game-data` (facts-only card catalog of **577** cards: ids, names, class, rarity, cost, type, our own role tags; no card text; character starting facts; solo reward pools), `decision` (draft advisor v0 and the exact opening-hand report).
+* **`apps/web`** (Next.js 16, React 19): landing, `/odds` (5 calculators with the exact fraction one click away), `/advisor` (character, deck, offered cards, recommendation with reasons, rare-pity tracker, exact opening-hand odds for your deck, impossible-offer check, local-first run with undo/redo and JSON export/import), `/methods` (every rule with its evidence, verification layers, simulator ledger with intervals and paired comparisons, known gaps, what is not evaluated), `/about` (rights, provenance, privacy, open decisions), 404 and error boundaries, API v1 (`health`, `capabilities`, `manifest`, `odds`, `recommend`, `catalog/cards`, `experiments`), security headers, favicon, robots, sitemap.
+* **`sim/` research harness (original code)**: outcome taxonomy, fair allow-listed observation adapter, closure-aware clone + fair determinization, runner with step/stall/turn/wall limits, resumable parallel batches with checksummed manifests, trace replay verification, seed manifests with a sealed `test` partition, Wilson / paired bootstrap / exact McNemar, the paired-comparison artifact (`experiments/comparisons/`), a registry of known simulator gaps (`sim/slay2_sim/gaps.json`), policies `random_legal`, `rules_v1`, `search_v1`, `ppo_combat_v1` (rules_v1 with a trained combat network), CLI (`doctor`, `seeds`, `smoke`, `run`, `audit`, `compare`, `oracle`, `catalog`, `patchdiff`).
+* **`sim/slay2_sim/rl` (original code, needs torch)**: single-combat environment built from real run states, pure fair encoding into a 134-action masked space, entity-token transformer, synchronous PPO with local-inference workers, paired evaluation of `rules` / network agents. Checkpoints are never committed.
 * **Site data is exported, not typed**: rules, batches, comparisons and gaps reach the website through `scripts/export-site-data.mjs`; a test fails when the generated JSON is stale, and the exporter refuses a comparison whose batches changed.
 
 ## Tests (commands actually run on this commit)
 
 | Suite | Command | Result |
 |---|---|---|
-| TypeScript, all packages + web | `pnpm check` (typecheck, lint, prettier, tests, production build) | green: game-schema 6, game-data 13, odds 79, decision 13, web 41 = **152 tests** |
-| End to end on the production server (`next start`), desktop + mobile, axe WCAG 2.2 AA | `pnpm --filter @slay2/web e2e` | **72 passed** (landing, odds, advisor journey, methods, about, 404, navigation, security headers with zero CSP violations) |
-| Python research harness | `PYTHONPATH=sim python -m pytest sim/tests` | **51 passed, 1 strict xfail** (the documented A10 Double Boss gap) |
-| Continuous integration | `.github/workflows/ci.yml` (`web`, `e2e`, `sim` jobs) | `web` and `sim` green on `4fe73cb`; the `e2e` job is new in this commit |
+| TypeScript, all packages + web | `pnpm check` (typecheck, lint, prettier, tests, production build) | green: game-schema 6, game-data 13, odds 79, decision 19, web 41 = **158 tests** |
+| End to end on the production server (`next start`), desktop + mobile, axe WCAG 2.2 AA | `pnpm --filter @slay2/web e2e` | **74 passed** (landing, odds, advisor journey incl. opening-hand odds, methods, about, 404, navigation, security headers with zero CSP violations) |
+| Python research harness | `PYTHONPATH=sim python -m pytest sim/tests` | **72 passed, 1 strict xfail** (the documented A10 Double Boss gap); the pure layout tests run in CI, the torch/simulator tests skip there |
+| Continuous integration | `.github/workflows/ci.yml` (`web`, `e2e`, `sim` jobs) | all three jobs green on `e18d4b7`, including the Playwright job on a GitHub runner (72 tests in about 70 s) |
 
 ## Evidence (earlier measurements, still valid)
 
@@ -65,10 +67,10 @@
 
 ## Next steps
 
-1. **Competent policy** (phase 03/04): analyse where `rules_v1` dies (Act-1 bosses Vantom, Ceremonial Beast, Kin Priest account for 126 of 300 deaths), improve drafting / elite avoidance / potion use, repair the `search_v1` value function, then evidence-grade batches on `val`, one sealed `test` read, paired comparisons. Combat-PPO experiment only afterwards; negative results are reported.
+1. **Competent policy** (phase 03/04): finish the combat-PPO run, judge it by paired held-out evaluation (ADR-026), then run-level batches of `ppo_combat_v1` vs `rules_v1` on `val`. In parallel improve drafting / elite avoidance / potion use (the Act-1 bosses Vantom, Ceremonial Beast and Kin Priest account for 126 of 300 `rules_v1` deaths), repair the `search_v1` value function, and read the sealed `test` partition once for the final candidate. Negative results are reported.
 2. **Calibrate the advisor** with simulator evidence (card-probing harness), keep the heuristic prior, publish the comparison on `/methods`.
 3. **More decision services** (phase 05/06): Ancient boons, map pathfinder, shop/campfire/event helpers; each needs a facts-only catalog first.
-4. **Patch compatibility**: spire-archive diff 0.103.2 -> 0.107.1 (ids/counts only) in `docs/PATCH-COMPATIBILITY.md`.
+4. **Patch compatibility**: done for the three archived versions (`docs/PATCH-COMPATIBILITY.md`); the beta build v0.111.0 has no snapshot, so it stays unsupported.
 5. **Deployment** once the owner connects a hosting project: see `docs/DEPLOY.md` for the release gate.
 
 Exact next command: `Read docs/STATUS.md; continue at "Next steps" 1 (policy research in sim/); keep committing small passing slices and run pnpm check before every commit.`
