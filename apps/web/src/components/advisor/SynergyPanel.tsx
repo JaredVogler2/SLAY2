@@ -1,11 +1,118 @@
-import type { DeckSynergy } from "@slay2/decision";
+import { PART_WEIGHT, type DeckSynergy } from "@slay2/decision";
 
 import { Badge } from "@/components/ui/Badge";
+import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
+import { SYNERGY_EVIDENCE, type Interval, type PartRatio } from "@/lib/synergy-evidence";
 
 function names(list: readonly string[]): string {
   if (list.length <= 1) return list[0] ?? "";
   return `${list.slice(0, -1).join(", ")} and ${list[list.length - 1] ?? ""}`;
+}
+
+const MINUS = "−";
+
+/** A signed or plain number with a typographic minus, so a negative reads as one in a table of figures. */
+function num(x: number, digits: number): string {
+  const text = x.toFixed(digits);
+  return Number(text) === 0 ? (0).toFixed(digits) : text.replace("-", MINUS);
+}
+
+function range(ci: readonly number[], digits: number): string {
+  return `${num(ci[0] ?? 0, digits)} to ${num(ci[1] ?? 0, digits)}`;
+}
+
+function part(r: PartRatio): string {
+  return `${num(r.toQuality, 2)} (95 % ${range(r.ci95, 2)})`;
+}
+
+function change(g: Interval): string {
+  return `${num(g.mean, 4)} (95 % ${range(g.ci95, 4)})`;
+}
+
+function kept(weight: number): string {
+  return weight >= 1 ? "at its first judgement" : `at ${num(weight, 2)} of its first judgement`;
+}
+
+/**
+ * What the simulated runs say about the synergy term, read from the study's own report (ADR-050): a measured claim and its
+ * limits, beside a heuristic that stays a judgement.
+ */
+function Evidence() {
+  const b1 = SYNERGY_EVIDENCE.b1;
+  if (!b1) {
+    return (
+      <p className="mt-4 text-xs text-muted">
+        The tags say what each card supplies and needs. They are SLAY2&rsquo;s judgement from how
+        the cards work, with hand-set strengths: nothing here has been measured in games yet.
+      </p>
+    );
+  }
+  const clear = Object.entries(b1.perCohortGain)
+    .filter(([, g]) => g.ci95[1] !== undefined && g.ci95[1] < 0)
+    .map(([name]) => name.replace(/-(train|dev)$/, ""))
+    .map((n) => n.charAt(0).toUpperCase() + n.slice(1));
+  const classes = [...new Set(clear)];
+  return (
+    <>
+      <p className="mt-4 text-xs text-muted">
+        SLAY2&rsquo;s judgement of how the cards work, partly checked. In{" "}
+        <span className="num">{b1.bossFights.toLocaleString("en-US")}</span> simulated runs that
+        brought a random deck to the Act&nbsp;1 boss, decks with fewer unmet needs, and with more
+        Strength, Dexterity or Focus behind the cards they lift, got past it more often; the engine
+        credit got no such support.
+      </p>
+      <Disclosure summary="What the simulated runs show, and what they do not" className="mt-3">
+        <div className="space-y-3">
+          <p>
+            <strong className="text-parchment">What was measured.</strong> Runs of an unofficial
+            simulator that has not been compared with the live game, Ascension 0, one rule-based
+            pilot, decks put together mostly by random card picks. The outcome is whether the run
+            got past the Act&nbsp;1 boss. The deck index was scored by how well it predicts that on
+            runs the fit never saw (cross-validation by seed).
+          </p>
+          <p>
+            <strong className="text-parchment">What the synergy term adds.</strong> Added to the
+            index it lowers the held-out prediction error by{" "}
+            <span className="num">{change(b1.synergyAdded)}</span> (log loss{" "}
+            <span className="num">{num(b1.logLoss.index, 4)}</span> to{" "}
+            <span className="num">{num(b1.logLoss.indexAndSynergy, 4)}</span>). Per index point,
+            compared with a point of average card rating, unmet needs are worth{" "}
+            <span className="num">{part(b1.ratios.needs)}</span>; Strength, Dexterity and Focus
+            lifting the cards they help <span className="num">{part(b1.ratios.scalers)}</span>;
+            engines <span className="num">{part(b1.ratios.engines)}</span>, which the data cannot
+            tell from nothing. The index counts the first two{" "}
+            <span className="num">
+              {PART_WEIGHT.needs >= 1 && PART_WEIGHT.scalers >= 1
+                ? "at their first judgement"
+                : `at ${num(PART_WEIGHT.needs, 2)} and ${num(PART_WEIGHT.scalers, 2)} of it`}
+            </span>{" "}
+            and the engine credit {kept(PART_WEIGHT.engines)}, a judgement.
+          </p>
+          <p>
+            <strong className="text-parchment">Beyond knowing the cards.</strong> A model that
+            already knows which cards the deck holds predicts a little better with the parts added (
+            <span className="num">{change(b1.beyondCards.gap)}</span>): most of what they predict,
+            the cards themselves also predict.
+          </p>
+          <p>
+            <strong className="text-parchment">By class.</strong>{" "}
+            {classes.length > 0
+              ? `The gain is clear for ${names(classes)}; for the other classes the data cannot tell.`
+              : "The data cannot tell for any single class."}
+          </p>
+          <p>
+            <strong className="text-parchment">What it is not.</strong> Not the live game, not
+            winning (wins are rare), and not people who build engines on purpose: random decks
+            seldom hold a whole engine, and the pilot does not build around one. The tags were read
+            against these same runs (a flaw in the Necrobinder&rsquo;s Osty was found and fixed that
+            way), so the figures flatter them. A held-out test of a pilot that picks cards by this
+            index is registered before any of its games (ADR-050); its result is not in yet.
+          </p>
+        </div>
+      </Disclosure>
+    </>
+  );
 }
 
 /**
@@ -20,7 +127,7 @@ export function SynergyPanel({ synergy }: { synergy: DeckSynergy }) {
       eyebrow="Synergy · how your cards work together"
       title="What your deck is building"
       headingLevel={3}
-      aside={<Badge tone="heuristic">Judgement, not measured</Badge>}
+      aside={<Badge tone="heuristic">Judgement, partly checked</Badge>}
       aria-label="Synergy of your deck"
     >
       {synergy.engines.length === 0 && synergy.waiting.length === 0 ? (
@@ -82,11 +189,7 @@ export function SynergyPanel({ synergy }: { synergy: DeckSynergy }) {
           </ul>
         </div>
       ) : null}
-      <p className="mt-4 text-xs text-muted">
-        The tags say what each card supplies and needs (Strength, Exhaust, Block, Poison, Shivs,
-        Orbs, Stars, Osty, Doom and so on). They are SLAY2&rsquo;s judgement from how the cards
-        work, with hand-set strengths: nothing here has been measured in games yet.
-      </p>
+      <Evidence />
     </Panel>
   );
 }

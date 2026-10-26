@@ -41,6 +41,17 @@ import type { DeckEntry } from "./profile";
 
 export type Supply = Readonly<Record<MechanicId, number>>;
 
+/**
+ * How much of each hand-set part of the synergy term the index keeps: 1 is the first judgement, less means the simulated runs
+ * valued the part less than the judgement did (ADR-050: stage B1 read the parts against simulated runs, stage B2 tests the index
+ * with a pilot that plays by it). The strengths below are the judgement; these are what was kept of it.
+ */
+export const PART_WEIGHT: Readonly<{ needs: number; scalers: number; engines: number }> = {
+  needs: 1,
+  scalers: 1,
+  engines: 1,
+};
+
 /** The share of a card's rating that one unit of need weight puts at stake; a core need (weight 3) hits the cap. */
 export const DEPENDENCE_PER_WEIGHT = 0.25;
 export const MAX_DEPENDENCE = 0.7;
@@ -120,7 +131,7 @@ export function needsOf(card: CardEntry): Needs {
   const needs: Needs = {
     list,
     total,
-    share: Math.min(MAX_DEPENDENCE, DEPENDENCE_PER_WEIGHT * total),
+    share: PART_WEIGHT.needs * Math.min(MAX_DEPENDENCE, DEPENDENCE_PER_WEIGHT * total),
   };
   NEEDS.set(card.id, needs);
   return needs;
@@ -139,7 +150,7 @@ export function fitOf(card: CardEntry, supply: Supply): number {
 function scalerBonus(card: CardEntry, supply: Supply): number {
   let bonus = 0;
   for (const s of benefitsFrom(card)) {
-    bonus += SCALER_BETA[s] * saturation(s, supply[s]);
+    bonus += PART_WEIGHT.scalers * SCALER_BETA[s] * saturation(s, supply[s]);
   }
   return bonus;
 }
@@ -187,6 +198,7 @@ export function realizedMass(
 /** Points an engine of this mechanic is worth to the deck: sources and payoffs together, each saturating. */
 export function engineValue(mechanic: MechanicId, supply: number, payoff: number): number {
   return (
+    PART_WEIGHT.engines *
     MECHANICS[mechanic].engine *
     saturation(mechanic, supply) *
     (1 - Math.exp(-Math.max(0, payoff) / ENGINE_PAYOFF_SCALE))

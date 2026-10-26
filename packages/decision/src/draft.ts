@@ -21,6 +21,7 @@ import { baseWeights, scoreTerms, total, type Terms, type Weights } from "./qual
 import {
   FUTURE_SUPPORT,
   MAX_DEPENDENCE,
+  PART_WEIGHT,
   deckSynergy,
   explainAddition,
   type Need,
@@ -548,7 +549,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     warnings,
     assumptions: [
       "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate. It is read as a card's worth when what the card needs is there.",
-      `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.`,
+      `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * PART_WEIGHT.needs * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.`,
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
       ...(tilt
         ? [
