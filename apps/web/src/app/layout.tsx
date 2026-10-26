@@ -18,18 +18,10 @@ const base = siteUrl();
  * with its old loading skeleton). The font is cached for the next page load, so it only costs the very first view.
  */
 const cinzel = localFont({
-  src: [
-    {
-      path: "../../node_modules/@fontsource/cinzel/files/cinzel-latin-500-normal.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../node_modules/@fontsource/cinzel/files/cinzel-latin-700-normal.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+  // one file: the headings ask for weight 400 and the site never asks for a bolder Cinzel (the 700 file was fetched on every
+  // page and used on none); declaring the range keeps the browser from drawing a fake bold if a heading ever does
+  src: "../../node_modules/@fontsource/cinzel/files/cinzel-latin-500-normal.woff2",
+  weight: "400 700",
   variable: "--font-cinzel",
   display: "optional",
   adjustFontFallback: "Times New Roman",
