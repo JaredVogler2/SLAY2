@@ -36,6 +36,8 @@ _NEOW_SALT = 0x4E454F57  # "NEOW"
 class _NeowMixin:
     """The opening-Ancient screen: detect it, let ``_pick_neow`` choose (or defer to rules_v2), and log offer and choice."""
 
+    stats_on_failure = True  # the runner asks for the offer and the choice of an errored or timed-out run too (see run_episode)
+
     def __init__(self, **params):
         super().__init__(**params)
         self.neow: dict | None = None

@@ -275,6 +275,13 @@ def run_episode(
         rec.outcome = {"sim": Outcome.SIMULATOR_ERROR, "adapter": Outcome.HARNESS_ERROR, "policy": Outcome.POLICY_ERROR}[stage].value
         rec.error = f"{type(e).__name__}: {str(e)[:300]}"
     finally:
+        if getattr(policy, "stats_on_failure", False):
+            # a policy that measures something about the run (the Neow study: which relic it took) says so for a run that
+            # ended in an error or a wall-clock timeout too, so those games can be counted against what they took
+            try:
+                rec.extra.update(policy.episode_stats())
+            except Exception:  # noqa: BLE001 - the record of a failed run is still written
+                pass
         if mgr is not None:
             try:
                 _fill_final_state(rec, mgr)

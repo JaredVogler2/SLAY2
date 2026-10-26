@@ -92,3 +92,39 @@ def test_the_values_file_is_recorded_by_hash_and_a_wrong_hash_is_refused(sim, tm
     bad.write_text('{"kind": "card-values", "cards": []}', encoding="utf-8")
     with pytest.raises(ValueError):
         make_policy("rules_v2_neow_values", neow_values=str(bad))
+
+
+def test_a_run_that_fails_after_the_opening_still_says_which_relic_it_took(sim, monkeypatch):
+    """Errors and timeouts are excluded from the fit, and counted against the relic they took: that needs the record."""
+    for failure in (RuntimeError("boom"), TimeoutError("wall")):
+        policy = make_policy("rules_v2_neow", neow_explore=1.0)
+        real_act = policy.act
+        calls = {"n": 0}
+
+        def act(obs, actions, fm, real_act=real_act, calls=calls, failure=failure):
+            calls["n"] += 1
+            if calls["n"] == 3:
+                raise failure
+            return real_act(obs, actions, fm)
+
+        monkeypatch.setattr(policy, "act", act)
+        rec = run_episode(RunConfig(), SEEDS[0], policy, batch_id="test-neow-fail")
+        assert rec.outcome == "policy_error", rec.outcome
+        assert rec.extra["neow"]["explored"] is True and rec.extra["neow"]["taken"]
+
+
+def test_other_policies_keep_their_records_exactly_as_before(sim, monkeypatch):
+    policy = make_policy("rules_v2")
+    assert not getattr(policy, "stats_on_failure", False)
+    real_act = policy.act
+    calls = {"n": 0}
+
+    def act(obs, actions, fm):
+        calls["n"] += 1
+        if calls["n"] == 3:
+            raise RuntimeError("boom")
+        return real_act(obs, actions, fm)
+
+    monkeypatch.setattr(policy, "act", act)
+    rec = run_episode(RunConfig(), SEEDS[0], policy, batch_id="test-v2-fail")
+    assert rec.outcome == "policy_error" and set(rec.extra) == {"profile"}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from slay2_sim.neowvalue import build_report, extract, vocabulary
+from slay2_sim.neowvalue import binomial_upper_tail, build_report, extract, extract_excluded, vocabulary
 
 POSITIVE = ["Arcane Scroll", "Booming Conch", "Fishing Rod", "Golden Pearl", "Kaleidoscope", "Lead Paperweight"]
 CURSED = ["Cursed Pearl", "Hefty Tablet", "Large Capsule"]
@@ -85,3 +85,37 @@ def test_a_win_counts_as_past_the_boss():
     assert extract([g], "Ironclad")[0]["passed"] == 1
     g["outcome"], g["act"] = "death", 0
     assert extract([g], "Ironclad")[0]["passed"] == 0
+
+
+def test_excluded_games_are_counted_against_the_relic_they_took_and_never_as_losses():
+    games = synthetic(60)
+    games[0]["outcome"] = "simulator_error"
+    games[1]["outcome"] = "timeout"
+    games[2]["outcome"] = "simulator_error"
+    games[2]["extra"] = {}  # it failed before the opening screen: there is no relic to count it against
+    got = extract_excluded(games, "Ironclad")
+    assert [(g["seed"], g["outcome"]) for g in got] == [(0, "simulator_error"), (1, "timeout")]
+    assert got[0]["taken"] == games[0]["extra"]["neow"]["taken"]
+    assert {g["seed"] for g in extract(games, "Ironclad")}.isdisjoint({0, 1, 2})
+
+
+def test_a_relic_whose_games_end_in_errors_far_more_often_is_flagged_and_a_uniform_rate_is_not():
+    recs = records(6000)
+    rng = np.random.default_rng(5)
+    labels = sorted({r["taken"] for r in recs})
+    # the same 3 % of games fail whatever they took
+    uniform = [{"character": "Ironclad", "seed": 10_000 + i, "taken": str(rng.choice(labels)), "outcome": "simulator_error"} for i in range(int(0.03 * len(recs)))]
+    quiet = build_report(recs, excluded=uniform, bootstrap_draws=10, min_taken=10)
+    assert quiet["excluded_games"] == len(uniform) and quiet["excluded_by_outcome"] == {"simulator_error": len(uniform)}
+    assert not any(r["exclusion_flag"] for r in quiet["relics"]), [r["label"] for r in quiet["relics"] if r["exclusion_flag"]]
+    # one relic loses a quarter of its games to errors
+    taken_n = sum(1 for r in recs if r["taken"] == "Fishing Rod")
+    loud = uniform + [{"character": "Ironclad", "seed": 20_000 + i, "taken": "Fishing Rod", "outcome": "simulator_error"} for i in range(taken_n // 3)]
+    flagged = [r["label"] for r in build_report(recs, excluded=loud, bootstrap_draws=10, min_taken=10)["relics"] if r["exclusion_flag"]]
+    assert flagged == ["Fishing Rod"]
+
+
+def test_the_exact_binomial_tail():
+    assert binomial_upper_tail(0, 10, 0.3) == 1.0
+    assert abs(binomial_upper_tail(10, 10, 0.5) - 0.5**10) < 1e-15
+    assert abs(binomial_upper_tail(3, 5, 0.5) - (10 + 5 + 1) / 32) < 1e-15
