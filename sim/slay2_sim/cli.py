@@ -166,6 +166,21 @@ def cmd_audit(args) -> int:
             )
         print(f"wins in batch {report['wins_in_batch']}, audited {report['wins_audited']}, verified {report['wins_verified']}  (wrote wins-audit.json)")
         return 0 if report["all_verified"] or report["wins_audited"] == 0 else 1
+    if args.what == "sample":
+        from .winaudit import audit_sample
+
+        sim = external.locate()
+        external.activate(sim.root)
+        report = audit_sample(Path(args.batch), n=args.limit if args.limit is not None else 50)
+        led = report["ledger"]
+        print(f"ledger: {led['records']} records for {led['requested_seeds']} requested seeds, "
+              f"{'complete and consistent' if led['ok'] else 'NOT consistent'}; outcomes {led['outcome_counts']}")
+        bad = [g for g in report["games"] if not g["verified"]]
+        for g in bad:
+            print(f"  seed={g['seed']} NOT VERIFIED: re-run {'agrees' if g['rerun_matches_stored_record'] else 'DISAGREES ' + str(g['rerun_mismatched_fields'])}, "
+                  f"replay: {g['replay_message']}, terminal {g['terminal_state']}")
+        print(f"sample of {report['sample']['drawn']} completed games (rng seed {report['sample']['rng_seed']}): {report['verified']} verified  (wrote sample-audit.json)")
+        return 0 if report["all_verified"] else 1
     print(f"audit {args.what!r} is implemented in a later milestone", file=sys.stderr)
     return 2
 
@@ -331,7 +346,7 @@ def build_parser() -> argparse.ArgumentParser:
     rn.set_defaults(fn=cmd_run)
 
     au = sub.add_parser("audit", help="audits: replay | wins | rewards | monster-hp | fairness")
-    au.add_argument("what", choices=["replay", "wins", "rewards", "monster-hp", "fairness"])
+    au.add_argument("what", choices=["replay", "wins", "sample", "rewards", "monster-hp", "fairness"])
     au.add_argument("--batch")
     au.add_argument("--limit", type=int, default=None, help="replay: traces to verify (default 5); wins: wins to audit (default all)")
     au.add_argument("--character", default="Ironclad")
