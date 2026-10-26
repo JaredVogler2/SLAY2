@@ -58,6 +58,25 @@ test.describe("landing", () => {
     await expectNoSeriousA11yViolations(page, "landing");
   });
 
+  test("reduced motion: the decorative rings stand still, and they do turn without the preference", async ({
+    page,
+  }) => {
+    const names = () =>
+      page
+        .locator(".orbit, .orbit-reverse")
+        .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    const turning = await names();
+    // the check has power: with the default preference the rings do animate
+    expect(turning.length).toBeGreaterThan(0);
+    for (const name of turning) expect(name).not.toBe("none");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const still = await names();
+    expect(still).toHaveLength(turning.length);
+    for (const name of still) expect(name).toBe("none");
+  });
+
   test("keyboard: skip link reaches main content", async ({ page }) => {
     await page.goto("/");
     await page.keyboard.press("Tab");
