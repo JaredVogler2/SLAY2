@@ -60,5 +60,5 @@ describe("dependency license gate (campaign 11)", () => {
     const r = spawnSync(process.execPath, [script], { encoding: "utf8" });
     expect(r.stderr).toBe("");
     expect(r.status).toBe(0);
-  });
+  }, 60_000); // lists the whole tree twice through pnpm: about 2 s on a free machine, much more under load
 });

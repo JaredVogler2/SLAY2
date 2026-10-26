@@ -31,6 +31,18 @@
       "min_ascension": 0,
       "affects": "results",
       "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+    },
+    {
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
     }
   ],
   "reports": [
@@ -166,6 +178,74 @@
       "role": "development (train partition): not a held-out result"
     },
     {
+      "id": "random_legal-ironclad-a0-veteran-val-n2000",
+      "policy": "random_legal",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 2000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019170472812529331
+      ],
+      "meanFloor": 4.48,
+      "medianFloor": 4,
+      "deathsByAct": {
+        "0": 2000
+      },
+      "topKillers": [
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 327
+        },
+        {
+          "id": "NIBBIT",
+          "n": 203
+        },
+        {
+          "id": "SHRINKER_BEETLE",
+          "n": 197
+        },
+        {
+          "id": "NIBBIT,NIBBIT",
+          "n": 90
+        },
+        {
+          "id": "CUBEX_CONSTRUCT",
+          "n": 77
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.37,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "6039113dcdc9ef6052f645f55adae7142fd3dcb009a19c6b80953214f5326b9c",
+      "episodesGzSha256": "a26105abad3f351765fde7c10a1eb77a133470bcc7b8fb8904b6d2255ea6f1da",
+      "finished": "2026-10-26T02:53:10+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v1-ironclad-a0-veteran-train-n300",
       "policy": "rules_v1",
       "character": "Ironclad",
@@ -234,6 +314,76 @@
       "episodesGzSha256": "b08ccc655701436c32d1c10db51bc2a67910bbfb0b5bed11fdde4789fa18e604",
       "finished": "2026-10-25T23:25:49+00:00",
       "role": "development (train partition): not a held-out result"
+    },
+    {
+      "id": "rules_v1-ironclad-a0-veteran-val-n2000",
+      "policy": "rules_v1",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1997,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 3,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1997,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019199216428463545
+      ],
+      "meanFloor": 18.08,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1132,
+        "1": 837,
+        "2": 28
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 319
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 279
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 236
+        },
+        {
+          "id": "TUNNELER",
+          "n": 111
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 107
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.62,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "cb67cffc76ebbb79234ac86ec8d1f405cf8da339bcf0628d38298d706778d752",
+      "episodesGzSha256": "3cc0375069c440d87c9c06b9d0af3013782045bda369855a4cf306e34e2f1b00",
+      "finished": "2026-10-26T02:46:56+00:00",
+      "role": "held-out"
     },
     {
       "id": "search_v1-ironclad-a0-veteran-train-n200",
@@ -307,6 +457,63 @@
     }
   ],
   "comparisons": [
+    {
+      "id": "rules_v1-vs-random_legal-ironclad-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v1-ironclad-a0-veteran-val-n2000",
+        "contentSha256": "cb67cffc76ebbb79234ac86ec8d1f405cf8da339bcf0628d38298d706778d752",
+        "meanFloor": 18.081121682523786,
+        "meanWallSecondsPerEpisode": 0.6157,
+        "policy": "rules_v1",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019199216428463545
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "random_legal-ironclad-a0-veteran-val-n2000",
+        "contentSha256": "6039113dcdc9ef6052f645f55adae7142fd3dcb009a19c6b80953214f5326b9c",
+        "meanFloor": 4.482223335002503,
+        "meanWallSecondsPerEpisode": 0.3715,
+        "policy": "random_legal",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019199216428463545
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Ironclad",
+        "partition": "val",
+        "profile": "veteran",
+        "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1997,
+      "excludedNotCompleted": 3,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 1997
+      },
+      "floorDifference": {
+        "ci95": [
+          13.306459689534302,
+          13.895343014521783
+        ],
+        "meanAMinusB": 13.598898347521281,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.603,
+      "role": "held-out",
+      "contentSha256": "42da8fb54f5c841249db04d2a33975ab6802f1b5d1e7424d74f5448ad1767c22"
+    },
     {
       "id": "rules_v1-vs-search_v1-ironclad-a0-veteran-train",
       "a": {

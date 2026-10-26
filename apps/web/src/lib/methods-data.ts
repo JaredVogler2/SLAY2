@@ -57,10 +57,11 @@ export function pct(x: number, digits = 2): string {
 }
 
 /** The largest veteran-profile batch of a policy: the best estimate we have for it. */
+/** The headline report of a policy: the largest *held-out* batch if one exists (a development batch never outranks it). */
 export function largestReport(policy: string): EvidenceReport | undefined {
-  return evidence.reports
-    .filter((r) => r.policy === policy && r.profile === "veteran")
-    .sort((x, y) => y.completed - x.completed)[0];
+  const mine = evidence.reports.filter((r) => r.policy === policy && r.profile === "veteran");
+  const heldOut = mine.filter((r) => r.role === "held-out");
+  return [...(heldOut.length > 0 ? heldOut : mine)].sort((x, y) => y.completed - x.completed)[0];
 }
 
 export type ComparisonVerdict = "a-higher" | "b-higher" | "undetermined";

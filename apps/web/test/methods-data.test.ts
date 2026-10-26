@@ -65,8 +65,22 @@ describe("comparison wording is derived from the data", () => {
     expect(c?.bothCompleted).toBe(200);
     expect(c?.floorDifference.meanAMinusB).toBeCloseTo(2.375, 3);
     expect(c?.pairedWinTable).toMatchObject({ both: 0, a_only: 0, b_only: 0, neither: 200 });
-    expect(largestReport("rules_v1")?.completed).toBe(300);
-    expect(largestReport("random_legal")?.completed).toBe(1999);
+  });
+
+  it("headline reports are the held-out batches, even when a development batch is as large", () => {
+    const rules = largestReport("rules_v1");
+    const random = largestReport("random_legal");
+    expect(rules).toMatchObject({ partition: "val", role: "held-out", completed: 1997 });
+    expect(random).toMatchObject({ partition: "val", role: "held-out", completed: 2000 });
+    // the 300-game development batch of rules_v1 and the 2,000-game development ladder still exist in the ledger
+    expect(evidence.reports.some((r) => r.policy === "rules_v1" && r.partition === "train")).toBe(
+      true,
+    );
+    expect(
+      evidence.reports.some(
+        (r) => r.policy === "random_legal" && r.partition === "train" && r.completed === 1999,
+      ),
+    ).toBe(true);
   });
 });
 
