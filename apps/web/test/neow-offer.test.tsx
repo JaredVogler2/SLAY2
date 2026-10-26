@@ -347,7 +347,9 @@ describe("What did Neow offer?", () => {
     const gap = startHpGap("necrobinder");
     expect(gap, "the G13 comparison is committed").toBeDefined();
     const necro = setup(withTest(test(true)), { character: "necrobinder" });
-    const note = screen.getByText(/starts Necrobinder with more HP than the game does \(gap G13\)/);
+    const note = screen.getByText(
+      /starts a Necrobinder with more HP than the game gives it \(gap G13\)/,
+    );
     expect(note).toHaveTextContent(`${pct(gap?.game ?? 0, 1)} of ${String(gap?.pairs)}`);
     expect(note).toHaveTextContent(`instead of ${pct(gap?.simulator ?? 0, 1)}`);
     expect(gap?.game).toBeLessThan(gap?.simulator ?? 0);

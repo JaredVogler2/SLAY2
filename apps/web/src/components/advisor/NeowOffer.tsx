@@ -272,7 +272,7 @@ export function NeowOffer({
         ) : null}
         {hpGap ? (
           <p className="text-xs text-rose">
-            The simulator starts {label} with more HP than the game does (gap G13). With the
+            The simulator starts a {label} with more HP than the game gives it (gap G13). With the
             game&rsquo;s HP one simulated pilot got past the Act-1 boss in {pct(hpGap.game, 1)} of{" "}
             {games(hpGap.pairs)} paired runs instead of {pct(hpGap.simulator, 1)}, so read every
             percentage below as too high for {label}.

@@ -299,7 +299,7 @@ export function NeowValuesPanel() {
             <>
               ,{" "}
               <code className="font-mono text-xs text-parchment">
-                experiments/neow/pooled-neow-values-vs-rules_v2-val.json
+                experiments/neow/{test.id}.json
               </code>{" "}
               (sha {test.contentSha256.slice(0, 12)}…)
             </>
