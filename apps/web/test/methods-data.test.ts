@@ -168,7 +168,9 @@ describe("comparison wording is derived from the data", () => {
       expect(largestReport(v.policy, v.character)?.ancientHeal).toBe(false);
     }
     // and no ordinary batch carries the flag by accident
-    expect(evidence.reports.filter((r) => !r.ancientHeal && r.id.includes("ancientheal"))).toEqual([]);
+    expect(evidence.reports.filter((r) => !r.ancientHeal && r.id.includes("ancientheal"))).toEqual(
+      [],
+    );
   });
 
   it("formats exact p-values without printing a misleading zero", () => {
