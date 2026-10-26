@@ -14,12 +14,11 @@ from __future__ import annotations
 
 from . import register
 from .rules import RulesV1, _by, _first
+from .rules2 import RulesV2
 
 
-@register
-class RulesExplore(RulesV1):
-    name = "rules_explore"
-    version = "1"
+class ExploreMixin:
+    """Randomised card rewards and boss-fight logging on top of whichever rules policy follows it in the MRO."""
 
     def __init__(self, explore: float = 0.6, replicate: int = 0, **params):
         super().__init__(explore=explore, replicate=replicate, **params)
@@ -75,3 +74,18 @@ class RulesExplore(RulesV1):
 
     def episode_stats(self) -> dict:
         return {"explore": self.explore, "replicate": self.replicate, "random_picks": self.random_picks, "boss_fights": self.boss_fights}
+
+
+@register
+class RulesExplore(ExploreMixin, RulesV1):
+    name = "rules_explore"
+    version = "1"
+
+
+@register
+class RulesExploreV2(ExploreMixin, RulesV2):
+    """Round two of the measurement: the non-random card picks follow the measured values (rules_v2), so the values are
+    fitted on decks assembled the way the improved policy assembles them, not the way rules_v1 does."""
+
+    name = "rules_explore_v2"
+    version = "1"

@@ -147,7 +147,9 @@ def evaluate(agent_specs: list[str], *, partition: str = "val", seeds: int = 80,
     from .. import external
 
     sim = external.locate()
-    all_seeds = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v1.json").read_text())["partitions"][partition][seed_offset:seed_offset + seeds]
+    # v2 keeps v1's train / val / test seeds and adds the `dev` partition (ADR-032); `test` is never read here
+    manifest = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v2.json").read_text())
+    all_seeds = manifest["partitions"][partition][seed_offset:seed_offset + seeds]
     ctx = mp.get_context("spawn")
     loadable = {spec: _absolute(spec) for spec in agent_specs}  # results stay keyed by the spec as typed (no local paths in artifacts)
     jobs = [(str(sim.root), all_seeds[w::workers], keep_monster, w, agent_specs, repeats, env_kwargs or {}, loadable) for w in range(workers)]
@@ -193,7 +195,7 @@ def paired(a: list[dict], b: list[dict]) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--agents", nargs="+", required=True)
-    ap.add_argument("--partition", default="val", choices=["train", "val"], help="the sealed test partition is never read here")
+    ap.add_argument("--partition", default="val", choices=["train", "val", "dev"], help="the sealed test partition is never read here; tune on dev")
     ap.add_argument("--seeds", type=int, default=80)
     ap.add_argument("--seed-offset", type=int, default=0, help="skip this many seeds of the partition (the PPO monitor uses the first 80 val seeds: use 80 for a fresh, unselected set)")
     ap.add_argument("--repeats", type=int, default=2)

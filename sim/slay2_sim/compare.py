@@ -113,8 +113,8 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
         },
         "wallTimeRatioBOverA": round(wall_b / wall_a, 3) if wall_a > 0 else None,
         "role": (
-            "development (train partition): not a held-out result"
-            if sa["partition"] == "train"
+            f"development ({sa['partition']} partition): not a held-out result"
+            if sa["partition"] in ("train", "dev")
             else "held-out"
         ),
         "simulator": {

@@ -27,7 +27,13 @@ export default function CodexPage() {
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Badge tone="build">main 0.107.1</Badge>
-          <Badge tone="neutral">facts only</Badge>
+          <Badge tone="neutral">facts and simulated values</Badge>
+          <Badge
+            tone="unverified"
+            title="Measured in a community simulator that has not been compared with the live game"
+          >
+            simulated values: unverified
+          </Badge>
           <Badge
             tone="heuristic"
             title="The role tags are SLAY2's own reading of structured fields"
@@ -48,8 +54,16 @@ export default function CodexPage() {
               {CATALOG.sha256.slice(0, 12)}…
             </code>
             . Role tags such as “block” or “draw” are written by SLAY2 and describe what a card does
-            at a glance; they are not a rating. Measured values from simulated runs are not
-            published yet, so none is shown here.
+            at a glance; they are not a rating. Where simulated runs measured a card, its tile also
+            shows that value, its interval and how many runs it rests on (method, caveats and the
+            test of whether acting on the values helps are on{" "}
+            <Link
+              href="/methods#card-values"
+              className="text-teal underline decoration-dotted underline-offset-4"
+            >
+              Evidence &amp; methods
+            </Link>
+            ). Those numbers come from a simulator that has not been compared with the live game.
           </p>
           <p>
             Missing a card? The rewards pool excludes cards that only appear through events or

@@ -22,6 +22,7 @@ from ..clone import clone_manager
 from ..observation import observe
 from . import register
 from .rules import RulesV1, _first, choose_card, deck_ids
+from .rules2 import RulesV2
 from .search import BAD_POWERS, SCALING_POWERS, _amount, _incoming, _signature
 
 LOSS = -1.0e6
@@ -35,8 +36,15 @@ def usable_potions(mgr) -> tuple[int, ...]:
     return tuple(sorted({a["slot_index"] for a in mgr.get_available_actions() if a["action"] == "use_potion"}))
 
 
-def turn_value(mgr, *, enemy_hp_weight: float, potion_value: float, danger_fraction: float) -> float:
-    """Value (HP-like units) of ending the player's turn in this state. Not a probability."""
+def turn_value(
+    mgr, *, enemy_hp_weight: float, potion_value: float, danger_fraction: float, n_root: int | None = None, spawn_weight: float = 1.0
+) -> float:
+    """Value (HP-like units) of ending the player's turn in this state. Not a probability.
+
+    Enemies are listed in the order they entered the fight and dead ones stay in the list, so index ``>= n_root`` marks a
+    creature that appeared during the search (a spawn on death, a summon). Its HP counts ``spawn_weight`` times as much as
+    the HP of an enemy that was already there: with weight 1 the planner leaves a Phrog Parasite at 1 HP forever, because
+    killing it spawns four Wrigglers (about 80 HP) and the sum of enemy HP goes *up* (measured, see ADR-033)."""
     if mgr.is_over and not mgr.player_won:
         return LOSS
     player = mgr.run_state.player
@@ -56,10 +64,11 @@ def turn_value(mgr, *, enemy_hp_weight: float, potion_value: float, danger_fract
     low = danger_fraction * float(p.max_hp)
     if v < low:  # convex: the last HP are worth more than the first
         v -= 1.5 * (low - v)
-    for e in c.enemies:
+    for i, e in enumerate(c.enemies):
         if not e.is_alive:
             continue
-        v -= enemy_hp_weight * (float(e.current_hp) + 0.3 * float(e.block))
+        w = enemy_hp_weight if n_root is None or i < n_root else enemy_hp_weight * spawn_weight
+        v -= w * (float(e.current_hp) + 0.3 * float(e.block))
         for name, w in ENEMY_DEBUFFS.items():
             v += w * min(max(_amount(e, name), 0), 4)
         v -= 1.0 * max(_amount(e, "STRENGTH"), 0)
@@ -94,12 +103,25 @@ class SearchV2(RulesV1):
     version = "1"
     needs_forward_model = True
 
-    def __init__(self, nodes: int = 250, enemy_hp_weight: float = 0.55, potion_value: float = 8.0, danger_fraction: float = 0.25, **params):
-        super().__init__(nodes=nodes, enemy_hp_weight=enemy_hp_weight, potion_value=potion_value, danger_fraction=danger_fraction, **params)
+    SCOPES = {"all": None, "elite_boss": ("ELITE", "BOSS"), "boss": ("BOSS",)}
+
+    def __init__(
+        self, nodes: int = 250, enemy_hp_weight: float = 0.55, potion_value: float = 8.0, danger_fraction: float = 0.25,
+        spawn_weight: float = 1.0, scope: str = "all", **params,
+    ):
+        if scope not in self.SCOPES:
+            raise ValueError(f"scope must be one of {sorted(self.SCOPES)}")
+        super().__init__(
+            nodes=nodes, enemy_hp_weight=enemy_hp_weight, potion_value=potion_value, danger_fraction=danger_fraction,
+            spawn_weight=spawn_weight, scope=scope, **params,
+        )
+        self.scope = scope
         self.nodes = int(nodes)
         self.enemy_hp_weight = float(enemy_hp_weight)
         self.potion_value = float(potion_value)
         self.danger_fraction = float(danger_fraction)
+        self.spawn_weight = float(spawn_weight)
+        self._n_root: int | None = None
 
     def reset(self, rng_seed: int) -> None:
         super().reset(rng_seed)
@@ -114,7 +136,10 @@ class SearchV2(RulesV1):
 
     # ---------------------------------------------------------------- search
     def _value(self, mgr) -> float:
-        return turn_value(mgr, enemy_hp_weight=self.enemy_hp_weight, potion_value=self.potion_value, danger_fraction=self.danger_fraction)
+        return turn_value(
+            mgr, enemy_hp_weight=self.enemy_hp_weight, potion_value=self.potion_value, danger_fraction=self.danger_fraction,
+            n_root=self._n_root, spawn_weight=self.spawn_weight,
+        )
 
     def _children(self, mgr) -> list[dict]:
         """One representative per distinct (card, upgrade, target / potion) play; a pending choice yields the rules choice only."""
@@ -135,6 +160,8 @@ class SearchV2(RulesV1):
 
     def _plan_turn(self, fm, seed: int) -> list[dict]:
         root = fm.clone(seed)
+        combat = root.get_combat_state()
+        self._n_root = len(combat.enemies) if combat is not None else None
         budget = self.nodes
         best_value, best_path = -1.0e18, []
         seen: set = set()
@@ -172,8 +199,13 @@ class SearchV2(RulesV1):
         return best_path
 
     # ---------------------------------------------------------------- policy
+    def _in_scope(self) -> bool:
+        """Search only in the fights the scope names (a human sees a node's kind on the map); the rules play the rest."""
+        kinds = self.SCOPES[self.scope]
+        return kinds is None or self.entering in kinds
+
     def _decide(self, obs, actions, fm=None):
-        if obs["phase"] != "COMBAT" or fm is None:
+        if obs["phase"] != "COMBAT" or fm is None or not self._in_scope():
             return super()._decide(obs, actions, fm)
         acts = obs["actions"]
         if any(a["action"] in ("choose", "confirm_choice") for a in acts):
@@ -201,3 +233,15 @@ class SearchV2(RulesV1):
             self.plan = []
             return super()._decide(obs, actions, fm)
         return match["idx"]
+
+
+@register
+class SearchV3(SearchV2, RulesV2):
+    """rules_v2 outside combat (card picks by measured values, ADR-031) and search_v2 inside it, with a value function that
+    does not punish a kill for the creatures it spawns (ADR-033). Compare it with ``rules_v2`` to measure the search alone."""
+
+    name = "search_v3"
+    version = "1"
+
+    def __init__(self, spawn_weight: float = 0.2, **params):
+        super().__init__(spawn_weight=spawn_weight, **params)

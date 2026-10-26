@@ -57,6 +57,27 @@ test.describe("card codex", () => {
     ).toBeVisible();
   });
 
+  test("shows what simulated runs say about a card, with interval, sample and the unverified label, and sorts by it", async ({
+    page,
+  }) => {
+    await page.goto("/codex");
+    const items = page.getByRole("list", { name: "Cards" }).getByRole("listitem");
+    await expect(async () => {
+      await page.getByLabel("Sort by").selectOption("value");
+      await expect(items.first()).toContainText("In simulated runs", { timeout: 1000 });
+    }).toPass();
+    const first = await items.nth(0).innerText();
+    const second = await items.nth(1).innerText();
+    expect(first).toMatch(/[+−]\d\.\d\d\s*95%: [+−]\d\.\d\d to [+−]\d\.\d\d/);
+    expect(first).toContain("Unverified against the live game");
+    expect(first).toMatch(/Held in [\d,]+ of [\d,]+ simulated runs that reached the boss/);
+    const value = (t: string): number => {
+      const m = /([+−]\d\.\d\d)\s*95%/.exec(t);
+      return Number((m?.[1] ?? "0").replace("−", "-"));
+    };
+    expect(value(first)).toBeGreaterThanOrEqual(value(second));
+  });
+
   test("meets layout and accessibility basics", async ({ page }) => {
     await page.goto("/codex");
     await expectNoHorizontalOverflow(page);

@@ -42,8 +42,10 @@ class RulesV2(RulesV1):
     name = "rules_v2"
     version = "1"
 
-    def __init__(self, values: str = DEFAULT_VALUES, threshold: float = 0.0, **params):
+    def __init__(self, values: str = DEFAULT_VALUES, threshold: float = 0.0, values_sha256: str | None = None, **params):
         self.beta, rel, digest = load_values(values)
+        if values_sha256 is not None and values_sha256 != digest:  # a manifest's effective parameters must rebuild the same policy
+            raise ValueError(f"{rel} has sha256 {digest}, but {values_sha256} was recorded")
         super().__init__(values=rel, values_sha256=digest, threshold=float(threshold), **params)
         self.threshold = float(threshold)
 
@@ -53,7 +55,7 @@ class RulesV2(RulesV1):
             return super()._card_reward(obs, actions)
         size = len(deck_ids(obs["run"]))
         best = max(picks, key=lambda a: (self.beta.get(a["card_id"], 0.0), -a["idx"]))
-        if self.beta.get(best["card_id"], 0.0) > self.threshold and size < MAX_DECK:
+        if self.beta.get(best["card_id"], 0.0) > self.threshold and size < self.tune["max_deck"]:
             return best["idx"]
         skip = _first(actions, "skip")
         return skip if skip is not None else super()._card_reward(obs, actions)

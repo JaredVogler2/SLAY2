@@ -68,6 +68,47 @@ def test_the_values_file_is_recorded_in_the_policy_parameters(sim, tmp_path):
     assert d["params"]["threshold"] == 0.1 and len(d["params"]["values_sha256"]) == 64
 
 
+def test_effective_parameters_rebuild_the_same_policy_and_refuse_a_different_values_file(sim, tmp_path):
+    f = write_values(tmp_path / "v.json", {"ANGER": 0.7})
+    effective = make_policy("rules_v2", values=f, threshold=0.1).describe()["params"]
+    again = make_policy("rules_v2", **{**effective, "values": f})  # what the win audit does with a manifest
+    assert again.describe()["params"] == effective
+    write_values(tmp_path / "v.json", {"ANGER": -0.7})  # the file changed after the batch was run
+    with pytest.raises(ValueError, match="was recorded"):
+        make_policy("rules_v2", **{**effective, "values": f})
+
+
+def test_a_batch_manifest_names_the_resolved_policy_parameters(sim, tmp_path):
+    from slay2_sim.batch import _effective
+
+    f = write_values(tmp_path / "v.json", {"ANGER": 0.7})
+    eff = _effective("rules_v2", {"values": f, "threshold": 0.2})
+    assert eff["params"]["values_sha256"] == hashlib.sha256((tmp_path / "v.json").read_bytes()).hexdigest()
+    assert eff["params"]["threshold"] == 0.2 and eff["version"] == "1"
+    assert "error" in _effective("rules_v2", {"values": str(tmp_path / "missing.json")})  # never hides a finished batch
+
+
+def test_the_committed_values_file_is_what_adr_031_pre_registered():
+    betas, rel, digest = load_values("experiments/cardvalue/ironclad-a0-v1.json")
+    assert rel == "experiments/cardvalue/ironclad-a0-v1.json"
+    assert digest.startswith("8b3fe2f4d88b87dc"), "ADR-031 names this hash; a new fit is a new file (v2), not an edit"
+    assert betas["RAMPAGE"] > 1.0 and len(betas) == 95
+
+
+def test_round_two_explorer_follows_the_measured_values_unless_it_explores(sim, tmp_path):
+    f = write_values(tmp_path / "v.json", {"ANGER": 0.7, "BASH": 0.2})
+    obs, actions = reward(["BASH", "ANGER"])
+    quiet = make_policy("rules_explore_v2", values=f, explore=0.0)
+    quiet.reset(5)
+    assert quiet._card_reward(obs, actions) == 1  # the best measured card, exactly as rules_v2
+    assert quiet.describe()["params"]["explore"] == 0.0 and len(quiet.describe()["params"]["values_sha256"]) == 64
+    wild = make_policy("rules_explore_v2", values=f, explore=1.0)
+    wild.reset(5)
+    seen = {wild._card_reward(obs, actions) for _ in range(60)}
+    assert seen == {0, 1, 2}, "with explore=1 every offered card and skip is picked sometimes"
+    assert wild.random_picks == 60
+
+
 def test_rules_v2_ignores_hidden_state(sim, tmp_path):
     f = write_values(tmp_path / "v.json", {"ANGER": 0.7, "BASH": 0.2, "INFLAME": 0.4})
     pts = []

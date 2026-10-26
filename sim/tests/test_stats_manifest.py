@@ -67,7 +67,7 @@ def test_seed_manifest_deterministic_disjoint_and_verifiable(tmp_path):
     m2 = mf.make_seed_manifest("t", 42, {"train": 50, "val": 20, "test": 30})
     assert m1 == m2
     assert m1["sizes"] == {"train": 50, "val": 20, "test": 30}
-    allseeds = [s for p in mf.PARTITIONS for s in m1["partitions"][p]]
+    allseeds = [s for part in m1["partitions"].values() for s in part]
     assert len(allseeds) == len(set(allseeds)) == 100
     assert all(0 <= s < mf.SEED_UNIVERSE for s in allseeds)
     path = tmp_path / "seeds.json"
@@ -80,6 +80,20 @@ def test_seed_manifest_golden_prefix():
     m = mf.make_seed_manifest("golden", 20261025, {"train": 3, "val": 0, "test": 0})
     assert m["partitions"]["train"] == [1005923080, 1156437355, 1773265829]
     assert m["sha256"].startswith("7853d53926dc75e5")
+
+
+def test_v2_manifest_keeps_every_v1_seed_where_it_was_and_adds_disjoint_development_seeds():
+    """The dev partition exists so that tuning never reuses the seeds a value was fitted on (train) or confirmed on (val, test)."""
+    v1 = mf.load_seed_manifest(mf.Path(__file__).resolve().parents[2] / "experiments" / "seeds" / "ironclad-a0-v1.json")
+    v2 = mf.load_seed_manifest(mf.Path(__file__).resolve().parents[2] / "experiments" / "seeds" / "ironclad-a0-v2.json")
+    for part in ("train", "val", "test"):
+        assert v2["partitions"][part] == v1["partitions"][part], part
+    assert v2["sizes"]["dev"] == 10000 and "dev" not in v1["partitions"]
+    everything = [s for part in v2["partitions"].values() for s in part]
+    assert len(everything) == len(set(everything)) == 21000
+    regenerated = mf.make_seed_manifest("ironclad-a0-v2", 20261025, {"train": 5000, "val": 2000, "test": 4000, "dev": 10000})
+    assert regenerated["sha256"] == v2["sha256"]
+    assert mf.partition_seeds(v2, "dev", limit=3) == v2["partitions"]["dev"][:3]  # development seeds are not sealed
 
 
 def test_seed_manifest_tamper_detected(tmp_path):

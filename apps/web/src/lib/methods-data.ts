@@ -111,6 +111,47 @@ export function comparisonSentence(c: Comparison): string {
   return `${lead}: ${gap}${cost}. ${actTwoSentence(c)}.`;
 }
 
+/** The pre-registered test of the measured card values (ADR-031): the policy that follows them against the one that does not. */
+export function valuesValidation(): Comparison | undefined {
+  return evidence.comparisons.find(
+    (c) => c.a.policy === "rules_v2" && c.b.policy === "rules_v1" && c.role === "held-out",
+  );
+}
+
+/** Per batch with at least one win: how many of the wins were re-derived by the harness (re-run, replay, terminal state). */
+export function winRows(): {
+  policy: string;
+  batch: string;
+  held: boolean;
+  wins: number;
+  completed: number;
+  audited: number;
+  verified: number;
+}[] {
+  return evidence.reports
+    .filter((r) => r.counts.win > 0)
+    .map((r) => ({
+      policy: r.policy,
+      batch: r.id,
+      held: r.role === "held-out",
+      wins: r.counts.win,
+      completed: r.completed,
+      audited: r.winsAudit?.audited ?? 0,
+      verified: r.winsAudit?.verified ?? 0,
+    }));
+}
+
+/** The sentence about wins, written from the data: who won, on which kind of seeds, and how many wins were re-derived. */
+export function winSentence(): string {
+  const rows = winRows();
+  const wins = rows.reduce((a, r) => a + r.wins, 0);
+  const parts = rows.map(
+    (r) =>
+      `${r.policy} ${String(r.wins)} of ${r.completed.toLocaleString("en-US")} completed games (${r.held ? "held-out seeds" : "development seeds"}; ${String(r.verified)} of ${String(r.wins)} wins re-run and replayed hash for hash)`,
+  );
+  return `${String(wins)} simulated ${wins === 1 ? "game has" : "games have"} been won so far: ${parts.join("; ")}`;
+}
+
 /** Wins and completed games summed over every listed batch (used for the headline sentence). */
 export function totals(): { wins: number; completed: number } {
   return evidence.reports.reduce(

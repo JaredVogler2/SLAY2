@@ -7,6 +7,8 @@ import {
   type Role,
 } from "@slay2/game-data";
 
+import { measuredValue } from "./cardvalues";
+
 /** The five playable classes, colourless cards, and everything that is not a collectible card (curses, statuses ...). */
 export const CODEX_CLASSES = [
   "ironclad",
@@ -25,7 +27,7 @@ export type CodexRarity = (typeof CODEX_RARITY_FILTERS)[number];
 export const CODEX_TYPES = ["attack", "skill", "power", "other"] as const;
 export type CodexType = (typeof CODEX_TYPES)[number];
 
-export type CodexSort = "name" | "cost" | "rarity";
+export type CodexSort = "name" | "cost" | "rarity" | "value";
 
 export interface CodexQuery {
   readonly cls: CodexClass | "all";
@@ -124,6 +126,13 @@ export function filterCodex(q: CodexQuery): CardEntry[] {
       const d = RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
       if (d !== 0) {
         return d;
+      }
+    } else if (q.sort === "value") {
+      // measured cards first, best simulated value first; cards never measured keep the alphabetical order below
+      const va = measuredValue(a.id)?.beta ?? Number.NEGATIVE_INFINITY;
+      const vb = measuredValue(b.id)?.beta ?? Number.NEGATIVE_INFINITY;
+      if (va !== vb) {
+        return vb - va;
       }
     }
     return a.name.localeCompare(b.name) || a.id.localeCompare(b.id);

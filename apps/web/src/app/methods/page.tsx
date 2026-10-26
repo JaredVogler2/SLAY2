@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
@@ -16,6 +17,7 @@ import {
   statusGroup,
   totals,
   verification,
+  winSentence,
   type StatusGroup,
 } from "@/lib/methods-data";
 
@@ -35,7 +37,7 @@ const GROUP_TONE: Record<StatusGroup, BadgeTone> = {
 const NOT_EVALUATED = [
   [
     "Advisor win delta",
-    "No outcome-based evaluation of the card advisor exists yet; its index is a heuristic and says so.",
+    "The card advisor's own index is still a heuristic and says so. Measured values from simulated runs exist (above and on the codex) and a policy that follows them beat the hand-written ratings in simulation, but the advisor does not use them yet and nothing here is a win probability for the live game.",
   ],
   [
     "Live-game parity of the simulator",
@@ -205,8 +207,8 @@ export default function MethodsPage() {
             </>
           ) : (
             <>
-              Across every batch listed, {total.wins} of {total.completed} completed games were
-              wins; the intervals below show how uncertain each batch is.
+              <strong className="font-medium text-parchment">{winSentence()}</strong>; the intervals
+              below show how uncertain each batch is.
             </>
           )}
         </p>
@@ -386,6 +388,8 @@ export default function MethodsPage() {
             .join(" · ")}
         </p>
       </Panel>
+
+      <CardValuesPanel />
 
       <Panel eyebrow="Not yet evaluated" title="Things this site does not know" headingLevel={2}>
         <dl className="grid gap-3 md:grid-cols-2">

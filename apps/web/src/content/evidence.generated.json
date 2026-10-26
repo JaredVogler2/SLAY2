@@ -99,6 +99,7 @@
         }
       ],
       "meanWallSecondsPerEpisode": 0.43,
+      "winsAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -165,6 +166,7 @@
         }
       ],
       "meanWallSecondsPerEpisode": 0.4,
+      "winsAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -230,6 +232,7 @@
         }
       ],
       "meanWallSecondsPerEpisode": 0.37,
+      "winsAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -300,6 +303,7 @@
         }
       ],
       "meanWallSecondsPerEpisode": 0.65,
+      "winsAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -370,6 +374,7 @@
         }
       ],
       "meanWallSecondsPerEpisode": 0.62,
+      "winsAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -383,6 +388,160 @@
       "contentSha256": "cb67cffc76ebbb79234ac86ec8d1f405cf8da339bcf0628d38298d706778d752",
       "episodesGzSha256": "3cc0375069c440d87c9c06b9d0af3013782045bda369855a4cf306e34e2f1b00",
       "finished": "2026-10-26T02:46:56+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "rules_v2-ironclad-a0-veteran-dev-n500",
+      "policy": "rules_v2",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 499,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 499,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007639502975159277
+      ],
+      "meanFloor": 21.12,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 179,
+        "1": 295,
+        "2": 25
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 49
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 34
+        },
+        {
+          "id": "VANTOM",
+          "n": 34
+        },
+        {
+          "id": "TUNNELER",
+          "n": 33
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 32
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.72,
+      "winsAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "c6d0120c6c5991b254a3b40590bf880a79ac2e3b0a7f4ba937838899c156ea74",
+      "episodesGzSha256": "c1f13e0adeb9e8962f3200f04b1e370243846c53f2ab1551d1e2e6a2817d83af",
+      "finished": "2026-10-26T04:37:54+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "rules_v2-ironclad-a0-veteran-val-n2000",
+      "policy": "rules_v2",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1988,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 6,
+        "timeout": 0,
+        "win": 6
+      },
+      "completed": 1994,
+      "winRate": 0.003009027081243731,
+      "winRateWilson95": [
+        0.0013797713555468785,
+        0.006549515901333444
+      ],
+      "meanFloor": 21.07,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 695,
+        "1": 1185,
+        "2": 114
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 177
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 157
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 150
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 119
+        },
+        {
+          "id": "TUNNELER",
+          "n": 119
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.87,
+      "winsAudit": {
+        "audited": 6,
+        "verified": 6,
+        "seeds": [
+          575912851,
+          604181579,
+          1208917312,
+          1661102747,
+          1774525248,
+          1957840809
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "70a62f3df49aaa236612e7c371f9f2460f074a2131d048cd242191f92c108b7a",
+      "episodesGzSha256": "27e946d2a6b8d927753d36e169c5ed0a32285b8154a1305d5adecf119fac7af2",
+      "finished": "2026-10-26T04:03:31+00:00",
       "role": "held-out"
     },
     {
@@ -440,6 +599,7 @@
         }
       ],
       "meanWallSecondsPerEpisode": 12.81,
+      "winsAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -622,6 +782,89 @@
       "wallTimeRatioBOverA": 19.659,
       "role": "development (train partition): not a held-out result",
       "contentSha256": "ecfa8154a611d3a7d1affd595b6e602a1fb69347aac00358a14faa7e4e117289"
+    },
+    {
+      "id": "rules_v2-vs-rules_v1-ironclad-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v2-ironclad-a0-veteran-val-n2000",
+        "contentSha256": "70a62f3df49aaa236612e7c371f9f2460f074a2131d048cd242191f92c108b7a",
+        "meanFloor": 21.04821697639377,
+        "meanWallSecondsPerEpisode": 0.87,
+        "policy": "rules_v2",
+        "winRate": 0.0030135610246107484,
+        "winRateWilson95": [
+          0.0013818514366625632,
+          0.0065593605080998246
+        ],
+        "wins": 6
+      },
+      "b": {
+        "batchId": "rules_v1-ironclad-a0-veteran-val-n2000",
+        "contentSha256": "cb67cffc76ebbb79234ac86ec8d1f405cf8da339bcf0628d38298d706778d752",
+        "meanFloor": 18.083375188347564,
+        "meanWallSecondsPerEpisode": 0.6152,
+        "policy": "rules_v1",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019256963021838883
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Ironclad",
+        "partition": "val",
+        "profile": "veteran",
+        "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1991,
+      "excludedNotCompleted": 9,
+      "pairedWinTable": {
+        "a_only": 6,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 0.03125,
+        "neither": 1985
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 1296,
+          "rate": 0.6509291813159217,
+          "wilson95": [
+            0.6297186445375383,
+            0.6715584305616017
+          ]
+        },
+        "b": {
+          "games": 863,
+          "rate": 0.4334505273731793,
+          "wilson95": [
+            0.41183214349180897,
+            0.45532521940124926
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 608,
+          "b_only": 175,
+          "both": 688,
+          "mcnemar_p": 8.824346627794324e-57,
+          "neither": 520
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          2.6082370668006027,
+          3.3249623304871925
+        ],
+        "meanAMinusB": 2.964841788046208,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.707,
+      "role": "held-out",
+      "contentSha256": "f4d396fd02210de29bc1be7dc22c7c2a5c2c2e1a1b5e2e047941f462c843e2d3"
     }
   ]
 }

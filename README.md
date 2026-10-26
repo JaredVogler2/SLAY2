@@ -3,7 +3,7 @@
 **Status as of 2026-10-26** (the source of truth is [docs/STATUS.md](docs/STATUS.md); nothing below is a claim beyond it):
 
 * **Working and tested:** exact probability calculators for card-reward rarity with the hidden pity counter, potion drops, "?" rooms, draws, shop prices, card removal and gold (`/odds` and `POST /api/v1/odds`), and a manual card advisor that is a **labelled, uncalibrated heuristic**, never a win probability (`/advisor`). Target: STS2 **main v0.107.1**; the beta v0.111.0 is refused.
-* **Research harness, not product:** simulations run on a third-party simulator used locally only; no policy has won a simulated game yet and live-game parity is unverified. No trained model is evaluated.
+* **Research harness, with a first measured result:** simulations run on a third-party simulator used locally only (live-game parity is unverified). Card values measured from randomised drafting are shown on `/codex` and as a labelled second opinion on `/advisor`; a rules policy that follows them got past the Act-1 boss in 65.1 % of held-out simulated games against 43.3 % for the hand-written ratings, and won 6 of 1,994 (each win re-derived by replay). No neural network beats the rules baseline yet; details and caveats on `/methods`.
 * **Hosting:** the repository carries its Vercel configuration and a preview build of it was verified, but **no production URL is claimed** until the merged build is checked ([docs/DEPLOY.md](docs/DEPLOY.md)).
 * **Audited:** first red-team round in [docs/ADVERSARIAL-AUDIT.md](docs/ADVERSARIAL-AUDIT.md) (campaigns 4-8 still open).
 

@@ -10,14 +10,16 @@ async function addOffered(page: Page, name: string): Promise<void> {
   await box.press("Enter");
 }
 
-async function startIronclad(page: Page): Promise<void> {
+async function startClass(page: Page, name: string): Promise<void> {
   await page.goto("/advisor");
   // the first interaction can race hydration: retry until the radio sticks
   await expect(async () => {
-    await page.locator("label").filter({ hasText: "Ironclad" }).first().click({ timeout: 1000 });
+    await page.locator("label").filter({ hasText: name }).first().click({ timeout: 1000 });
     await expect(page.getByRole("heading", { name: "Your run" })).toBeVisible({ timeout: 1000 });
   }).toPass();
 }
+
+const startIronclad = (page: Page): Promise<void> => startClass(page, "Ironclad");
 
 test.describe("advisor journey", () => {
   test.beforeEach(async ({ context }) => {
@@ -142,6 +144,36 @@ test.describe("advisor journey", () => {
     await expect(box).toHaveAttribute("aria-activedescendant", /opt-1$/);
     await box.press("Escape");
     await expect(box).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("adds a labelled second opinion from the simulated runs next to the heuristic's call", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addOffered(page, "pommel");
+    await addOffered(page, "shrug");
+    await addOffered(page, "inflame");
+    const panel = page.locator("#simulation-opinion");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole("heading", { level: 2 })).toHaveText("What simulated runs say");
+    await expect(panel.getByText("Simulated · unverified")).toBeVisible();
+    await expect(panel).toContainText(/would take|would skip/);
+    await expect(panel).toContainText(/agrees with the heuristic|differs from the heuristic/);
+    const cards = panel.getByRole("list", { name: "Measured values of the offered cards" });
+    await expect(cards.locator("> li")).toHaveCount(3);
+    await expect(cards).toContainText("simulated runs");
+    // the heuristic's own call is still the headline and still says what it is
+    await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
+    await expect(page.getByText("Heuristic v0").first()).toBeVisible();
+  });
+
+  test("says plainly that no class but Ironclad has been measured", async ({ page }) => {
+    await startClass(page, "Silent");
+    await addOffered(page, "backflip");
+    const panel = page.locator("#simulation-opinion");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("no measurement for this offer");
+    await expect(panel).toContainText("only measured Ironclad cards so far");
   });
 
   test("meets layout and accessibility basics with an offer on screen", async ({ page }) => {

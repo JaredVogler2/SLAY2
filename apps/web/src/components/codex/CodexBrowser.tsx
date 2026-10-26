@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 
 import { CardTile } from "@/components/cards/CardTile";
+import { MeasuredForCard } from "@/components/codex/MeasuredValue";
 import { Button } from "@/components/ui/Button";
 import { Segmented } from "@/components/ui/Segmented";
 import { CLASS_STYLE } from "@/lib/card-style";
@@ -35,7 +36,12 @@ const CLASS_LABEL: Record<CodexClass | "all", string> = {
   other: "Curses & more",
 };
 
-const SORT_LABEL: Record<CodexSort, string> = { name: "Name", cost: "Cost", rarity: "Rarity" };
+const SORT_LABEL: Record<CodexSort, string> = {
+  name: "Name",
+  cost: "Cost",
+  rarity: "Rarity",
+  value: "Simulated value",
+};
 
 const selectClass =
   "min-h-11 w-full rounded-lg border border-line-strong bg-charcoal px-3 text-parchment focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal";
@@ -244,6 +250,7 @@ export function CodexBrowser() {
                 {card.keywords.length > 0 ? (
                   <p className="text-xs text-muted">Keywords: {card.keywords.join(", ")}</p>
                 ) : null}
+                <MeasuredForCard cardId={card.id} />
               </CardTile>
             </li>
           ))}

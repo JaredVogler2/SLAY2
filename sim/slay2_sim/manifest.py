@@ -17,7 +17,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SEED_UNIVERSE = 2**31 - 1
-PARTITIONS = ("train", "val", "test")
+# Stream order is the assignment order: a partition appended at the end never moves an earlier one (the v2 manifest keeps
+# v1's train / val / test seeds and adds "dev", fresh seeds for development once "train" has been used to fit something).
+PARTITIONS = ("train", "val", "test", "dev")
 DEFAULT_SIZES = {"train": 5000, "val": 2000, "test": 4000}
 
 
@@ -54,6 +56,8 @@ def make_seed_manifest(name: str, master_seed: int, sizes: dict[str, int] | None
     stream = _seed_stream(master_seed)
     partitions: dict[str, list[int]] = {}
     for part in PARTITIONS:  # fixed order => stable assignment
+        if part == "dev" and "dev" not in sizes:
+            continue  # a v1-style manifest has no dev partition: its body (and checksum) must stay what it was
         out: list[int] = []
         while len(out) < sizes.get(part, 0):
             s = next(stream)

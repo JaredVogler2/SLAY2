@@ -22,6 +22,9 @@ import {
   formatP,
   largestReport,
   signed,
+  valuesValidation,
+  winRows,
+  winSentence,
   type Comparison,
 } from "@/lib/methods-data";
 import { contactLink, siteUrl } from "@/lib/site-config";
@@ -85,6 +88,34 @@ describe("comparison wording is derived from the data", () => {
     }
   });
 
+  it("publishes a win only with its re-derivation, and says so in the sentence", () => {
+    const rows = winRows();
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.audited, r.batch).toBe(r.wins);
+      expect(r.verified, r.batch).toBe(r.wins);
+    }
+    const text = winSentence();
+    for (const r of rows) {
+      expect(text).toContain(r.policy);
+    }
+    expect(text).toContain("re-run and replayed hash for hash");
+    // the held-out/development label comes from the partition, never from the policy that won
+    const held = evidence.reports.filter((r) => r.counts.win > 0 && r.role === "held-out").length;
+    expect(rows.filter((r) => r.held).length).toBe(held);
+  });
+
+  it("finds the pre-registered test of the card values and it is a held-out, paired comparison", () => {
+    const test = valuesValidation();
+    expect(test).toBeDefined();
+    expect(test?.role).toBe("held-out");
+    expect(test?.a.policy).toBe("rules_v2");
+    expect(test?.b.policy).toBe("rules_v1");
+    expect(test?.a.batchId).toMatch(/-val-/);
+    expect(test?.b.batchId).toMatch(/-val-/);
+    expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+  });
+
   it("formats exact p-values without printing a misleading zero", () => {
     expect(formatP(0.0173)).toBe("p = 0.017");
     expect(formatP(8.13e-261)).toBe("p = 8.1e-261");
@@ -145,6 +176,67 @@ describe("site url", () => {
       expect(siteUrl(bad)).toBeNull();
     },
   );
+});
+
+describe("site-data exporter refuses wins that were not re-derived", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+  const script = join(repo, "scripts", "export-site-data.mjs");
+  const winner = evidence.reports.find((r) => r.counts.win > 0);
+
+  function rootWith(mutate: (audit: string | null) => void): string {
+    if (!winner) {
+      throw new Error("expected a committed batch with wins");
+    }
+    const root = mkdtempSync(join(tmpdir(), "slay2-wins-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    const batch = join(root, "experiments", "batches", winner.id);
+    mkdirSync(batch, { recursive: true });
+    for (const f of ["manifest.json", "episodes.jsonl.gz", "wins-audit.json"]) {
+      cpSync(join(repo, "experiments", "batches", winner.id, f), join(batch, f));
+    }
+    mutate(join(batch, "wins-audit.json"));
+    return root;
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  it("fails when the batch has wins and no audit at all", () => {
+    const result = run(
+      rootWith((audit) => {
+        if (audit) {
+          rmSync(audit);
+        }
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("without a passing wins-audit.json");
+  });
+
+  it("fails when the audit says a win did not verify", () => {
+    const result = run(
+      rootWith((audit) => {
+        if (audit) {
+          const body = JSON.parse(readFileSync(audit, "utf8")) as { all_verified: boolean };
+          body.all_verified = false;
+          writeFileSync(audit, JSON.stringify(body));
+        }
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("without a passing wins-audit.json");
+  });
 });
 
 describe("site-data exporter refuses a comparison whose batches changed", () => {
