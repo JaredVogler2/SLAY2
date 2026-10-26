@@ -261,18 +261,37 @@ describe("how a run starts (ANC-1, ASC-3)", () => {
 });
 
 describe("the run file", () => {
-  it("reads a run saved before these fields existed and gives it the defaults", () => {
-    const old: Record<string, unknown> = { ...ironclad() };
+  it("reads a version-1 run (saved before these fields existed) and gives it the defaults", () => {
+    const old: Record<string, unknown> = { ...ironclad(), v: 1 };
     delete old.act1;
     delete old.act1Boss;
     delete old.opening;
     const parsed = parseRunState(JSON.stringify(old));
     expect(parsed.ok).toBe(true);
     if (parsed.ok) {
+      expect(parsed.state.v).toBe(2);
       expect(parsed.state.act1).toBeNull();
       expect(parsed.state.act1Boss).toBeNull();
       expect(parsed.state.opening).toEqual({ entries: [] });
     }
+  });
+
+  it("reads a file the first build with these fields wrote: version 1 with the fields in it", () => {
+    const written = {
+      ...applyOpening(ironclad(), "NEOWS_TALISMAN", {}).run,
+      v: 1,
+      act1: "underdocks",
+    };
+    const parsed = parseRunState(JSON.stringify(written));
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.state).toEqual({ ...written, v: 2 });
+    }
+  });
+
+  it("refuses a version it does not know", () => {
+    expect(parseRunState(JSON.stringify({ ...ironclad(), v: 3 })).ok).toBe(false);
+    expect(parseRunState(JSON.stringify({ ...ironclad(), v: 0 })).ok).toBe(false);
   });
 
   it("round-trips the Act 1 version, its boss, the opening log and upgraded copies", () => {

@@ -18,6 +18,7 @@ import {
 import {
   actTwoSentence,
   formatP,
+  newValuesSentence,
   pct,
   ratingsValidation,
   signed,
@@ -174,9 +175,12 @@ function ClassBlock({ set }: { set: CardValueSet }) {
               </>
             )}{" "}
             Both played the same {test.pairedSeeds.toLocaleString("en-US")} held-out seeds (
-            {test.bothCompleted.toLocaleString("en-US")} completed by both). {actTwoSentence(test)}.
-            Mean floor reached {test.a.meanFloor.toFixed(2)} against {test.b.meanFloor.toFixed(2)} (
-            {signed(test.floorDifference.meanAMinusB)}, 95% bootstrap interval{" "}
+            {test.bothCompleted.toLocaleString("en-US")} completed by both).{" "}
+            {set.validation?.against === "first-values"
+              ? newValuesSentence(test)
+              : actTwoSentence(test)}
+            . Mean floor reached {test.a.meanFloor.toFixed(2)} against {test.b.meanFloor.toFixed(2)}{" "}
+            ({signed(test.floorDifference.meanAMinusB)}, 95% bootstrap interval{" "}
             {signed(test.floorDifference.ci95[0] ?? 0)} to{" "}
             {signed(test.floorDifference.ci95[1] ?? 0)}). Wins: {test.a.wins} against {test.b.wins}{" "}
             ({formatP(test.pairedWinTable.mcnemar_p)}).{" "}

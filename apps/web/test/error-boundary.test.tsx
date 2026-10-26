@@ -36,10 +36,13 @@ describe("route error boundary", () => {
 
   it("clears only the saved run on request", () => {
     runStore.set(newRun("ironclad"));
-    expect(window.localStorage.getItem("slay2.run.v1")).not.toBeNull();
+    expect(window.localStorage.getItem("slay2.run.v2")).not.toBeNull();
+    // a copy under the first version's key would come back at the next load, so clearing takes it too
+    window.localStorage.setItem("slay2.run.v1", "{}");
     window.localStorage.setItem("unrelated", "keep me");
     render(<RouteError error={new Error("x")} retry={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: "Clear my saved run" }));
+    expect(window.localStorage.getItem("slay2.run.v2")).toBeNull();
     expect(window.localStorage.getItem("slay2.run.v1")).toBeNull();
     expect(window.localStorage.getItem("unrelated")).toBe("keep me");
     expect(screen.getByRole("status")).toHaveTextContent("Saved run cleared");

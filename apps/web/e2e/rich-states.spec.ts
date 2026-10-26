@@ -69,7 +69,7 @@ async function richAdvisor(page: Page, character: string, percent: number): Prom
     .click();
   await expect(page.getByRole("heading", { name: "Your run" })).toBeVisible();
   await page.evaluate((cards) => {
-    const raw = window.localStorage.getItem("slay2.run.v1");
+    const raw = window.localStorage.getItem("slay2.run.v2");
     const run = JSON.parse(raw ?? "{}") as Record<string, unknown>;
     run.deck = cards.slice(0, 40).map((id, i) => ({ id, count: 1 + (i % 3) }));
     run.packs = Array.from({ length: 40 }, (_, i) => ({
@@ -86,7 +86,7 @@ async function richAdvisor(page: Page, character: string, percent: number): Prom
     run.unknownRooms = Array.from({ length: 12 }, (_, i) => ({
       outcome: ["fight", "treasure", "shop", "event"][i % 4],
     }));
-    window.localStorage.setItem("slay2.run.v1", JSON.stringify(run));
+    window.localStorage.setItem("slay2.run.v2", JSON.stringify(run));
   }, ids);
   await page.reload({ waitUntil: "networkidle" });
   await expect(page.getByRole("list", { name: "Recorded packs" })).toBeVisible();

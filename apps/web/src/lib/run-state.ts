@@ -24,7 +24,7 @@ import type {
  * The player's run as SLAY2 knows it. It lives only in this browser (localStorage) and in exported JSON files the
  * player chooses to save; nothing is sent to a server. Missing information is `null` / "unknown", never a silent default.
  */
-export const RUN_STATE_VERSION = 1 as const;
+export const RUN_STATE_VERSION = 2 as const;
 export const MAX_IMPORT_BYTES = 256 * 1024;
 
 const CardIdSchema = z.string().regex(/^[A-Z0-9_]{1,64}$/);
@@ -338,7 +338,22 @@ export function parseRunState(text: string): ParseResult {
   return { ok: true, state: parsed.data };
 }
 
-/** Versioned migrations: add a case here whenever RUN_STATE_VERSION changes. */
+/**
+ * Versioned migrations: add a case here whenever RUN_STATE_VERSION changes.
+ *
+ * Version 1 is the run before the Act 1 version, the opening Ancient and upgraded copies were recorded. Its files (and
+ * the first build that wrote these fields, which still called itself version 1) load into version 2: the new fields have
+ * defaults, so adding the version number is all it takes. A version-2 file is refused by a page that only knows version 1
+ * (a clean "Invalid run file"), which is what the version is for.
+ */
 export function migrate(raw: unknown): unknown {
+  if (
+    typeof raw === "object" &&
+    raw !== null &&
+    !Array.isArray(raw) &&
+    (raw as { v?: unknown }).v === 1
+  ) {
+    return { ...raw, v: RUN_STATE_VERSION };
+  }
   return raw;
 }

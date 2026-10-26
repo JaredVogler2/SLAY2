@@ -21,6 +21,7 @@ import {
   comparisonVerdict,
   formatP,
   largestReport,
+  newValuesSentence,
   policyLabel,
   signed,
   ratingsValidation,
@@ -146,6 +147,17 @@ describe("comparison wording is derived from the data", () => {
     // the other classes are first measurements: their test is the one against the ratings
     expect(valuesValidation("silent")?.a.policy).toBe("rules_v2");
     expect(valuesValidation("silent")?.b.policy).toBe("rules_v1");
+  });
+
+  it("names the arms of a test between two sets of values by their values, not by the policy they share", () => {
+    const test = valuesValidation("ironclad");
+    expect(test).toBeDefined();
+    if (!test) return;
+    const text = newValuesSentence(test);
+    expect(text).toContain("with the new values");
+    expect(text).toContain("with the earlier ones");
+    expect(text).not.toContain("rules_v3");
+    expect(text).toContain(formatP(test.reachedAct2.pairedTable.mcnemar_p));
   });
 
   it("tells a policy's variants apart in the label and ignores a threshold of zero", () => {

@@ -127,6 +127,19 @@ export function policyLabel(side: { policy: string; params?: Record<string, unkn
   return shown.length > 0 ? `${side.policy} (${shown.join(", ")})` : side.policy;
 }
 
+/**
+ * The intermediate endpoint of a test in which both arms are the same policy and only the values it follows differ (ADR-046):
+ * the arms are named by their values, because the policy's name is the same on both sides.
+ */
+export function newValuesSentence(c: Comparison): string {
+  const r = c.reachedAct2;
+  const t = r.pairedTable;
+  return (
+    `Past the Act-1 boss: ${pct(r.a.rate, 1)} with the new values and ${pct(r.b.rate, 1)} with the earlier ones ` +
+    `(${String(t.a_only)} games only with the new values, ${String(t.b_only)} only with the earlier ones; exact McNemar ${formatP(t.mcnemar_p)})`
+  );
+}
+
 /** "p = 0.0018", or exponent form when tiny (exact paired tests reach hundreds of orders of magnitude below 1e-4). */
 export function formatP(p: number): string {
   if (p === 0) return "p < 1e-300";
