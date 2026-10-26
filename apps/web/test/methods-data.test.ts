@@ -129,13 +129,15 @@ describe("comparison wording is derived from the data", () => {
   });
 
   it("says which side is slower in whichever direction the comparison runs", () => {
-    const base = evidence.comparisons.find(
+    const searches = evidence.comparisons.filter(
       (c) => c.b.policy === "rules_v2" && c.a.policy === "search_v3",
     );
-    expect(base).toBeDefined();
-    if (base) {
-      expect(comparisonSentence(base)).toMatch(
-        /search_v3 \(scope=boss\) took [\d.]+× as long per game/,
+    expect(searches.length).toBeGreaterThan(0);
+    for (const c of searches) {
+      // the sentence names the search side the way its label does (the scope differs between the comparisons)
+      const label = policyLabel(c.a).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      expect(comparisonSentence(c), c.id).toMatch(
+        new RegExp(`${label} took [\\d.]+× as long per game`),
       );
     }
   });
