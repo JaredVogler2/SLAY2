@@ -25,13 +25,15 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D7 | Opening-relic values | fitted table | yes: `/advisor`, `/methods` | the one pooled test passed |
 | D8 | Combat libraries and demonstrations | training data | no | local only |
 | D9 | Withdrawn data (`experiments/void/`) | **not evidence** | no | invalid, kept so the failure can be inspected |
+| D10 | Synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement, read against simulated runs (M8) |
 | M1 | Exact calculators | mathematics | yes | 739 golden cases, published tables, brute force, properties |
-| M2 | Draft advisor v0 | heuristic | yes | **uncalibrated**, never a probability |
+| M2 | Draft advisor v1 (the deck index) | heuristic | yes | **uncalibrated**, never a probability; its synergy term is M8 |
 | M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class |
 | M4 | Opening-relic second opinion | ridge logistic regression | yes | pooled held-out test |
 | M5 | Simulated pilots and searchers | policies | summaries only | paired held-out comparisons |
 | M6 | Combat networks (BC v1, PPO v1, PPO v2) | neural networks | **no** | no improvement over the baseline |
 | M7 | What does not exist | | | co-op, map, shop, rest, combat and Ancient-boon advisors; a live bridge |
+| M8 | The synergy term and its evidence | heuristic, read against simulated runs | yes | stage B1 read; the registered held-out stage B2 is pending (ADR-050) |
 
 ---
 
@@ -195,6 +197,27 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 
 * `experiments/void/` holds the first opening-relic study (25,000 games, a fit, a pushed hash, a pooled test that said "passed"): it was played with lower-case class ids, the pinned simulator plays any class id it does not match exactly as Ironclad, so four of the five classes were Ironclad with another class's cards. It is **not evidence**, shows nowhere on the site, and is kept with the reason so the failure can be inspected. Every audit passed because an audit re-runs a game from its manifest and reproduces the same wrong class; the harness now refuses an inexact class id and checks every game's starting HP and deck against its class (ADR-049, RT-6-02).
 
+## D10. Synergy tags
+
+* **What:** `packages/game-data/data/synergy.sts2-main-0.107.1.json`: for every tagged card, what it **supplies** to a deck (`g`, per mechanic, 1 minor or conditional, 2 standard, 3 major or repeatable; negative when it takes the mechanic away) and what its worth **needs** (`w`, 1 a bonus, 2 significant, 3 the card's point), over a vocabulary of 28 mechanics (Strength, Dexterity, Block, Exhaust, card draw, energy, Vulnerable, Weak, Poison, Shivs, discarding, orbs, Focus, Stars, Forge, card creation, Osty, Souls, Doom, Ethereal cards, losing HP, Attacks, Skills, Powers, cheap and free cards, Status cards, Strikes), each with a saturation scale and an engine value; plus what each class's starting relic supplies in every combat (`innate`). The code adds what the catalog says by itself (types, costs, Strike names, the Exhaust and Ethereal keywords, the block role, Sly), so the file lists only what the catalog cannot say.
+* **Provenance:** SLAY2's own judgement, written from reading each card's effect in the local reference (ADR-011). It stores ids, mechanic names and small whole numbers, never card text, art or effect numbers. The hash (`182ce3e1…`) covers the mechanics, the cards and the innate supplies. **Revision of 2026-10-26** (recorded in the file): after the first reading of the simulated runs (M8) the table gained the starting-relic supplies, which the first version lacked, and Kingly Kick, Kingly Punch and six Defect Status payoffs need their mechanic as a bonus instead of a precondition.
+* **Coverage:**
+
+<!-- table:synergy_coverage:begin -->
+| Class | Reward cards | With written tags | Starting relic's supply (the table's `innate`) |
+|---|---|---|---|
+| Ironclad | 82 | 69 (84 %) | none (the starting relic heals after combat) |
+| Silent | 82 | 67 (82 %) | Ring of the Snake: draw 1 |
+| Regent | 82 | 68 (83 %) | Divine Right: star 2 |
+| Necrobinder | 82 | 64 (78 %) | Bound Phylactery: osty 3 |
+| Defect | 82 | 69 (84 %) | Cracked Core: orb 1 |
+| All tagged cards in the table | | 375 (hash `182ce3e1eca8`) | 28 mechanics |
+<!-- table:synergy_coverage:end -->
+
+* **Intended use:** the advisor's synergy term and the sentences that name the cards behind a number. **Not for:** saying how strong a card is, or what wins: the weights are hand-set judgements (partly calibrated against simulated runs, M8), not measurements.
+* **Limits:** a weight of 1 to 3 is coarse; the vocabulary is SLAY2's reading, not the game's; cards without an entry are read from the catalog alone (a plain attack or block needs nothing); the Silent's Sly cards want a way to discard (counted from the keyword); only four classes have an innate supply; the table is for build `sts2-main-0.107.1` and is not carried to another.
+* **Kept true by:** a strict schema (an unknown mechanic or a zero weight fails the build), the hash test, a test that every mechanic has a source and a payoff, spot facts per class (`packages/game-data/test/synergy.test.ts`), scenario tests an experienced player can judge (`packages/decision/test/synergy-scenarios.test.ts`), and the golden file that ties the Python port to the TypeScript.
+
 ---
 
 # Model cards
@@ -207,12 +230,12 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Information:** inputs are what the player has seen or can reconstruct. A hidden counter is a belief: an omitted history is refused rather than assumed to be the start of the run (RT-3-01).
 * **Limits:** the unmodelled parts are listed in each result (first-run scripting, relic hooks that change packs, retain and ethereal cards in draws).
 
-## M2. Draft advisor v0
+## M2. Draft advisor v1 (the deck index)
 
-* **What:** `packages/decision`: ranks the offered cards and skip by a unit-less **deck-quality index** built from the catalog's role tags and prior, with reasons and a stability check; since step 2 it tilts the ranking by the Act 1 version and boss (at most 30 %, a judgement, labelled).
-* **Intended use:** a reasoned starting point for a draft decision. **Not for:** a win probability. The index is **not calibrated**, and the API says so in every answer; no outcome has ever been compared with it except through the simulated second opinion below (which found the hand-written ratings a poor guide: Spearman 0.07 to 0.44 with the measured values).
-* **Information:** the player's own deck, the offer, the ascension and the Act 1 version; nothing hidden.
-* **Limits:** **it has no model of synergies between cards** (reported by a user on 2026-10-26 and confirmed in `quality.ts`): the index is the mean of static per-card ratings plus role-coverage, energy-curve and deck-size terms, with one Ironclad-only interaction term (Strength cards times multi-hit attacks), so it overrates a card's standalone quality and cannot see that a card is good only with others; per-class mechanics that decide cards (Strength, poison, Stars, Osty, Souls, Doom, orbs) are not modelled and the response lists them (RT-3-08); it advises the draft only, not how to play cards against enemies. A synergy-aware evaluation is the priority of the next steps.
+* **What:** `packages/decision`: ranks the offered cards and skip by a unit-less **deck index**: the mean static rating of the cards, act-dependent role coverage with diminishing returns, an energy-curve penalty, a deck-size penalty and a **synergy term** (M8: what unmet needs take from a card's rating, what Strength, Dexterity and Focus add to the cards they help, what engines add). It explains every number with the cards behind it, shows the engines the deck has built and the cards waiting for support, and tests the stability of its top choice under random changes to its own weights; it tilts the ranking by the Act 1 version and boss (at most 30 %, a judgement, labelled).
+* **Intended use:** a reasoned starting point for a draft decision. **Not for:** a win probability. The index is **not calibrated**, and the API says so in every answer; the only outcomes compared with it are the simulated runs of M8 and the second opinion below (which found the hand-written ratings a poor guide: Spearman 0.07 to 0.44 with the measured values).
+* **Information:** the player's own deck and class, the offer, the act, the ascension and the Act 1 version; nothing hidden.
+* **Limits:** the card rating (`prior`) is rarity plus a bounded stat adjustment and is the weakest part: the index rates a deck by the mean of it, so a card rated above the deck's mean always raises the index and skipping almost never ranks first (a simulated pilot following it took 1,977 of 1,986 offered cards in a smoke run); the synergy term is a judgement of mechanics (D10); sequencing, how many triggers a turn really gives and class resources a tag cannot express are not simulated (the response lists them per class); it advises the draft only, not how to play cards against enemies, which the user's feedback of 2026-10-26 named and which stays out of scope.
 
 ## M3. Card-value second opinion
 
@@ -323,6 +346,39 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 ## M7. What does not exist
 
 Co-op (declared `unsupported` by the capability endpoint, and no team or ally model exists), advisors for the map, combat, shop, rest sites and events (the capability endpoint lists them as `planned`), Ancient boons beyond the opening choice, a local companion or bridge to the running game, any live-game parity check, and a model for Ascension above 0 (the calculators accept A0 to A10; the simulated evidence is A0 only). Nothing here should be read as implying that these are optimised.
+
+## M8. The synergy term and its evidence
+
+* **What:** the part of the deck index that reads how cards work together (D10): per card in the deck, a rating `prior` is held back by the share of what it needs that the deck does not supply (up to 70 %, less in early acts because the picks to come may bring it), lifted by Strength, Dexterity or Focus when it is an attack, a card that gives Block or an orb card (up to 25 %), and a deck gains an engine value when a mechanic has both sources and payoffs. The class's starting relic counts as a supply. Every strength is hand-set. The index is ported to Python (`sim/slay2_sim/advisor.py`) and tested number for number against a golden file of 160 decks that the TypeScript code writes; `advisor_v1` is a simulated pilot that picks card rewards by it.
+* **Stage B1 (exploratory, `experiments/synergy/b1-calibration.json`, ADR-050):** the index parts read against simulated runs that brought a randomly drafted deck to the Act-1 boss, with class-specific controls and cross-validation grouped by seed:
+
+<!-- table:synergy_b1:begin -->
+| What was asked | Answer (95 % interval, resampling whole seeds) |
+|---|---|
+| Held-out log loss of the advisor's index without the synergy term, then with it (19,717 runs that brought a random deck to the Act-1 boss) | 0.4430, then 0.4361: change **−0.0069** (−0.0084 to −0.0049); AUC 0.8633 to 0.8685 |
+| The same for a model that already knows every card (ridge logistic regression on card counts, one model per class) | 0.3801, then 0.3786: change **−0.0015** (−0.0025 to −0.0004) |
+| Worth of a point of unmet needs, relative to a point of average card rating | **0.96** (0.78 to 1.15) |
+| Worth of a point of Strength, Dexterity and Focus lifting the cards they help, relative to a point of average card rating | **0.71** (0.57 to 0.92) |
+| Worth of a point of engines (sources and payoffs together), relative to a point of average card rating | **0.07** (−0.07 to 0.26) |
+| Worth of a point of role coverage, as the index weights it, relative to a point of average card rating | **−0.12** (−0.27 to 0.05) |
+<!-- table:synergy_b1:end -->
+
+<!-- table:synergy_cohorts:begin -->
+| Cohort | Runs at the Act-1 boss | Passed it | Held-out log-loss change when the synergy term is added to the index | When added to a model that knows every card |
+|---|---|---|---|---|
+| ironclad-train (train seeds) | 3,812 | 40.9 % | −0.0047 (−0.0081 to −0.0009) | −0.0033 (−0.0063 to −0.0003) |
+| silent-train (train seeds) | 2,332 | 10.7 % | −0.0003 (−0.0030 to 0.0026) | −0.0015 (−0.0050 to 0.0033) |
+| regent-train (train seeds) | 2,703 | 22.4 % | −0.0026 (−0.0058 to 0.0004) | 0.0000 (−0.0016 to 0.0018) |
+| necrobinder-train (train seeds) | 3,389 | 44.0 % | +0.0007 (−0.0004 to 0.0017) | +0.0004 (−0.0006 to 0.0016) |
+| defect-train (train seeds) | 3,212 | 40.3 % | −0.0210 (−0.0280 to −0.0144) | −0.0015 (−0.0044 to 0.0011) |
+| ironclad-dev (dev seeds) | 4,269 | 54.9 % | −0.0163 (−0.0216 to −0.0106) | −0.0024 (−0.0049 to 0.0004) |
+<!-- table:synergy_cohorts:end -->
+
+* **Reading:** the simulated runs support the needs part at about the weight the first judgement gave it and the scalers part at about 0.7 of it, and give **no support to an engine credit** (random decks rarely hold a whole engine, and the pilot does not build around one, so this says little about people who do). Ironclad and Defect show a clear gain; for Silent, Regent and Necrobinder the intervals include no change. The parts add to a model that already knows every card, a little: most of what they predict the cards themselves also predict.
+* **The audit that changed the table:** the first reading (commit `c62eac6`: needs 0.66, scalers 0.77, engines -0.01) came with three needs whose slope was *negative*; the cause of the clearest, the Necrobinder's Osty, was found in the game's own files (the starting relic summons Osty every combat), the table was corrected and the study read again. The tags were therefore read against the runs the study measures, and its numbers are optimistic for the tags. ADR-050 records it.
+* **Stage B2 (registered before any game, pending):** a pilot that picks card rewards by the index, with and without the synergy term, on the 2,000 held-out `val` seeds of each class, five classes pooled into one exact test (ADR-050). Its result is not in yet; until it is, the advisor's panel says *Judgement, not measured*.
+* **Intended use:** to say how far the synergy term is supported by simulated play. **Not for:** claims about the live game, about winning, or about people who build engines on purpose.
+* **Limits:** one pilot, an unverified simulator (G5), Ascension 0, the first boss only, random decks; the tags were audited against the same runs; the engine credit is untestable with them.
 
 ---
 

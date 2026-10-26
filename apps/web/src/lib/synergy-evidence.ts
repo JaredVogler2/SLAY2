@@ -17,7 +17,7 @@ export interface PartRatio {
 
 /** Stage B1: the index parts read against simulated runs that brought a randomly drafted deck to the Act-1 boss. */
 export interface SynergyReading {
-  readonly stage: "B1";
+  readonly stage: string;
   readonly file: string;
   readonly outcome: string;
   readonly bossFights: number;
