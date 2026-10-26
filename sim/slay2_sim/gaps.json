@@ -42,6 +42,12 @@
       "min_ascension": 0,
       "affects": "coverage",
       "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    },
+    {
+      "id": "G8-dragon-fruit-lucky-fysh-shop",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "Buying a card in a shop while holding Lucky Fysh (+15 gold per card added) and Dragon Fruit (max HP on gold gained) raises `TypeError: unhashable type: 'PlayerState'` in the pinned simulator (Dragon Fruit's gold handler looks the owner up in a dict keyed by creature). Seen in 1 of 2,000 rules_v1 Silent validation games (seed 605866524, Act 2); the episode is reported as simulator_error and excluded from win rates and paired comparisons."
     }
   ]
 }

@@ -300,6 +300,15 @@ So acting on the measured values helped this pilot in simulation, by a lot; the 
 
 **Rollback.** Delete the class's values file: the site drops the class and `rules_v2` for it.
 
+**Outcome — Silent (the pre-registered test, run once on `val`; recorded 2026-10-26).** Batches `rules_v1-silent-a0-veteran-val-n2000` and `rules_v2-silent-a0-veteran-val-n2000` (values file sha256 `fa088419…`, recorded as `policy.effective` in the manifest): 2,000 games each, 1,999 and 2,000 completed. The one incomplete game (seed 605866524, `rules_v1`) is a `simulator_error` in the pinned simulator (gap G8: buying a card while holding Lucky Fysh and Dragon Fruit); it is excluded, never counted as a loss. Paired comparison `experiments/comparisons/rules_v2-vs-rules_v1-silent-a0-veteran-val.json` on the 1,999 seeds both sides completed:
+
+* *Primary endpoint, got past the Act-1 boss:* **18.5 % (369 games) against 11.5 % (229)**; 263 games only `rules_v2`, 123 only `rules_v1`, exact McNemar **p = 8.5e-13** against the pre-registered level 0.0125. Met (+7.0 percentage points).
+* *Floors reached:* 14.34 against 13.36, **+0.97** (95 % bootstrap +0.74 to +1.20).
+* *Wins:* none on either side (0 of 1,999 and 0 of 2,000; Wilson upper bound 0.19 %). The Silent pilot does not win in simulation, with or without the values.
+* *Where it dies:* `rules_v2` 1,630 deaths in Act 1 and 370 in Act 2; `rules_v1` 1,770, 228 and 1 in Act 3. The three Act-1 bosses (Ceremonial Beast, Vantom, the Kin) account for 991 of the 1,630 Act-1 deaths with the values.
+
+The reading rule's first branch applies: Silent's values are shown as validated in simulation and the advisor may give a second opinion for Silent. The caveat of this ADR applies in full: the Silent pilot is weak (it gets past the Act-1 boss in about one game in nine without the values), has no class-specific combat knowledge, and the values are conditional on that play; a stronger Silent pilot may rank the cards differently.
+
 ## 2026-10-26 — ADR-036: the pilot's hand-written thresholds are tuned on development seeds only, and the result is tested once on held-out seeds
 
 **Context.** `rules_v2` plays everything outside the card reward with thresholds written by hand before any evidence existed (`DEFAULT_TUNE` in `policies/rules.py`: when to fight an elite, how much HP triggers a rest, when a shop is worth entering, how big a deck may grow, when a potion is drunk, and so on). The measured card values improved the card picks by 22 percentage points (ADR-031); the other thresholds were never examined. Changing them is cheap, which is exactly why the procedure has to be fixed first: with 25 numbers and 2,000 games a search will find "improvements" that are noise.
