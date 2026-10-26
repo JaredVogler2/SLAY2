@@ -58,3 +58,25 @@ export interface SynergyEvidence {
 }
 
 export const SYNERGY_EVIDENCE: SynergyEvidence = synergy;
+
+const MINUS = "\u2212";
+
+/** A number with a typographic minus, so a negative reads as one in a table of figures; a change too small to show has no sign. */
+export function num(x: number, digits: number): string {
+  const text = x.toFixed(digits);
+  return Number(text) === 0 ? (0).toFixed(digits) : text.replace("-", MINUS);
+}
+
+export function range(ci: readonly number[], digits: number): string {
+  return `${num(ci[0] ?? 0, digits)} to ${num(ci[1] ?? 0, digits)}`;
+}
+
+/** "0.96 (95 % 0.78 to 1.15)": what a point of a part is worth relative to a point of average card rating. */
+export function part(r: PartRatio): string {
+  return `${num(r.toQuality, 2)} (95 % ${range(r.ci95, 2)})`;
+}
+
+/** "-0.0084 (95 % -0.0101 to -0.0063)": a change in held-out log loss. */
+export function change(g: Interval): string {
+  return `${num(g.mean, 4)} (95 % ${range(g.ci95, 4)})`;
+}

@@ -3,31 +3,11 @@ import { PART_WEIGHT, type DeckSynergy } from "@slay2/decision";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
-import { SYNERGY_EVIDENCE, type Interval, type PartRatio } from "@/lib/synergy-evidence";
+import { SYNERGY_EVIDENCE, change, num, part } from "@/lib/synergy-evidence";
 
 function names(list: readonly string[]): string {
   if (list.length <= 1) return list[0] ?? "";
   return `${list.slice(0, -1).join(", ")} and ${list[list.length - 1] ?? ""}`;
-}
-
-const MINUS = "−";
-
-/** A signed or plain number with a typographic minus, so a negative reads as one in a table of figures. */
-function num(x: number, digits: number): string {
-  const text = x.toFixed(digits);
-  return Number(text) === 0 ? (0).toFixed(digits) : text.replace("-", MINUS);
-}
-
-function range(ci: readonly number[], digits: number): string {
-  return `${num(ci[0] ?? 0, digits)} to ${num(ci[1] ?? 0, digits)}`;
-}
-
-function part(r: PartRatio): string {
-  return `${num(r.toQuality, 2)} (95 % ${range(r.ci95, 2)})`;
-}
-
-function change(g: Interval): string {
-  return `${num(g.mean, 4)} (95 % ${range(g.ci95, 4)})`;
 }
 
 function kept(weight: number): string {

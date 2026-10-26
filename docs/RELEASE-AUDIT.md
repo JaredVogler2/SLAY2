@@ -102,7 +102,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Blockers and owner decisions
 
 1. **Synergy-aware evaluation** is the priority of the work (the open finding above); it needs no owner decision.
-2. **Merge pull request #7** to put the opening-relic study on the live site; then re-check production (`/api/v1/health` reports the merge commit, `/methods#opening-ancient` shows the passed test) and measure Web Vitals again (the advisor's script is about 120 KB lighter).
+2. **Pull request #7 is merged and live** (checked 2026-10-26 22:10 UTC: `/api/v1/health` reports the merge commit `0674d54`, `/methods` carries the opening-Ancient section). **Merge pull request #8** (the synergy work) when it is green and measure Web Vitals again (the advisor's script is about 120 KB lighter since #7, and the synergy panel adds a little).
 3. **A licence for SLAY2's own code** and any monetization or donation (counsel, and Mega Crit's confirmation): until chosen the repository is visible but all rights are reserved.
 4. **Live-game parity** needs an owned copy of STS2 on the owner's machine: until then every simulator result stays labelled unverified.
 5. **Vercel**: whether non-production deployments stay behind login and the canonical URL (`NEXT_PUBLIC_SITE_URL`, deliberately unset).
@@ -120,7 +120,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Next actions, in order
 
 0. **Synergy-aware card evaluation** (the user's feedback): a facts table of what each card provides and needs, a deck-context model measured in simulated runs and cross-validated, one registered held-out test, then the advisor.
-1. The owner merges pull request #7; verify production and Web Vitals as above.
+1. The owner merges pull request #8 (the synergy work); verify production and Web Vitals as above.
 2. Registered question with the largest use for a player: the opening-relic rule at the game's own Necrobinder HP (`--game-hp`, G13), then the full re-derivation of the older batches, then the decision on the paused network.
 3. Reduce the script that runs after first paint on `/methods` and `/codex`.
 4. A map editor that feeds Route Lab; rest-site, shop and Ancient helpers, each starting from a facts-only catalog and its own red-team campaign.
