@@ -1663,6 +1663,95 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2_neow_values-regent-a0-veteran-val-n2000",
+      "policy": "rules_v2_neow_values",
+      "policyParams": {
+        "neow_values": "experiments/neow/neow-values-v1.json",
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1978,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 7,
+        "timeout": 15,
+        "win": 0
+      },
+      "completed": 1978,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019383280148857138
+      ],
+      "meanFloor": 20.72,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 850,
+        "1": 1067,
+        "2": 61
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 220
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 183
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 167
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 142
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 121
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.75,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1978,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "3df0903cdb980ca41c62a6ab08f20cf4dcb6acf21415fc1a2dead8b331589c81",
+      "episodesGzSha256": "d36844b873a024536c1a5f668707a8a15caf4453986e121880739286bda46e89",
+      "finished": "2026-10-26T15:52:59+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v2_neow_values-silent-a0-veteran-val-n2000",
       "policy": "rules_v2_neow_values",
       "policyParams": {
