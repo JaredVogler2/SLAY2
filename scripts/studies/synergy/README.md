@@ -15,7 +15,7 @@ simulator checkout and its environment must be in place: `PYTHONPATH=sim python 
 | B2-val, test | `MARGIN=<m*> pool-val.sh` | the primary test, run once: `A*` against `d0*`, five classes pooled, exact McNemar; and the secondary pooled comparisons | seconds |
 | B2-val, profile | `profile-val.sh` | how often `A*` and `d0*` skipped a card reward and the parts of the index their boss decks held (`slay2_sim.synergyreport`), `A*` against `d0*` paired by class and seed | seconds |
 
-Phase 1 of B2-dev was started on 2026-10-26 at 22:08 UTC from commit `91c8a87d4f46`, in a worktree of that commit (a clean tree; the manifests record `dirty: false`).
+Phase 1 of B2-dev was started on 2026-10-26 at 22:08 UTC from commit `91c8a87d4f46` (table `ed6c6952`); the independent re-tagging of the table (ADR-050 addenda A and B) then met its rule, that start was stopped after 19 of 25 batches and its batches were deleted unread, and phase 1 started again at 23:15 UTC from commit `dcdb66eaa6b2` (table `bd0b8a9f`), in a worktree of that commit (a clean tree; the manifests record `dirty: false`).
 
 A batch started with a tracked file modified records `dirty`; start the runs from a clean checkout of the registered commit (a `git
 worktree` of it, with `SLAY2_EXTERNAL_ROOT` pointing at the main checkout's `external/checkouts`, keeps the working tree free for other
