@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { expectNoHorizontalOverflow } from "./helpers";
+import { expectNoClippedText, expectNoHorizontalOverflow } from "./helpers";
 
 /**
  * Every page, at the widths phones really have. The suite's mobile project is a Pixel 7 (412 px), which is exactly the
@@ -42,6 +42,7 @@ test.describe("phone widths", () => {
           await page.goto(route, { waitUntil: "networkidle" });
           expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
           await expectNoHorizontalOverflow(page);
+          await expectNoClippedText(page);
         });
       }
 
@@ -51,6 +52,7 @@ test.describe("phone widths", () => {
         await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
         expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
         await expectNoHorizontalOverflow(page);
+        await expectNoClippedText(page);
       });
 
       test("every link of the header is on the screen without scrolling", async ({ page }) => {
@@ -66,6 +68,50 @@ test.describe("phone widths", () => {
           expect(box?.height ?? 0).toBeGreaterThanOrEqual(44); // a thumb-sized target
         }
       });
+    });
+  }
+});
+
+/**
+ * Tablets and small laptops. The advisor's five character cards used to clip their names between 640 and 1024 px, and the
+ * header of a visitor with a saved run (the "Resume" chip) and the build badge were 40 to 120 px wider than a screen of 640
+ * to 800 px.
+ */
+test.describe("tablet and small laptop widths", () => {
+  test.skip(({ isMobile }) => !isMobile, "the sweep sets its own widths: one project is enough");
+
+  for (const width of [640, 768, 1024, 1280]) {
+    test.describe(`${String(width)} px`, () => {
+      test.use({ viewport: { width, height: 900 } });
+
+      test("the header of a visitor with a saved run fits", async ({ page }) => {
+        await page.goto("/advisor", { waitUntil: "networkidle" });
+        await page.getByRole("button", { name: "Try an example" }).click();
+        await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
+        await page.goto("/", { waitUntil: "networkidle" });
+        expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
+        await expectNoClippedText(page);
+        // the chip needs the single-row header (from 768 px); below that the six links are the way back
+        await expect(page.getByRole("link", { name: /^Resume/ })).toBeVisible({
+          visible: width >= 768,
+        });
+      });
+
+      test("the advisor with an offer fits and cuts nothing off", async ({ page }) => {
+        await page.goto("/advisor", { waitUntil: "networkidle" });
+        await page.getByRole("button", { name: "Try an example" }).click();
+        await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
+        expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
+        await expectNoClippedText(page);
+      });
+
+      for (const route of ["/routes?a=M%3FMER&b=M%3F%3FRE&c=ESRT", "/codex", "/odds?tab=rewards"]) {
+        test(`${route} fits and cuts nothing off`, async ({ page }) => {
+          await page.goto(route, { waitUntil: "networkidle" });
+          expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
+          await expectNoClippedText(page);
+        });
+      }
     });
   }
 });

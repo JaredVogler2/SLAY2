@@ -135,3 +135,42 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     `horizontal scroll: ${offenders.out.join(", ")}`,
   ).toBeLessThanOrEqual(offenders.vw);
 }
+
+/**
+ * Text that an `overflow: hidden` box cuts off (a label that does not fit its card), apart from screen-reader-only text and
+ * deliberate ellipsis. Pages used to clip "Necrobinder" and "selected" in the advisor's character cards at every phone and
+ * tablet width without any test noticing: nothing overflowed the page, the box just hid the end of the word.
+ */
+export async function expectNoClippedText(page: Page): Promise<void> {
+  const clipped = await page.evaluate(() => {
+    const out: string[] = [];
+    for (const el of document.querySelectorAll("body *")) {
+      const cs = getComputedStyle(el);
+      if (!/(hidden|clip)/.test(cs.overflowX) || cs.textOverflow === "ellipsis") {
+        continue;
+      }
+      if (typeof el.className === "string" && el.className.includes("sr-only")) {
+        continue;
+      }
+      if (el.clientWidth === 0 || el.scrollWidth <= el.clientWidth + 1) {
+        continue;
+      }
+      const box = el.getBoundingClientRect();
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const text = node.textContent?.trim() ?? "";
+        if (text === "") {
+          continue;
+        }
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        if (range.getBoundingClientRect().right > box.right + 1) {
+          out.push(`${el.tagName.toLowerCase()}: “${text.slice(0, 30)}”`);
+          break;
+        }
+      }
+    }
+    return out;
+  });
+  expect(clipped, "text cut off by an overflow:hidden box").toEqual([]);
+}
