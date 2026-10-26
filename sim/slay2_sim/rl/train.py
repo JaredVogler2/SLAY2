@@ -238,6 +238,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--eval-repeats", type=int, default=2)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--resume", help="checkpoint to continue from")
+    ap.add_argument("--threads", type=int, default=0, help="torch threads of the learner (0 = every core); lower it when other jobs share the machine: oversubscribed OpenMP threads can slow an update 10x")
     ap.add_argument("--value-warmup", type=int, default=0,
                     help="first N iterations train only the value head (policy frozen): a behaviour-cloned critic is calibrated on wins only")
     args = ap.parse_args(argv)
@@ -253,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
     from . import net as N
 
     torch.manual_seed(args.seed)
-    torch.set_num_threads(max(1, os.cpu_count() or 4))
+    torch.set_num_threads(args.threads if args.threads > 0 else max(1, os.cpu_count() or 4))
     out.mkdir(parents=True, exist_ok=True)
 
     seeds = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v1.json").read_text())["partitions"]
