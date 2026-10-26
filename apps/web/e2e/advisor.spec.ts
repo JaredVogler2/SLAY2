@@ -28,7 +28,7 @@ test.describe("advisor journey", () => {
     page,
   }) => {
     await startIronclad(page);
-    await expect(page.getByText("10 cards")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "10 cards" })).toBeVisible();
 
     await addOffered(page, "pommel");
     await addOffered(page, "shrug");
@@ -45,14 +45,31 @@ test.describe("advisor journey", () => {
     // record the pick that was actually taken: the deck grows and the pack is logged for the pity tracker
     await page.locator("label").filter({ hasText: "I took Inflame" }).click();
     await page.getByRole("button", { name: /Record & clear offer/ }).click();
-    await expect(page.getByText("11 cards")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "11 cards" })).toBeVisible();
     await expect(page.getByText("Based on 1 recorded pack")).toBeVisible();
     await expect(page.getByRole("list", { name: "Offered cards" })).toHaveCount(0);
 
     // the saved run survives a reload (local-first persistence)
     await page.reload();
-    await expect(page.getByText("11 cards")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "11 cards" })).toBeVisible();
     await expect(page.getByText("Based on 1 recorded pack")).toBeVisible();
+  });
+
+  test("shows exact opening-hand odds for the deck you have and reacts to the hand size", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    const table = page.getByRole("table", { name: /Chance of drawing at least one card/ });
+    // starter deck: 4 Defends in 10 cards, 5-card hand -> 1 - C(6,5)/C(10,5) = 41/42
+    await expect(table.getByRole("row", { name: /^Block/ })).toContainText("97.6%");
+    // Bash is the only Vulnerable source: exactly half of all 5-card hands contain it
+    await expect(table.getByRole("row", { name: /^Vulnerable/ })).toContainText("50%");
+    // a seven-card hand holds it 70% of the time
+    const hand = page.getByRole("textbox", { name: "Cards in your hand" });
+    await hand.fill("7");
+    await hand.blur();
+    await expect(table.getByRole("row", { name: /^Vulnerable/ })).toContainText("70%");
+    await expect(page.getByText("What this assumes")).toBeVisible();
   });
 
   test("an offer that the exact odds engine says is impossible is flagged", async ({ page }) => {
@@ -69,11 +86,11 @@ test.describe("advisor journey", () => {
     await addOffered(page, "inflame");
     await page.locator("label").filter({ hasText: "I took Inflame" }).click();
     await page.getByRole("button", { name: /Record & clear offer/ }).click();
-    await expect(page.getByText("11 cards")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "11 cards" })).toBeVisible();
     await page.getByRole("button", { name: /Undo/ }).click();
-    await expect(page.getByText("10 cards")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "10 cards" })).toBeVisible();
     await page.getByRole("button", { name: /Redo/ }).click();
-    await expect(page.getByText("11 cards")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "11 cards" })).toBeVisible();
   });
 
   test("a curse is never recommended over skipping", async ({ page }) => {

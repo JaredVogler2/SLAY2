@@ -23,6 +23,7 @@ import { runStore, useRunHistory, useRunState } from "@/lib/run-store";
 
 import { CharacterPicker } from "./CharacterPicker";
 import { DeckPanel } from "./DeckPanel";
+import { HandOddsPanel } from "./HandOddsPanel";
 import { ADVISOR_SOURCES, OfferedPanel } from "./OfferedPanel";
 import { OfferCheck } from "./OfferCheck";
 import { PityTracker } from "./PityTracker";
@@ -372,7 +373,10 @@ export function AdvisorWorkbench() {
                 update({ ...run, deck: deck.length > 0 ? deck : starterDeck(character) });
               }}
             />
-            <PityTracker run={run} />
+            <div className="min-w-0 space-y-6">
+              <PityTracker run={run} />
+              <HandOddsPanel run={run} />
+            </div>
           </div>
 
           {run.packs.length > 0 ? (
