@@ -1555,6 +1555,105 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v3-ironclad-a0-veteran-val-n2000",
+      "policy": "rules_v3",
+      "policyParams": {
+        "threshold": 0
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1990,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 4,
+        "timeout": 0,
+        "win": 6
+      },
+      "completed": 1996,
+      "winRate": 0.003006012024048096,
+      "winRateWilson95": [
+        0.0013783881103344897,
+        0.006542969230679846
+      ],
+      "meanFloor": 22.46,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 502,
+        "1": 1352,
+        "2": 142
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 172
+        },
+        {
+          "id": "VANTOM",
+          "n": 144
+        },
+        {
+          "id": "TUNNELER",
+          "n": 134
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 121
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 114
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.2,
+      "winsAudit": {
+        "audited": 6,
+        "verified": 6,
+        "seeds": [
+          262553450,
+          279304733,
+          549839279,
+          855232175,
+          1591153730,
+          1774525248
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1996,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "6afa85d50be65bad0c7271e3f90c29cc901663d101adae4f0a9453a4b8f81883",
+      "episodesGzSha256": "c3ec1bbe57771e8b5a61a246e694c3ef56a2d17dd5a1691af99798069f51d336",
+      "finished": "2026-10-26T13:06:37+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "search_v1-ironclad-a0-veteran-train-n200",
       "policy": "search_v1",
       "policyParams": {},
@@ -2512,6 +2611,98 @@
       "role": "held-out",
       "preIsolation": false,
       "contentSha256": "f8da0207311af9e14a5736c37ed8eb3d44e58593df355d75cf7afb2db6739014"
+    },
+    {
+      "id": "rules_v3-vs-rules_v2-ironclad-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v3-ironclad-a0-veteran-val-n2000",
+        "contentSha256": "6afa85d50be65bad0c7271e3f90c29cc901663d101adae4f0a9453a4b8f81883",
+        "meanFloor": 22.442491210447013,
+        "meanWallSecondsPerEpisode": 1.197,
+        "params": {
+          "threshold": 0
+        },
+        "policy": "rules_v3",
+        "winRate": 0.0030135610246107484,
+        "winRateWilson95": [
+          0.0013818514366625632,
+          0.0065593605080998246
+        ],
+        "wins": 6
+      },
+      "b": {
+        "batchId": "rules_v2-ironclad-a0-veteran-val-n2000",
+        "contentSha256": "70a62f3df49aaa236612e7c371f9f2460f074a2131d048cd242191f92c108b7a",
+        "meanFloor": 21.049723756906076,
+        "meanWallSecondsPerEpisode": 0.8701,
+        "params": {
+          "threshold": 0
+        },
+        "policy": "rules_v2",
+        "winRate": 0.0025113008538422904,
+        "winRateWilson95": [
+          0.0010731399311275196,
+          0.005865486073205119
+        ],
+        "wins": 5
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Ironclad",
+        "partition": "val",
+        "profile": "veteran",
+        "sameSeedsBy": "the seed lists of the partition in the two manifests (verified against the recorded hashes)",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e",
+        "seedManifestSha256B": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1991,
+      "excludedNotCompleted": 9,
+      "pairedWinTable": {
+        "a_only": 5,
+        "b_only": 4,
+        "both": 1,
+        "mcnemar_p": 1,
+        "neither": 1981
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 1489,
+          "rate": 0.747865394274234,
+          "wilson95": [
+            0.7283265380651494,
+            0.7664496235369322
+          ]
+        },
+        "b": {
+          "games": 1296,
+          "rate": 0.6509291813159217,
+          "wilson95": [
+            0.6297186445375383,
+            0.6715584305616017
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 292,
+          "b_only": 99,
+          "both": 1197,
+          "mcnemar_p": 3.337412483441267e-23,
+          "neither": 403
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          1.1004520341536916,
+          1.6840783525866398
+        ],
+        "meanAMinusB": 1.3927674535409342,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.727,
+      "role": "held-out",
+      "preIsolation": false,
+      "contentSha256": "104f2ccfd24703e5bf727950fd938e9d2a3a4488dcdf3efb83d8693721a4ff67"
     },
     {
       "id": "search_v3-all-vs-rules_v2-ironclad-a0-veteran-dev",
