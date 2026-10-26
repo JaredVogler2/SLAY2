@@ -159,7 +159,7 @@ def summarize_episodes(rows: list[dict]) -> dict:
 
 
 def ppo_update(model, opt, data: dict, *, epochs: int, minibatch: int, clip: float, ent_coef: float, vf_coef: float,
-               max_grad: float, target_kl: float) -> dict:
+               max_grad: float, target_kl: float, value_only: bool = False) -> dict:
     import torch
     from torch.distributions import Categorical
 
@@ -186,7 +186,7 @@ def ppo_update(model, opt, data: dict, *, epochs: int, minibatch: int, clip: flo
             pg = -torch.min(ratio * adv[idx], ratio.clamp(1 - clip, 1 + clip) * adv[idx]).mean()
             vf = 0.5 * (v - ret[idx]).pow(2).mean()
             ent = dist.entropy().mean()
-            loss = pg + vf_coef * vf - ent_coef * ent
+            loss = vf_coef * vf if value_only else pg + vf_coef * vf - ent_coef * ent
             opt.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad)
@@ -238,25 +238,29 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--eval-repeats", type=int, default=2)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--resume", help="checkpoint to continue from")
+    ap.add_argument("--threads", type=int, default=0, help="torch threads of the learner (0 = every core); lower it when other jobs share the machine: oversubscribed OpenMP threads can slow an update 10x")
+    ap.add_argument("--value-warmup", type=int, default=0,
+                    help="first N iterations train only the value head (policy frozen): a behaviour-cloned critic is calibrated on wins only")
     args = ap.parse_args(argv)
 
     from .. import external
 
     sim = external.locate()
+    out = Path(args.out).resolve()  # resolve every user path BEFORE activate() changes the working directory
+    resume = str(Path(args.resume).resolve()) if args.resume else None
     external.activate(sim.root)
     import torch
 
     from . import net as N
 
     torch.manual_seed(args.seed)
-    torch.set_num_threads(max(1, os.cpu_count() or 4))
-    out = Path(args.out).resolve()
+    torch.set_num_threads(args.threads if args.threads > 0 else max(1, os.cpu_count() or 4))
     out.mkdir(parents=True, exist_ok=True)
 
     seeds = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v1.json").read_text())["partitions"]
     train_seeds, val_seeds = seeds["train"][: args.train_seeds], seeds["val"][: args.val_seeds]
     net_cfg = {"d": args.d, "layers": args.layers, "heads": 4, "d_pw": 16}
-    model = N.load(args.resume) if args.resume else N.CombatNet(**net_cfg)
+    model = N.load(resume) if resume else N.CombatNet(**net_cfg)
     model.eval()
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, eps=1e-5)
 
@@ -299,6 +303,9 @@ def main(argv: list[str] | None = None) -> int:
         ent_coef = args.ent + (args.ent_end - args.ent) * frac
         for g in opt.param_groups:
             g["lr"] = lr
+        warm = it <= args.value_warmup
+        for name, prm in model.named_parameters():
+            prm.requires_grad_(not warm or name.startswith("value_head"))
         t0 = time.perf_counter()
         broadcast(lambda s: ("collect", s, args.steps, args.gamma, args.lam))
         batches = [c.recv()[1] for c in conns]
@@ -309,8 +316,8 @@ def main(argv: list[str] | None = None) -> int:
         }
         episodes = [e for b in batches for e in b["episodes"]]
         t1 = time.perf_counter()
-        stats = ppo_update(model, opt, data, epochs=args.epochs, minibatch=args.minibatch, clip=args.clip, ent_coef=ent_coef,
-                           vf_coef=args.vf, max_grad=0.5, target_kl=args.target_kl)
+        stats = ppo_update(model, opt, data, epochs=args.epochs, minibatch=args.minibatch, clip=args.clip, ent_coef=0.0 if warm else ent_coef,
+                           vf_coef=args.vf, max_grad=0.5, target_kl=0.0 if warm else args.target_kl, value_only=warm)
         t_learn = time.perf_counter() - t1
         n = data["act"].shape[0]
         total_steps += n

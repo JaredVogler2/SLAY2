@@ -1,4 +1,11 @@
-import { CATALOG, getCard, rewardPool, ALL_UNLOCKED, type CardEntry } from "@slay2/game-data";
+import {
+  CATALOG,
+  getCard,
+  rewardPool,
+  ALL_UNLOCKED,
+  type CardEntry,
+  type PlayableClass,
+} from "@slay2/game-data";
 import { requireSupportedBuild } from "@slay2/game-schema";
 
 import { mulberry32, stateDigest } from "./digest";
@@ -198,6 +205,23 @@ function normalize(request: DraftRequest): DraftRequest {
   return { ...request, deck };
 }
 
+/**
+ * Class-unique resources are visible to the advisor only through role tags; their engines are not simulated. Saying so
+ * per class is part of not over-claiming (a card that is strong only inside an engine can look average here).
+ */
+const CLASS_NOT_MODELLED: Readonly<Record<PlayableClass, string>> = {
+  ironclad:
+    "Strength and exhaust engines are read from role tags only; their synergies are not simulated.",
+  silent:
+    "Poison, Sly cards and shiv engines are read from role tags only; their synergies are not simulated.",
+  regent:
+    "Stars and Forge are read from role tags only; resource engines and their synergies are not simulated.",
+  necrobinder:
+    "Osty, Souls and Doom are read from role tags only; summon and curse engines are not simulated.",
+  defect:
+    "Orbs and Focus are read from role tags only; orb ordering and engines are not simulated.",
+};
+
 export function evaluateDraft(input: unknown): DraftResponse {
   const parsed = DraftRequestSchema.safeParse(input);
   if (!parsed.success) {
@@ -335,6 +359,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
       "Specific enemy matchups, bosses and elites you will face.",
       "Card text beyond SLAY2's role tags: conditional or engine cards without tags are treated neutrally.",
       "Future card packs and the value of keeping a slot open.",
+      CLASS_NOT_MODELLED[request.character],
     ],
     missingInputs,
     deck: {

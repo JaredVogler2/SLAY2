@@ -17,9 +17,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import evidence from "@/content/evidence.generated.json";
 import {
   comparisonSentence,
+  actTwoSentence,
   comparisonVerdict,
+  formatP,
   largestReport,
+  policyLabel,
   signed,
+  valuesValidation,
+  winRows,
+  winSentence,
   type Comparison,
 } from "@/lib/methods-data";
 import { contactLink, siteUrl } from "@/lib/site-config";
@@ -65,8 +71,95 @@ describe("comparison wording is derived from the data", () => {
     expect(c?.bothCompleted).toBe(200);
     expect(c?.floorDifference.meanAMinusB).toBeCloseTo(2.375, 3);
     expect(c?.pairedWinTable).toMatchObject({ both: 0, a_only: 0, b_only: 0, neither: 200 });
-    expect(largestReport("rules_v1")?.completed).toBe(300);
-    expect(largestReport("random_legal")?.completed).toBe(1999);
+  });
+
+  it("the past-the-Act-1-boss endpoint is internally consistent with its paired table and sample size", () => {
+    expect(evidence.comparisons.length).toBeGreaterThan(0);
+    for (const c of evidence.comparisons) {
+      const t = c.reachedAct2.pairedTable;
+      expect(t.both + t.a_only + t.b_only + t.neither, c.id).toBe(c.bothCompleted);
+      expect(c.reachedAct2.a.games, c.id).toBe(t.both + t.a_only);
+      expect(c.reachedAct2.b.games, c.id).toBe(t.both + t.b_only);
+      expect(c.reachedAct2.a.rate, c.id).toBeCloseTo(c.reachedAct2.a.games / c.bothCompleted, 12);
+      const [lo = 1, hi = 0] = c.reachedAct2.a.wilson95;
+      expect(lo <= c.reachedAct2.a.rate && c.reachedAct2.a.rate <= hi, c.id).toBe(true);
+      // a wins-only table must still agree: a game won is also past the Act-1 boss
+      expect(c.reachedAct2.a.games, c.id).toBeGreaterThanOrEqual(c.a.wins);
+      expect(actTwoSentence(c)).toContain(`${policyLabel(c.a)} and`);
+    }
+  });
+
+  it("publishes a win only with its re-derivation, and says so in the sentence", () => {
+    const rows = winRows();
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.audited, r.batch).toBe(r.wins);
+      expect(r.verified, r.batch).toBe(r.wins);
+    }
+    const text = winSentence();
+    for (const r of rows) {
+      expect(text).toContain(r.policy);
+    }
+    expect(text).toContain("re-run and replayed hash for hash");
+    // the held-out/development label comes from the partition, never from the policy that won
+    const held = evidence.reports.filter((r) => r.counts.win > 0 && r.role === "held-out").length;
+    expect(rows.filter((r) => r.held).length).toBe(held);
+  });
+
+  it("finds the pre-registered test of the card values and it is a held-out, paired comparison", () => {
+    const test = valuesValidation("ironclad");
+    expect(test).toBeDefined();
+    expect(test?.role).toBe("held-out");
+    expect(test?.a.policy).toBe("rules_v2");
+    expect(test?.b.policy).toBe("rules_v1");
+    expect(test?.a.batchId).toMatch(/-val-/);
+    expect(test?.b.batchId).toMatch(/-val-/);
+    expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+  });
+
+  it("tells a policy's variants apart in the label and ignores a threshold of zero", () => {
+    expect(policyLabel({ policy: "rules_v2", params: { threshold: 0 } })).toBe("rules_v2");
+    expect(policyLabel({ policy: "rules_v1", params: {} })).toBe("rules_v1");
+    expect(policyLabel({ policy: "search_v3", params: { scope: "boss" } })).toBe(
+      "search_v3 (scope=boss)",
+    );
+    expect(
+      policyLabel({ policy: "rules_v2", params: { threshold: 0.1, tune: { heal_below: 0.6 } } }),
+    ).toBe('rules_v2 (threshold=0.1, tune={"heal_below":0.6})');
+  });
+
+  it("says which side is slower in whichever direction the comparison runs", () => {
+    const base = evidence.comparisons.find(
+      (c) => c.b.policy === "rules_v2" && c.a.policy === "search_v3",
+    );
+    expect(base).toBeDefined();
+    if (base) {
+      expect(comparisonSentence(base)).toMatch(
+        /search_v3 \(scope=boss\) took [\d.]+× as long per game/,
+      );
+    }
+  });
+
+  it("formats exact p-values without printing a misleading zero", () => {
+    expect(formatP(0.0173)).toBe("p = 0.017");
+    expect(formatP(8.13e-261)).toBe("p = 8.1e-261");
+    expect(formatP(0)).toBe("p < 1e-300");
+  });
+
+  it("headline reports are the held-out batches, even when a development batch is as large", () => {
+    const rules = largestReport("rules_v1");
+    const random = largestReport("random_legal");
+    expect(rules).toMatchObject({ partition: "val", role: "held-out", completed: 1997 });
+    expect(random).toMatchObject({ partition: "val", role: "held-out", completed: 2000 });
+    // the 300-game development batch of rules_v1 and the 2,000-game development ladder still exist in the ledger
+    expect(evidence.reports.some((r) => r.policy === "rules_v1" && r.partition === "train")).toBe(
+      true,
+    );
+    expect(
+      evidence.reports.some(
+        (r) => r.policy === "random_legal" && r.partition === "train" && r.completed === 1999,
+      ),
+    ).toBe(true);
   });
 });
 
@@ -107,6 +200,67 @@ describe("site url", () => {
       expect(siteUrl(bad)).toBeNull();
     },
   );
+});
+
+describe("site-data exporter refuses wins that were not re-derived", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+  const script = join(repo, "scripts", "export-site-data.mjs");
+  const winner = evidence.reports.find((r) => r.counts.win > 0);
+
+  function rootWith(mutate: (audit: string | null) => void): string {
+    if (!winner) {
+      throw new Error("expected a committed batch with wins");
+    }
+    const root = mkdtempSync(join(tmpdir(), "slay2-wins-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    const batch = join(root, "experiments", "batches", winner.id);
+    mkdirSync(batch, { recursive: true });
+    for (const f of ["manifest.json", "episodes.jsonl.gz", "wins-audit.json"]) {
+      cpSync(join(repo, "experiments", "batches", winner.id, f), join(batch, f));
+    }
+    mutate(join(batch, "wins-audit.json"));
+    return root;
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  it("fails when the batch has wins and no audit at all", () => {
+    const result = run(
+      rootWith((audit) => {
+        if (audit) {
+          rmSync(audit);
+        }
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("without a passing wins-audit.json");
+  });
+
+  it("fails when the audit says a win did not verify", () => {
+    const result = run(
+      rootWith((audit) => {
+        if (audit) {
+          const body = JSON.parse(readFileSync(audit, "utf8")) as { all_verified: boolean };
+          body.all_verified = false;
+          writeFileSync(audit, JSON.stringify(body));
+        }
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("without a passing wins-audit.json");
+  });
 });
 
 describe("site-data exporter refuses a comparison whose batches changed", () => {

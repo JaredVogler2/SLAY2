@@ -9,7 +9,7 @@ test.describe("methods", () => {
     await page.goto("/methods");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("ledger");
     await expect(page.getByRole("heading", { name: /Four independent layers/ })).toBeVisible();
-    await expect(page.getByText("Parity with the live game unverified")).toBeVisible();
+    await expect(page.getByText("Parity with the live game unverified").first()).toBeVisible();
     await expect(page.getByRole("heading", { name: "Paired comparisons" })).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Things this site does not know/ }),
@@ -19,6 +19,20 @@ test.describe("methods", () => {
     const batches = page.getByRole("region", { name: "Simulator batches" });
     await expect(batches.getByRole("row")).not.toHaveCount(0);
     await expect(batches.getByText(/\(0\.00%–\d+\.\d+%\)/).first()).toBeVisible();
+  });
+
+  test("explains the card values with their intervals, the caveats and the pre-registered test", async ({
+    page,
+  }) => {
+    await page.goto("/methods#card-values");
+    const panel = page.locator("#card-values");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole("heading", { level: 2 })).toContainText("randomised drafting");
+    await expect(panel.getByRole("table", { name: "Highest measured values" })).toBeVisible();
+    await expect(panel.getByRole("table", { name: "Lowest measured values" })).toBeVisible();
+    await expect(panel).toContainText(/Does acting on the \w+ values help\?/);
+    await expect(panel).toContainText(/Past the Act-1 boss: \d+\.\d% for rules_v2/);
+    await expect(panel).toContainText("Simulated, not measured in the live game");
   });
 
   test("every rule is a deep-linkable anchor", async ({ page }) => {
@@ -71,6 +85,7 @@ test.describe("navigation", () => {
     for (const [name, heading] of [
       ["Advisor", /Take it, or skip it/i],
       ["Odds", /Exact odds/i],
+      ["Codex", /Card codex/i],
       ["Methods", /ledger/i],
     ] as const) {
       const link = page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name });

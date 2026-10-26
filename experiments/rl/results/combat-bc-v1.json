@@ -1,0 +1,189 @@
+{
+  "schema": 1,
+  "kind": "combat-network-bc",
+  "run": "combat-bc-v1",
+  "note": "Behaviour cloning of rules_v1 on the train partition (won combats only, 8 epochs). Evaluated once, paired, on the same 796 held-out val pairs as PPO run 1: it reproduces the baseline (win 85.7 % vs 86.6 %, McNemar p = 0.31, same boss win rate 50.0 %, same potion use) and loses 0.7 points more HP per combat (95 % CI 0.1 to 1.4). It is the starting point of the PPO fine-tune, not a result in itself.",
+  "config": {
+    "train_seeds": 300,
+    "keep_monster": 0.35,
+    "repeats": 6,
+    "workers": 4,
+    "all_episodes": false,
+    "epochs": 8,
+    "batch": 512,
+    "lr": 0.001,
+    "lr_end": 0.0001,
+    "vf": 0.5,
+    "gamma": 0.995,
+    "hp_weight": 0.5,
+    "potion_cost": 0.1,
+    "d": 48,
+    "layers": 2,
+    "seed": 0
+  },
+  "net": {
+    "d": 48,
+    "layers": 2,
+    "heads": 4,
+    "d_pw": 16
+  },
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "dirty": false
+  },
+  "checkpoints": {
+    "bc.pt": {
+      "sha256": "5fd23a10814c368a14d04adcbb6c02edc9a027592523a9d9ab1e283063ecbd2f",
+      "bytes": 1422285
+    }
+  },
+  "behaviour_cloning": {
+    "demonstrations": {
+      "episodes": 9348,
+      "won": 7953,
+      "kept_episodes": 7953,
+      "decisions": 159893,
+      "off_layout": 1743
+    },
+    "decisions_by_node": {
+      "MONSTER": 80712,
+      "ELITE": 42601,
+      "BOSS": 32814,
+      "UNKNOWN": 3131,
+      "EVENT": 635
+    },
+    "train_decisions": 151931,
+    "holdout_decisions": 7962,
+    "final_epoch": {
+      "epoch": 8,
+      "loss": 0.3224,
+      "train": {
+        "n": 20000,
+        "top1": 0.9357,
+        "nll": 0.3105,
+        "value_mse": 0.0112
+      },
+      "holdout": {
+        "n": 7962,
+        "top1": 0.9324,
+        "nll": 0.3239,
+        "value_mse": 0.0116
+      },
+      "seconds": 269
+    }
+  },
+  "paired_evaluation": {
+    "file": "combat-bc-v1-paired-eval.json.gz",
+    "partition": "val",
+    "seeds": 80,
+    "seed_offset": 0,
+    "repeats": 2,
+    "workers": 4,
+    "agents": [
+      "rules",
+      "net:experiments/rl/combat-bc-v1/bc.pt"
+    ],
+    "summaries": {
+      "rules": {
+        "ALL": {
+          "n": 796,
+          "win": 0.8656,
+          "win_ci95": [
+            0.8401,
+            0.8875
+          ],
+          "hp_lost_mean": 0.2306,
+          "potions": 0.621
+        },
+        "BOSS": {
+          "n": 144,
+          "win": 0.5,
+          "win_ci95": [
+            0.4194,
+            0.5806
+          ],
+          "hp_lost_mean": 0.696,
+          "potions": 1.792
+        },
+        "ELITE": {
+          "n": 176,
+          "win": 0.9148,
+          "win_ci95": [
+            0.8642,
+            0.9477
+          ],
+          "hp_lost_mean": 0.2853,
+          "potions": 0.773
+        },
+        "MONSTER": {
+          "n": 476,
+          "win": 0.958,
+          "win_ci95": [
+            0.936,
+            0.9726
+          ],
+          "hp_lost_mean": 0.0696,
+          "potions": 0.21
+        }
+      },
+      "net:experiments/rl/combat-bc-v1/bc.pt": {
+        "ALL": {
+          "n": 796,
+          "win": 0.8568,
+          "win_ci95": [
+            0.8307,
+            0.8794
+          ],
+          "hp_lost_mean": 0.238,
+          "potions": 0.617
+        },
+        "BOSS": {
+          "n": 144,
+          "win": 0.5,
+          "win_ci95": [
+            0.4194,
+            0.5806
+          ],
+          "hp_lost_mean": 0.689,
+          "potions": 1.75
+        },
+        "ELITE": {
+          "n": 176,
+          "win": 0.8977,
+          "win_ci95": [
+            0.8441,
+            0.9343
+          ],
+          "hp_lost_mean": 0.3094,
+          "potions": 0.852
+        },
+        "MONSTER": {
+          "n": 476,
+          "win": 0.9496,
+          "win_ci95": [
+            0.9261,
+            0.9659
+          ],
+          "hp_lost_mean": 0.0751,
+          "potions": 0.187
+        }
+      }
+    },
+    "paired": {
+      "rules vs net:experiments/rl/combat-bc-v1/bc.pt": {
+        "pairs": 796,
+        "a_only_wins": 21,
+        "b_only_wins": 14,
+        "mcnemar_p": 0.310505,
+        "hp_lost_a_minus_b": -0.0074,
+        "hp_lost_ci95": [
+          -0.0137,
+          -0.0009
+        ],
+        "mean_dl": -0.0074
+      }
+    }
+  }
+}

@@ -243,8 +243,12 @@ def run_episode(
     return rec
 
 
-def replay_from_trace(cfg: RunConfig, seed: int, trace_path: Path) -> tuple[bool, str]:
-    """Re-drive a fresh run with the recorded action indices and verify every observation hash."""
+def replay_manager(cfg: RunConfig, seed: int, trace_path: Path, on_step=None) -> tuple[bool, str, object]:
+    """Re-drive a fresh run with the recorded action indices and verify every observation hash.
+
+    Returns ``(ok, message, manager)``; the manager is left in whatever state the replay reached. ``on_step(manager)`` is
+    called after every replayed action (used to count boss fights).
+    """
     mgr = new_run(cfg, seed)
     n = 0
     with gzip.open(trace_path, "rt", encoding="utf-8") as fh:
@@ -253,9 +257,17 @@ def replay_from_trace(cfg: RunConfig, seed: int, trace_path: Path) -> tuple[bool
             actions = mgr.get_available_actions()
             obs = observe(mgr, actions)
             if obs_hash(obs) != row["h"]:
-                return False, f"observation hash mismatch at step {row['t']} (phase {row['ph']})"
+                return False, f"observation hash mismatch at step {row['t']} (phase {row['ph']})", mgr
             if len(actions) != row["n"]:
-                return False, f"legal-action count mismatch at step {row['t']}"
+                return False, f"legal-action count mismatch at step {row['t']}", mgr
             mgr.take_action(actions[row["a"]])
             n += 1
-    return True, f"{n} steps replayed bit-for-bit (observation hashes identical)"
+            if on_step is not None:
+                on_step(mgr)
+    return True, f"{n} steps replayed bit-for-bit (observation hashes identical)", mgr
+
+
+def replay_from_trace(cfg: RunConfig, seed: int, trace_path: Path) -> tuple[bool, str]:
+    """Re-drive a fresh run with the recorded action indices and verify every observation hash."""
+    ok, message, _ = replay_manager(cfg, seed, trace_path)
+    return ok, message

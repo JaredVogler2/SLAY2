@@ -15,6 +15,7 @@ import {
   inferCounter,
   inferPotionCounter,
   inferUnknownState,
+  MAX_UNKNOWN_ROOMS_PER_ACT,
   nextHandWithReshuffle,
   hypergeometricDistribution,
   pointMass,
@@ -65,18 +66,17 @@ const PotionRequest = z.strictObject({
         forced: z.boolean().optional(),
       }),
     )
-    .max(200)
-    .optional(),
+    .max(200),
   upcoming: z.array(PotionRoom).min(1).max(30).optional(),
 });
 
 const UnknownRoomRequest = z.strictObject({
   calculator: z.literal("unknown_room"),
   build: BuildIdSchema,
+  /** Every "?" room met in the CURRENT act, in order. `[]` means none yet this act; omitting it is an error. */
   history: z
     .array(z.strictObject({ outcome: z.enum(["fight", "treasure", "shop", "event"]).optional() }))
-    .max(60)
-    .optional(),
+    .max(MAX_UNKNOWN_ROOMS_PER_ACT),
 });
 
 const DrawRequest = z.strictObject({
@@ -109,11 +109,13 @@ const PriceRequest = z.strictObject({
 
 const RemovalRequest = z.strictObject({
   calculator: z.literal("removal"),
+  build: BuildIdSchema,
   ascension: AscensionSchema,
   removals: Count(100),
 });
 const GoldRequest = z.strictObject({
   calculator: z.literal("gold"),
+  build: BuildIdSchema,
   ascension: AscensionSchema,
   room: z.enum(["monster", "elite", "boss"]),
 });
@@ -159,6 +161,14 @@ export function computeOdds(input: unknown): Record<string, unknown> {
           [{ path: "counter", message: "mutually exclusive with history" }],
         );
       }
+      if (req.counter === undefined && req.history === undefined) {
+        throw new HttpError(
+          400,
+          "invalid_request",
+          "Say what you know about the hidden counter: give `counter` (if you know it) or `history` (every card pack so far this run; `[]` only if no card reward has been offered yet)",
+          [{ path: "history", message: "required unless counter is given" }],
+        );
+      }
       const rules = rarityRulesForAscension(req.ascension);
       const cards = req.cards ?? (req.source === "shop" ? 5 : 3);
       const history: PackObservation[] = (req.history ?? []).map((h) => ({
@@ -189,6 +199,10 @@ export function computeOdds(input: unknown): Record<string, unknown> {
         source: req.source,
         cards,
         counterKnowledge: req.counter === undefined ? "history" : "known",
+        evidence:
+          req.counter === undefined
+            ? { kind: "history", observations: history.length }
+            : { kind: "counter", observations: 0 },
         evidenceOfHistory: inference ? rationalOut(inference.evidence) : null,
         posterior: dist(posterior),
         atLeastOneRare: rationalOut(forecast.atLeastOneRare),
@@ -210,7 +224,7 @@ export function computeOdds(input: unknown): Record<string, unknown> {
       };
     }
     case "potion": {
-      const history: PotionObservation[] = (req.history ?? []).map((h) => ({
+      const history: PotionObservation[] = req.history.map((h) => ({
         room: h.room,
         ...(h.dropped === undefined ? {} : { dropped: h.dropped }),
         ...(h.forced === undefined ? {} : { forced: h.forced }),
@@ -238,6 +252,7 @@ export function computeOdds(input: unknown): Record<string, unknown> {
         calculator: "potion",
         method: "exact",
         build: req.build,
+        evidence: { kind: "history", observations: history.length },
         storedChanceTenths: dist(inference.posterior),
         nextDrop: next,
         upcoming,
@@ -247,7 +262,7 @@ export function computeOdds(input: unknown): Record<string, unknown> {
       };
     }
     case "unknown_room": {
-      const history: UnknownObservation[] = (req.history ?? []).map((h) =>
+      const history: UnknownObservation[] = req.history.map((h) =>
         h.outcome === undefined ? {} : { outcome: h.outcome },
       );
       const inference = inferUnknownState(history);
@@ -263,6 +278,7 @@ export function computeOdds(input: unknown): Record<string, unknown> {
         calculator: "unknown_room",
         method: "exact",
         build: req.build,
+        evidence: { kind: "history", observations: history.length },
         next: Object.fromEntries(Object.entries(next).map(([k, v]) => [k, rationalOut(v)])),
         provenance: provenanceFor("unknown_room"),
       };
@@ -386,6 +402,7 @@ export function computeOdds(input: unknown): Record<string, unknown> {
       return {
         calculator: "removal",
         method: "exact",
+        build: req.build,
         cost: cardRemovalCost(req.removals, req.ascension),
         provenance: provenanceFor("shop"),
       };
@@ -394,6 +411,7 @@ export function computeOdds(input: unknown): Record<string, unknown> {
       return {
         calculator: "gold",
         method: "exact",
+        build: req.build,
         min: g.min,
         max: g.max,
         mean: rationalOut(g.mean),

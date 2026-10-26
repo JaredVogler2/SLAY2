@@ -74,7 +74,7 @@ def test_sample_is_diverse_and_the_perturbation_is_real(points):
     assert real >= 10, "too few decision points with a hidden draw order that the perturbation actually changed"
 
 
-@pytest.mark.parametrize("name", ["random_legal", "rules_v1"])
+@pytest.mark.parametrize("name", ["random_legal", "rules_v1", "rules_explore"])
 def test_cheap_policies_ignore_hidden_state(points, name):
     for i, p in enumerate(points):
         a, b = twins(p, 5000 + i)
@@ -173,3 +173,70 @@ def test_fair_search_does_not_exploit_the_hidden_draw_order(sim):
         pb = search_plan(b, ManagerForwardModel(b), nodes=60, depth=6)
         assert pa == pb, f"fair search leaked the hidden draw order at seed {seed}"
         assert pa, "the search must find some plan"
+
+
+# ------------------------------------------------------------------------------------------------ search_v2
+def search2_plan(mgr, forward_model, **params):
+    """The complete turn plan (signature list) search_v2 would follow."""
+    from slay2_sim.policies.search import _signature as signature
+
+    policy = make_policy("search_v2", **params)
+    policy.reset(POLICY_SEED)
+    return [signature(a) for a in policy._plan_turn(forward_model, policy.rng.getrandbits(31))]
+
+
+def test_search2_policy_ignores_hidden_state(points):
+    combat_points = [p for p in points if p.phase == "COMBAT" and len(p.get_combat_state().draw_pile) >= 2]
+    assert len(combat_points) >= 12
+    for i, p in enumerate(combat_points[:12]):
+        a, b = twins(p, 15000 + i)
+        da, db = decide("search_v2", a, nodes=40), decide("search_v2", b, nodes=40)
+        assert da == db, f"search_v2 depends on hidden state at combat point {i}: {da} != {db}"
+
+
+def test_search2_plans_ignore_hidden_state(points):
+    combat_points = [p for p in points if p.phase == "COMBAT" and len(p.get_combat_state().draw_pile) >= 3]
+    assert len(combat_points) >= 12
+    for i, p in enumerate(combat_points[:16]):
+        a, b = twins(p, 17000 + i)
+        assert search2_plan(a, ManagerForwardModel(a), nodes=60) == search2_plan(b, ManagerForwardModel(b), nodes=60), f"combat point {i}"
+
+
+def test_canary_a_leaky_forward_model_is_detected_for_search2(sim):
+    differing = 0
+    for seed in range(8):
+        a = draw_matters_scenario(sim, seed, top_first=True)
+        b = draw_matters_scenario(sim, seed, top_first=False)
+        differing += search2_plan(a, LeakyForwardModel(a), nodes=80) != search2_plan(b, LeakyForwardModel(b), nodes=80)
+    assert differing >= 5, f"leaky search_v2 differed on only {differing}/8 scenarios; the canary has no power"
+
+
+def test_fair_search2_does_not_exploit_the_hidden_draw_order(sim):
+    for seed in range(8):
+        a = draw_matters_scenario(sim, seed, top_first=True)
+        b = draw_matters_scenario(sim, seed, top_first=False)
+        pa = search2_plan(a, ManagerForwardModel(a), nodes=80)
+        pb = search2_plan(b, ManagerForwardModel(b), nodes=80)
+        assert pa == pb and pa, f"fair search_v2 leaked the hidden draw order at seed {seed}"
+
+
+def test_search2_state_key_merges_play_orders_and_keeps_different_boards_apart(sim):
+    from conftest import drive_to_combat
+    from slay2_sim.policies.search2 import state_key
+
+    mgr = drive_to_combat(3)
+    assert mgr is not None
+    plays = [a for a in mgr.get_available_actions() if a["action"] == "play_card"]
+    strikes = [a for a in plays if a.get("card_id") == "STRIKE_IRONCLAD"]
+    defends = [a for a in plays if a.get("card_id") == "DEFEND_IRONCLAD"]
+    assert strikes and defends
+
+    def after(*first):
+        c = clone_manager(mgr)
+        for want in first:  # always the first legal action that is the requested card (indexes shift as cards leave the hand)
+            a = next(x for x in c.get_available_actions() if x["action"] == "play_card" and x.get("card_id") == want and (x.get("target_index") in (None, 0)))
+            c.take_action(a)
+        return state_key(c)
+
+    assert after("STRIKE_IRONCLAD", "DEFEND_IRONCLAD") == after("DEFEND_IRONCLAD", "STRIKE_IRONCLAD")
+    assert after("STRIKE_IRONCLAD") != after("DEFEND_IRONCLAD")

@@ -5,7 +5,7 @@
   "description": "SLAY2 - independent, unofficial Slay the Spire 2 strategy observatory (monorepo)",
   "packageManager": "pnpm@10.28.0",
   "engines": {
-    "node": ">=22.12.0"
+    "node": "^22.12.0"
   },
   "scripts": {
     "typecheck": "pnpm -r --if-present typecheck",
@@ -15,13 +15,15 @@
     "test": "pnpm -r --if-present test",
     "build": "pnpm --filter @slay2/web build",
     "guard": "bash scripts/guard-third-party.sh tracked",
-    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm build",
+    "licenses:check": "node scripts/check-licenses.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "22.20.5",
     "eslint": "10.13.0",
     "fast-check": "4.10.2",
+    "next": "16.4.3",
     "prettier": "3.9.10",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.0",

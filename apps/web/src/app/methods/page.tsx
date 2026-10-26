@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { Badge, type BadgeTone } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
@@ -7,7 +8,9 @@ import evidence from "@/content/evidence.generated.json";
 import {
   GROUP_LABEL,
   comparisonSentence,
+  formatP,
   largestReport,
+  policyLabel,
   pct,
   ruleSummary,
   rulesBySection,
@@ -15,6 +18,7 @@ import {
   statusGroup,
   totals,
   verification,
+  winSentence,
   type StatusGroup,
 } from "@/lib/methods-data";
 
@@ -34,7 +38,7 @@ const GROUP_TONE: Record<StatusGroup, BadgeTone> = {
 const NOT_EVALUATED = [
   [
     "Advisor win delta",
-    "No outcome-based evaluation of the card advisor exists yet; its index is a heuristic and says so.",
+    "The card advisor's own index is still a heuristic and says so. Measured values from simulated runs exist (above and on the codex) and a policy that follows them beat the hand-written ratings in simulation, but the advisor does not use them yet and nothing here is a win probability for the live game.",
   ],
   [
     "Live-game parity of the simulator",
@@ -50,7 +54,7 @@ const NOT_EVALUATED = [
   ],
   [
     "Neural policies",
-    "None trained or deployed. No model on this site is, or claims to be, a neural network.",
+    "None deployed, and no advice on this site comes from a neural network. A research combat network trained locally has not beaten the rules baseline on held-out simulated combats (record: experiments/rl/results in the repository).",
   ],
 ] as const;
 
@@ -204,8 +208,8 @@ export default function MethodsPage() {
             </>
           ) : (
             <>
-              Across every batch listed, {total.wins} of {total.completed} completed games were
-              wins; the intervals below show how uncertain each batch is.
+              <strong className="font-medium text-parchment">{winSentence()}</strong>; the intervals
+              below show how uncertain each batch is.
             </>
           )}
         </p>
@@ -240,7 +244,7 @@ export default function MethodsPage() {
               {reports.map((r) => (
                 <tr key={r.id} className="align-top">
                   <th scope="row" className="py-3 pr-3 font-medium text-parchment">
-                    {r.policy}
+                    {policyLabel({ policy: r.policy, params: r.policyParams })}
                     <span className="block font-mono text-[0.65rem] font-normal text-dim">
                       {r.id}
                     </span>
@@ -289,6 +293,9 @@ export default function MethodsPage() {
                       A − B (95% bootstrap)
                     </th>
                     <th scope="col" className="py-2 pr-3 font-medium">
+                      Past the Act-1 boss A · B
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
                       Wins A · B
                     </th>
                     <th scope="col" className="py-2 font-medium">
@@ -300,7 +307,7 @@ export default function MethodsPage() {
                   {comparisons.map((c) => (
                     <tr key={c.id} className="align-top">
                       <th scope="row" className="py-3 pr-3 font-medium text-parchment">
-                        {c.a.policy} vs {c.b.policy}
+                        {policyLabel(c.a)} vs {policyLabel(c.b)}
                         <span className="block font-mono text-[0.65rem] font-normal text-dim">
                           {c.cohort.character} A{c.cohort.ascension} · {c.cohort.profile} · sha{" "}
                           {c.contentSha256.slice(0, 10)}
@@ -320,6 +327,12 @@ export default function MethodsPage() {
                         <span className="text-muted">
                           ({signed(c.floorDifference.ci95[0] ?? 0)} to{" "}
                           {signed(c.floorDifference.ci95[1] ?? 0)})
+                        </span>
+                      </td>
+                      <td className="num py-3 pr-3">
+                        {pct(c.reachedAct2.a.rate, 1)} · {pct(c.reachedAct2.b.rate, 1)}
+                        <span className="block text-xs text-muted">
+                          {formatP(c.reachedAct2.pairedTable.mcnemar_p)}
                         </span>
                       </td>
                       <td className="num py-3 pr-3">
@@ -376,6 +389,8 @@ export default function MethodsPage() {
             .join(" · ")}
         </p>
       </Panel>
+
+      <CardValuesPanel />
 
       <Panel eyebrow="Not yet evaluated" title="Things this site does not know" headingLevel={2}>
         <dl className="grid gap-3 md:grid-cols-2">

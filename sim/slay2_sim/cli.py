@@ -11,7 +11,7 @@ from . import external
 from .batch import run_batch
 from .compare import build_comparison, render_text, write_comparison
 from .manifest import (
-    DEFAULT_SIZES, load_seed_manifest, make_seed_manifest, partition_seeds, save_json, sha256_file,
+    DEFAULT_SIZES, PARTITIONS, load_seed_manifest, make_seed_manifest, partition_seeds, save_json, sha256_file,
 )
 from .policies import REGISTRY
 from .runner import RunConfig, replay_from_trace
@@ -151,7 +151,21 @@ def _replay_audit(out_dir: Path, *, limit: int, character: str, ascension: int, 
 
 def cmd_audit(args) -> int:
     if args.what == "replay":
-        return _replay_audit(Path(args.batch), limit=args.limit, character=args.character, ascension=args.ascension, profile=args.profile)
+        return _replay_audit(Path(args.batch), limit=args.limit if args.limit is not None else 5, character=args.character, ascension=args.ascension, profile=args.profile)
+    if args.what == "wins":
+        from .winaudit import audit_wins
+
+        sim = external.locate()
+        external.activate(sim.root)
+        report = audit_wins(Path(args.batch), limit=args.limit)
+        for w in report["wins"]:
+            print(
+                f"win seed={w['seed']}: {'VERIFIED' if w['verified'] else 'NOT VERIFIED'} - floor {w['floor']}, hp {w['hp']}/{w['max_hp']}, "
+                f"deck {w['deck_size']}, re-run {'agrees' if w['rerun_matches_stored_record'] else 'DISAGREES ' + str(w['rerun_mismatched_fields'])}, "
+                f"replay: {w['replay_message']}, bosses per act {w['boss_fights_entered_per_act']}, final act index {w['terminal_state']['final_act_index']}"
+            )
+        print(f"wins in batch {report['wins_in_batch']}, audited {report['wins_audited']}, verified {report['wins_verified']}  (wrote wins-audit.json)")
+        return 0 if report["all_verified"] or report["wins_audited"] == 0 else 1
     print(f"audit {args.what!r} is implemented in a later milestone", file=sys.stderr)
     return 2
 
@@ -183,6 +197,40 @@ def cmd_compare(args) -> int:
     if args.out:
         write_comparison(comparison, Path(args.out))
         print(f"  wrote {args.out}  (content sha256 {comparison['contentSha256'][:16]}...)")
+    return 0
+
+
+def cmd_tune(args) -> int:
+    from .tune import expand_one_at_a_time, render, run_candidates
+
+    sim = external.locate()
+    external.activate(sim.root)
+    base = json.loads(args.base) if args.base else {}
+    candidates = expand_one_at_a_time(args.one_at_a_time) if args.one_at_a_time else []
+    if args.candidates:
+        candidates += json.loads(Path(args.candidates).read_text(encoding="utf-8"))
+    if not candidates:
+        print("nothing to tune: pass --one-at-a-time or --candidates", file=sys.stderr)
+        return 2
+    summary = run_candidates(
+        policy=args.policy, base_params=base, candidates=candidates, seeds_file=Path(args.seeds), partition=args.partition,
+        offset=args.offset, n=args.n, workers=args.workers, out_dir=Path(args.out), sim=sim,
+    )
+    print(render(summary))
+    return 0
+
+
+def cmd_pickgolden(args) -> int:
+    from .pickgolden import build_golden
+
+    out = Path(args.out)  # resolved before the simulator is activated (it changes the working directory)
+    sim = external.locate()
+    external.activate(sim.root)
+    body = build_golden()
+    save_json(out, body)
+    for c in body["classes"]:
+        print(f"  {c['character']:12s} cases={len(c['cases'])}  values sha256={c['valuesSha256'][:16]}...")
+    print(f"wrote {out}")
     return 0
 
 
@@ -231,7 +279,7 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--profile", default="veteran", choices=["veteran", "first_run"],
                         help="veteran: no tutorial scripting (default); first_run: simulator default with scripted early content")
         sp.add_argument("--seeds", default=str(DEFAULT_SEEDS))
-        sp.add_argument("--partition", default="train", choices=["train", "val", "test"])
+        sp.add_argument("--partition", default="train", choices=list(PARTITIONS))
         sp.add_argument("--allow-sealed", action="store_true", help="required for the sealed test partition (recorded)")
         sp.add_argument("--n", type=int, default=n_default)
         sp.add_argument("--workers", type=int, default=4)
@@ -248,14 +296,31 @@ def build_parser() -> argparse.ArgumentParser:
     add_run_args(rn)
     rn.set_defaults(fn=cmd_run)
 
-    au = sub.add_parser("audit", help="audits: replay | rewards | monster-hp | fairness")
-    au.add_argument("what", choices=["replay", "rewards", "monster-hp", "fairness"])
+    au = sub.add_parser("audit", help="audits: replay | wins | rewards | monster-hp | fairness")
+    au.add_argument("what", choices=["replay", "wins", "rewards", "monster-hp", "fairness"])
     au.add_argument("--batch")
-    au.add_argument("--limit", type=int, default=5)
+    au.add_argument("--limit", type=int, default=None, help="replay: traces to verify (default 5); wins: wins to audit (default all)")
     au.add_argument("--character", default="Ironclad")
     au.add_argument("--ascension", type=int, default=0)
     au.add_argument("--profile", default="veteran", choices=["veteran", "first_run"])
     au.set_defaults(fn=cmd_audit)
+
+    tn = sub.add_parser("tune", help="paired tuning of a rules policy's thresholds on development seeds (dev/train only)")
+    tn.add_argument("--policy", default="rules_v2", choices=sorted(REGISTRY))
+    tn.add_argument("--base", help="JSON policy parameters of the baseline, e.g. '{\"threshold\":0.0}'")
+    tn.add_argument("--one-at-a-time", help='"heal_below=0.5,0.6;elite_value=1,3": one candidate per value')
+    tn.add_argument("--candidates", help="JSON file: [{\"name\": ..., \"tune\": {...}}, ...]")
+    tn.add_argument("--seeds", default=str(EXPERIMENTS / "seeds" / "ironclad-a0-v2.json"))
+    tn.add_argument("--partition", default="dev", choices=["dev", "train"])
+    tn.add_argument("--offset", type=int, default=0, help="skip this many seeds of the partition (a fresh slice per tuning stage)")
+    tn.add_argument("--n", type=int, default=500)
+    tn.add_argument("--workers", type=int, default=4)
+    tn.add_argument("--out", required=True)
+    tn.set_defaults(fn=cmd_tune)
+
+    pg = sub.add_parser("pickgolden", help="write golden card-reward cases of rules_v2 for the website's simulation panel")
+    pg.add_argument("--out", default=str(external.REPO_ROOT / "apps" / "web" / "test" / "fixtures" / "simulation-pick-golden.json"))
+    pg.set_defaults(fn=cmd_pickgolden)
 
     orc = sub.add_parser("oracle", help="write the independent exact golden fixtures for packages/odds")
     orc.add_argument("--out", default=str(external.REPO_ROOT / "packages" / "odds" / "test" / "fixtures" / "golden-python.json"))
@@ -283,10 +348,24 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+# Arguments that name files or directories. Every one is relative to the *user's* working directory, but
+# `external.activate()` changes into the simulator checkout, so they are made absolute before anything runs
+# (a relative `--out` used to land inside the third-party checkout).
+PATH_ARGS = ("out", "seeds", "coverage_out", "batch", "a", "b", "candidates")
+
+
+def absolutize_paths(args: argparse.Namespace) -> argparse.Namespace:
+    for name in PATH_ARGS:
+        value = getattr(args, name, None)
+        if isinstance(value, str) and value:
+            if name == "seeds" and args.cmd not in {"run", "smoke", "tune"}:
+                continue  # `--seeds` is a count or a path only for the batch commands
+            setattr(args, name, str(Path(value).resolve()))
+    return args
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    if args.cmd in {"run", "smoke"} and args.cmd == "run" and args.n is None:
-        pass  # run all seeds of the partition
+    args = absolutize_paths(build_parser().parse_args(argv))
     return int(args.fn(args) or 0)
 
 

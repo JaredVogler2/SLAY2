@@ -30,6 +30,18 @@
       "min_ascension": 0,
       "affects": "results",
       "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+    },
+    {
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
     }
   ]
 }

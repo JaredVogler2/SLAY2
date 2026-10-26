@@ -1,0 +1,92 @@
+{
+  "a": {
+    "batchId": "rules_v1-ironclad-a0-veteran-val-n2000",
+    "contentSha256": "cb67cffc76ebbb79234ac86ec8d1f405cf8da339bcf0628d38298d706778d752",
+    "meanFloor": 18.081121682523786,
+    "meanWallSecondsPerEpisode": 0.6157,
+    "params": {},
+    "policy": "rules_v1",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.0019199216428463545
+    ],
+    "wins": 0
+  },
+  "b": {
+    "batchId": "random_legal-ironclad-a0-veteran-val-n2000",
+    "contentSha256": "6039113dcdc9ef6052f645f55adae7142fd3dcb009a19c6b80953214f5326b9c",
+    "meanFloor": 4.482223335002503,
+    "meanWallSecondsPerEpisode": 0.3715,
+    "params": {},
+    "policy": "random_legal",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.0019199216428463545
+    ],
+    "wins": 0
+  },
+  "bothCompleted": 1997,
+  "cohort": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "partition": "val",
+    "profile": "veteran",
+    "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+  },
+  "contentSha256": "0a442434266e30c3df748af4398548bc92fd9872b1ab090c6da3ee83db3eca4a",
+  "difference": "a minus b",
+  "excludedNotCompleted": 3,
+  "floorDifference": {
+    "ci95": [
+      13.306459689534302,
+      13.895343014521783
+    ],
+    "meanAMinusB": 13.598898347521281,
+    "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "kind": "paired-comparison",
+  "pairedSeeds": 2000,
+  "pairedWinTable": {
+    "a_only": 0,
+    "b_only": 0,
+    "both": 0,
+    "mcnemar_p": 1.0,
+    "neither": 1997
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 865,
+      "rate": 0.43314972458688034,
+      "wilson95": [
+        0.4115659362843631,
+        0.45499020747058927
+      ]
+    },
+    "b": {
+      "games": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.0019199216428463545
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 865,
+      "b_only": 0,
+      "both": 0,
+      "mcnemar_p": 8.129872718476162e-261,
+      "neither": 1132
+    }
+  },
+  "role": "held-out",
+  "schema": 1,
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "parityWithLiveGame": "UNVERIFIED",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "wallTimeRatioBOverA": 0.603
+}

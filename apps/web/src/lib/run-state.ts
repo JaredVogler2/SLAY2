@@ -8,6 +8,7 @@ import {
   type PlayableClass,
 } from "@slay2/game-data";
 import { AscensionSchema, BuildIdSchema, SUPPORTED_BUILD_ID } from "@slay2/game-schema";
+import { MAX_UNKNOWN_ROOMS_PER_ACT } from "@slay2/odds";
 import type {
   PackObservation,
   PotionObservation,
@@ -70,7 +71,7 @@ export const RunStateSchema = z.strictObject({
   packs: z.array(PackLogSchema).max(200),
   potions: z.array(PotionObservationSchema).max(200),
   /** "?" rooms met in the CURRENT act (the counters reset every act) */
-  unknownRooms: z.array(UnknownObservationSchema).max(60),
+  unknownRooms: z.array(UnknownObservationSchema).max(MAX_UNKNOWN_ROOMS_PER_ACT),
   profile: z.strictObject({
     /** a profile's very first run has scripted early rewards; unknown is the honest default */
     firstRun: z.enum(["unknown", "no", "yes"]),

@@ -7,6 +7,7 @@ import { ResumeChip } from "./ResumeChip";
 const NAV = [
   { href: "/advisor", label: "Advisor" },
   { href: "/odds", label: "Odds" },
+  { href: "/codex", label: "Codex" },
   { href: "/methods", label: "Methods" },
   { href: "/about", label: "About" },
 ] as const;

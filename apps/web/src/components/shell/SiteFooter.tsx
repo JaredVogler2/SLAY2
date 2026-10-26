@@ -24,6 +24,9 @@ export function SiteFooter() {
           <Link href="/odds" className="min-h-8 hover:text-parchment">
             Probability observatory
           </Link>
+          <Link href="/codex" className="min-h-8 hover:text-parchment">
+            Card codex
+          </Link>
           <Link href="/methods" className="min-h-8 hover:text-parchment">
             Evidence &amp; methods
           </Link>

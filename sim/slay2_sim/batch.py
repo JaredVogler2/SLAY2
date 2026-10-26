@@ -67,6 +67,16 @@ def read_episodes(path: Path) -> list[EpisodeRecord]:
     return out
 
 
+def _effective(policy_name: str, policy_params: dict) -> dict:
+    """What the policy resolved its parameters to (a values file becomes a path and a sha256): the manifest must name the
+    measurement or checkpoint a batch used, not only the flags it was started with."""
+    try:
+        d = make_policy(policy_name, **policy_params).describe()
+        return {"version": d["version"], "params": d["params"]}
+    except Exception as e:  # noqa: BLE001 - provenance must never make a finished batch unreadable
+        return {"error": f"{type(e).__name__}: {str(e)[:200]}"}
+
+
 def run_batch(
     *,
     out_dir: Path,
@@ -162,7 +172,7 @@ def run_batch(
         "batch_id": batch_id,
         "finished": utc_now(),
         "config": cfg.describe(),
-        "policy": {"name": policy_name, "params": policy_params},
+        "policy": {"name": policy_name, "params": policy_params, "effective": _effective(policy_name, policy_params)},
         "seeds": seed_info,
         "simulator": {**sim.describe(), "parity_with_live_game": "UNVERIFIED"},
         "known_simulator_gaps": gaps.applicable(cfg.ascension),

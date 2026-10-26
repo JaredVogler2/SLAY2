@@ -39,24 +39,52 @@ def deck_ids(run: dict) -> list[tuple[str, bool]]:
     return out
 
 
+# --------------------------------------------------------------------------- tunables
+
+# Every threshold the hand-written rules use, with the value rules_v1 shipped with (changing a default changes rules_v1: add
+# a policy parameter ``tune={...}`` instead). They are what ``slay2_sim.tune`` searches over on development seeds.
+DEFAULT_TUNE: dict[str, float] = {
+    # map: value of walking into a node, summed along the best path
+    "elite_ok_hp": 0.8, "elite_ok_floor": 4, "elite_value": 2.0, "elite_mid_hp": 0.65, "elite_mid_value": 0.2, "elite_bad_value": -2.5,
+    "rest_base": 1.0, "rest_weight": 3.0,
+    "shop_base": 0.3, "shop_rich_gold": 150, "shop_rich": 1.2, "shop_mid_gold": 75, "shop_mid": 0.5,
+    "monster_value": 1.0, "monster_hp_penalty": 0.5, "unknown_value": 0.8, "treasure_value": 1.8,
+    # rest sites
+    "heal_below": 0.7, "boss_heal_below": 0.9,
+    # card rewards (rules_v1's static rating) and shops
+    "card_threshold": 3.2, "card_slope": 0.09, "max_deck": 32,
+    "shop_card_threshold": 3.6, "shop_potion_margin": 40,
+    # combat
+    "potion_hp_frac": 0.15, "potion_hp_abs": 6, "danger_frac": 0.3,
+}
+
+
+def resolve_tune(tune: dict | None) -> dict[str, float]:
+    """The defaults overridden by ``tune``; an unknown key is a typo, not a new parameter."""
+    unknown = set(tune or {}) - set(DEFAULT_TUNE)
+    if unknown:
+        raise ValueError(f"unknown tunables: {sorted(unknown)}; known: {sorted(DEFAULT_TUNE)}")
+    return {**DEFAULT_TUNE, **(tune or {})}
+
+
 # --------------------------------------------------------------------------- map
 
-NODE_VALUE = {"MONSTER": 1.0, "UNKNOWN": 0.8, "TREASURE": 1.8, "BOSS": 0.0, "ANCIENT": 0.0}
-
-
-def node_value(kind: str, h: float, gold: int, floor: int) -> float:
+def node_value(kind: str, h: float, gold: int, floor: int, t: dict | None = None) -> float:
+    t = t or DEFAULT_TUNE
     if kind == "ELITE":
-        return 2.0 if h >= 0.8 and floor >= 4 else (0.2 if h >= 0.65 else -2.5)
+        if h >= t["elite_ok_hp"] and floor >= t["elite_ok_floor"]:
+            return t["elite_value"]
+        return t["elite_mid_value"] if h >= t["elite_mid_hp"] else t["elite_bad_value"]
     if kind == "REST_SITE":
-        return 1.0 + 3.0 * (1.0 - h)
+        return t["rest_base"] + t["rest_weight"] * (1.0 - h)
     if kind == "SHOP":
-        return 0.3 + (1.2 if gold >= 150 else 0.5 if gold >= 75 else 0.0)
+        return t["shop_base"] + (t["shop_rich"] if gold >= t["shop_rich_gold"] else t["shop_mid"] if gold >= t["shop_mid_gold"] else 0.0)
     if kind == "MONSTER":
-        return 1.0 - 0.5 * (1.0 - h)
-    return NODE_VALUE.get(kind, 0.5)
+        return t["monster_value"] - t["monster_hp_penalty"] * (1.0 - h)
+    return {"UNKNOWN": t["unknown_value"], "TREASURE": t["treasure_value"], "BOSS": 0.0, "ANCIENT": 0.0}.get(kind, 0.5)
 
 
-def plan_map(obs: dict, actions: list[dict]) -> int:
+def plan_map(obs: dict, actions: list[dict], t: dict | None = None) -> int:
     mp, run = obs["map"], obs["run"]
     h, gold, floor = _hp_frac(run), run["gold"], run["total_floor"]
     kinds = {(c, r): t for c, r, t in mp["nodes"]}
@@ -68,7 +96,7 @@ def plan_map(obs: dict, actions: list[dict]) -> int:
     def best(n: tuple) -> float:
         if n in memo:
             return memo[n]
-        v = node_value(kinds.get(n, "MONSTER"), h, gold, floor)
+        v = node_value(kinds.get(n, "MONSTER"), h, gold, floor, t)
         nxt = kids.get(n, [])
         memo[n] = v + (max(best(c) for c in nxt) if nxt else 0.0)
         return memo[n]
@@ -187,7 +215,8 @@ def _enemy_dmg(e: dict, pl_powers: dict) -> int:
     return int(total)
 
 
-def combat_action(obs: dict, actions: list[dict], deck: list[tuple[str, bool]], ctx_prompt: str = "") -> int:
+def combat_action(obs: dict, actions: list[dict], deck: list[tuple[str, bool]], ctx_prompt: str = "", t: dict | None = None) -> int:
+    t = t or DEFAULT_TUNE
     c = obs["combat"]
     pl = c["player"]
     enemies = c["enemies"]
@@ -198,14 +227,14 @@ def combat_action(obs: dict, actions: list[dict], deck: list[tuple[str, bool]], 
     dex = pl["powers"].get("DEXTERITY", 0)
     weak = pl["powers"].get("WEAK", 0) > 0
     frail = pl["powers"].get("FRAIL", 0) > 0
-    danger = pl["hp"] - block_needed < 0.3 * pl["max_hp"]
+    danger = pl["hp"] - block_needed < t["danger_frac"] * pl["max_hp"]
 
     # pending card choice inside combat (discard / exhaust / upgrade ...)
     if any(a["action"] in ("choose", "confirm_choice") for a in actions):
         return choose_card(actions, deck, ctx_prompt)
 
     # emergency potion
-    if pl["hp"] - block_needed <= max(6, 0.15 * pl["max_hp"]):
+    if pl["hp"] - block_needed <= max(t["potion_hp_abs"], t["potion_hp_frac"] * pl["max_hp"]):
         pots = _by(actions, "use_potion")
         if pots:
             return pots[0]["idx"]
@@ -267,8 +296,10 @@ class RulesV1(Policy):
     name = "rules_v1"
     version = "1"
 
-    def __init__(self, **params):
-        super().__init__(**params)
+    def __init__(self, tune: dict | None = None, **params):
+        resolved = resolve_tune(tune)
+        super().__init__(tune=resolved, **params)
+        self.tune = resolved
         from ..knowledge import warm
 
         warm()  # fill the public-knowledge cache before any run touches the simulator's global counters
@@ -280,6 +311,7 @@ class RulesV1(Policy):
         self._h = None
         self._last_idx = -1
         self._tried: set[int] = set()
+        self.entering: str | None = None  # kind of the map node the last move walked into (a human sees it on the map)
 
     # ---- non-combat sub-policies
     def _card_reward(self, obs, actions) -> int:
@@ -288,7 +320,8 @@ class RulesV1(Policy):
         deck = deck_ids(run)
         if picks:
             size = len(deck)
-            thr = 3.2 + 0.09 * max(size - 10, 0)
+            t = self.tune
+            thr = t["card_threshold"] + t["card_slope"] * max(size - 10, 0)
             counts = defaultdict(int)
             for cid, _ in deck:
                 counts[cid] += 1
@@ -298,7 +331,7 @@ class RulesV1(Policy):
                 r -= 1.2 * max(counts[a["card_id"]] - 1, 0)
                 if r > best_r:
                     best, best_r = a, r
-            if best is not None and best_r >= thr and size < 32:
+            if best is not None and best_r >= thr and size < t["max_deck"]:
                 return best["idx"]
             skip = _first(actions, "skip")
             if skip is not None:
@@ -328,12 +361,12 @@ class RulesV1(Policy):
             return max(relics, key=lambda a: -a["price"])["idx"] if gold - min(a["price"] for a in relics) >= 0 else relics[0]["idx"]
         cards = [a for a in _by(actions, "buy_card") if a["price"] <= gold]
         if cards and len(deck) < 30:
-            thr = 3.6 + 0.09 * max(len(deck) - 10, 0)
+            thr = self.tune["shop_card_threshold"] + 0.09 * max(len(deck) - 10, 0)
             scored = [(static_rating(card_info(a["card_id"], bool(a.get("upgraded")))) - a["price"] / 90.0, a) for a in cards]
             sc, a = max(scored, key=lambda t: t[0])
             if static_rating(card_info(a["card_id"], bool(a.get("upgraded")))) >= thr:
                 return a["idx"]
-        pots = [a for a in _by(actions, "buy_potion") if a["price"] <= gold - 40]
+        pots = [a for a in _by(actions, "buy_potion") if a["price"] <= gold - self.tune["shop_potion_margin"]]
         if pots and len(run["potions"]) < run["max_potion_slots"]:
             return pots[0]["idx"]
         leave = _first(actions, "leave_shop")
@@ -344,7 +377,7 @@ class RulesV1(Policy):
         h = _hp_frac(run)
         opts = {a["option_id"]: a for a in _by(actions, "rest_option") if a.get("enabled", True)}
         boss_soon = obs["map"] is not None and obs["map"]["visited"] and obs["map"]["visited"][-1][1] >= obs["map"]["rows"] - 3
-        want_heal = h < 0.7 or (boss_soon and h < 0.9)
+        want_heal = h < self.tune["heal_below"] or (boss_soon and h < self.tune["boss_heal_below"])
         if want_heal and "HEAL" in opts:
             return opts["HEAL"]["idx"]
         if "SMITH" in opts:
@@ -379,6 +412,11 @@ class RulesV1(Policy):
         if idx in self._tried:
             idx = self._untried(obs["actions"])
         self._h, self._last_idx = h, idx
+        if obs["phase"] == "MAP_CHOICE" and obs["map"] is not None:
+            chosen = obs["actions"][idx] if 0 <= idx < len(obs["actions"]) else None
+            if chosen is not None and chosen.get("action") == "move":
+                kinds = {(c, r): t for c, r, t in obs["map"]["nodes"]}
+                self.entering = kinds.get(tuple(chosen["coord"]))
         return idx
 
     def _untried(self, acts: list[dict]) -> int:
@@ -405,9 +443,9 @@ class RulesV1(Policy):
                     self.ctx = next((k for k in _WORST_FIRST + _BEST_FIRST if k in p), self.ctx)
             return choose_card(actions, deck, self.ctx)
         if phase == "COMBAT":
-            return combat_action(obs, actions, deck, self.ctx)
+            return combat_action(obs, actions, deck, self.ctx, self.tune)
         if phase == "MAP_CHOICE":
-            return plan_map(obs, actions)
+            return plan_map(obs, actions, self.tune)
         if phase == "CARD_REWARD":
             return self._card_reward(obs, actions)
         if phase == "SHOP":

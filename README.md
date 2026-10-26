@@ -1,8 +1,34 @@
 # SLAY2 — Slay the Spire 2 Decision Intelligence
 
-**Status as of 2026-10-25: independently researched engineering specifications. The game assistant, simulation experiments, models, and website are NOT yet implemented or deployed.**
+**Status as of 2026-10-26** (the source of truth is [docs/STATUS.md](docs/STATUS.md); nothing below is a claim beyond it):
+
+* **Working and tested:** exact probability calculators for card-reward rarity with the hidden pity counter, potion drops, "?" rooms, draws, shop prices, card removal and gold (`/odds` and `POST /api/v1/odds`), and a manual card advisor that is a **labelled, uncalibrated heuristic**, never a win probability (`/advisor`). Target: STS2 **main v0.107.1**; the beta v0.111.0 is refused.
+* **Research harness, with a first measured result:** simulations run on a third-party simulator used locally only (live-game parity is unverified). Card values measured from randomised drafting are shown on `/codex` and as a labelled second opinion on `/advisor`; a rules policy that follows them got past the Act-1 boss in 65.1 % of held-out simulated games against 43.3 % for the hand-written ratings, and won 6 of 1,994 (each win re-derived by replay). No neural network beats the rules baseline yet; details and caveats on `/methods`.
+* **Hosting:** the repository carries its Vercel configuration and a preview build of it was verified, but **no production URL is claimed** until the merged build is checked ([docs/DEPLOY.md](docs/DEPLOY.md)).
+* **Audited:** first red-team round in [docs/ADVERSARIAL-AUDIT.md](docs/ADVERSARIAL-AUDIT.md) (campaigns 4-8 still open).
 
 SLAY2 is an independent, unofficial, Vercel-hosted **coaching and decision-intelligence website** for players of Mega Crit's **Slay the Spire 2**. It is **not a browser clone or redistribution of the game**. The product combines conditional probability calculators, context-sensitive strategy guidance, validated fair-information simulators, search, reproducible machine learning and outstanding premium UI/UX. Gameplay is in the user's legitimately installed copy of STS2. Manual entry works without an account, mod, or subscription.
+
+## Quickstart
+
+**First-time player (no install):** open the site's **Odds** page, pick *Card rewards*, say how many non-rare cards you have seen since your last rare (or list the packs you have seen) and read the exact chance of a rare in your next pack; the fraction behind every number is one click away. On **Advisor** choose your character, enter your deck and the offered cards and read the ranking with its reasons and how stable it is. Your run lives in your browser only; export it as JSON whenever you like.
+
+**Developer / competitor (local):**
+
+```bash
+node -v                                  # 22.x (see .node-version); pnpm 10.28.0 is pinned by package.json
+pnpm install --frozen-lockfile
+pnpm --filter @slay2/web dev             # http://localhost:3000
+pnpm check                               # typecheck, lint, prettier, all unit tests, production build
+pnpm --filter @slay2/web e2e             # browsers: PW_CHROMIUM_PATH=/path/to/chromium if Playwright's own is not installed
+curl -s localhost:3000/api/v1/capabilities
+curl -s -X POST localhost:3000/api/v1/odds -H 'content-type: application/json' \
+  -d '{"calculator":"draw","pile":10,"targets":1,"draws":5}'   # {"n":"1","d":"2"}: exactly 1/2
+```
+
+The simulation harness (`sim/`, Python) needs a locally fetched, pinned third-party simulator that is **never committed**; see [docs/IP-COMPLIANCE.md](docs/IP-COMPLIANCE.md) and `scripts/external-fetch.sh`.
+
+**Privacy and IP:** no accounts, cookies or analytics; the pages do not send your run anywhere and the public API stores nothing. SLAY2 is unofficial and non-commercial, not affiliated with or endorsed by Mega Crit; it ships no game art, card text or audio (the card catalog holds facts only: ids, names, class, rarity, cost, type and SLAY2's own role tags).
 
 ## Start Claude Code
 

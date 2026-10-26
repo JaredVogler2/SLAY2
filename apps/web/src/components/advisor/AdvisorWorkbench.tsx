@@ -28,6 +28,7 @@ import { ADVISOR_SOURCES, OfferedPanel } from "./OfferedPanel";
 import { OfferCheck } from "./OfferCheck";
 import { PityTracker } from "./PityTracker";
 import { RecommendationPanel } from "./RecommendationPanel";
+import { SimulationOpinion } from "./SimulationOpinion";
 
 // A plausible first-fight reward: no rare, because a normal-fight pack cannot hold one at the start of a run (rule CARD-8).
 const EXAMPLE_OFFER = ["POMMEL_STRIKE", "SHRUG_IT_OFF", "INFLAME"] as const;
@@ -356,7 +357,14 @@ export function AdvisorWorkbench() {
           <OfferCheck run={run} offered={offered} source={source} />
 
           {outcome?.ok ? (
-            <RecommendationPanel result={outcome.result} onRecord={record} />
+            <>
+              <RecommendationPanel result={outcome.result} onRecord={record} />
+              <SimulationOpinion
+                run={run}
+                offered={offered}
+                heuristic={outcome.result.recommendation.action}
+              />
+            </>
           ) : outcome ? (
             <p
               role="alert"

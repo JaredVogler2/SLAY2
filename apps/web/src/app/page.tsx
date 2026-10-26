@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { coverage } from "@/lib/cardvalues";
 
 export const metadata: Metadata = {
   title: { absolute: "SLAY2 — The Spire Intelligence Observatory" },
@@ -150,7 +151,15 @@ export default function Home() {
                   [
                     "Card advisor",
                     "Heuristic v0",
-                    "Transparent and uncalibrated. Class coverage is limited by how much each card’s effect is tagged.",
+                    "Transparent and uncalibrated. Class coverage is limited by how much each card’s effect is tagged. Where simulated runs tested a class’s card values, the advisor adds a labelled second opinion beside it.",
+                  ],
+                  [
+                    "Simulated card values",
+                    "Research",
+                    coverage()
+                      .map((c) => `${c.label}: ${c.detail}`)
+                      .join(" · ") +
+                      ". Simulator unverified against the live game; see Evidence & methods.",
                   ],
                   [
                     "Combat lab, map, shops, events",
@@ -174,7 +183,9 @@ export default function Home() {
                             ? "exact"
                             : status === "Heuristic v0"
                               ? "heuristic"
-                              : "unverified"
+                              : status === "Research"
+                                ? "build"
+                                : "unverified"
                         }
                       >
                         {status}

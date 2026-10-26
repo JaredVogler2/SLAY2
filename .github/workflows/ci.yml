@@ -25,11 +25,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm guard
+      - run: pnpm licenses:check
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format
       - run: pnpm test
       - run: pnpm build
+      - name: build output is where vercel.json publishes it (apps/web/.next)
+        run: test -f apps/web/.next/routes-manifest.json && test -f apps/web/.next/required-server-files.json
       - run: pnpm audit --audit-level high
 
   e2e:

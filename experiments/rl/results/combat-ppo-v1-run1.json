@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "kind": "combat-network-run",
+  "run": "combat-ppo-v1-run1",
+  "note": "Stopped by the operator at iteration 189 of 300: the greedy validation win rate had stayed between 83.5 % and 85.7 % since iteration 60, below the rules baseline (86.6 % on the same 796 pairs). best.pt is iteration 90 (selected on validation, so its validation score is optimistic); latest.pt is iteration 180. Both were evaluated once, paired, on the same held-out val pairs. No run-level batches were run: the combat result does not clear the bar in ADR-026 (a paired improvement with the interval excluding zero).",
+  "config": {
+    "iterations": 300,
+    "workers": 4,
+    "envs": 16,
+    "steps": 256,
+    "train_seeds": 300,
+    "val_seeds": 80,
+    "keep_monster": 0.35,
+    "epochs": 3,
+    "minibatch": 2048,
+    "lr": 0.0003,
+    "lr_end": 5e-05,
+    "gamma": 0.995,
+    "lam": 0.95,
+    "clip": 0.2,
+    "ent": 0.01,
+    "ent_end": 0.002,
+    "vf": 0.5,
+    "target_kl": 0.02,
+    "hp_weight": 0.5,
+    "potion_cost": 0.1,
+    "d": 48,
+    "layers": 2,
+    "eval_every": 10,
+    "eval_repeats": 2,
+    "seed": 1
+  },
+  "net": {
+    "d": 48,
+    "layers": 2,
+    "heads": 4,
+    "d_pw": 16
+  },
+  "libraries": {
+    "train": 1558,
+    "val": 398
+  },
+  "library_nodes": {
+    "train": {
+      "MONSTER": 885,
+      "ELITE": 341,
+      "BOSS": 293,
+      "UNKNOWN": 32,
+      "EVENT": 7
+    },
+    "val": {
+      "MONSTER": 229,
+      "ELITE": 88,
+      "BOSS": 72,
+      "UNKNOWN": 8,
+      "EVENT": 1
+    }
+  },
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "dirty": false
+  },
+  "iterations_logged": 189,
+  "steps": 3096576,
+  "validation": [
+    {
+      "iteration": 10,
+      "steps": 163840,
+      "n": 796,
+      "win": 0.7588,
+      "hp_lost_on_win": 0.1133
+    },
+    {
+      "iteration": 20,
+      "steps": 327680,
+      "n": 796,
+      "win": 0.7701,
+      "hp_lost_on_win": 0.1698
+    },
+    {
+      "iteration": 30,
+      "steps": 491520,
+      "n": 796,
+      "win": 0.7889,
+      "hp_lost_on_win": 0.1741
+    },
+    {
+      "iteration": 40,
+      "steps": 655360,
+      "n": 796,
+      "win": 0.8166,
+      "hp_lost_on_win": 0.1681
+    },
+    {
+      "iteration": 50,
+      "steps": 819200,
+      "n": 796,
+      "win": 0.8379,
+      "hp_lost_on_win": 0.1783
+    },
+    {
+      "iteration": 60,
+      "steps": 983040,
+      "n": 796,
+      "win": 0.8467,
+      "hp_lost_on_win": 0.1748
+    },
+    {
+      "iteration": 70,
+      "steps": 1146880,
+      "n": 796,
+      "win": 0.848,
+      "hp_lost_on_win": 0.1667
+    },
+    {
+      "iteration": 80,
+      "steps": 1310720,
+      "n": 796,
+      "win": 0.848,
+      "hp_lost_on_win": 0.1706
+    },
+    {
+      "iteration": 90,
+      "steps": 1474560,
+      "n": 796,
+      "win": 0.8568,
+      "hp_lost_on_win": 0.1773
+    },
+    {
+      "iteration": 100,
+      "steps": 1638400,
+      "n": 796,
+      "win": 0.8505,
+      "hp_lost_on_win": 0.1702
+    },
+    {
+      "iteration": 110,
+      "steps": 1802240,
+      "n": 796,
+      "win": 0.8505,
+      "hp_lost_on_win": 0.1667
+    },
+    {
+      "iteration": 120,
+      "steps": 1966080,
+      "n": 796,
+      "win": 0.853,
+      "hp_lost_on_win": 0.1779
+    },
+    {
+      "iteration": 130,
+      "steps": 2129920,
+      "n": 796,
+      "win": 0.8417,
+      "hp_lost_on_win": 0.1709
+    },
+    {
+      "iteration": 140,
+      "steps": 2293760,
+      "n": 796,
+      "win": 0.8392,
+      "hp_lost_on_win": 0.1692
+    },
+    {
+      "iteration": 150,
+      "steps": 2457600,
+      "n": 796,
+      "win": 0.8467,
+      "hp_lost_on_win": 0.1724
+    },
+    {
+      "iteration": 160,
+      "steps": 2621440,
+      "n": 796,
+      "win": 0.843,
+      "hp_lost_on_win": 0.1742
+    },
+    {
+      "iteration": 170,
+      "steps": 2785280,
+      "n": 796,
+      "win": 0.8354,
+      "hp_lost_on_win": 0.1669
+    },
+    {
+      "iteration": 180,
+      "steps": 2949120,
+      "n": 796,
+      "win": 0.8405,
+      "hp_lost_on_win": 0.1749
+    }
+  ],
+  "checkpoints": {
+    "best.pt": {
+      "sha256": "efeaeab964f0c4a41ae6626218aa4e9e5f481738acb0c5e9b8f1f05375873a1b",
+      "bytes": 1422967
+    },
+    "latest.pt": {
+      "sha256": "6ae07ad97aae3988038363b78bb63ffefb02b168a4197a4161855aab6a284728",
+      "bytes": 1423009
+    }
+  },
+  "paired_evaluation": {
+    "file": "combat-ppo-v1-run1-paired-eval.json.gz",
+    "partition": "val",
+    "seeds": 80,
+    "seed_offset": 0,
+    "repeats": 2,
+    "workers": 4,
+    "agents": [
+      "rules",
+      "net:experiments/rl/combat-ppo-v1-run1/best.pt",
+      "net:experiments/rl/combat-ppo-v1-run1/latest.pt"
+    ],
+    "summaries": {
+      "rules": {
+        "ALL": {
+          "n": 796,
+          "win": 0.8656,
+          "win_ci95": [
+            0.8401,
+            0.8875
+          ],
+          "hp_lost_mean": 0.2306,
+          "potions": 0.621
+        },
+        "BOSS": {
+          "n": 144,
+          "win": 0.5,
+          "win_ci95": [
+            0.4194,
+            0.5806
+          ],
+          "hp_lost_mean": 0.696,
+          "potions": 1.792
+        },
+        "ELITE": {
+          "n": 176,
+          "win": 0.9148,
+          "win_ci95": [
+            0.8642,
+            0.9477
+          ],
+          "hp_lost_mean": 0.2853,
+          "potions": 0.773
+        },
+        "MONSTER": {
+          "n": 476,
+          "win": 0.958,
+          "win_ci95": [
+            0.936,
+            0.9726
+          ],
+          "hp_lost_mean": 0.0696,
+          "potions": 0.21
+        }
+      },
+      "net:experiments/rl/combat-ppo-v1-run1/best.pt": {
+        "ALL": {
+          "n": 796,
+          "win": 0.8568,
+          "win_ci95": [
+            0.8307,
+            0.8794
+          ],
+          "hp_lost_mean": 0.2269,
+          "potions": 0.205
+        },
+        "BOSS": {
+          "n": 144,
+          "win": 0.4792,
+          "win_ci95": [
+            0.3992,
+            0.5602
+          ],
+          "hp_lost_mean": 0.6092,
+          "potions": 0.875
+        },
+        "ELITE": {
+          "n": 176,
+          "win": 0.8977,
+          "win_ci95": [
+            0.8441,
+            0.9343
+          ],
+          "hp_lost_mean": 0.3035,
+          "potions": 0.119
+        },
+        "MONSTER": {
+          "n": 476,
+          "win": 0.9559,
+          "win_ci95": [
+            0.9335,
+            0.971
+          ],
+          "hp_lost_mean": 0.083,
+          "potions": 0.034
+        }
+      },
+      "net:experiments/rl/combat-ppo-v1-run1/latest.pt": {
+        "ALL": {
+          "n": 796,
+          "win": 0.8405,
+          "win_ci95": [
+            0.8134,
+            0.8642
+          ],
+          "hp_lost_mean": 0.2353,
+          "potions": 0.224
+        },
+        "BOSS": {
+          "n": 144,
+          "win": 0.4583,
+          "win_ci95": [
+            0.3791,
+            0.5397
+          ],
+          "hp_lost_mean": 0.6454,
+          "potions": 0.861
+        },
+        "ELITE": {
+          "n": 176,
+          "win": 0.875,
+          "win_ci95": [
+            0.818,
+            0.916
+          ],
+          "hp_lost_mean": 0.3087,
+          "potions": 0.193
+        },
+        "MONSTER": {
+          "n": 476,
+          "win": 0.9433,
+          "win_ci95": [
+            0.9187,
+            0.9607
+          ],
+          "hp_lost_mean": 0.0842,
+          "potions": 0.042
+        }
+      }
+    },
+    "paired": {
+      "rules vs net:experiments/rl/combat-ppo-v1-run1/best.pt": {
+        "pairs": 796,
+        "a_only_wins": 33,
+        "b_only_wins": 26,
+        "mcnemar_p": 0.434993,
+        "hp_lost_a_minus_b": 0.0037,
+        "hp_lost_ci95": [
+          -0.0088,
+          0.0165
+        ],
+        "mean_dl": 0.0037
+      },
+      "rules vs net:experiments/rl/combat-ppo-v1-run1/latest.pt": {
+        "pairs": 796,
+        "a_only_wins": 43,
+        "b_only_wins": 23,
+        "mcnemar_p": 0.018657,
+        "hp_lost_a_minus_b": -0.0047,
+        "hp_lost_ci95": [
+          -0.0166,
+          0.0078
+        ],
+        "mean_dl": -0.0047
+      }
+    }
+  }
+}

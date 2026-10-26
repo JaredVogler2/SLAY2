@@ -1,0 +1,126 @@
+{
+  "batch_id": "rules_v2-ironclad-a0-veteran-dev-n500",
+  "config": {
+    "ascension": 0,
+    "character": "Ironclad",
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "c6d0120c6c5991b254a3b40590bf880a79ac2e3b0a7f4ba937838899c156ea74",
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": true,
+      "head": "155afb6617d2999e79f7a6590b1a0b010f5feefe"
+    }
+  },
+  "episodes_file": {
+    "lines": 500,
+    "name": "episodes.jsonl",
+    "sha256": "c6899560092401b55fb7dba2e181b02a8d00157e55839b1ecf461c9912f0a7fe"
+  },
+  "episodes_gz": {
+    "bytes": 13719,
+    "name": "episodes.jsonl.gz",
+    "sha256": "c1f13e0adeb9e8962f3200f04b1e370243846c53f2ab1551d1e2e6a2817d83af"
+  },
+  "finished": "2026-10-26T04:37:54+00:00",
+  "known_simulator_gaps": [
+    {
+      "affects": "coverage",
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "results",
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "affects": "results",
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "affects": "coverage",
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+    },
+    {
+      "affects": "coverage",
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    }
+  ],
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "effective": {
+      "params": {
+        "threshold": 0.0,
+        "values": "experiments/cardvalue/ironclad-a0-v1.json",
+        "values_sha256": "8b3fe2f4d88b87dcf7a0562df320c630a5513896832624214605a3bcf6d10d70"
+      },
+      "version": "1"
+    },
+    "name": "rules_v2",
+    "params": {
+      "threshold": 0.0
+    }
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v2.json",
+    "file_sha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e",
+    "manifest_sha256": "83340c3bad2eb48d369674172922646fc5c39fd8baa345908cd0f36e97e9f2e3",
+    "n": 500,
+    "partition": "dev",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 499,
+    "counts": {
+      "aborted": 0,
+      "death": 499,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 1,
+      "timeout": 0,
+      "win": 0
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 500,
+    "win_rate_95ci_wilson": [
+      0.0,
+      0.007639502975159277
+    ],
+    "win_rate_of_completed": 0.0
+  },
+  "traces": {
+    "count": 0,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 180.7,
+  "workers": 2
+}
