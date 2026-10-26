@@ -172,10 +172,20 @@ def main(argv: list[str] | None = None) -> int:
     if len(specs) >= 2:
         print()
         for other in specs[1:]:
-            p = paired(res[specs[0]], res[other])
-            print(f"paired {specs[0]} vs {other}: {p}")
+            print(f"paired {specs[0]} vs {other}: {paired(res[specs[0]], res[other])}")
+    pairs = {f"{specs[0]} vs {o}": paired(res[specs[0]], res[o]) for o in specs[1:]} if len(specs) >= 2 else {}
     if args.out:
-        Path(args.out).write_text(json.dumps({"summaries": summaries}, indent=1) + "\n")
+        import gzip
+
+        blob = json.dumps({"agents": specs, "partition": args.partition, "seeds": args.seeds, "repeats": args.repeats,
+                           "workers": args.workers, "summaries": summaries, "paired": pairs, "rows": res}, separators=(",", ":"))
+        out = Path(args.out)
+        if out.suffix == ".gz":
+            with gzip.open(out, "wt", encoding="utf-8") as fh:
+                fh.write(blob)
+        else:
+            out.write_text(blob + "\n", encoding="utf-8")
+        print(f"wrote {out}")
     return 0
 
 
