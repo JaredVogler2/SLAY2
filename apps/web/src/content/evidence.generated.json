@@ -1663,6 +1663,95 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2_neow_values-silent-a0-veteran-val-n2000",
+      "policy": "rules_v2_neow_values",
+      "policyParams": {
+        "neow_values": "experiments/neow/neow-values-v1.json",
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1995,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 5,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1995,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019218426772879544
+      ],
+      "meanFloor": 18.12,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1108,
+        "1": 884,
+        "2": 3
+      },
+      "topKillers": [
+        {
+          "id": "KIN_PRIEST",
+          "n": 306
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 291
+        },
+        {
+          "id": "VANTOM",
+          "n": 182
+        },
+        {
+          "id": "TUNNELER",
+          "n": 95
+        },
+        {
+          "id": "HUNTER_KILLER",
+          "n": 71
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.68,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1995,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "82bdb6241dedb77fe40de115d0800651641bf77d552e74431433a982339af9e4",
+      "episodesGzSha256": "9204a26ad6a04d603c484e9ab8819380dd5b9c6bcf2f76d02229d4917ef5f661",
+      "finished": "2026-10-26T15:44:39+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v3-ironclad-a0-veteran-val-n2000",
       "policy": "rules_v3",
       "policyParams": {
