@@ -79,6 +79,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${cinzel.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
+        <noscript>
+          <p className="border-b border-rose-deep/70 bg-rose/10 px-4 py-3 text-center text-sm text-rose">
+            SLAY2 does its arithmetic in your browser, so the calculators and the advisor need
+            JavaScript. Your run is never uploaded.
+          </p>
+        </noscript>
         <SiteHeader />
         <main id="main" tabIndex={-1} className="outline-none">
           {children}
