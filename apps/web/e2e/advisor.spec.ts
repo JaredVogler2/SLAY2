@@ -293,6 +293,10 @@ test.describe("advisor journey", () => {
     await expect(panel).toContainText("registered before any of its games");
     await expectNoHorizontalOverflow(page);
     await expectNoSeriousA11yViolations(page, "advisor with the synergy panel");
+    // the study itself, with its figures by class, is one link away
+    await panel.getByRole("link", { name: "Evidence & methods" }).click();
+    await expect(page).toHaveURL(/\/methods#synergy$/);
+    await expect(page.locator("#synergy")).toBeVisible();
   });
 
   // Every other class whose held-out test passed gives the same second opinion as Ironclad, from its own values.

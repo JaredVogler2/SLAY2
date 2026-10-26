@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { expect, test } from "@playwright/test";
 
 import {
@@ -88,6 +91,38 @@ test.describe("methods", () => {
       );
       await expect(panel.getByRole("table", { name: /^By class/ })).toBeVisible();
     }
+  });
+
+  test("reports the synergy reading with its intervals and its limits, and says the registered test is not in", async ({
+    page,
+  }) => {
+    const study = JSON.parse(
+      readFileSync(join(__dirname, "..", "src", "content", "synergy.generated.json"), "utf8"),
+    ) as { b1: { bossFights: number; cohorts: unknown[] } | null };
+    test.skip(study.b1 === null, "no synergy reading is exported");
+    await page.goto("/methods#synergy");
+    const panel = page.locator("#synergy");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole("heading", { level: 2 })).toContainText("synergy parts");
+    await expect(panel).toContainText(
+      `${(study.b1?.bossFights ?? 0).toLocaleString("en-US")} simulated runs`,
+    );
+    const tiles = panel.getByRole("list", {
+      name: "Result of the exploratory reading of the synergy parts",
+    });
+    await expect(tiles.getByRole("listitem")).toHaveCount(4);
+    await expect(tiles).toContainText("95 %");
+    const table = panel.getByRole("table", { name: /By class and seed set/ });
+    await expect(table.getByRole("row")).toHaveCount((study.b1?.cohorts.length ?? 0) + 1);
+    await expect(panel).toContainText("Exploratory");
+    await expect(panel).toContainText("Simulated, not measured in the live game");
+    await expect(
+      panel.getByRole("heading", { level: 3, name: "The registered test" }),
+    ).toBeVisible();
+    await expect(panel).toContainText("It has not been run on its held-out seeds");
+    await expect(panel).toContainText("whether the readings themselves hold at the game's HP");
+    await panel.getByText("How the first reading changed the tags").click();
+    await expect(panel).toContainText("the figures flatter them");
   });
 
   test("every rule is a deep-linkable anchor", async ({ page }) => {

@@ -19,6 +19,7 @@ export interface PartRatio {
 export interface SynergyReading {
   readonly stage: string;
   readonly file: string;
+  readonly sha256: string;
   readonly outcome: string;
   readonly bossFights: number;
   readonly passRate: number;

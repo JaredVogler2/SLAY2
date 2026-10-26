@@ -251,8 +251,13 @@ export function CardValuesPanel() {
         </li>
         <li>
           Specific to the pilot: the rules policy plays the cards, so a card it plays badly is
-          undervalued and one it plays well is overvalued. Synergies are not modelled (the model is
-          additive; a small neural network did not predict held-out games better).
+          undervalued and one it plays well is overvalued. Synergies are not in these values (the
+          model is additive; a small neural network did not predict held-out games better). The
+          advisor&rsquo;s synergy term is a separate judgement, checked in{" "}
+          <a className="text-teal underline decoration-dotted underline-offset-4" href="#synergy">
+            the synergy section
+          </a>
+          .
         </li>
         <li>
           A value is conditional on the HP, potions and relics a run brought to the boss; it is not

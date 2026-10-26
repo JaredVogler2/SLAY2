@@ -506,9 +506,15 @@ function parseSynergy() {
   const out = { table: { sha256: table.sha256, cards: Object.keys(table.cards).length, mechanics: Object.keys(table.mechanics).length }, b1: null };
   const b1File = join(root, "experiments", "synergy", "b1-calibration.json");
   if (!existsSync(b1File)) return out;
-  const b1 = JSON.parse(readFileSync(b1File, "utf8"));
+  const rawB1 = readFileSync(b1File);
+  const b1 = JSON.parse(rawB1.toString("utf8"));
   if (b1.advisor.synergy_table_sha256 !== table.sha256) {
     throw new Error("experiments/synergy/b1-calibration.json was made on another synergy table than the page uses: run python -m slay2_sim.synergystudy");
+  }
+  // The one registered test (stage B2-val) is not read yet. When its pooled result is committed this exporter has to read it, or the
+  // /methods panel would still say that the test has not been run.
+  if (existsSync(join(root, "experiments", "synergy", "val", "pooled-astar-vs-d0star.json"))) {
+    throw new Error("experiments/synergy/val holds the B2 result, which parseSynergy does not read yet: add it, and the panel's account of it, before committing the result");
   }
   const pooled = b1.pooled.all_cohorts;
   const gap = (g) => ({ mean: g.mean, ci95: g.ci95 });
@@ -516,6 +522,7 @@ function parseSynergy() {
   out.b1 = {
     stage: "B1",
     file: "experiments/synergy/b1-calibration.json",
+    sha256: createHash("sha256").update(rawB1).digest("hex"),
     outcome: b1.outcome,
     bossFights: pooled.rows,
     passRate: pooled.pass_rate,

@@ -156,8 +156,9 @@ export function SimulationOpinion({
             ) : null}
             <li>
               The simulator has not been compared with the live game, the pilot plays the cards its
-              own way, synergies are not modelled, and your HP, relics and deck matter more than a
-              single number. Use it as one prior, not as a verdict.
+              own way, the values are additive (how a card works with the rest of your deck is not
+              in them), and your HP, relics and deck matter more than a single number. Use it as one
+              prior, not as a verdict.
             </li>
           </ul>
         </Disclosure>
