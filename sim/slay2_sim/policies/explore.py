@@ -95,8 +95,7 @@ class RulesExploreV2(ExploreMixin, RulesV2):
 @register
 class RulesExploreV3(ExploreMixin, RulesV3):
     """Round two of the card-value measurement, for a stronger pilot: the exploration of ADR-031 on top of rules_v3, whose
-    non-random card picks follow the round-one values like rules_explore_v2's. No game is played with it before its study
-    is registered in docs/DECISIONS.md."""
+    non-random card picks follow the round-one values like rules_explore_v2's (ADR-046)."""
 
     name = "rules_explore_v3"
     version = "1"
