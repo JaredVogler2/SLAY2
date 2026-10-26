@@ -63,6 +63,25 @@ describe("comparison wording is derived from the data", () => {
     expect(real).toMatch(/× as long per game/);
   });
 
+  it("says how the wins split whenever either side has any, and nothing when neither does", () => {
+    const tuned = evidence.comparisons.find(
+      (x) => x.a.policy === "rules_v3" && x.b.policy === "rules_v2" && x.role === "held-out",
+    );
+    expect(tuned).toBeDefined();
+    if (tuned) {
+      // the tuned pilot gets further and does not win more: the sentence must not leave the second half out
+      expect(comparisonSentence(tuned)).toContain(
+        `Wins: ${String(tuned.a.wins)} for rules_v3 and ${String(tuned.b.wins)} for rules_v2 (exact McNemar p = `,
+      );
+      expect(tuned.pairedWinTable.mcnemar_p).toBeGreaterThan(0.05);
+    }
+    const none = evidence.comparisons.find((x) => x.a.wins + x.b.wins === 0);
+    expect(none).toBeDefined();
+    if (none) {
+      expect(comparisonSentence(none)).not.toContain("Wins:");
+    }
+  });
+
   it("matches the committed rules-vs-search comparison (numbers are read, not typed)", () => {
     const c = evidence.comparisons.find(
       (x) => x.a.policy === "rules_v1" && x.b.policy === "search_v1",

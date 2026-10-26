@@ -153,7 +153,14 @@ export function comparisonSentence(c: Comparison): string {
       ? `; ${policyLabel(c.b)} took ${ratio.toFixed(1)}× as long per game`
       : `; ${policyLabel(c.a)} took ${(1 / ratio).toFixed(1)}× as long per game`
     : "";
-  return `${lead}: ${gap}${cost}. ${actTwoSentence(c)}.`;
+  return `${lead}: ${gap}${cost}. ${actTwoSentence(c)}.${winsClause(c)}`;
+}
+
+/** Wins are what the game is about and are far rarer than getting past a boss, so a comparison that has any says how they split. */
+export function winsClause(c: Comparison): string {
+  if (c.a.wins + c.b.wins === 0) return "";
+  const t = c.pairedWinTable;
+  return ` Wins: ${String(c.a.wins)} for ${policyLabel(c.a)} and ${String(c.b.wins)} for ${policyLabel(c.b)} (exact McNemar ${formatP(t.mcnemar_p)}).`;
 }
 
 /** The pre-registered test of one class's measured card values (ADR-031, ADR-034): the policy that follows them against the one that does not. */
