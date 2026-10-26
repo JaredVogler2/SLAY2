@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import {
   bestMeasuredCardNames,
@@ -14,6 +14,32 @@ async function addOffered(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: /offered card/i });
   await box.fill(name);
   await box.press("Enter");
+}
+
+async function addToDeck(page: Page, name: string): Promise<void> {
+  const box = page.getByRole("combobox", { name: "Add a card to your deck" });
+  await box.fill(name);
+  await box.press("Enter");
+}
+
+/** The ranked option for a card, opened (a card that is not on top starts closed; its rank can change when the deck does). */
+async function openOption(page: Page, label: string): Promise<Locator> {
+  const option = page
+    .getByRole("list", { name: "Ranked options" })
+    .locator("> li")
+    .filter({ hasText: label });
+  await option.locator("details").evaluate((d: HTMLDetailsElement) => {
+    d.open = true;
+  });
+  return option;
+}
+
+/** The index change shown on an option's summary line ("+2.31", "-0.40" or "0.00"). */
+async function indexChange(option: Locator): Promise<number> {
+  const line = (await option.locator("summary").innerText()).trim();
+  const found = /(-?\+?\d+\.\d\d)\s*[›>]?\s*$/.exec(line.replace(/\s+/g, " "));
+  if (!found?.[1]) throw new Error(`no index change in "${line}"`);
+  return Number.parseFloat(found[1]);
 }
 
 async function startClass(page: Page, name: string): Promise<void> {
@@ -43,7 +69,7 @@ test.describe("advisor journey", () => {
     await addOffered(page, "inflame");
     const call = page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ });
     await expect(call).toBeVisible();
-    await expect(page.getByText("Heuristic v0").first()).toBeVisible();
+    await expect(page.getByText("Heuristic v1").first()).toBeVisible();
     await expect(page.getByText("Not calibrated").first()).toBeVisible();
     // every option, including skip, is listed exactly once
     const options = page.getByRole("list", { name: "Ranked options" }).locator("> li");
@@ -170,7 +196,7 @@ test.describe("advisor journey", () => {
     await expect(cards).toContainText("simulated runs");
     // the heuristic's own call is still the headline and still says what it is
     await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
-    await expect(page.getByText("Heuristic v0").first()).toBeVisible();
+    await expect(page.getByText("Heuristic v1").first()).toBeVisible();
 
     // what the disclosure says about the numbers is this class's own, read from the data
     const ironclad = requireMeasuredSet("ironclad");
@@ -183,6 +209,79 @@ test.describe("advisor journey", () => {
     await expect(panel).toContainText(
       `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(1)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} held-out seeds`,
     );
+  });
+
+  test("synergy: a card that needs what the deck lacks is held back, and builds an engine once the deck has it", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addOffered(page, "feel no pain");
+    await addOffered(page, "pommel");
+    await addOffered(page, "shrug");
+    const bare = await openOption(page, "Feel No Pain");
+    await expect(bare).toContainText("needs Exhaust (nothing in your deck yet)");
+    await expect(bare).toContainText("held back");
+    await expect(bare).not.toContainText("Builds your Exhaust engine");
+    const heldBack = await indexChange(bare);
+    // nothing is being built yet, and the panel says so
+    const panel = page.getByRole("region", { name: "Synergy of your deck" });
+    await expect(panel.getByRole("heading", { level: 3 })).toHaveText("What your deck is building");
+    await expect(panel).toContainText("No engine yet");
+    await expect(panel.getByRole("list", { name: "Engines in your deck" })).toHaveCount(0);
+
+    // two cards that exhaust give it what it needs: the same card is now worth more, and the reasons say why
+    await addToDeck(page, "burning pact");
+    await addToDeck(page, "true grit");
+    const supported = await openOption(page, "Feel No Pain");
+    await expect(supported).toContainText("Builds your Exhaust engine");
+    await expect(supported).toContainText("Burning Pact");
+    await expect(supported).not.toContainText("nothing in your deck yet");
+    expect(await indexChange(supported)).toBeGreaterThan(heldBack + 0.5);
+    // suppliers alone are not an engine: the panel lists one when the deck holds a card that uses what they supply
+    await expect(panel.getByRole("list", { name: "Engines in your deck" })).toHaveCount(0);
+    await addToDeck(page, "feel no pain");
+    const engines = panel.getByRole("list", { name: "Engines in your deck" });
+    await expect(engines).toContainText("Exhaust");
+    await expect(engines).toContainText("Burning Pact");
+    await expect(engines).toContainText("True Grit");
+    await expect(engines).toContainText("used by Feel No Pain");
+  });
+
+  test("synergy: a payoff the deck cannot feed is listed as waiting for support, a payoff it can feed is not", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addToDeck(page, "feel no pain");
+    await addOffered(page, "pommel");
+    await addOffered(page, "shrug");
+    const panel = page.getByRole("region", { name: "Synergy of your deck" });
+    const waiting = panel.getByRole("list", { name: "Cards waiting for support" });
+    await expect(waiting).toContainText("Feel No Pain");
+    await expect(waiting).toContainText("Exhaust (nothing in your deck yet)");
+    await expect(waiting).toContainText("% of its rating is held back");
+
+    await addToDeck(page, "burning pact");
+    await addToDeck(page, "true grit");
+    await expect(panel.getByRole("list", { name: "Cards waiting for support" })).toHaveCount(0);
+    await expect(panel.getByRole("list", { name: "Engines in your deck" })).toContainText(
+      "Feel No Pain",
+    );
+  });
+
+  test("synergy: the panel is honest about what it is, and meets layout and accessibility basics", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    for (const name of ["burning pact", "true grit", "feel no pain"]) {
+      await addToDeck(page, name);
+    }
+    await addOffered(page, "pommel");
+    await addOffered(page, "inflame");
+    const panel = page.getByRole("region", { name: "Synergy of your deck" });
+    await expect(panel).toContainText("Judgement, not measured");
+    await expect(panel).toContainText("nothing here has been measured in games yet");
+    await expectNoHorizontalOverflow(page);
+    await expectNoSeriousA11yViolations(page, "advisor with the synergy panel");
   });
 
   // Every other class whose held-out test passed gives the same second opinion as Ironclad, from its own values.

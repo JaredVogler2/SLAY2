@@ -27,11 +27,11 @@ const PILLARS = [
   {
     eyebrow: "Advisor",
     title: "Advice that shows its work",
-    body: "Enter the cards you are offered. SLAY2 ranks them against your deck, breaks the score into reasons, and tells you how stable the call is. It is a transparent heuristic today — labelled as one, never dressed up as a win probability.",
+    body: "Enter the cards you are offered. SLAY2 ranks them against your deck, including how they work with the cards you already hold, breaks the score into reasons, and tells you how stable the call is. It is a transparent heuristic today — labelled as one, never dressed up as a win probability.",
     href: "/advisor",
     cta: "Get my next decision",
     tone: "heuristic" as const,
-    badge: "Heuristic v0",
+    badge: "Heuristic v1",
   },
   {
     eyebrow: "Evidence",
@@ -151,8 +151,8 @@ export default function Home() {
                   ],
                   [
                     "Card advisor",
-                    "Heuristic v0",
-                    "Transparent and uncalibrated. Class coverage is limited by how much each card’s effect is tagged. Where simulated runs tested a class’s card values, the advisor adds a labelled second opinion beside it.",
+                    "Heuristic v1",
+                    "Transparent and uncalibrated. It rates a card by what it needs from your deck and what it supplies to it (Strength, Exhaust, Poison, Shivs, Orbs, Stars, Osty, Doom and so on), judged from how the cards work and not yet measured; it covers the draft, not how to play cards against enemies. Where simulated runs tested a class’s card values, the advisor adds a labelled second opinion beside it.",
                   ],
                   [
                     "Simulated card values",
@@ -201,7 +201,7 @@ export default function Home() {
                         tone={
                           status === "Supported"
                             ? "exact"
-                            : status === "Heuristic v0"
+                            : status === "Heuristic v1"
                               ? "heuristic"
                               : status === "Research"
                                 ? "build"

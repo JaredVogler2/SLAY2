@@ -16,6 +16,6 @@ describe("landing page", () => {
       "/odds",
     );
     expect(screen.getByRole("row", { name: /Co-op/ })).toHaveTextContent("Not supported");
-    expect(screen.getByRole("row", { name: /Card advisor/ })).toHaveTextContent("Heuristic v0");
+    expect(screen.getByRole("row", { name: /Card advisor/ })).toHaveTextContent("Heuristic v1");
   });
 });
