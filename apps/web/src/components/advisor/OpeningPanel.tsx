@@ -9,6 +9,8 @@ import {
   basicCardId,
   getCard,
   getOpeningOption,
+  isRemovable,
+  isUpgradable,
   resolveStepCards,
   type Act1Variant,
   type CardClass,
@@ -32,14 +34,13 @@ import { Act1Brief } from "./Act1Brief";
 
 type Pick = Extract<OpeningStep, { kind: "pick" }>["from"];
 
-function poolFor(
-  from: Pick,
-  character: PlayableClass,
-): {
-  classes: readonly CardClass[];
-  rewardEligibleOnly: boolean;
-  filter?: (c: CardEntry) => boolean;
-} {
+interface Pool {
+  readonly classes: readonly CardClass[];
+  readonly rewardEligibleOnly: boolean;
+  readonly filter?: (c: CardEntry) => boolean;
+}
+
+function buildPool(from: Pick, character: PlayableClass): Pool {
   switch (from) {
     case "rare":
       return { classes: [character], rewardEligibleOnly: true, filter: (c) => c.rarity === "rare" };
@@ -58,6 +59,32 @@ function poolFor(
     case "curse":
       return { classes: ["curse"], rewardEligibleOnly: false };
   }
+}
+
+// The search box memoises on the identity of its pool, so a pool is built once per source and class, not on every render.
+const POOLS = new Map<string, Pool>();
+
+function poolFor(from: Pick, character: PlayableClass): Pool {
+  const key = `${from}/${character}`;
+  const cached = POOLS.get(key);
+  if (cached) {
+    return cached;
+  }
+  const built = buildPool(from, character);
+  POOLS.set(key, built);
+  return built;
+}
+
+const OWN_CLASS = new Map<PlayableClass, readonly CardClass[]>();
+
+function ownClass(character: PlayableClass): readonly CardClass[] {
+  const cached = OWN_CLASS.get(character);
+  if (cached) {
+    return cached;
+  }
+  const built: readonly CardClass[] = [character];
+  OWN_CLASS.set(character, built);
+  return built;
 }
 
 function cardName(id: string): string {
@@ -98,18 +125,25 @@ function Chosen({
   );
 }
 
+type DeckRow = RunState["deck"][number];
+
+/** A card the game lets a player remove or transform: not one with the Eternal keyword (Ascender's Bane and others, DECK-1). */
+const removable = (d: DeckRow): boolean => isRemovable(d.id);
+/** A card with a base copy left that the game lets a player upgrade: not a curse, a status or a quest card (DECK-1). */
+const upgradable = (d: DeckRow): boolean => isUpgradable(d.id) && d.count - (d.upgraded ?? 0) > 0;
+
 function DeckSelect({
   run,
   label,
   value,
   onChange,
-  needsBase = false,
+  allow,
 }: {
   run: RunState;
   label: string;
   value: string;
   onChange: (id: string) => void;
-  needsBase?: boolean;
+  allow: (row: DeckRow) => boolean;
 }) {
   return (
     <div className="min-w-0">
@@ -123,14 +157,12 @@ function DeckSelect({
           }}
         >
           <option value="">Choose a card from your deck…</option>
-          {run.deck
-            .filter((d) => !needsBase || d.count - (d.upgraded ?? 0) > 0)
-            .map((d) => (
-              <option key={d.id} value={d.id}>
-                {cardName(d.id)} ×{d.count}
-                {(d.upgraded ?? 0) > 0 ? ` (${String(d.upgraded)} upgraded)` : ""}
-              </option>
-            ))}
+          {run.deck.filter(allow).map((d) => (
+            <option key={d.id} value={d.id}>
+              {cardName(d.id)} ×{d.count}
+              {(d.upgraded ?? 0) > 0 ? ` (${String(d.upgraded)} upgraded)` : ""}
+            </option>
+          ))}
         </Select>
       </label>
     </div>
@@ -210,6 +242,7 @@ function StepFields({
                   : step.label
               }
               value={answer[i] ?? ""}
+              allow={removable}
               onChange={(id) => {
                 const next = [...answer];
                 next[i] = id;
@@ -240,6 +273,7 @@ function StepFields({
               run={run}
               label="The card you transformed"
               value={answer[0] ?? ""}
+              allow={removable}
               onChange={(id) => {
                 setAnswer(index, [id, answer[1] ?? ""]);
               }}
@@ -258,7 +292,7 @@ function StepFields({
             ) : (
               <CardCombobox
                 label={`Search for: ${step.label.toLowerCase()}`}
-                classes={[character]}
+                classes={ownClass(character)}
                 rewardEligibleOnly
                 onSelect={(card) => {
                   setTarget(card.id);
@@ -288,7 +322,7 @@ function StepFields({
               key={i}
               run={run}
               label={step.label}
-              needsBase
+              allow={upgradable}
               value={answer[i] ?? ""}
               onChange={(id) => {
                 const next = [...answer];
@@ -483,8 +517,8 @@ export function OpeningPanel({
                     ))}
                   </Select>
                   <p className="mt-1.5 text-xs text-muted">
-                    Naming it makes the advisor weigh that fight three times as much as an unknown
-                    boss.
+                    Naming it makes the advisor count this boss alone, instead of the average of
+                    this version&rsquo;s three.
                   </p>
                 </div>
                 <label
@@ -506,8 +540,9 @@ export function OpeningPanel({
                   <span className="min-w-0">
                     Let this shape the ranking
                     <span className="mt-0.5 block text-xs text-muted">
-                      Tilts the advisor&rsquo;s weights by up to 30 % toward what these elites and
-                      bosses ask of a deck. Switch it off to compare.
+                      Compared with the average Act 1 (both versions together), shifts the
+                      advisor&rsquo;s weights toward what these elites and bosses ask of a deck:
+                      usually a few percent, never more than 30 %. Switch it off to compare.
                     </span>
                   </span>
                 </label>
@@ -591,12 +626,28 @@ export function OpeningPanel({
               }}
             />
           ) : null}
+          {!run.ascensionConfirmed ? (
+            <p className="text-xs text-muted">
+              Your starting hit points and deck assume Ascension 0 until you choose the ascension in
+              Step 1: from Ascension 2 the opening heal is 80 % of your HP, and from Ascension 5
+              your deck starts with Ascender&rsquo;s Bane.
+            </p>
+          ) : null}
           {notice ? (
             <p
               role="status"
               className="rounded-lg border border-teal-deep/60 bg-teal/10 px-3 py-2 text-sm text-teal"
             >
               {notice} Undo (above) takes it back.
+            </p>
+          ) : null}
+          {run.opening.entries.length > 0 && run.hp ? (
+            <p className="text-sm text-parchment">
+              After the opening:{" "}
+              <strong className="num font-medium text-gold">
+                HP {run.hp.current} of {run.hp.max}
+              </strong>
+              . Counted from the start of the run; fights since are not tracked.
             </p>
           ) : null}
           {run.opening.entries.length > 0 ? (

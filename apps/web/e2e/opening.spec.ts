@@ -107,7 +107,8 @@ test.describe("where your run starts", () => {
     const log = page.getByRole("list", { name: "Recorded from the opening Ancient" });
     await expect(log).toContainText("Precarious Shears");
     await expect(log).toContainText("Removed Strike from the deck.");
-    await expect(log).toContainText("HP −16 (now 64 of 80).");
+    await expect(log).toContainText("HP −16.");
+    await expect(page.getByText("After the opening:")).toContainText("HP 64 of 80");
     await expect(page.getByRole("heading", { name: "8 cards" })).toBeVisible();
     await expect(page.getByLabel("3 copies")).toHaveCount(1); // Strike went from 5 to 3
 
@@ -152,7 +153,8 @@ test.describe("where your run starts", () => {
     const log = page.getByRole("list", { name: "Recorded from the opening Ancient" });
     await expect(log).toContainText("Transformed Strike into Anger.");
     await expect(log).toContainText("Transformed Defend into Shrug It Off.");
-    await expect(log).toContainText("Max HP −12 (now 68).");
+    await expect(log).toContainText("Max HP −12.");
+    await expect(page.getByText("After the opening:")).toContainText("HP 68 of 68");
     const deck = page.getByRole("list", { name: "Deck contents" });
     await expect(deck).toContainText("Anger");
     await expect(deck).toContainText("Shrug It Off");
@@ -199,6 +201,72 @@ test.describe("where your run starts", () => {
     await expect(options).toContainText("Act 1 context (Overgrowth)");
     await expect(page.getByText("You said you are in Underdocks.")).toHaveCount(0);
     await expect(page.getByText(/Every simulated run was played in Overgrowth/)).toBeVisible();
+  });
+
+  test("the ascension sets how the run starts: Neow heals 80 % from A2, and Ascender's Bane joins the deck at A5 and cannot be removed", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await expect(page.getByText(/assume Ascension 0 until you choose the ascension/)).toBeVisible();
+    await page.locator("#adv-asc").selectOption("5");
+    await expect(page.getByText(/assume Ascension 0 until you choose the ascension/)).toHaveCount(
+      0,
+    );
+    await expect(page.getByRole("list", { name: "Deck contents" })).toContainText(
+      "Ascender's Bane",
+    );
+    await expect(page.getByRole("heading", { name: "11 cards" })).toBeVisible();
+
+    // the Bane has the Eternal keyword: the game does not let a player remove it, so it is not offered as an answer
+    await page.locator("#adv-opening").selectOption("PRECISE_SCISSORS");
+    const removed = page.getByLabel(/The card you removed/);
+    await expect(removed.locator("option", { hasText: "Ascender's Bane" })).toHaveCount(0);
+    await expect(removed.locator("option", { hasText: "Strike" })).toHaveCount(1);
+    await page.locator("#adv-opening").selectOption("PRECARIOUS_SHEARS");
+    await page
+      .getByLabel(/A card you removed/)
+      .nth(0)
+      .selectOption("STRIKE_IRONCLAD");
+    await page
+      .getByLabel(/A card you removed/)
+      .nth(1)
+      .selectOption("STRIKE_IRONCLAD");
+    await page.getByRole("button", { name: /Apply to my deck and HP/ }).click();
+    // 80 max HP, healed to 64 at Neow from Ascension 2, then 16 off
+    await expect(page.getByText("After the opening:")).toContainText("HP 48 of 80");
+
+    // correcting the ascension afterwards moves the HP with it
+    await page.locator("#adv-asc").selectOption("0");
+    await expect(page.getByText("After the opening:")).toContainText("HP 64 of 80");
+    await expect(page.getByRole("list", { name: "Deck contents" })).not.toContainText(
+      "Ascender's Bane",
+    );
+  });
+
+  test("a relic is recorded once; resetting to the start of the run clears the log, the HP and the deck together", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    const record = page.getByRole("button", { name: /Record this|Apply to my deck and HP/ });
+    await page.locator("#adv-opening").selectOption("NUTRITIOUS_OYSTER");
+    await record.click();
+    await expect(page.getByText("After the opening:")).toContainText("HP 91 of 91");
+
+    await page.locator("#adv-opening").selectOption("NUTRITIOUS_OYSTER");
+    await expect(page.getByText(/already recorded for this run/)).toBeVisible();
+    await expect(record).toBeDisabled();
+    await page.getByRole("button", { name: "Cancel" }).click();
+
+    await page.getByRole("button", { name: "Reset to the start of the run" }).click();
+    await expect(page.getByRole("list", { name: "Recorded from the opening Ancient" })).toHaveCount(
+      0,
+    );
+    await expect(page.getByText("After the opening:")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "10 cards" })).toBeVisible();
+    // and the relic can be recorded again, from 80 and not from 91
+    await page.locator("#adv-opening").selectOption("NUTRITIOUS_OYSTER");
+    await record.click();
+    await expect(page.getByText("After the opening:")).toContainText("HP 91 of 91");
   });
 
   test("the start of the run is in the exported file, and importing it brings it back", async ({

@@ -2,7 +2,10 @@ import {
   basicCardId,
   getCard,
   getOpeningOption,
+  isRemovable,
+  isUpgradable,
   resolveStepCards,
+  startingHpAt,
   type OpeningOption,
   type OpeningStep,
   type PlayableClass,
@@ -101,6 +104,10 @@ export function openingProblems(
   if (!character) {
     return ["Choose a character first."];
   }
+  if (run.opening.entries.some((e) => e.id === option.id)) {
+    // a relic is taken once; the log is how the run stands, so a correction is an Undo
+    return [`${option.name} is already recorded for this run. Use Undo to change it.`];
+  }
   const problems: string[] = [];
   // copies still available to remove, transform or upgrade, as steps use them one after another
   let deck: Deck = run.deck;
@@ -136,6 +143,8 @@ export function openingProblems(
         for (const id of chosen) {
           if (deckCopies(deck, id) < 1) {
             problems.push(`${step.label}: ${name(id)} is not in your deck any more.`);
+          } else if (!isRemovable(id)) {
+            problems.push(`${step.label}: ${name(id)} cannot be removed from a deck.`);
           } else {
             deck = deckRemove(deck, id);
           }
@@ -150,6 +159,8 @@ export function openingProblems(
           );
         } else if (deckCopies(deck, from) < 1) {
           problems.push(`${step.label}: ${name(from)} is not in your deck.`);
+        } else if (!isRemovable(from)) {
+          problems.push(`${step.label}: ${name(from)} cannot be transformed.`);
         } else {
           deck = deckAdd(deckRemove(deck, from), to);
         }
@@ -171,7 +182,9 @@ export function openingProblems(
           problems.push(`${step.label}: choose ${String(step.count)} from your deck.`);
         }
         for (const id of chosen) {
-          if (deckCopies(deck, id) - deckUpgraded(deck, id) < 1) {
+          if (!isUpgradable(id)) {
+            problems.push(`${step.label}: ${name(id)} cannot be upgraded.`);
+          } else if (deckCopies(deck, id) - deckUpgraded(deck, id) < 1) {
             problems.push(`${step.label}: no base ${name(id)} left to upgrade.`);
           } else {
             deck = deckSetUpgraded(deck, id, deckUpgraded(deck, id) + 1);
@@ -253,26 +266,22 @@ export function applyOpening(
           lines.push(`Upgraded a ${name(id)}.`);
         }
         break;
-      case "maxHp":
-        if (hp) {
-          const max = Math.max(1, hp.max + step.delta);
-          const current =
-            step.delta > 0 ? Math.min(max, hp.current + step.delta) : Math.min(hp.current, max);
-          hp = { current, max };
-          lines.push(
-            `Max HP ${step.delta > 0 ? "+" : "−"}${String(Math.abs(step.delta))} (now ${String(max)}).`,
-          );
-        }
+      case "maxHp": {
+        // without HP on record the run starts where the game puts it (ANC-1), so the change is still counted
+        const from = hp ?? startingHpAt(character, run.ascension);
+        const max = Math.max(1, from.max + step.delta);
+        const current =
+          step.delta > 0 ? Math.min(max, from.current + step.delta) : Math.min(from.current, max);
+        hp = { current, max };
+        lines.push(`Max HP ${step.delta > 0 ? "+" : "−"}${String(Math.abs(step.delta))}.`);
         break;
-      case "hp":
-        if (hp) {
-          const current = Math.max(1, Math.min(hp.max, hp.current + step.delta));
-          hp = { current, max: hp.max };
-          lines.push(
-            `HP ${step.delta > 0 ? "+" : "−"}${String(Math.abs(step.delta))} (now ${String(current)} of ${String(hp.max)}).`,
-          );
-        }
+      }
+      case "hp": {
+        const from = hp ?? startingHpAt(character, run.ascension);
+        hp = { current: Math.max(1, Math.min(from.max, from.current + step.delta)), max: from.max };
+        lines.push(`HP ${step.delta > 0 ? "+" : "−"}${String(Math.abs(step.delta))}.`);
         break;
+      }
       case "info":
         lines.push(`Not tracked: ${step.text}`);
         break;

@@ -183,7 +183,7 @@ function contextReason(
       ? `Act 1 context (${where}): ${touched
           .map(
             (a) =>
-              `${GROUP_LABELS[a.group]} counts ${String(Math.abs(percent(a.multiplier)))} % ${a.multiplier > 1 ? "more" : "less"} (${a.because.join(", ")})`,
+              `${GROUP_LABELS[a.group]} counts ${String(Math.abs(percent(a.multiplier)))} % ${a.multiplier > 1 ? "more" : "less"} (${a.because.length > 0 ? a.because.join(", ") : "fewer of its fights ask for it than in the average Act 1"})`,
           )
           .join("; ")}.`
       : `Act 1 context (${where}): a smaller effect through the deck's other needs.`;
@@ -416,7 +416,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
       ...(tilt
         ? [
-            `Act 1 context (${tilt.variantName}${tilt.boss ? `, boss ${tilt.boss.name}` : ", boss not known"}): coverage weights are tilted by at most ${String(Math.round(MAX_TILT * 100))} % from what its elites and bosses ask of a deck. That is SLAY2's judgement of the fights, not a measurement (ADR-048).`,
+            `Act 1 context (${tilt.variantName}${tilt.boss ? `, boss ${tilt.boss.name}` : ", boss not known"}): coverage weights are tilted, by at most ${String(Math.round(MAX_TILT * 100))} % and usually a few, by how what its elites and bosses ask of a deck differs from the average Act 1 (both versions together). That is SLAY2's judgement of the fights, not a measurement (ADR-048).`,
           ]
         : []),
       "Card upgrades and enchantments in the deck are ignored; every copy counts as the base card.",

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { getCard, starterDeck, type CardEntry } from "@slay2/game-data";
+import { getCard, type CardEntry } from "@slay2/game-data";
 import { profileDeck, type DeckEntry } from "@slay2/decision";
 
 import { CardCombobox } from "@/components/cards/CardCombobox";
@@ -16,9 +16,12 @@ import type { RunState } from "@/lib/run-state";
 export function DeckPanel({
   run,
   onChange,
+  onReset,
 }: {
   run: RunState;
   onChange: (deck: RunState["deck"]) => void;
+  /** Back to how the run starts: the starter deck and HP of this class and ascension, and nothing recorded from Neow. */
+  onReset: () => void;
 }) {
   const entries: DeckEntry[] = useMemo(
     () =>
@@ -53,14 +56,8 @@ export function DeckPanel({
       title={`${String(profile.size)} cards`}
       aside={
         character ? (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              onChange(starterDeck(character));
-            }}
-          >
-            Reset to starter deck
+          <Button size="sm" variant="ghost" onClick={onReset}>
+            Reset to the start of the run
           </Button>
         ) : null
       }

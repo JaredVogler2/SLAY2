@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 
-import { searchCards, type CardClass, type CardEntry } from "@slay2/game-data";
+import { CATALOG, searchCards, type CardClass, type CardEntry } from "@slay2/game-data";
 
 import { CLASS_STYLE, RARITY_STYLE, costLabel } from "@/lib/card-style";
 import { cn } from "@/lib/cn";
@@ -42,7 +42,8 @@ export function CardCombobox({
     const found = searchCards(query, {
       ...(classes ? { classes } : {}),
       rewardEligibleOnly,
-      limit: filter ? 600 : 30,
+      // a further filter is applied after the search, so the search must not cut the pool short first
+      limit: filter ? CATALOG.cards.length : 30,
     }).filter((c) => !exclude?.has(c.id) && (filter ? filter(c) : true));
     return found.slice(0, 8);
   }, [query, classes, rewardEligibleOnly, exclude, filter]);

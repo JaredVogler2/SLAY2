@@ -2,11 +2,12 @@ import { z } from "zod";
 
 import {
   ACT1_VARIANTS,
-  characterFacts,
+  ASCENDERS_BANE_FROM,
   getAct1Boss,
   getCard,
   getOpeningOption,
   starterDeck,
+  startingHpAt,
   PLAYABLE_CLASSES,
   type PlayableClass,
 } from "@slay2/game-data";
@@ -75,6 +76,26 @@ export const DeckEntrySchema = z
   );
 export type DeckEntryState = z.infer<typeof DeckEntrySchema>;
 
+/**
+ * One row per card. The deck helpers assume it, and a hand-edited file may repeat a card: the copies (and the upgraded
+ * copies) of rows with the same id are added, within the limits of a row.
+ */
+function mergeDeckRows(rows: DeckEntryState[]): DeckEntryState[] {
+  const merged = new Map<string, { count: number; upgraded: number }>();
+  for (const row of rows) {
+    const so_far = merged.get(row.id) ?? { count: 0, upgraded: 0 };
+    merged.set(row.id, {
+      count: so_far.count + row.count,
+      upgraded: so_far.upgraded + (row.upgraded ?? 0),
+    });
+  }
+  return [...merged].map(([id, m]) => {
+    const count = Math.min(30, m.count);
+    const upgraded = Math.min(m.upgraded, count);
+    return upgraded > 0 ? { id, count, upgraded } : { id, count };
+  });
+}
+
 export const RunStateSchema = z
   .strictObject({
     v: z.literal(RUN_STATE_VERSION),
@@ -93,7 +114,7 @@ export const RunStateSchema = z
         max: z.number().int().min(1).max(999),
       })
       .nullable(),
-    deck: z.array(DeckEntrySchema).max(120),
+    deck: z.array(DeckEntrySchema).max(120).transform(mergeDeckRows),
     /** Which Act 1 the run is in (they have different elites and bosses); null until the player says */
     act1: z.enum(ACT1_VARIANTS).nullable().default(null),
     /** The Act 1 boss shown on the map, an id of that version's bosses; null when not known */
@@ -129,7 +150,6 @@ function randomId(): string {
 
 export function newRun(character: PlayableClass | null = null, now = new Date()): RunState {
   const iso = now.toISOString();
-  const facts = character ? characterFacts(character) : null;
   return {
     v: RUN_STATE_VERSION,
     id: randomId(),
@@ -140,7 +160,7 @@ export function newRun(character: PlayableClass | null = null, now = new Date())
     ascension: 0,
     ascensionConfirmed: false,
     actIndex: 0,
-    hp: facts ? { current: facts.startingHp, max: facts.startingHp } : null,
+    hp: character ? startingHpAt(character, 0) : null,
     deck: character ? starterDeck(character) : [],
     act1: null,
     act1Boss: null,
@@ -166,11 +186,70 @@ export function withCharacter(
     createdAt: state.createdAt,
     ascension: state.ascension,
     ascensionConfirmed: state.ascensionConfirmed,
+    // the start of a run depends on the ascension: Ascender's Bane from A5, the 80 % heal at Neow from A2
+    deck: starterDeck(character, state.ascension),
+    hp: startingHpAt(character, state.ascension),
     // the version of Act 1 and its boss are about the run, not the class; the opening's deck changes belong to the old deck
     act1: state.act1,
     act1Boss: state.act1Boss,
     risk: state.risk,
     profile: state.profile,
+  };
+}
+
+const ASCENDERS_BANE = "ASCENDERS_BANE";
+
+/** Ascender's Bane in the deck exactly when the ascension has it. */
+function withBane(deck: RunState["deck"], want: boolean): RunState["deck"] {
+  const has = deck.find((d) => d.id === ASCENDERS_BANE);
+  if (want && !has) {
+    return [...deck, { id: ASCENDERS_BANE, count: 1 }];
+  }
+  if (!want && has) {
+    return deck.flatMap((d) =>
+      d.id !== ASCENDERS_BANE
+        ? [d]
+        : d.count > 1
+          ? [{ id: ASCENDERS_BANE, count: d.count - 1 }]
+          : [],
+    );
+  }
+  return deck;
+}
+
+/**
+ * The player says (or corrects) the ascension. It changes how a run starts, so the deck and hit points follow: Ascender's
+ * Bane joins the deck from A5 (and leaves it below), and the HP the opening Ancient left is moved by the difference between
+ * the two ascensions' starting HP (from A2 Neow heals 80 % of the missing HP instead of all of it), which keeps what the
+ * opening Ancient added or took on top.
+ */
+export function withAscension(state: RunState, ascension: number): RunState {
+  const next: RunState = { ...state, ascension, ascensionConfirmed: true };
+  const character = state.character;
+  if (!character) {
+    return next;
+  }
+  const { hp } = state;
+  const shift =
+    startingHpAt(character, ascension).current - startingHpAt(character, state.ascension).current;
+  return {
+    ...next,
+    deck: withBane(state.deck, ascension >= ASCENDERS_BANE_FROM),
+    hp: hp ? { current: Math.max(1, Math.min(hp.max, hp.current + shift)), max: hp.max } : hp,
+  };
+}
+
+/** Back to how the run starts: the starter deck of this class and ascension, the starting HP, nothing recorded from Neow. */
+export function resetToStart(state: RunState): RunState {
+  const character = state.character;
+  if (!character) {
+    return state;
+  }
+  return {
+    ...state,
+    deck: starterDeck(character, state.ascension),
+    hp: startingHpAt(character, state.ascension),
+    opening: { entries: [] },
   };
 }
 

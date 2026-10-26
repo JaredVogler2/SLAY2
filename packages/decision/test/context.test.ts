@@ -25,7 +25,7 @@ function request(over: Partial<DraftRequest> = {}): DraftRequest {
 }
 
 describe("Act 1 context: the tilt", () => {
-  it("is bounded, and every version tilts something", () => {
+  it("is bounded, and every version tilts something, naming the fights behind a rise", () => {
     for (const variant of ACT1_VARIANTS) {
       for (const boss of [null, ...ACT1_BRIEFS[variant].bosses.map((b) => b.id)]) {
         const tilt = actContextTilt({ variant, boss });
@@ -35,19 +35,44 @@ describe("Act 1 context: the tilt", () => {
           expect(m).toBeLessThanOrEqual(1 + MAX_TILT + 1e-9);
         }
         for (const a of tilt.adjustments) {
-          expect(a.because.length).toBeGreaterThan(0);
+          // a rise is explained by the fights that ask for it; a fall is "fewer of its fights ask for it than the average"
+          expect(a.because.length > 0, `${variant} ${String(boss)} ${a.group}`).toBe(
+            a.multiplier > 1,
+          );
         }
       }
     }
+  });
+
+  it("is relative to the average Act 1: what every fight asks for does not move the weights", () => {
+    // block is asked by four of the six elites and bosses of each version; the first version of this tilt raised it by the
+    // full 30 % for either, which says nothing about which Act 1 the player is in
+    const over = actContextTilt({ variant: "overgrowth", boss: null });
+    const under = actContextTilt({ variant: "underdocks", boss: null });
+    expect(over.multipliers.block).toBeGreaterThan(1);
+    expect(under.multipliers.block).toBeLessThan(1);
+    // with the boss unknown the two versions are the two halves of the average, so they are mirror images
+    for (const g of Object.keys(over.multipliers) as (keyof typeof over.multipliers)[]) {
+      expect(over.multipliers[g] - 1, g).toBeCloseTo(-(under.multipliers[g] - 1), 9);
+    }
+    // and the size is a few percent, not the cap: Underdocks asks for scaling in three of its six fights, Overgrowth for none
+    expect(under.multipliers.scaling).toBeCloseTo(1.105, 3);
+    expect(over.multipliers.block).toBeCloseTo(1.1, 3);
+    expect(Math.max(...Object.values(over.multipliers).map((m) => Math.abs(m - 1)))).toBeLessThan(
+      0.15,
+    );
   });
 
   it("differs between the two versions, which is the point of asking", () => {
     const over = actContextTilt({ variant: "overgrowth", boss: null });
     const under = actContextTilt({ variant: "underdocks", boss: null });
     expect(over.multipliers).not.toEqual(under.multipliers);
-    // Underdocks' Phantasmal Gardeners are four enemies and its pool has no multi-enemy boss; Overgrowth has Phrog Parasite's spawn
-    expect(under.adjustments.find((a) => a.group === "block")?.because).toContain("Terror Eel");
-    expect(over.adjustments.find((a) => a.group === "aoe")?.because).toContain("Phrog Parasite");
+    // Underdocks' Skulking Colony, Waterfall Giant and Lagavulin Matriarch ask for scaling and set-up; Overgrowth has none
+    const scaling = under.adjustments.find((a) => a.group === "scaling");
+    expect(scaling?.because).toContain("Skulking Colony");
+    expect(over.adjustments.find((a) => a.group === "scaling")?.because).toEqual([]);
+    // Overgrowth's elites and bosses burst more and block more
+    expect(over.adjustments.find((a) => a.group === "damage")?.because.length).toBeGreaterThan(0);
   });
 
   it("counts a boss the player has seen three times as much as an unknown one", () => {

@@ -234,13 +234,17 @@ export function RecommendationPanel({
                       {result.actContext.boss && isAct1Variant(result.actContext.variant)
                         ? `, boss ${getAct1Boss(result.actContext.variant, result.actContext.boss)?.name ?? result.actContext.boss}`
                         : ", boss not known"}
-                      . The coverage weights below were tilted before the options were ranked:
+                      . Compared with the average Act 1 (both versions together), the coverage
+                      weights below were shifted before the options were ranked:
                     </p>
                     <ul className="mt-1 list-disc space-y-1 pl-5">
                       {result.actContext.adjustments.map((a) => (
                         <li key={a.group}>
                           {a.label}: {a.percent > 0 ? "+" : "−"}
-                          {Math.abs(a.percent)} % ({a.because.join(", ")})
+                          {Math.abs(a.percent)} %{" "}
+                          {a.because.length > 0
+                            ? `(${a.because.join(", ")})`
+                            : "(fewer of its fights ask for it than in the average Act 1)"}
                         </li>
                       ))}
                     </ul>

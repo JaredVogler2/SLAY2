@@ -15,6 +15,8 @@ import {
   MAX_IMPORT_BYTES,
   newRun,
   parseRunState,
+  resetToStart,
+  withAscension,
   withCharacter,
   type PackSource,
   type RunState,
@@ -280,7 +282,7 @@ export function AdvisorWorkbench() {
                   id="adv-asc"
                   value={run.ascensionConfirmed ? String(run.ascension) : ""}
                   onChange={(e) => {
-                    update({ ...run, ascension: Number(e.target.value), ascensionConfirmed: true });
+                    update(withAscension(run, Number(e.target.value)));
                   }}
                 >
                   {!run.ascensionConfirmed ? (
@@ -386,7 +388,13 @@ export function AdvisorWorkbench() {
             <DeckPanel
               run={run}
               onChange={(deck) => {
-                update({ ...run, deck: deck.length > 0 ? deck : starterDeck(character) });
+                update({
+                  ...run,
+                  deck: deck.length > 0 ? deck : starterDeck(character, run.ascension),
+                });
+              }}
+              onReset={() => {
+                update(resetToStart(run));
               }}
             />
             <div className="min-w-0 space-y-6">
