@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import raw from "../data/synergy.sts2-main-0.107.1.json";
-import type { CardEntry } from "./types";
+import { PLAYABLE_CLASSES, type CardEntry, type PlayableClass } from "./types";
 
 /**
  * How cards work together, as SLAY2's own judgement (not a measurement): for every card, what it provides to the deck
@@ -65,6 +65,12 @@ const GivesSchema = z.partialRecord(
 );
 const WantsSchema = z.partialRecord(z.enum(MECHANIC_IDS), z.number().int().min(1).max(3));
 
+/** What a class's starting relic provides in every combat whatever cards the deck holds (same scale as a card's gives). */
+const InnateSchema = z.partialRecord(
+  z.enum(PLAYABLE_CLASSES),
+  z.strictObject({ relic: z.string().min(1), gives: GivesSchema }),
+);
+
 const SynergyFileSchema = z.strictObject({
   schema: z.literal(1),
   build: z.literal("sts2-main-0.107.1"),
@@ -76,6 +82,7 @@ const SynergyFileSchema = z.strictObject({
       typeof MechanicSchema
     >,
   ),
+  innate: InnateSchema,
   cards: z.record(
     z.string().regex(/^[A-Z0-9_]+$/),
     z.strictObject({
@@ -93,6 +100,22 @@ export const MECHANICS: Readonly<Record<MechanicId, z.infer<typeof MechanicSchem
   SYNERGY.mechanics;
 
 export type MechanicWeights = Readonly<Partial<Record<MechanicId, number>>>;
+
+export interface InnateSupply {
+  /** The starting relic that provides it (a name the player sees). */
+  readonly relic: string;
+  readonly gives: MechanicWeights;
+}
+
+/**
+ * What the class has in every combat before a single card is played: the Necrobinder's Osty, the Regent's Stars, the Defect's
+ * first Lightning, the Silent's extra opening cards. A need that this meets is never unmet; without it the first table held
+ * every Osty card of the Necrobinder back for want of an Osty that is always there. Null for a class whose starting relic
+ * supplies none of the mechanics (the Ironclad's heals after combat).
+ */
+export function innateSupply(character: PlayableClass | null | undefined): InnateSupply | null {
+  return (character ? SYNERGY.innate[character] : undefined) ?? null;
+}
 
 export interface SynergyTags {
   /** What the card provides to the deck, per mechanic (negative: it takes the mechanic away). */

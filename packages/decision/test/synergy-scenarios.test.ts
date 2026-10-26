@@ -241,6 +241,8 @@ const TWINS: Twin[] = [
     card: "COMET",
     supported: { GENESIS: 1, ROYAL_GAMBLE: 1, HIDDEN_CACHE: 1 },
     bare: {},
+    // the Regent's starting relic already gives Stars every combat, so the bare deck is less bare than for other cards
+    margin: 0.3,
   },
   {
     name: "Lunar Blast is worth more in a deck of Skills",

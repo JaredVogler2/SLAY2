@@ -11,6 +11,7 @@ import {
   getCard,
   benefitsFrom,
   hasWrittenTags,
+  innateSupply,
   rewardPool,
   synergyTags,
 } from "../src";
@@ -33,9 +34,11 @@ function tags(id: string) {
 }
 
 describe("the synergy tags (SLAY2's judgement of how cards work together)", () => {
-  it("are the file they say they are: the hash covers the mechanics and the cards", () => {
+  it("are the file they say they are: the hash covers the mechanics, the cards and the innate supplies", () => {
     const digest = createHash("sha256")
-      .update(canonical({ mechanics: SYNERGY.mechanics, cards: SYNERGY.cards }))
+      .update(
+        canonical({ mechanics: SYNERGY.mechanics, cards: SYNERGY.cards, innate: SYNERGY.innate }),
+      )
       .digest("hex");
     expect(digest).toBe(SYNERGY.sha256);
   });
@@ -142,6 +145,26 @@ describe("the synergy tags (SLAY2's judgement of how cards work together)", () =
     for (const [id, entry] of Object.entries(SYNERGY.cards)) {
       for (const w of Object.values(entry.w ?? {})) expect(w, id).toBeGreaterThanOrEqual(1);
       for (const g of Object.values(entry.g ?? {})) expect(g, id).not.toBe(0);
+    }
+  });
+
+  it("give each class what its starting relic provides, as the game's own relic files say", () => {
+    expect(innateSupply("necrobinder")).toMatchObject({
+      relic: "Bound Phylactery",
+      gives: { osty: 3 },
+    });
+    expect(innateSupply("regent")).toMatchObject({ relic: "Divine Right", gives: { star: 2 } });
+    expect(innateSupply("defect")).toMatchObject({ relic: "Cracked Core", gives: { orb: 1 } });
+    expect(innateSupply("silent")).toMatchObject({
+      relic: "Ring of the Snake",
+      gives: { draw: 1 },
+    });
+    // the Ironclad's relic heals after combat and supplies no mechanic; no class is given more than a standard supply
+    expect(innateSupply("ironclad")).toBeNull();
+    expect(innateSupply(null)).toBeNull();
+    for (const cls of PLAYABLE_CLASSES) {
+      for (const w of Object.values(innateSupply(cls)?.gives ?? {}))
+        expect(w).toBeLessThanOrEqual(3);
     }
   });
 });

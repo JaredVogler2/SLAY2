@@ -93,15 +93,16 @@ function buildCase(index: number): GoldenCase {
   const risk = pickOne(rnd, ["safe", "balanced", "aggressive"] as const);
 
   const weights = baseWeights(actIndex, risk);
-  const profile = profileDeck(entries, actIndex);
+  const profile = profileDeck(entries, actIndex, character);
   const terms = scoreTerms(profile, weights);
-  const engines = enginesOf(entries);
+  const engines = enginesOf(entries, character);
   const ranking = rankWith(
     weights,
     profile,
     entries,
     [...offered].map((id) => must(id)),
     actIndex,
+    character,
   );
   return {
     character,

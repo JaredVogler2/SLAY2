@@ -1,4 +1,4 @@
-import type { CardEntry } from "@slay2/game-data";
+import type { CardEntry, PlayableClass } from "@slay2/game-data";
 
 import { synergyOf } from "./synergy";
 
@@ -52,7 +52,11 @@ function energyCost(card: CardEntry): number | null {
   return card.cost === "X" ? 2 : card.cost;
 }
 
-export function profileDeck(entries: readonly DeckEntry[], actIndex: 0 | 1 | 2 = 0): DeckProfile {
+export function profileDeck(
+  entries: readonly DeckEntry[],
+  actIndex: 0 | 1 | 2 = 0,
+  character: PlayableClass | null = null,
+): DeckProfile {
   let size = 0;
   let priorSum = 0;
   let playable = 0;
@@ -110,6 +114,6 @@ export function profileDeck(entries: readonly DeckEntry[], actIndex: 0 | 1 | 2 =
     strengthCards,
     multiHitCards,
     roleCounts,
-    synergy: synergyOf(entries, actIndex),
+    synergy: synergyOf(entries, actIndex, character),
   };
 }

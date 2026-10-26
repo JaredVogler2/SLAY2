@@ -315,11 +315,14 @@ export function rankWith(
   entries: readonly DeckEntry[],
   offered: readonly CardEntry[],
   actIndex: 0 | 1 | 2,
+  character: PlayableClass | null = null,
 ): { action: DraftAction; delta: number }[] {
   const baseTotal = total(scoreTerms(base, weights));
   const scored: { action: DraftAction; delta: number }[] = offered.map((card) => ({
     action: pickAction(card.id),
-    delta: total(scoreTerms(profileDeck(withCard(entries, card), actIndex), weights)) - baseTotal,
+    delta:
+      total(scoreTerms(profileDeck(withCard(entries, card), actIndex, character), weights)) -
+      baseTotal,
   }));
   scored.push({ action: SKIP, delta: 0 });
   // skip wins ties: it is listed last but sorted stably after the strict comparison below
@@ -395,7 +398,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     }
   }
 
-  const base = profileDeck(entries, request.actIndex);
+  const base = profileDeck(entries, request.actIndex, request.character);
   const neutral = baseWeights(request.actIndex, request.riskPreference);
   let tilt: ContextTilt | null = null;
   if (request.actContext) {
@@ -417,9 +420,9 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const weights = tilt ? tiltWeights(neutral, tilt) : neutral;
   // The reasons below explain the neutral heuristic; the context is its own line, so the lines add up to the index.
   const baseTerms = scoreTerms(base, neutral);
-  const ranked = rankWith(weights, base, entries, offered, request.actIndex);
+  const ranked = rankWith(weights, base, entries, offered, request.actIndex, request.character);
   const neutralDelta = new Map(
-    rankWith(neutral, base, entries, offered, request.actIndex).map(
+    rankWith(neutral, base, entries, offered, request.actIndex, request.character).map(
       (r) => [actionKey(r.action), r.delta] as const,
     ),
   );
@@ -437,8 +440,8 @@ export function evaluateDraft(input: unknown): DraftResponse {
     } else {
       const card = must(getCard(r.action.cardId), "catalog card");
       const withIt = withCard(entries, card);
-      const after = profileDeck(withIt, request.actIndex);
-      const explained = explainAddition(entries, card, request.actIndex, withIt);
+      const after = profileDeck(withIt, request.actIndex, request.character);
+      const explained = explainAddition(entries, card, request.actIndex, withIt, request.character);
       reasons = describeDelta(
         baseTerms,
         scoreTerms(after, neutral),
@@ -482,8 +485,11 @@ export function evaluateDraft(input: unknown): DraftResponse {
       synergy: weights.synergy * jitter(),
     };
     const winner = actionKey(
-      (rankWith(perturbed, base, entries, offered, request.actIndex)[0] as { action: DraftAction })
-        .action,
+      (
+        rankWith(perturbed, base, entries, offered, request.actIndex, request.character)[0] as {
+          action: DraftAction;
+        }
+      ).action,
     );
     if (winner === top) {
       kept += 1;
@@ -569,7 +575,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
       roleCounts: { ...base.groups },
       starterShare: base.starterShare,
     },
-    deckSynergy: deckSynergy(entries, request.actIndex),
+    deckSynergy: deckSynergy(entries, request.actIndex, request.character),
     ...(request.actContext
       ? {
           actContext: {
