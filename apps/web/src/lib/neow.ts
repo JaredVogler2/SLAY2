@@ -221,8 +221,8 @@ export interface Chance {
 /**
  * The simulated chance of getting past the Act-1 boss for a class that takes a relic: the class's chance with the average
  * relic moved by the relic's value, and by the ends of its 95 % interval. The fit has one value per relic for all classes and
- * a separate starting point per class, so the same value moves a class that rarely gets past the boss (Silent, 36 %) by more
- * points than one that almost always does (Defect, 90 %).
+ * a separate starting point per class, so the same value moves a class that starts near the middle by more points than one
+ * that starts near either end.
  */
 export function chanceWith(
   character: string,

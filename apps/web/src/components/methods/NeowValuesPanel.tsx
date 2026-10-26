@@ -61,6 +61,9 @@ export function NeowValuesPanel() {
   const test = neowTest();
   const relics = relicValues();
   const flagged = relics.filter((r) => r.exclusionFlag);
+  const byPassRate = [...values.classes].sort((a, b) => a.passRate - b.passRate);
+  const lowest = byPassRate[0];
+  const highest = byPassRate[byPassRate.length - 1];
   const rederived = test ? test.members.reduce((n, m) => n + m.a.wins, 0) : 0;
   const seedCounts = new Set(test?.members.map((m) => m.pairedSeeds));
   const perClass = seedCounts.size === 1 ? [...seedCounts][0] : undefined;
@@ -86,9 +89,9 @@ export function NeowValuesPanel() {
         1, Overgrowth) were fitted with one value per relic and one starting point per class: a
         value is the change in the log-odds of getting past the Act-1 boss from taking that relic
         instead of the average one, shrunk toward zero so that the largest of {relics.length}{" "}
-        estimates is not simply the luckiest. The relic adds little to what the class already says:
-        held-out log-loss {values.model.cvLogLoss.toFixed(3)} against{" "}
-        {values.model.baselineLogLoss.toFixed(3)} without the relics (AUC{" "}
+        estimates is not simply the luckiest. How much the relic tells beyond the class,
+        cross-validated by seed: log-loss {values.model.cvLogLoss.toFixed(3)} with the relics
+        against {values.model.baselineLogLoss.toFixed(3)} with the class alone (AUC{" "}
         {values.model.cvAuc.toFixed(3)}). Intervals resample whole seeds, because the games of one
         seed share the offer and the relic taken ({values.model.bootstrapDraws} draws).
       </p>
@@ -267,11 +270,12 @@ export function NeowValuesPanel() {
           running STS2 build, and it only plays Overgrowth, at Ascension 0, with one rules pilot.
         </li>
         <li>
-          One value per relic for all five classes (the data cannot separate most relics&rsquo;
-          effects class by class), so a relic moves a class that rarely gets past the boss (Silent,{" "}
-          {pct(values.classes.find((c) => c.character === "silent")?.passRate ?? 0, 0)}) by more
-          points than one that almost always does (Defect,{" "}
-          {pct(values.classes.find((c) => c.character === "defect")?.passRate ?? 0, 0)}).
+          One value per relic for all five classes (a few thousand games per class are too few to
+          estimate each relic&rsquo;s effect class by class), so the same value moves the chance of
+          a class that starts near the middle by more points than one that starts near either end:
+          with the average relic the classes range from {pct(lowest?.passRate ?? 0, 0)} (
+          {lowest ? classLabel(lowest.character) : ""}) to {pct(highest?.passRate ?? 0, 0)} (
+          {highest ? classLabel(highest.character) : ""}).
         </li>
         <li>
           The Ancients of acts two and three are not simulated. Massive Scroll, a co-op option, is
@@ -283,8 +287,8 @@ export function NeowValuesPanel() {
             {flagged.map((r) => r.name).join(", ")}:{" "}
             {flagged.map((r) => `${r.excluded} of ${games(r.taken + r.excluded)} games`).join(", ")}{" "}
             ended in a simulator error or a timeout, more often than chance explains (the overall
-            rate is about 0.5%). The value rests on the games that finished. The rule that was
-            tested does not use the flag.
+            rate is {pct(values.excludedGames / (values.games + values.excludedGames), 1)}). The
+            value rests on the games that finished. The rule that was tested does not use the flag.
           </li>
         ) : null}
         <li>
