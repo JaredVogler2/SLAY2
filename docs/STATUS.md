@@ -1,60 +1,74 @@
 # SLAY2 status
 
-**Last updated:** 2026-10-25 (session 1) - **Branch:** `claude/adoring-brahmagupta-n2irn6` ([PR #1](https://github.com/JaredVogler2/SLAY2/pull/1)) - **Game target:** STS2 **main v0.107.1** (Steam build 23811903). Beta v0.111.0 is **unsupported** (rules unverified).
+**Last updated:** 2026-10-26 (session 1, continued) - **Branch:** `claude/adoring-brahmagupta-n2irn6` ([PR #1](https://github.com/JaredVogler2/SLAY2/pull/1)) - **Game target:** STS2 **main v0.107.1** (Steam build 23811903). Beta v0.111.0 is **unsupported** (rules unverified).
 
 ## Honest headline
 
 | Item | Value |
 |---|---|
-| Evidence-grade completed simulation games (third-party simulator, Ironclad A0, `veteran` profile, `random_legal` policy) | **2,000** distinct games (seeds = first 2,000 of the `train` partition): **0 wins**, 1,999 deaths, 1 `simulator_error` (excluded, reported). 95 % Wilson upper bound for the win rate: **0.19 %**. The 10- and 100-game batches are *prefixes of the same seed set*, not extra games. |
-| Same, `first_run` (tutorial-scripted) profile | 100 games, 0 wins (cohort kept separate) |
-| Smarter policies | `rules_v1` and `search` exist as code/exploration only; **no evidence-grade batch yet** (an exploratory 60-game trial of `rules_v1` reached Act 2 in 27/60 games and died to the Act-1 bosses in 21/60; 0 wins; not citable) |
-| Trained SLAY2 models | **0** |
-| Deployed website | **none** (no site code yet) |
+| Exact probability tools (rewards with the hidden pity counter, potions, "?" rooms, draws, shop prices, card removal, gold) | **Working** at `/odds` and `POST /api/v1/odds`. Exact rational arithmetic; each engine is checked against an independent Python oracle (**720 golden cases, 14 kinds**), published tables, brute-force enumeration and property tests. Rules are the ones in `docs/game/MECHANICS-COVERAGE.md` (45 rows: 28 `VERIFIED-E1`, 1 `VERIFIED`, 2 `CORROBORATED`, 1 `SECONDARY`, 13 recorded facts). |
+| Card advisor | **Heuristic v0, uncalibrated** (`/advisor`, `POST /api/v1/recommend`). Ranks the offered cards and skip by a unit-less deck-quality index, with reasons and a stability check. It is **not** a win probability and **no outcome-based evaluation exists yet**. |
+| Evidence-grade completed simulation games (third-party simulator, Ironclad A0, `veteran` profile) | `random_legal` **1,999** completed of 2,000 seeds: **0 wins**, mean floor **4.47**. `rules_v1` **300**: **0 wins** (95 % Wilson upper bound 1.26 %), mean floor **18.29**, deaths by act 173 / 121 / 6. `search_v1` **200**: **0 wins**, mean floor **16.04**. All on the `train` partition (development, not held-out). The 10- and 100-game batches are prefixes of the 2,000-game seed set, not extra games. |
+| Paired comparison, `rules_v1` vs `search_v1` (200 shared seeds) | Mean floor **+2.38** for `rules_v1` (95 % bootstrap +1.24 to +3.54); `search_v1` takes **19.7x** longer per game. No policy has won a single simulated game, so no win-rate comparison is possible yet. |
+| Trained SLAY2 models | **0** (no neural network exists or is claimed) |
+| Deployed website | **none** (production build verified locally and in CI; no hosting project connected, no URL) |
 | Simulator parity with the live game | **UNVERIFIED** (no owned game in this environment) |
-| Maturity (VALIDATION-PLAN levels) | L0 rules register + provenance done; L2 harness running on an *unverified* third-party simulator; calculators/UI not yet built |
+| Maturity (VALIDATION-PLAN levels) | L0 rules register + provenance done; L1 exact calculators verified three ways; L2 harness running on an *unverified* third-party simulator; policies are baselines, not competitive; advisor uncalibrated |
 
 ## What exists (committed)
 
-* **Rule register** `docs/game/MECHANICS-COVERAGE.md` (40 rules, evidence classes), `docs/sources/SOURCE-REGISTRY.md`, `docs/IP-COMPLIANCE.md`, `docs/INFORMATION-FAIRNESS.md`, `docs/SIMULATOR-CANDIDATE-MATRIX.md`, `docs/RESEARCH-OPEN-QUESTIONS.md`, ADR-011..017.
-* **Provenance guards**: `external/pins.json`, `scripts/external-fetch.sh`, `scripts/guard-third-party.sh` (+ self-test, pre-commit hook).
-* **`sim/` research harness (original code)**: outcome taxonomy (`win|death|timeout|simulator_error|invalid_action|harness_error|policy_error|aborted`), fair allow-listed observation adapter, closure-aware clone + fair determinization, runner with step/stall/turn/wall limits, resumable parallel batches with checksummed manifests (`content_sha256` reproduces across runs), trace replay verification, seed manifests with a sealed `test` partition, Wilson / paired bootstrap / exact McNemar statistics, CLI (`doctor`, `seeds`, `smoke`, `run`, `audit replay`, `compare`).
-* **Tests**: `sim/tests` (21 tests: stats, manifests, taxonomy, clone fidelity, hidden-state invariance, determinization, profile cohorts). Run: `PYTHONPATH=sim python -m pytest sim/tests`.
+* **Rule register** `docs/game/MECHANICS-COVERAGE.md`, `docs/game/CATALOG-CROSSCHECK.md`, `docs/sources/SOURCE-REGISTRY.md`, `docs/IP-COMPLIANCE.md`, `docs/INFORMATION-FAIRNESS.md`, `docs/SIMULATOR-CANDIDATE-MATRIX.md`, `docs/RESEARCH-OPEN-QUESTIONS.md`, `docs/DECISIONS.md` (ADR-011..024), `docs/DEPLOY.md`.
+* **Provenance guards**: `external/pins.json`, `scripts/external-fetch.sh`, `scripts/guard-third-party.sh` (+ self-test, pre-commit hook, CI).
+* **`packages/`** (TypeScript, strict): `game-schema` (versioned builds, ids, zod schemas; refuses the beta build), `odds` (exact engines), `game-data` (facts-only card catalog of **577** cards: ids, names, class, rarity, cost, type, our own role tags; no card text; character starting facts; solo reward pools), `decision` (draft advisor v0).
+* **`apps/web`** (Next.js 16, React 19): landing, `/odds` (5 calculators with the exact fraction one click away), `/advisor` (character, deck, offered cards, recommendation with reasons, rare-pity tracker, impossible-offer check, local-first run with undo/redo and JSON export/import), `/methods` (every rule with its evidence, verification layers, simulator ledger with intervals and paired comparisons, known gaps, what is not evaluated), `/about` (rights, provenance, privacy, open decisions), 404 and error boundaries, API v1 (`health`, `capabilities`, `manifest`, `odds`, `recommend`, `catalog/cards`, `experiments`), security headers, favicon, robots, sitemap.
+* **`sim/` research harness (original code)**: outcome taxonomy, fair allow-listed observation adapter, closure-aware clone + fair determinization, runner with step/stall/turn/wall limits, resumable parallel batches with checksummed manifests, trace replay verification, seed manifests with a sealed `test` partition, Wilson / paired bootstrap / exact McNemar, the paired-comparison artifact (`experiments/comparisons/`), a registry of known simulator gaps (`sim/slay2_sim/gaps.json`), policies `random_legal`, `rules_v1`, `search_v1`, CLI (`doctor`, `seeds`, `smoke`, `run`, `audit`, `compare`, `oracle`, `catalog`).
+* **Site data is exported, not typed**: rules, batches, comparisons and gaps reach the website through `scripts/export-site-data.mjs`; a test fails when the generated JSON is stale, and the exporter refuses a comparison whose batches changed.
 
-## Evidence (commands actually run)
+## Tests (commands actually run on this commit)
+
+| Suite | Command | Result |
+|---|---|---|
+| TypeScript, all packages + web | `pnpm check` (typecheck, lint, prettier, tests, production build) | green: game-schema 6, game-data 13, odds 79, decision 13, web 41 = **152 tests** |
+| End to end on the production server (`next start`), desktop + mobile, axe WCAG 2.2 AA | `pnpm --filter @slay2/web e2e` | **72 passed** (landing, odds, advisor journey, methods, about, 404, navigation, security headers with zero CSP violations) |
+| Python research harness | `PYTHONPATH=sim python -m pytest sim/tests` | **51 passed, 1 strict xfail** (the documented A10 Double Boss gap) |
+| Continuous integration | `.github/workflows/ci.yml` (`web`, `e2e`, `sim` jobs) | `web` and `sim` green on `4fe73cb`; the `e2e` job is new in this commit |
+
+## Evidence (earlier measurements, still valid)
 
 | What | Command / method | Result |
 |---|---|---|
 | Third-party sim test suite (HEAD `5d874e8`) | `pytest -n 4 tests` (cwd = checkout) | 4,862 passed in 278 s |
 | Sim reward odds vs exact model | 200k rewards x {A0,A7} x {regular,elite} | 28/28 PASS (99.9 % Wilson) |
-| Exact model vs published figures | rational prototype | offset table 28/28, after-rare 0 % / 16.95 %, run averages 19.72 % / 30.91 %, "?" table 6/6 |
-| Sim monster HP A0/A8 vs sts.wiki | 132 factories x 60 seeds | 97 / 100 rows exact; 3 gaps |
-| Clone fidelity | 80 seeds x 30 steps, original vs clone | plain `deepcopy`: **38/80 diverge**; `clone_manager`: **0/80** (1,578 steps) |
+| Exact model vs published figures | offset table, after-rare chances, run averages, "?" table | 28/28 offset cells, 0 % / 16.95 %, 19.72 % / 30.91 %, 6/6 |
+| Sim monster HP A0/A8 vs sts.wiki | 132 factories x 60 seeds | 97 / 100 rows exact; 3 gaps (G2) |
+| Clone fidelity | 80 seeds x 30 steps, original vs clone | plain `deepcopy`: **38/80 diverge**; `clone_manager`: **0/80** |
 | Determinism | same 40-game batch run twice | identical `content_sha256` |
-| Replay | `smoke` replays 3 traces | observation hashes identical at every step |
-| Baseline ladder | `python -m slay2_sim smoke/run --policy random_legal --profile veteran` | 10 -> 100 -> 2,000 games, 0 wins |
+| Hidden-information invariance | counterfactual tests with a power-checked leak canary | leaky search differs 8/8, fair policies 0 differences |
 | Build state | Steam announcements 2026-10-25 | main v0.107.1, beta v0.111.0; nothing newer |
 
 ## Findings that change the plan (details: SIMULATOR-CANDIDATE-MATRIX.md)
 
 1. No legally reusable full-run simulator exists; the usable engine is unlicensed and used **locally only** (ADR-011).
 2. The gym wrapper turns exceptions and timeouts into losses -> SLAY2 drives `RunManager` directly (ADR-012).
-3. **Events are never registered** by the simulator's own gym/training path (0 of 68), so the repo's published training ran without events/Neow/Ancients; SLAY2 imports the package (ADR-016).
+3. **Events are never registered** by the simulator's own gym/training path (0 of 68); SLAY2 imports the package (ADR-016).
 4. The simulator defaults to the **tutorial first-run profile**; SLAY2 labels `veteran` vs `first_run` cohorts (ADR-016).
-5. The simulator's RNG is the pre-0.107.1 .NET family; seeds cannot reproduce live runs (Q12 closed).
+5. The simulator's RNG is the pre-0.107.1 .NET family; seeds cannot reproduce live runs.
 6. Plain `deepcopy` is not a faithful forward model; SLAY2's closure-aware clone is (ADR-017).
-7. A reproducible simulator crash (`is_sovereign_blade(None)`) exists; reported, not hidden.
+7. Known gaps ship with every result (ADR-024): G1 A10 Double Boss not entered, G2 A8 HP scaling for three monsters, G3 `is_sovereign_blade` crash, G4 RNG family, G5 no live parity.
+8. A hand-typed figure on `/methods` ("about 18x slower") disagreed with the data (19.7x). It is now generated from the committed comparison (ADR-022).
 
-## Blockers
+## Blockers and owner decisions
 
-* Live-game parity needs an owned STS2 copy on the owner's machine (Q1).
+* Live-game parity needs an owned STS2 copy on the owner's machine (Q1). Until then every simulator result is labelled unverified.
 * Beta rules need a beta snapshot (Q2).
-* License choice for SLAY2 itself and any monetization are owner/counsel decisions (Q14).
+* License choice for SLAY2's own code, any monetization, and publishing a deployment under the owner's hosting account are owner decisions (Q14). Details in `docs/DEPLOY.md`.
 
 ## Next steps
 
-1. Evidence-grade `rules_v1` batch on the `val` partition; failure analysis at the Act-1 bosses; `search_v1` (determinized combat search) and paired comparison on identical seeds.
-2. `packages/odds` (exact engines + golden fixtures from the audits) and the web slice (landing, `/odds`, `/advisor`).
-3. Use spire-archive data for the facts-only catalog and patch diffs; combat-PPO experiment after policies are measured.
+1. **Competent policy** (phase 03/04): analyse where `rules_v1` dies (Act-1 bosses Vantom, Ceremonial Beast, Kin Priest account for 126 of 300 deaths), improve drafting / elite avoidance / potion use, repair the `search_v1` value function, then evidence-grade batches on `val`, one sealed `test` read, paired comparisons. Combat-PPO experiment only afterwards; negative results are reported.
+2. **Calibrate the advisor** with simulator evidence (card-probing harness), keep the heuristic prior, publish the comparison on `/methods`.
+3. **More decision services** (phase 05/06): Ancient boons, map pathfinder, shop/campfire/event helpers; each needs a facts-only catalog first.
+4. **Patch compatibility**: spire-archive diff 0.103.2 -> 0.107.1 (ids/counts only) in `docs/PATCH-COMPATIBILITY.md`.
+5. **Deployment** once the owner connects a hosting project: see `docs/DEPLOY.md` for the release gate.
 
-Exact next command: `Read docs/STATUS.md; continue at "Next steps" 1; keep committing small passing slices.`
+Exact next command: `Read docs/STATUS.md; continue at "Next steps" 1 (policy research in sim/); keep committing small passing slices and run pnpm check before every commit.`

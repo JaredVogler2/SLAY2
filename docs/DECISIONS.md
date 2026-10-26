@@ -64,3 +64,57 @@ Original new **Slay the Spire 2**, solo-first, 5-character / 3-act / Ascension A
 
 **Fonts.** Fontsource (OFL-1.1) packages are bundled into the build; no request to Google Fonts is made by visitors.
 
+
+## 2026-10-26 — ADR-019: facts-only card catalog (`packages/game-data`)
+
+**Context.** The advisor, reward pools and card picker need card identity, class, rarity, cost and type. The only complete source for v0.107.1 is the pinned local decompilation (E1) cross-checked against spire-archive's extracted data, both rights-restricted (ADR-011).
+
+**Decision.** The catalog is derived by `python -m slay2_sim catalog`; for each card it keeps **only** the canonical id, display name, class, rarity, energy cost, card type, whether it is reward-eligible, and SLAY2's own role tags written by us. **No card text, flavour text or descriptions.** The output (577 cards, sha256 `6717e3d5d311…`) is committed with provenance flags; `docs/game/CATALOG-CROSSCHECK.md` records the cross-check, including the disagreements. Solo reward pools are 20/35/25 cards per class by rarity (Q3 closed); epoch-gated cards reduce the pool for new profiles and the API says so.
+
+**Alternatives rejected.** Mirroring a third-party card database (rights, ADR-011); hand-typing cards (error-prone); fetching a public API at request time (availability, terms, and the site must work offline).
+
+**Rollback.** Delete the catalog and fall back to ids typed by the user; the odds engines do not depend on it (they take counts).
+
+## 2026-10-26 — ADR-020: the card advisor is a labelled heuristic (v0), never a probability
+
+**Context.** No fair-information policy has won a simulated game yet (0 wins in 2,499 completed veteran-profile games), so there is no outcome evidence to calibrate card values against.
+
+**Decision.** `evaluateDraft()` ranks the offered cards and skip by the change in a **unit-less deck-quality index** (average card quality with dilution, act-dependent role coverage with diminishing returns, energy curve, deck size, strength × multi-hit synergy). The output contains legal actions only, a reason list per option, the **stability** of the top choice under ±40 % jitter of its own weights, warnings, assumptions and an explicit not-modelled list. It refuses the beta build, unknown ids and duplicates. The UI and API call it "heuristic v0, not calibrated"; `/methods` lists "advisor win delta" under *not yet evaluated*. The catalog prior is rarity-banded with a capped adjustment (an unbounded version scored one rare 95).
+
+**Alternatives rejected.** Presenting a win-probability delta (no evidence); copying a tier list (rights and staleness); an LLM judgement (not reproducible, not testable).
+
+**Evidence.** 13 decision tests (contract, legality, determinism, behaviour, validation, 120 random requests); e2e shows a curse is never recommended over skipping.
+
+**Rollback / upgrade path.** Replace the index with a simulator-calibrated value (card-probing harness, phase 05) only after a paired comparison on held-out seeds shows an effect; keep v0 as the champion until then.
+
+## 2026-10-26 — ADR-021: web state is local-first
+
+**Decision.** The player's run lives in `localStorage` (key `slay2.run.v1`) as `RunState` v1, validated by a strict zod schema on every load and import; imports are capped at 256 KB; undo/redo is session-only (50 steps); export is plain JSON. There are no accounts, cookies, analytics or server persistence, and the pages issue no client `fetch` (checked by search). The HTTP API is stateless and exists for tools, tests and a future companion. Blocked storage degrades to in-memory state with a visible notice.
+
+**Alternatives rejected.** Server-side accounts and a database (privacy, abuse, and legal surface for a fan site); IndexedDB (no need at this size); sync across devices (a later, opt-in feature that would need its own threat model).
+
+**Consequence.** Support requests cannot be debugged from server data; `/about` says so, and export/import is the supported way to move a run.
+
+## 2026-10-26 — ADR-022: nothing measured is typed by hand on the website
+
+**Context.** A review found that `/methods` stated "about 18× slower" and "16.0 vs 18.3 mean floor on the same seeds" in prose. The data say **19.7×**, and the 18.3 was the mean over 300 games while the search batch covered the first 200 of the same seeds (**18.41 vs 16.04** on the 200 shared seeds).
+
+**Decision.** (1) Rules, batches, comparisons and gaps reach the site only through `scripts/export-site-data.mjs`, and a test fails when the generated JSON is stale. (2) A paired comparison is a first-class committed artifact (`experiments/comparisons/*.json`, written by `slay2_sim compare --out`) with the content hashes of both batches; the exporter **throws** if either batch changed afterwards (tested by tampering with a copy). (3) Sentences about results are generated from those artifacts (`comparisonSentence`), including the verdict rule: a side is "higher" only if the whole 95 % bootstrap interval excludes zero. (4) Headline claims such as "no policy has won" are computed (`totals()`), so they flip automatically when a win appears.
+
+**Alternatives rejected.** Reviewing prose by eye (this is how the error got in); a CMS (no editorial need).
+
+## 2026-10-26 — ADR-023: interim Content Security Policy
+
+**Context.** Pages are statically generated. Next.js applies nonces only during dynamic rendering, so a nonce-based `script-src` would turn every page into a per-request render and give up the CDN cache. The inlined hydration payload needs either a nonce or `'unsafe-inline'`.
+
+**Decision.** Ship now: `default-src 'self'`, `script-src 'self' 'unsafe-inline'` (plus `'unsafe-eval'` and websockets in `next dev` only), `style-src 'self' 'unsafe-inline'`, `img-src 'self' data: blob:`, `font-src 'self'` (fonts are bundled), `connect-src 'self'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'none'`; plus `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `Cross-Origin-Opener-Policy: same-origin`, a restrictive `Permissions-Policy` and `Strict-Transport-Security: max-age=31536000` (no `includeSubDomains`/`preload`; that is the domain owner's commitment). The interim policy is acceptable **because** the site renders no user-supplied HTML: there is no `innerHTML` sink, imports pass a strict schema, and an e2e test loads every page under the policy and fails on any violation.
+
+**Tighten when:** any feature renders untrusted markup, a companion/bridge page is added, or monetization is considered. Then move HTML routes to dynamic rendering with a proxy-issued nonce (`strict-dynamic`) and drop `'unsafe-inline'` for scripts.
+
+## 2026-10-26 — ADR-024: known simulator gaps are data that travel with every result
+
+**Context.** The third-party simulator never enters the A10 Double Boss, scales three monsters' HP incorrectly at A8, crashes on `is_sovereign_blade(None)`, uses an older RNG family, and has no live-game parity. A win rate that omits these would be read as a statement about the real game.
+
+**Decision.** `sim/slay2_sim/gaps.json` is the single source of truth (read by the harness and by the website exporter). Every batch manifest records the gaps that apply to its configuration (ascension thresholds); `/methods` prints them beside the results; the A10 Double Boss gap has a **strict xfail** test, so fixing the simulator (or our harness) turns the test red until the gap record is removed deliberately.
+
+**Consequence.** Results from ascension 10 from this simulator cannot be described as Double Boss results.
