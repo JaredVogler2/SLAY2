@@ -20,5 +20,6 @@ def make_policy(name: str, **params) -> Policy:
 
 
 from . import rules  # noqa: E402,F401  (registers rules_v1)
+from . import explore  # noqa: E402,F401  (registers rules_explore: rules_v1 with randomised card rewards, for measurement)
 from . import search  # noqa: E402,F401  (registers search_v1)
 from . import ppo_combat  # noqa: E402,F401  (registers ppo_combat_v1; torch is imported lazily)

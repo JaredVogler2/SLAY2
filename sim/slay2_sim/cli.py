@@ -283,10 +283,24 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+# Arguments that name files or directories. Every one is relative to the *user's* working directory, but
+# `external.activate()` changes into the simulator checkout, so they are made absolute before anything runs
+# (a relative `--out` used to land inside the third-party checkout).
+PATH_ARGS = ("out", "seeds", "coverage_out", "batch", "a", "b")
+
+
+def absolutize_paths(args: argparse.Namespace) -> argparse.Namespace:
+    for name in PATH_ARGS:
+        value = getattr(args, name, None)
+        if isinstance(value, str) and value:
+            if name == "seeds" and args.cmd not in {"run", "smoke"}:
+                continue  # `--seeds` is a count or a path only for the batch commands
+            setattr(args, name, str(Path(value).resolve()))
+    return args
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    if args.cmd in {"run", "smoke"} and args.cmd == "run" and args.n is None:
-        pass  # run all seeds of the partition
+    args = absolutize_paths(build_parser().parse_args(argv))
     return int(args.fn(args) or 0)
 
 
