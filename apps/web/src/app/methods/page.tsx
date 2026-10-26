@@ -372,10 +372,10 @@ export default function MethodsPage() {
             <ul className="mt-2 list-disc space-y-1.5 pl-5">
               {randomPolicy && rulesPolicy ? (
                 <li>
-                  Mean floor rises from {randomPolicy.meanFloor.toFixed(1)} (random legal moves,{" "}
-                  {randomPolicy.completed} games) to {rulesPolicy.meanFloor.toFixed(1)}{" "}
-                  (hand-written rules, {rulesPolicy.completed} games), so the harness does measure
-                  skill.
+                  For {rulesPolicy.character}, mean floor rises from{" "}
+                  {randomPolicy.meanFloor.toFixed(1)} (random legal moves, {randomPolicy.completed}{" "}
+                  games) to {rulesPolicy.meanFloor.toFixed(1)} (hand-written rules,{" "}
+                  {rulesPolicy.completed} games), so the harness does measure skill.
                 </li>
               ) : null}
               {comparisons.map((c) => (

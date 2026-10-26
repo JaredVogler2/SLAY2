@@ -140,6 +140,24 @@ describe("comparison wording is derived from the data", () => {
     }
   });
 
+  it("never mixes classes: a headline report belongs to the class that was asked for", () => {
+    for (const policy of ["random_legal", "rules_v1", "rules_v2"]) {
+      for (const character of ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect"]) {
+        const r = largestReport(policy, character);
+        if (r) {
+          expect(r.character, `${policy} ${character}`).toBe(character);
+        }
+      }
+    }
+    // Silent's largest held-out rules_v1 batch has more completed games than Ironclad's; it must not win the default
+    expect(largestReport("rules_v1", "Silent")?.completed).toBeGreaterThan(
+      largestReport("rules_v1")?.completed ?? Number.POSITIVE_INFINITY,
+    );
+    expect(largestReport("rules_v1")?.character).toBe("Ironclad");
+    // nothing was played by this policy as this class
+    expect(largestReport("random_legal", "Silent")).toBeUndefined();
+  });
+
   it("formats exact p-values without printing a misleading zero", () => {
     expect(formatP(0.0173)).toBe("p = 0.017");
     expect(formatP(8.13e-261)).toBe("p = 8.1e-261");
@@ -149,8 +167,18 @@ describe("comparison wording is derived from the data", () => {
   it("headline reports are the held-out batches, even when a development batch is as large", () => {
     const rules = largestReport("rules_v1");
     const random = largestReport("random_legal");
-    expect(rules).toMatchObject({ partition: "val", role: "held-out", completed: 1997 });
-    expect(random).toMatchObject({ partition: "val", role: "held-out", completed: 2000 });
+    expect(rules).toMatchObject({
+      character: "Ironclad",
+      partition: "val",
+      role: "held-out",
+      completed: 1997,
+    });
+    expect(random).toMatchObject({
+      character: "Ironclad",
+      partition: "val",
+      role: "held-out",
+      completed: 2000,
+    });
     // the 300-game development batch of rules_v1 and the 2,000-game development ladder still exist in the ledger
     expect(evidence.reports.some((r) => r.policy === "rules_v1" && r.partition === "train")).toBe(
       true,

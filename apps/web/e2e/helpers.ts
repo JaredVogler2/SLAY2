@@ -40,6 +40,45 @@ export function measuredSets(): readonly MeasuredSetInfo[] {
   }));
 }
 
+/**
+ * The display names of a class's best-measured cards that the advisor can offer (cards of the class's own pool, eligible as a
+ * card reward), best first. Read from the same generated file and the same catalog the pages are built from.
+ */
+export function bestMeasuredCardNames(character: string, n: number): string[] {
+  const catalogFile = join(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "packages",
+    "game-data",
+    "data",
+    "cards.sts2-main-0.107.1.json",
+  );
+  const catalog = (
+    JSON.parse(readFileSync(catalogFile, "utf8")) as {
+      cards: { id: string; name: string; class: string; rewardEligible: boolean }[];
+    }
+  ).cards;
+  const byId = new Map(catalog.map((c) => [c.id, c]));
+  const valuesFile = join(__dirname, "..", "src", "content", "cardvalues.generated.json");
+  const data = JSON.parse(readFileSync(valuesFile, "utf8")) as {
+    sets: { character: string; cards: { id: string }[] }[];
+  };
+  const set = data.sets.find((x) => x.character === character);
+  if (!set) {
+    throw new Error(`expected shipped card values for ${character}`);
+  }
+  const names: string[] = [];
+  for (const c of set.cards) {
+    const entry = byId.get(c.id);
+    if (entry?.class === character && entry.rewardEligible) {
+      names.push(entry.name);
+    }
+  }
+  return names.slice(0, n);
+}
+
 /** One class's shipped set; the test fails loudly when the class is missing instead of passing on `undefined`. */
 export function requireMeasuredSet(character: string): MeasuredSetInfo {
   const set = measuredSets().find((s) => s.character === character);

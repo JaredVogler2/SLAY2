@@ -56,10 +56,14 @@ export function pct(x: number, digits = 2): string {
   return `${(x * 100).toFixed(digits)}%`;
 }
 
-/** The largest veteran-profile batch of a policy: the best estimate we have for it. */
-/** The headline report of a policy: the largest *held-out* batch if one exists (a development batch never outranks it). */
-export function largestReport(policy: string): EvidenceReport | undefined {
-  const mine = evidence.reports.filter((r) => r.policy === policy && r.profile === "veteran");
+/**
+ * The headline report of a policy for one class: the largest *held-out* veteran-profile batch if one exists (a development
+ * batch never outranks it). Classes are never mixed: what a policy does as Silent says nothing about it as Ironclad.
+ */
+export function largestReport(policy: string, character = "Ironclad"): EvidenceReport | undefined {
+  const mine = evidence.reports.filter(
+    (r) => r.policy === policy && r.profile === "veteran" && r.character === character,
+  );
   const heldOut = mine.filter((r) => r.role === "held-out");
   return [...(heldOut.length > 0 ? heldOut : mine)].sort((x, y) => y.completed - x.completed)[0];
 }
