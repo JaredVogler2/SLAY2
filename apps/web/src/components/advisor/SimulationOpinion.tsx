@@ -7,7 +7,8 @@ import { MeasuredValue } from "@/components/codex/MeasuredValue";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
-import { measuredValue } from "@/lib/cardvalues";
+import { CLASS_STYLE } from "@/lib/card-style";
+import { measuredValue, setFor } from "@/lib/cardvalues";
 import type { RunState } from "@/lib/run-state";
 import { simulationPick } from "@/lib/simulation-pick";
 
@@ -33,6 +34,9 @@ export function SimulationOpinion({
 }) {
   const deckSize = run.deck.reduce((n, d) => n + d.count, 0);
   const pick = simulationPick({ character: run.character ?? "", offered, deckSize });
+  const set = setFor(run.character ?? "");
+  const label = run.character ? CLASS_STYLE[run.character].label : "this class";
+  const test = set?.validation ?? null;
   const sim: DraftAction | null =
     pick.kind === "pick"
       ? { kind: "pick", cardId: pick.cardId }
@@ -104,22 +108,35 @@ export function SimulationOpinion({
       <div className="mt-4">
         <Disclosure summary="How to read this, and what it is not">
           <ul className="list-disc space-y-1.5 pl-5">
-            <li>
-              The numbers come from thousands of simulated Ironclad runs whose card choices were
-              partly random; a value is the change in the log-odds of getting past the Act-1 boss
-              from one more copy, with the 95% interval from resampling whole games.
-            </li>
-            <li>
-              The rule shown is the one a simulated pilot followed when it was tested against the
-              hand-written ratings (+22 percentage points past the Act-1 boss, same seeds; see{" "}
-              <Link
-                className="text-teal underline decoration-dotted underline-offset-4"
-                href="/methods#card-values"
-              >
-                Evidence &amp; methods
-              </Link>
-              ).
-            </li>
+            {set ? (
+              <li>
+                The numbers come from {set.bossFights.toLocaleString("en-US")} simulated {label}{" "}
+                runs that reached the Act-1 boss, whose card choices were partly random; a value is
+                the change in the log-odds of getting past the Act-1 boss from one more copy, with
+                the 95% interval from resampling whole games.
+              </li>
+            ) : (
+              <li>
+                No simulated runs of this class have been measured yet, so there are no values to
+                read here.
+              </li>
+            )}
+            {set ? (
+              <li>
+                {test === null
+                  ? `The ${label} values have not been tested against play yet, so no rule is offered (see `
+                  : test.passed
+                    ? `The rule shown is the one a simulated pilot followed when it was tested against the hand-written ratings (+${((test.passRate - test.passRateBase) * 100).toFixed(0)} percentage points past the Act-1 boss on ${test.pairedGames.toLocaleString("en-US")} held-out seeds, the same seeds for both; see `
+                    : `The ${label} values did not beat the hand-written ratings in the held-out test (${(test.passRate * 100).toFixed(1)}% against ${(test.passRateBase * 100).toFixed(1)}% past the Act-1 boss), so no rule is offered (see `}
+                <Link
+                  className="text-teal underline decoration-dotted underline-offset-4"
+                  href="/methods#card-values"
+                >
+                  Evidence &amp; methods
+                </Link>
+                ).
+              </li>
+            ) : null}
             <li>
               The simulator has not been compared with the live game, the pilot plays the cards its
               own way, synergies are not modelled, and your HP, relics and deck matter more than a

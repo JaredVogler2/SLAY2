@@ -2,7 +2,12 @@ import { readFile } from "node:fs/promises";
 
 import { expect, test, type Page } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, measuredSets } from "./helpers";
+import {
+  expectNoHorizontalOverflow,
+  expectNoSeriousA11yViolations,
+  measuredSets,
+  requireMeasuredSet,
+} from "./helpers";
 
 async function addOffered(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: /offered card/i });
@@ -165,6 +170,18 @@ test.describe("advisor journey", () => {
     // the heuristic's own call is still the headline and still says what it is
     await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
     await expect(page.getByText("Heuristic v0").first()).toBeVisible();
+
+    // what the disclosure says about the numbers is this class's own, read from the data
+    const ironclad = requireMeasuredSet("ironclad");
+    expect(ironclad.validation?.passed).toBe(true);
+    const test = ironclad.validation;
+    await panel.getByText("How to read this, and what it is not").click();
+    await expect(panel).toContainText(
+      `${ironclad.bossFights.toLocaleString("en-US")} simulated Ironclad runs that reached the Act-1 boss`,
+    );
+    await expect(panel).toContainText(
+      `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(0)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} held-out seeds`,
+    );
   });
 
   // The panel speaks only for a class whose held-out test passed. Which classes those are is a fact about the shipped data
@@ -186,6 +203,11 @@ test.describe("advisor journey", () => {
       : set.validation === null
         ? /not been tested/
         : /did not beat/;
+    const note = !set
+      ? "No simulated runs of this class have been measured yet"
+      : set.validation === null
+        ? `The ${label} values have not been tested against play yet`
+        : `The ${label} values did not beat the hand-written ratings`;
     test(`${label}: says plainly why the simulated runs give no opinion`, async ({ page }) => {
       await startClass(page, label);
       await addOffered(page, card);
@@ -194,6 +216,8 @@ test.describe("advisor journey", () => {
       await expect(panel).toContainText("no measurement for this offer");
       await expect(panel).toContainText(why);
       await expect(panel).not.toContainText(/would take|would skip/);
+      await panel.getByText("How to read this, and what it is not").click();
+      await expect(panel).toContainText(note);
     });
   }
 

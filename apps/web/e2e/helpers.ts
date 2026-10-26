@@ -8,8 +8,15 @@ export interface MeasuredSetInfo {
   readonly character: string;
   /** the label the pages print for the class */
   readonly label: string;
+  /** simulated runs of this class that reached the Act-1 boss */
+  readonly bossFights: number;
   /** the held-out test of acting on the class's values, when it has been run */
-  readonly validation: { readonly passed: boolean } | null;
+  readonly validation: {
+    readonly passed: boolean;
+    readonly passRate: number;
+    readonly passRateBase: number;
+    readonly pairedGames: number;
+  } | null;
 }
 
 /**
@@ -19,13 +26,27 @@ export interface MeasuredSetInfo {
 export function measuredSets(): readonly MeasuredSetInfo[] {
   const file = join(__dirname, "..", "src", "content", "cardvalues.generated.json");
   const data = JSON.parse(readFileSync(file, "utf8")) as {
-    sets: { character: string; validation: { passed: boolean } | null }[];
+    sets: {
+      character: string;
+      bossFights: number;
+      validation: MeasuredSetInfo["validation"];
+    }[];
   };
   return data.sets.map((s) => ({
     character: s.character,
     label: s.character.charAt(0).toUpperCase() + s.character.slice(1),
+    bossFights: s.bossFights,
     validation: s.validation,
   }));
+}
+
+/** One class's shipped set; the test fails loudly when the class is missing instead of passing on `undefined`. */
+export function requireMeasuredSet(character: string): MeasuredSetInfo {
+  const set = measuredSets().find((s) => s.character === character);
+  if (!set) {
+    throw new Error(`expected shipped card values for ${character}`);
+  }
+  return set;
 }
 
 /** Fails the test on serious/critical axe violations (WCAG 2.2 A/AA tags). */
