@@ -30,9 +30,15 @@ class RunConfig:
     wall_seconds: float = 900.0     # hard wall-clock cap per episode (SIGALRM)
     start_with_neow: bool = True    # the real game always opens with the Ancient event (hazard 4)
     profile: str = "veteran"        # "veteran" (no tutorial scripting) | "first_run" (simulator default: scripted early content)
+    # A harness variant, never the simulator's own behaviour and off in every batch written before G11 was recorded: the
+    # game opens each act with an Ancient event that first heals the player (the simulator starts acts 2 and 3 on the map).
+    ancient_heal: bool = False
 
     def describe(self) -> dict:
-        return dict(self.__dict__)
+        d = dict(self.__dict__)
+        if not d["ancient_heal"]:
+            del d["ancient_heal"]  # the fingerprint of every earlier batch stays what it was
+        return d
 
 
 # A veteran profile = "not the profile's first-ever run" and "some epochs unlocked". In the simulator this only
@@ -57,6 +63,37 @@ def _veteran_run_state_cls():
     return _VET_CLS
 
 
+def ancient_heal_amount(missing_hp: int, ascension: int) -> int:
+    """Hit points the Ancient event restores before it offers anything (E1 ``AncientEventModel.BeforeEventStarted``).
+
+    All the missing hit points, and 80 % of them from Ascension 2 (Weary Traveler). The game adds the decimal product to
+    the current HP and truncates, so the amount is the integer part of ``0.8 * missing``.
+    """
+    if missing_hp <= 0:
+        return 0
+    return missing_hp if ascension < 2 else (missing_hp * 4) // 5
+
+
+_HEAL_MANAGER_CLS = None
+
+
+def _ancient_heal_manager_cls():
+    """A manager that heals as the Ancient event does when an act begins (a method, not a closure: ``clone_manager`` keeps the class)."""
+    global _HEAL_MANAGER_CLS
+    if _HEAL_MANAGER_CLS is None:
+        import sts2_env.run.run_manager as rm
+
+        class AncientHealRunManager(rm.RunManager):
+            def _transition_next_act(self) -> None:
+                super()._transition_next_act()
+                if not self.is_over:  # the transition after the last act is the victory, not a new act
+                    player = self.run_state.player
+                    player.heal(ancient_heal_amount(player.max_hp - player.current_hp, self.run_state.ascension_level))
+
+        _HEAL_MANAGER_CLS = AncientHealRunManager
+    return _HEAL_MANAGER_CLS
+
+
 def new_run(cfg: "RunConfig", seed: int):
     """Construct a run for ``cfg`` (profile applied before the opening Ancient event)."""
     if cfg.profile not in PROFILES:
@@ -69,8 +106,9 @@ def new_run(cfg: "RunConfig", seed: int):
     previous = rm.RunState
     if cfg.profile == "veteran":
         rm.RunState = _veteran_run_state_cls()
+    manager_cls = _ancient_heal_manager_cls() if cfg.ancient_heal else rm.RunManager
     try:
-        return rm.RunManager(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
+        return manager_cls(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
     finally:
         rm.RunState = previous
 

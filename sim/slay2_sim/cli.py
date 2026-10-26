@@ -108,9 +108,10 @@ def _batch_common(args, *, default_trace: int) -> int:
     sim = external.locate()
     external.activate(sim.root)
     seeds, seed_info = _resolve_seeds(args)
-    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds)
+    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal)
     params = json.loads(args.policy_params) if args.policy_params else {}
-    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}-{args.partition}-n{len(seeds)}"
+    variant = "-ancientheal" if args.ancient_heal else ""
+    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{args.partition}-n{len(seeds)}"
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
     trace_first = default_trace if args.trace is None else args.trace
     manifest = run_batch(
@@ -124,7 +125,8 @@ def _batch_common(args, *, default_trace: int) -> int:
 def cmd_smoke(args) -> int:
     code = _batch_common(args, default_trace=args.n)
     # replay-verify the traces we just wrote (determinism of simulator + adapter)
-    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}-{args.partition}-n{args.n}"
+    variant = "-ancientheal" if args.ancient_heal else ""
+    batch_id = args.batch_id or f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{args.partition}-n{args.n}"
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
     return max(code, _replay_audit(out_dir, limit=3, character=args.character, ascension=args.ascension, profile=args.profile))
 
@@ -136,7 +138,11 @@ def cmd_run(args) -> int:
 def _replay_audit(out_dir: Path, *, limit: int, character: str, ascension: int, profile: str = "veteran") -> int:
     sim = external.locate()
     external.activate(sim.root)
-    cfg = RunConfig(character=character, ascension=ascension, profile=profile)
+    manifest_path = out_dir / "manifest.json"
+    if manifest_path.exists():  # the batch says how its games were played (a variant such as ancient_heal must be replayed as it was run)
+        cfg = RunConfig(**json.loads(manifest_path.read_text(encoding="utf-8"))["config"])
+    else:
+        cfg = RunConfig(character=character, ascension=ascension, profile=profile)
     bad = 0
     traces = sorted((out_dir / "traces").glob("*.jsonl.gz"))[:limit]
     for t in traces:
@@ -337,6 +343,8 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--ascension", type=int, default=0)
         sp.add_argument("--profile", default="veteran", choices=["veteran", "first_run"],
                         help="veteran: no tutorial scripting (default); first_run: simulator default with scripted early content")
+        sp.add_argument("--ancient-heal", action="store_true",
+                        help="harness variant (gap G11): heal at the start of acts 2 and 3 as the game's Ancient event does; recorded in the manifest")
         sp.add_argument("--seeds", default=str(DEFAULT_SEEDS))
         sp.add_argument("--partition", default="train", choices=list(PARTITIONS))
         sp.add_argument("--allow-sealed", action="store_true", help="required for the sealed test partition (recorded)")
