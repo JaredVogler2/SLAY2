@@ -104,13 +104,13 @@ describe("generated site content", () => {
     expect(report.advisor.synergy_table_sha256).toBe(SYNERGY.sha256);
     expect(synergy.table.cards).toBe(Object.keys(SYNERGY.cards).length);
     const pooled = report.pooled.all_cohorts;
-    expect(synergy.b1?.bossFights).toBe(pooled.rows);
-    expect(synergy.b1?.cohorts.reduce((acc, c) => acc + c.bossFights, 0)).toBe(pooled.rows);
-    expect(synergy.b1?.ratios.needs.toQuality).toBe(pooled.ratios.unmet?.to_quality);
-    expect(synergy.b1?.ratios.scalers.toQuality).toBe(pooled.ratios.scaler?.to_quality);
-    expect(synergy.b1?.ratios.engines.toQuality).toBe(pooled.ratios.engines?.to_quality);
-    expect(synergy.b1?.synergyAdded.mean).toBe(pooled.loss_gaps.synergy_added_to_index?.mean);
+    expect(synergy.b1.bossFights).toBe(pooled.rows);
+    expect(synergy.b1.cohorts.reduce((acc, c) => acc + c.bossFights, 0)).toBe(pooled.rows);
+    expect(synergy.b1.ratios.needs.toQuality).toBe(pooled.ratios.unmet?.to_quality);
+    expect(synergy.b1.ratios.scalers.toQuality).toBe(pooled.ratios.scaler?.to_quality);
+    expect(synergy.b1.ratios.engines.toQuality).toBe(pooled.ratios.engines?.to_quality);
+    expect(synergy.b1.synergyAdded.mean).toBe(pooled.loss_gaps.synergy_added_to_index?.mean);
     // adding the term lowers the held-out error, and the interval says so (the claim the panel makes)
-    expect(synergy.b1?.synergyAdded.ci95[1]).toBeLessThan(0);
+    expect(synergy.b1.synergyAdded.ci95[1]).toBeLessThan(0);
   });
 });
