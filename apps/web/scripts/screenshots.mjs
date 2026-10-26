@@ -23,6 +23,7 @@ const pages = [
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ }).waitFor();
   } },
+  { name: "codex", path: "/codex" },
   { name: "methods", path: "/methods" },
   { name: "about", path: "/about" },
 ];

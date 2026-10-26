@@ -71,6 +71,7 @@ test.describe("navigation", () => {
     for (const [name, heading] of [
       ["Advisor", /Take it, or skip it/i],
       ["Odds", /Exact odds/i],
+      ["Codex", /Card codex/i],
       ["Methods", /ledger/i],
     ] as const) {
       const link = page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name });
