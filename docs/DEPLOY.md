@@ -1,6 +1,6 @@
 # SLAY2 deployment (Vercel)
 
-**Status: VERIFIED for `main` at `453864d` (2026-10-26, about 40 minutes after the merge).** The production deployment `dpl_8EX1qaSiVT9zDQLQ61GHKAo7SBMt` of the merge commit of pull request #2 is **READY**, and **https://slay-part2.vercel.app** (the project's production alias) answers without a login. The evidence is in "Hosted smoke test (2026-10-26)" below. Not verified: performance on the hosted URL (Lighthouse / Web Vitals), and anything about the live game (simulator parity is a separate, unverified item).
+**Status: VERIFIED for `main` at `453864d` (2026-10-26, about 40 minutes after the merge).** The production deployment `dpl_8EX1qaSiVT9zDQLQ61GHKAo7SBMt` of the merge commit of pull request #2 is **READY**, and **https://slay-part2.vercel.app** (the project's production alias) answers without a login. The evidence is in "Hosted smoke test (2026-10-26)" below. Re-checked after pull request #6 was merged (17:31 UTC): at 17:32 UTC `/api/v1/health` reported `1c4542d`, the merge commit, and `/`, `/advisor`, `/methods`, `/routes`, `/odds`, `/about`, `/sitemap.xml` and `/robots.txt` answered 200 anonymously; the browser suite was not re-run against the hosted site. Not verified: performance on the hosted URL (Lighthouse / Web Vitals), and anything about the live game (simulator parity is a separate, unverified item).
 
 ## What happened on the first attempts (read from the Vercel deployment record and build log, 2026-10-26)
 
