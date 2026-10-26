@@ -67,12 +67,14 @@ class PolicyAgent:
         self.policy.reset(seed)
 
     def act(self, env, enc) -> int:
+        from ..isolation import deliberation
         from ..runner import ManagerForwardModel
         from . import features as ft
 
         obs = env.obs
         fm = ManagerForwardModel(env.mgr) if self.policy.needs_forward_model else None
-        idx = self.policy.act(obs, env._raw, fm)
+        with deliberation():  # search on clones must leave no trace in the game being evaluated
+            idx = self.policy.act(obs, env._raw, fm)
         aid = ft.action_id(obs["actions"][idx])
         if aid is None or aid not in env.table:  # outside the fixed layout (rare): fall back to any legal action
             aid = next(iter(env.table))

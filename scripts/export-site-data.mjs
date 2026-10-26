@@ -73,6 +73,9 @@ function parseEvidence() {
       id: m.batch_id,
       policy: m.policy.name,
       policyParams: m.policy.params ?? {},
+      // search on clones used to advance the live game's card-id counter (ADR-035): such batches are valid simulations but
+      // their action traces do not replay; batches written after the fix say so in their manifest
+      preIsolation: m.policy.name.startsWith("search") && m.deliberation_isolated !== true,
       character: m.config.character,
       ascension: m.config.ascension,
       profile: m.config.profile,
@@ -131,6 +134,7 @@ function parseComparisons(reports) {
       floorDifference: c.floorDifference,
       wallTimeRatioBOverA: c.wallTimeRatioBOverA,
       role: c.role,
+      preIsolation: Boolean(byId.get(c.a.batchId)?.preIsolation || byId.get(c.b.batchId)?.preIsolation),
       contentSha256: c.contentSha256,
     });
   }

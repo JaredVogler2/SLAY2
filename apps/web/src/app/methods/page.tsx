@@ -245,6 +245,16 @@ export default function MethodsPage() {
                 <tr key={r.id} className="align-top">
                   <th scope="row" className="py-3 pr-3 font-medium text-parchment">
                     {policyLabel({ policy: r.policy, params: r.policyParams })}
+                    {r.preIsolation ? (
+                      <span className="mt-1 block">
+                        <Badge
+                          tone="unverified"
+                          title="Search on clones advanced the live game's card-id counter when this batch was produced (ADR-035): a valid simulated game, but its action trace does not replay"
+                        >
+                          before isolation fix
+                        </Badge>
+                      </span>
+                    ) : null}
                     <span className="block font-mono text-[0.65rem] font-normal text-dim">
                       {r.id}
                     </span>
@@ -308,6 +318,16 @@ export default function MethodsPage() {
                     <tr key={c.id} className="align-top">
                       <th scope="row" className="py-3 pr-3 font-medium text-parchment">
                         {policyLabel(c.a)} vs {policyLabel(c.b)}
+                        {c.preIsolation ? (
+                          <span className="mt-1 block">
+                            <Badge
+                              tone="unverified"
+                              title="A search batch in this comparison was produced before the isolation fix (ADR-035)"
+                            >
+                              before isolation fix
+                            </Badge>
+                          </span>
+                        ) : null}
                         <span className="block font-mono text-[0.65rem] font-normal text-dim">
                           {c.cohort.character} A{c.cohort.ascension} · {c.cohort.profile} · sha{" "}
                           {c.contentSha256.slice(0, 10)}
