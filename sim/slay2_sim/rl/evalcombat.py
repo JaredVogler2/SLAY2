@@ -114,11 +114,11 @@ def _shard(args: tuple) -> dict:
 
 
 def evaluate(agent_specs: list[str], *, partition: str = "val", seeds: int = 80, repeats: int = 2, workers: int = 4,
-             keep_monster: float = 0.35, env_kwargs: dict | None = None) -> dict[str, list[dict]]:
+             keep_monster: float = 0.35, env_kwargs: dict | None = None, seed_offset: int = 0) -> dict[str, list[dict]]:
     from .. import external
 
     sim = external.locate()
-    all_seeds = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v1.json").read_text())["partitions"][partition][:seeds]
+    all_seeds = json.loads((external.REPO_ROOT / "experiments" / "seeds" / "ironclad-a0-v1.json").read_text())["partitions"][partition][seed_offset:seed_offset + seeds]
     ctx = mp.get_context("spawn")
     loadable = {spec: _absolute(spec) for spec in agent_specs}  # results stay keyed by the spec as typed (no local paths in artifacts)
     jobs = [(str(sim.root), all_seeds[w::workers], keep_monster, w, agent_specs, repeats, env_kwargs or {}, loadable) for w in range(workers)]
@@ -166,11 +166,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--agents", nargs="+", required=True)
     ap.add_argument("--partition", default="val", choices=["train", "val"], help="the sealed test partition is never read here")
     ap.add_argument("--seeds", type=int, default=80)
+    ap.add_argument("--seed-offset", type=int, default=0, help="skip this many seeds of the partition (the PPO monitor uses the first 80 val seeds: use 80 for a fresh, unselected set)")
     ap.add_argument("--repeats", type=int, default=2)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out")
     args = ap.parse_args(argv)
-    res = evaluate(args.agents, partition=args.partition, seeds=args.seeds, repeats=args.repeats, workers=args.workers)
+    res = evaluate(args.agents, partition=args.partition, seeds=args.seeds, repeats=args.repeats, workers=args.workers, seed_offset=args.seed_offset)
     summaries = {s: summarize(r) for s, r in res.items()}
     for spec, summ in summaries.items():
         print(f"\n== {spec}")
@@ -186,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
         import gzip
 
         blob = json.dumps({"agents": specs, "partition": args.partition, "seeds": args.seeds, "repeats": args.repeats,
-                           "workers": args.workers, "summaries": summaries, "paired": pairs, "rows": res}, separators=(",", ":"))
+                           "workers": args.workers, "seed_offset": args.seed_offset, "summaries": summaries, "paired": pairs, "rows": res}, separators=(",", ":"))
         out = Path(args.out)
         if out.suffix == ".gz":
             with gzip.open(out, "wt", encoding="utf-8") as fh:
