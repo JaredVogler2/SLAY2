@@ -1894,6 +1894,104 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2_neow_values-regent-a0-veteran-val-n2000",
+      "policy": "rules_v2_neow_values",
+      "policyParams": {
+        "neow_values": "experiments/neow/neow-values-v2.json",
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1975,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 6,
+        "timeout": 18,
+        "win": 1
+      },
+      "completed": 1976,
+      "winRate": 0.0005060728744939271,
+      "winRateWilson95": [
+        0.00008933987545297977,
+        0.002861128099984623
+      ],
+      "meanFloor": 19.29,
+      "medianFloor": 17,
+      "deathsByAct": {
+        "0": 818,
+        "1": 1130,
+        "2": 28
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 229
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 171
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 165
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 138
+        },
+        {
+          "id": "TUNNELER",
+          "n": 114
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.75,
+      "winsAudit": {
+        "audited": 1,
+        "verified": 1,
+        "seeds": [
+          1315974849
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1976,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "d7107d820e9001cdbfe1086f8ddcd968b3e5b3bf2feddcf20615ce0040e981ff",
+      "episodesGzSha256": "77196f7a224b8c74d80eb568ec89a3b906ddea85101d09d68b6d5d9968756b85",
+      "finished": "2026-10-26T18:20:31+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v2_neow_values-silent-a0-veteran-val-n2000",
       "policy": "rules_v2_neow_values",
       "policyParams": {
