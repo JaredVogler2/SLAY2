@@ -28,7 +28,8 @@ def test_every_golden_case_is_reproduced(index):
     act = case["actIndex"]
     weights = advisor.base_weights(act, case["risk"])
 
-    profile = advisor.profile_deck(deck, act)
+    character = case["character"]
+    profile = advisor.profile_deck(deck, act, character=character)
     want = case["profile"]
     assert profile.size == want["size"]
     assert profile.highCostCount == want["highCostCount"]
@@ -44,12 +45,12 @@ def test_every_golden_case_is_reproduced(index):
         assert close(terms.coverage[group], value), (group, terms.coverage[group], value)
     assert close(advisor.total(terms), wt["total"])
 
-    engines = advisor.engines_of(deck)
-    assert {m: v for m, v in engines.items() if v != 0} .keys() == case["engines"].keys()
+    engines = advisor.engines_of(deck, character=character)
+    assert {m: v for m, v in engines.items() if v != 0}.keys() == case["engines"].keys()
     for mechanic, value in case["engines"].items():
         assert close(engines[mechanic], value), (mechanic, engines[mechanic], value)
 
-    ranking = advisor.rank_options(deck, case["offered"], act, case["risk"])
+    ranking = advisor.rank_options(deck, case["offered"], act, case["risk"], character=character)
     assert [r[0] for r in ranking] == [r[0] for r in case["ranking"]]
     for (_, got), (_, expected) in zip(ranking, case["ranking"]):
         assert close(got, expected)
@@ -94,6 +95,17 @@ def test_skipping_wins_ties_and_is_worth_zero():
 def test_the_synergy_parts_add_up_to_the_synergy_term(index):
     case = cases()[index]
     deck = {card_id: count for card_id, count in case["deck"]}
-    unmet, scaler, engines = advisor.synergy_components(deck, case["actIndex"])
+    unmet, scaler, engines = advisor.synergy_components(deck, case["actIndex"], character=case["character"])
     assert unmet <= 1e-12 and scaler >= -1e-12 and engines >= 0
     assert close(unmet + scaler + engines, case["profile"]["synergy"])
+
+
+def test_a_class_starts_with_what_its_relic_supplies():
+    assert advisor.innate_supply("necrobinder") == {"osty": 3}
+    assert advisor.innate_supply("Necrobinder") == {"osty": 3}
+    assert advisor.innate_supply("ironclad") == {} and advisor.innate_supply(None) == {}
+    bare = advisor.supply_of({"STRIKE_NECROBINDER": 4}, "necrobinder")
+    assert bare["osty"] == 3 and advisor.supply_of({"STRIKE_NECROBINDER": 4})["osty"] == 0
+    # an Osty payoff is not held back in a deck without a single Osty card: the relic summons Osty every combat
+    held = advisor.realized_of("FLATTEN", bare, 0)
+    assert held.fit > 0.5

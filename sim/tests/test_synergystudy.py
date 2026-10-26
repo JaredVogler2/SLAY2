@@ -25,8 +25,9 @@ def test_the_features_are_the_advisors_index_parts():
 
 
 def test_the_weight_a_part_keeps_is_its_slope_relative_to_quality_within_zero_and_one():
-    assert study.calibrated_weight(0.66) == pytest.approx(0.65)
-    assert study.calibrated_weight(0.77) == pytest.approx(0.75)
+    assert study.calibrated_weight(0.66) == 0.65
+    assert study.calibrated_weight(0.77) == 0.75
+    assert study.calibrated_weight(0.965) == 0.95 and study.calibrated_weight(0.71) == 0.7
     assert study.calibrated_weight(-0.01) == 0.0
     assert study.calibrated_weight(-4.0) == 0.0
     assert study.calibrated_weight(2.5) == 1.0  # a part the data value more than the advisor does keeps its judgement

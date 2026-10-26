@@ -155,8 +155,16 @@ def saturation(mechanic: str, supply: float) -> float:
     return 1 - math.exp(-max(0.0, supply) / synergy_table()["mechanics"][mechanic]["k"])
 
 
-def supply_of(deck: Deck) -> dict[str, float]:
+def innate_supply(character: str | None) -> dict[str, float]:
+    """What the class's starting relic supplies in every combat (the Necrobinder's Osty, the Regent's Stars ...); empty for none."""
+    entry = synergy_table()["innate"].get((character or "").lower())
+    return dict(entry["gives"]) if entry else {}
+
+
+def supply_of(deck: Deck, character: str | None = None) -> dict[str, float]:
     supply = {m: 0.0 for m in mechanic_ids()}
+    for mechanic, g in innate_supply(character).items():
+        supply[mechanic] += g
     for card_id, count in deck.items():
         for mechanic, g in synergy_tags(card_id).gives.items():
             if g:
@@ -213,11 +221,11 @@ def realized_of(card_id: str, supply: Mapping[str, float], act_index: int, model
     return Realized(prior, fit, held_back, scaler, prior * (1 - held_back) * (1 + scaler))
 
 
-def realized_split(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL) -> tuple[float, float]:
+def realized_split(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> tuple[float, float]:
     """(rating lost to unmet needs, rating gained from scalers), summed over the deck's copies, in rating points.
 
     realized - prior = -prior x held_back + prior x (1 - held_back) x scaler, so the two parts add up to ``realized_mass``."""
-    supply = supply_of(deck)
+    supply = supply_of(deck, character)
     unmet = scaler = 0.0
     for card_id, count in deck.items():
         r = realized_of(card_id, supply, act_index, model)
@@ -226,8 +234,8 @@ def realized_split(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL) -> 
     return unmet, scaler
 
 
-def realized_mass(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL) -> float:
-    unmet, scaler = realized_split(deck, act_index, model)
+def realized_mass(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> float:
+    unmet, scaler = realized_split(deck, act_index, model, character)
     return unmet + scaler
 
 
@@ -235,20 +243,20 @@ def engine_value(mechanic: str, supply: float, payoff: float, model: Model = DEF
     return model.engines * synergy_table()["mechanics"][mechanic]["engine"] * saturation(mechanic, supply) * (1 - math.exp(-max(0.0, payoff) / ENGINE_PAYOFF_SCALE))
 
 
-def engines_of(deck: Deck, model: Model = DEFAULT_MODEL) -> dict[str, float]:
-    supply, payoff = supply_of(deck), payoff_mass_of(deck)
+def engines_of(deck: Deck, model: Model = DEFAULT_MODEL, character: str | None = None) -> dict[str, float]:
+    supply, payoff = supply_of(deck, character), payoff_mass_of(deck)
     return {m: engine_value(m, supply[m], payoff[m], model) for m in mechanic_ids()}
 
 
-def synergy_components(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL) -> tuple[float, float, float]:
+def synergy_components(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> tuple[float, float, float]:
     """The deck's synergy in index points as its three parts: (unmet needs, scalers, engines). Unmet needs are 0 or negative."""
-    unmet, scaler = realized_split(deck, act_index, model)
-    engines = engines_of(deck, model)
+    unmet, scaler = realized_split(deck, act_index, model, character)
+    engines = engines_of(deck, model, character)
     return unmet / SYNERGY_CARDS, scaler / SYNERGY_CARDS, sum(engines[m] for m in mechanic_ids())
 
 
-def synergy_of(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL) -> float:
-    return realized_mass(deck, act_index, model) / SYNERGY_CARDS + sum(engines_of(deck, model).values())
+def synergy_of(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> float:
+    return realized_mass(deck, act_index, model, character) / SYNERGY_CARDS + sum(engines_of(deck, model, character).values())
 
 
 # -------------------------------------------------------------------------------------------------------- profile
@@ -271,7 +279,7 @@ class Profile:
     synergy: float
 
 
-def profile_deck(deck: Deck, act_index: int = 0, model: Model = DEFAULT_MODEL) -> Profile:
+def profile_deck(deck: Deck, act_index: int = 0, model: Model = DEFAULT_MODEL, character: str | None = None) -> Profile:
     size = prior_sum = playable = high_cost = starters = 0
     cost_sum = 0.0
     groups = {g: 0 for g in GROUPS}
@@ -303,7 +311,7 @@ def profile_deck(deck: Deck, act_index: int = 0, model: Model = DEFAULT_MODEL) -
         highCostCount=high_cost,
         starterShare=0.0 if size == 0 else starters / size,
         groups=groups,
-        synergy=synergy_of(deck, act_index, model),
+        synergy=synergy_of(deck, act_index, model, character),
     )
 
 
@@ -374,15 +382,21 @@ def with_card(deck: Deck, card_id: str) -> dict[str, int]:
 
 
 def rank_options(
-    deck: Deck, offered: Sequence[str], act_index: int = 0, risk: str = "balanced", weights: Weights | None = None, model: Model = DEFAULT_MODEL
+    deck: Deck,
+    offered: Sequence[str],
+    act_index: int = 0,
+    risk: str = "balanced",
+    weights: Weights | None = None,
+    model: Model = DEFAULT_MODEL,
+    character: str | None = None,
 ) -> list[tuple[str, float]]:
     """The offered cards and skipping, best first, each with the change in the deck index its pick makes.
 
     Skipping is worth 0 by definition and wins ties (it is sorted before a pick of equal value), as on the website.
     """
     w = weights or base_weights(act_index, risk)
-    base_total = total(score_terms(profile_deck(deck, act_index, model), w))
-    scored = [(card_id, total(score_terms(profile_deck(with_card(deck, card_id), act_index, model), w)) - base_total) for card_id in offered]
+    base_total = total(score_terms(profile_deck(deck, act_index, model, character), w))
+    scored = [(card_id, total(score_terms(profile_deck(with_card(deck, card_id), act_index, model, character), w)) - base_total) for card_id in offered]
     scored.append((SKIP, 0.0))
     return sorted(scored, key=lambda s: (-s[1], 0 if s[0] == SKIP else 1))
 

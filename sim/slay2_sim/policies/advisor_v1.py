@@ -61,7 +61,8 @@ class AdvisorCards:
                 by_card.setdefault(card, a["idx"])
         act = min(max(int(run["act"]), 0), 2)
         weights = advisor.base_weights(act, self.risk, self.synergy)
-        best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model)[0]
+        character = str(run.get("character") or "").lower() or None
+        best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model, character)[0]
         self.offers += 1
         skip = _first(actions, "skip")
         if best == advisor.SKIP or gain < self.margin or sum(deck.values()) >= self.tune["max_deck"]:

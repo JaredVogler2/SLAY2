@@ -63,12 +63,12 @@ COHORTS = (
 
 
 # ------------------------------------------------------------------------------------------------------------ data
-def deck_features(deck_counts: dict[str, int], act_index: int = ACT_INDEX) -> dict[str, float]:
-    """The advisor's index parts for one deck (balanced risk), in index points."""
+def deck_features(deck_counts: dict[str, int], character: str | None = None, act_index: int = ACT_INDEX) -> dict[str, float]:
+    """The advisor's index parts for one deck of a class (balanced risk), in index points."""
     deck = advisor.deck_from_ids([card for card, n in deck_counts.items() for _ in range(n)])
-    profile = advisor.profile_deck(deck, act_index)
+    profile = advisor.profile_deck(deck, act_index, character=character)
     terms = advisor.score_terms(profile, advisor.base_weights(act_index, "balanced"))
-    unmet, scaler, engines = advisor.synergy_components(deck, act_index)
+    unmet, scaler, engines = advisor.synergy_components(deck, act_index, character=character)
     return {
         "quality": terms.quality,
         "coverage": sum(terms.coverage.values()),
@@ -133,7 +133,7 @@ def build_table(cohorts: tuple[Cohort, ...] = COHORTS) -> tuple[Table, list[dict
     for c in cohorts:
         records, meta = load_cohort(c)
         X0, _ = controls(records)
-        F = np.array([[deck_features(r["deck"])[f] for f in FEATURES] for r in records])
+        F = np.array([[deck_features(r["deck"], c.character.lower())[f] for f in FEATURES] for r in records])
         blocks.append((X0, F, np.array([r["passed"] for r in records], dtype=float), np.array([r["seed"] for r in records], dtype=np.int64)))
         metas.append(meta)
     width = sum(b[0].shape[1] for b in blocks)
@@ -258,7 +258,7 @@ def beyond_additive_card_values(draws: int, seed: int, cohort_set: tuple[Cohort,
     for cohort in cohort_set:
         records, _ = load_cohort(cohort)
         X, y, g, _, penalised = cardvalue.design(records, cardvalue.vocabulary(records))
-        parts = np.array([[deck_features(r["deck"])[f] for f in ("unmet", "scaler", "engines")] for r in records])
+        parts = np.array([[deck_features(r["deck"], cohort.character.lower())[f] for f in ("unmet", "scaler", "engines")] for r in records])
         l2 = min(L2_GRID, key=lambda v: _cv_losses(X, y, g, penalised, v).mean())
         loss_a = _cv_losses(X, y, g, penalised, l2)
         loss_b = _cv_losses(np.column_stack([X, parts]), y, g, np.concatenate([penalised, np.zeros(3, dtype=bool)]), l2)
@@ -278,7 +278,7 @@ def beyond_additive_card_values(draws: int, seed: int, cohort_set: tuple[Cohort,
 def calibrated_weight(ratio: float) -> float:
     """The weight a synergy part keeps: its slope relative to the average card rating, in steps of 0.05 and no larger than the
     hand-set 1 (a part the data value less than the advisor does is scaled down; one they value more is left at its judgement)."""
-    return round(min(1.0, max(0.0, ratio)) / 0.05) * 0.05
+    return round(round(min(1.0, max(0.0, ratio)) / 0.05) * 0.05, 2)
 
 
 def build_report(draws: int = 200, seed: int = 0, cohort_set: tuple[Cohort, ...] = COHORTS) -> dict:
