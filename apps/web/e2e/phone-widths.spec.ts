@@ -115,3 +115,28 @@ test.describe("tablet and small laptop widths", () => {
     });
   }
 });
+
+/**
+ * Every class, at the widths where the five class cards or chips are laid out differently. "Necrobinder" is the longest
+ * name, and its "selected" label was cut off on every laptop and desktop (1280 and 1440 px), which no test saw because the
+ * suite only ever selected Ironclad.
+ */
+test.describe("every class selected", () => {
+  test.skip(({ isMobile }) => !isMobile, "the sweep sets its own widths: one project is enough");
+
+  for (const width of [360, 768, 1024, 1280, 1440]) {
+    test.describe(`${String(width)} px`, () => {
+      test.use({ viewport: { width, height: 900 } });
+
+      for (const name of ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect"]) {
+        test(`the advisor with ${name} selected cuts nothing off`, async ({ page }) => {
+          await page.goto("/advisor", { waitUntil: "networkidle" });
+          await page.locator("label").filter({ hasText: name }).first().click();
+          await expect(page.getByRole("heading", { name: "Your run" })).toBeVisible();
+          expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
+          await expectNoClippedText(page);
+        });
+      }
+    });
+  }
+});
