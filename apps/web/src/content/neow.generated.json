@@ -1,0 +1,485 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/neow/neow-values-v1.json + experiments/neow/pooled-neow-values-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
+  "values": {
+    "file": "experiments/neow/neow-values-v1.json",
+    "sha256": "a0fc7103121ac4e181910468861528402e1189ff90f57b243dde72ed84572565",
+    "outcome": "the run gets past the Act-1 boss",
+    "ascension": 0,
+    "profile": "veteran",
+    "games": 14928,
+    "excludedGames": 72,
+    "passRate": 0.5569,
+    "classes": [
+      {
+        "character": "ironclad",
+        "games": 2986,
+        "passRate": 0.64,
+        "baselineLogOdds": 0.5934
+      },
+      {
+        "character": "silent",
+        "games": 2999,
+        "passRate": 0.3621,
+        "baselineLogOdds": -0.5644
+      },
+      {
+        "character": "regent",
+        "games": 2969,
+        "passRate": 0.5147,
+        "baselineLogOdds": 0.0698
+      },
+      {
+        "character": "necrobinder",
+        "games": 2994,
+        "passRate": 0.3741,
+        "baselineLogOdds": -0.5122
+      },
+      {
+        "character": "defect",
+        "games": 2980,
+        "passRate": 0.8953,
+        "baselineLogOdds": 2.1764
+      }
+    ],
+    "model": {
+      "l2": 10,
+      "folds": 5,
+      "bootstrapDraws": 200,
+      "minTaken": 30,
+      "cvLogLoss": 0.5944575927286498,
+      "cvAuc": 0.7306362581387928,
+      "baselineLogLoss": 0.5998551144317992
+    },
+    "batches": [
+      {
+        "id": "explore-neow-ironclad-a0-train-n3000",
+        "contentSha256": "0385759aa3d16e407cf5db2481e67fbc76e839facb5ab23bf420f00965496efd"
+      },
+      {
+        "id": "explore-neow-silent-a0-train-n3000",
+        "contentSha256": "a1babc29460266bfb364a5d855e969bd4f57ea5bd37306cfc271077c521906d4"
+      },
+      {
+        "id": "explore-neow-regent-a0-train-n3000",
+        "contentSha256": "5fbab717b41a3681409937e8d7c669aab09fa9367a14fb57871f53228086dde1"
+      },
+      {
+        "id": "explore-neow-necrobinder-a0-train-n3000",
+        "contentSha256": "2403a21b7cb6cbf1d34b308cc0eaa35c130d0a9fa39e3a3cf3039cd1c47747af"
+      },
+      {
+        "id": "explore-neow-defect-a0-train-n3000",
+        "contentSha256": "406d2d13e91cb055b5031e530811795afd5ac65cfd35e15ecd201677a993f973"
+      }
+    ],
+    "relics": [
+      {
+        "label": "Silver Crucible",
+        "kind": "cursed",
+        "beta": 0.8109,
+        "ci95": [
+          0.6388,
+          0.9732
+        ],
+        "taken": 530,
+        "offered": 1820,
+        "passRateTaken": 0.734,
+        "passRateOfferedNotTaken": 0.5643,
+        "excluded": 5,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Silken Tress",
+        "kind": "cursed",
+        "beta": 0.389,
+        "ci95": [
+          0.2534,
+          0.5551
+        ],
+        "taken": 609,
+        "offered": 1919,
+        "passRateTaken": 0.6453,
+        "passRateOfferedNotTaken": 0.5557,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Nutritious Oyster",
+        "kind": "positive",
+        "beta": 0.2983,
+        "ci95": [
+          0.0365,
+          0.554
+        ],
+        "taken": 319,
+        "offered": 961,
+        "passRateTaken": 0.6301,
+        "passRateOfferedNotTaken": 0.5794,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Fishing Rod",
+        "kind": "positive",
+        "beta": 0.2203,
+        "ci95": [
+          0.0667,
+          0.3876
+        ],
+        "taken": 601,
+        "offered": 1847,
+        "passRateTaken": 0.6073,
+        "passRateOfferedNotTaken": 0.5642,
+        "excluded": 4,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Small Capsule",
+        "kind": "positive",
+        "beta": 0.2055,
+        "ci95": [
+          -0.0422,
+          0.3815
+        ],
+        "taken": 209,
+        "offered": 739,
+        "passRateTaken": 0.6124,
+        "passRateOfferedNotTaken": 0.5736,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Large Capsule",
+        "kind": "cursed",
+        "beta": 0.1696,
+        "ci95": [
+          0.0102,
+          0.3183
+        ],
+        "taken": 722,
+        "offered": 1940,
+        "passRateTaken": 0.5956,
+        "passRateOfferedNotTaken": 0.5476,
+        "excluded": 13,
+        "exclusionFlag": true
+      },
+      {
+        "label": "Neows Talisman",
+        "kind": "positive",
+        "beta": 0.1362,
+        "ci95": [
+          -0.0503,
+          0.3177
+        ],
+        "taken": 350,
+        "offered": 925,
+        "passRateTaken": 0.5914,
+        "passRateOfferedNotTaken": 0.5287,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Lost Coffer",
+        "kind": "positive",
+        "beta": 0.1066,
+        "ci95": [
+          -0.0457,
+          0.222
+        ],
+        "taken": 650,
+        "offered": 1984,
+        "passRateTaken": 0.5831,
+        "passRateOfferedNotTaken": 0.5585,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Scroll Boxes",
+        "kind": "positive",
+        "beta": 0.0956,
+        "ci95": [
+          -0.0485,
+          0.2435
+        ],
+        "taken": 670,
+        "offered": 1929,
+        "passRateTaken": 0.5806,
+        "passRateOfferedNotTaken": 0.5639,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "New Leaf",
+        "kind": "positive",
+        "beta": 0.0752,
+        "ci95": [
+          -0.0707,
+          0.235
+        ],
+        "taken": 582,
+        "offered": 1849,
+        "passRateTaken": 0.5756,
+        "passRateOfferedNotTaken": 0.5856,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Neows Bones",
+        "kind": "cursed",
+        "beta": 0.0408,
+        "ci95": [
+          -0.1275,
+          0.1969
+        ],
+        "taken": 644,
+        "offered": 1968,
+        "passRateTaken": 0.5683,
+        "passRateOfferedNotTaken": 0.5483,
+        "excluded": 6,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Precarious Shears",
+        "kind": "cursed",
+        "beta": -0.0021,
+        "ci95": [
+          -0.1841,
+          0.1554
+        ],
+        "taken": 592,
+        "offered": 1829,
+        "passRateTaken": 0.5591,
+        "passRateOfferedNotTaken": 0.5651,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Lead Paperweight",
+        "kind": "positive",
+        "beta": -0.0133,
+        "ci95": [
+          -0.15,
+          0.113
+        ],
+        "taken": 699,
+        "offered": 1887,
+        "passRateTaken": 0.5565,
+        "passRateOfferedNotTaken": 0.5951,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Stone Humidifier",
+        "kind": "positive",
+        "beta": -0.0263,
+        "ci95": [
+          -0.1981,
+          0.1934
+        ],
+        "taken": 320,
+        "offered": 1103,
+        "passRateTaken": 0.5531,
+        "passRateOfferedNotTaken": 0.53,
+        "excluded": 0,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Kaleidoscope",
+        "kind": "positive",
+        "beta": -0.0446,
+        "ci95": [
+          -0.1909,
+          0.1235
+        ],
+        "taken": 634,
+        "offered": 1765,
+        "passRateTaken": 0.5489,
+        "passRateOfferedNotTaken": 0.5818,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Phial Holster",
+        "kind": "positive",
+        "beta": -0.0835,
+        "ci95": [
+          -0.2476,
+          0.0394
+        ],
+        "taken": 729,
+        "offered": 2119,
+        "passRateTaken": 0.5405,
+        "passRateOfferedNotTaken": 0.5669,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Pomander",
+        "kind": "positive",
+        "beta": -0.0917,
+        "ci95": [
+          -0.3033,
+          0.1151
+        ],
+        "taken": 294,
+        "offered": 868,
+        "passRateTaken": 0.5374,
+        "passRateOfferedNotTaken": 0.561,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Precise Scissors",
+        "kind": "positive",
+        "beta": -0.1329,
+        "ci95": [
+          -0.2876,
+          0.0455
+        ],
+        "taken": 592,
+        "offered": 1732,
+        "passRateTaken": 0.5287,
+        "passRateOfferedNotTaken": 0.5421,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Neows Torment",
+        "kind": "positive",
+        "beta": -0.1405,
+        "ci95": [
+          -0.3112,
+          0.0076
+        ],
+        "taken": 644,
+        "offered": 1906,
+        "passRateTaken": 0.528,
+        "passRateOfferedNotTaken": 0.5555,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Booming Conch",
+        "kind": "positive",
+        "beta": -0.1884,
+        "ci95": [
+          -0.3257,
+          -0.0561
+        ],
+        "taken": 628,
+        "offered": 1998,
+        "passRateTaken": 0.5175,
+        "passRateOfferedNotTaken": 0.5642,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Golden Pearl",
+        "kind": "positive",
+        "beta": -0.2019,
+        "ci95": [
+          -0.3845,
+          -0.0198
+        ],
+        "taken": 526,
+        "offered": 1627,
+        "passRateTaken": 0.5133,
+        "passRateOfferedNotTaken": 0.5577,
+        "excluded": 4,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Hefty Tablet",
+        "kind": "cursed",
+        "beta": -0.2054,
+        "ci95": [
+          -0.3608,
+          -0.0323
+        ],
+        "taken": 589,
+        "offered": 1867,
+        "passRateTaken": 0.5127,
+        "passRateOfferedNotTaken": 0.5344,
+        "excluded": 1,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Arcane Scroll",
+        "kind": "positive",
+        "beta": -0.2138,
+        "ci95": [
+          -0.3643,
+          -0.0631
+        ],
+        "taken": 623,
+        "offered": 1736,
+        "passRateTaken": 0.512,
+        "passRateOfferedNotTaken": 0.5642,
+        "excluded": 7,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Leafy Poultice",
+        "kind": "cursed",
+        "beta": -0.2728,
+        "ci95": [
+          -0.4369,
+          -0.1107
+        ],
+        "taken": 598,
+        "offered": 1796,
+        "passRateTaken": 0.4983,
+        "passRateOfferedNotTaken": 0.5392,
+        "excluded": 2,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Cursed Pearl",
+        "kind": "cursed",
+        "beta": -0.2825,
+        "ci95": [
+          -0.4359,
+          -0.146
+        ],
+        "taken": 637,
+        "offered": 1789,
+        "passRateTaken": 0.4961,
+        "passRateOfferedNotTaken": 0.5304,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Lava Rock",
+        "kind": "positive",
+        "beta": -0.2931,
+        "ci95": [
+          -0.496,
+          -0.0759
+        ],
+        "taken": 292,
+        "offered": 898,
+        "passRateTaken": 0.4897,
+        "passRateOfferedNotTaken": 0.5281,
+        "excluded": 3,
+        "exclusionFlag": false
+      },
+      {
+        "label": "Winged Boots",
+        "kind": "positive",
+        "beta": -0.3555,
+        "ci95": [
+          -0.5085,
+          -0.1824
+        ],
+        "taken": 645,
+        "offered": 1983,
+        "passRateTaken": 0.4775,
+        "passRateOfferedNotTaken": 0.5336,
+        "excluded": 5,
+        "exclusionFlag": false
+      }
+    ]
+  },
+  "test": null
+}

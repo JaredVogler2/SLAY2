@@ -4,6 +4,7 @@
 //   apps/web/src/content/evidence.generated.json  <- experiments/batches/*/manifest.json (+ episodes for summaries)
 //                                                    + experiments/comparisons/*.json (paired comparisons)
 //   apps/web/src/content/cardvalues.generated.json <- experiments/cardvalue/*.json (measured card values, ADR-031)
+//   apps/web/src/content/neow.generated.json      <- experiments/neow/*.json (the opening Ancient's relic values and the one held-out test, ADR-041)
 // Nothing is typed in by hand: `pnpm --filter @slay2/web test` fails if these files are stale (see test/content.test.ts).
 // Usage: node scripts/export-site-data.mjs [--check]
 import { createHash } from "node:crypto";
@@ -290,6 +291,135 @@ function parseCardValues(comparisons) {
   return out;
 }
 
+// The opening Ancient's relic values (ADR-041) and the one held-out test of acting on them. The test is shown only while it is
+// the test of exactly these values: it names its batches by content hash, and each batch records the SHA-256 of the values file
+// its pilot read. A test that was run with another file, or with batches that have changed since, stops the export.
+const NEOW_ALPHA = 0.05;
+const NEOW_POLICIES = { a: "rules_v2_neow_values", b: "rules_v2" };
+
+function parseNeow(reports) {
+  const dir = join(root, "experiments", "neow");
+  const valuesFile = join(dir, "neow-values-v1.json");
+  if (!existsSync(valuesFile)) return { values: null, test: null };
+  const raw = readFileSync(valuesFile);
+  const v = JSON.parse(raw.toString("utf8"));
+  if (v.kind !== "neow-values" || v.schema !== 1) throw new Error("experiments/neow/neow-values-v1.json: not a neow-values file of schema 1");
+  const sha256 = createHash("sha256").update(raw).digest("hex");
+  const cv = v.model.cross_validation;
+  const best = Object.entries(cv.l2).find(([k]) => Number(k) === cv.best_l2)?.[1];
+  if (!best) throw new Error("neow-values-v1.json: no cross-validation entry for the chosen penalty");
+  const classes = CLASSES.map((character) => {
+    const c = v.classes[character];
+    if (!c) throw new Error(`neow-values-v1.json: class ${character} is missing`);
+    // defect is the reference class of the fit; the others carry an offset from it
+    const offset = character === "defect" ? 0 : v.covariates[`class:${character}`];
+    if (typeof offset !== "number") throw new Error(`neow-values-v1.json: no offset for class ${character}`);
+    return { character, games: c.games, passRate: c.pass_rate, baselineLogOdds: Math.round((v.covariates.intercept + offset) * 1e4) / 1e4 };
+  });
+  // the batches the values were fitted on are in the repository and are the ones the file names
+  for (const b of v.batches) {
+    const manifestFile = join(dir, b.batch_id.replace(/^explore-neow-/, "explore-"), "manifest.json");
+    if (!existsSync(manifestFile)) throw new Error(`neow-values-v1.json: its exploration batch ${b.batch_id} is not in experiments/neow`);
+    const m = JSON.parse(readFileSync(manifestFile, "utf8"));
+    if (m.batch_id !== b.batch_id || m.content_sha256 !== b.content_sha256) {
+      throw new Error(`neow-values-v1.json: exploration batch ${b.batch_id} changed after the values were fitted`);
+    }
+  }
+  const seen = new Set();
+  const relics = v.relics.map((r) => {
+    if (seen.has(r.label)) throw new Error(`neow-values-v1.json: ${r.label} is measured twice`);
+    seen.add(r.label);
+    return {
+      label: r.label,
+      kind: r.kind,
+      beta: r.beta,
+      ci95: r.ci95,
+      taken: r.taken,
+      offered: r.offered,
+      passRateTaken: r.pass_rate_taken,
+      passRateOfferedNotTaken: r.pass_rate_offered_not_taken,
+      excluded: r.excluded,
+      exclusionFlag: r.exclusion_flag === true,
+    };
+  });
+  const values = {
+    file: "experiments/neow/neow-values-v1.json",
+    sha256,
+    outcome: v.outcome,
+    ascension: v.ascension,
+    profile: v.profile,
+    games: v.games,
+    excludedGames: v.excluded_games,
+    passRate: v.pass_rate,
+    classes,
+    model: {
+      l2: v.model.l2,
+      folds: v.model.folds,
+      bootstrapDraws: v.model.bootstrap_draws,
+      minTaken: v.model.min_taken,
+      cvLogLoss: best.log_loss,
+      cvAuc: best.auc,
+      baselineLogLoss: cv.baseline_log_loss,
+    },
+    batches: v.batches.map((b) => ({ id: b.batch_id, contentSha256: b.content_sha256 })),
+    relics,
+  };
+
+  const testFile = join(dir, "pooled-neow-values-vs-rules_v2-val.json");
+  if (!existsSync(testFile)) return { values, test: null };
+  const t = JSON.parse(readFileSync(testFile, "utf8"));
+  const where = "experiments/neow/pooled-neow-values-vs-rules_v2-val.json";
+  if (t.kind !== "pooled-paired-comparison" || t.policies?.a !== NEOW_POLICIES.a || t.policies?.b !== NEOW_POLICIES.b) {
+    throw new Error(`${where}: not the pooled comparison of ${NEOW_POLICIES.a} against ${NEOW_POLICIES.b}`);
+  }
+  if (t.cohort.partition !== "val" || t.role !== "held-out") throw new Error(`${where}: not a held-out comparison`);
+  if ([...t.cohort.characters].sort().join() !== [...CLASSES].sort().join()) throw new Error(`${where}: it must pool all five classes`);
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  for (const m of t.members) {
+    for (const side of [m.a, m.b]) {
+      const current = byId.get(side.batchId);
+      if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
+      if (current.contentSha256 !== side.contentSha256) {
+        throw new Error(`${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`);
+      }
+    }
+    const manifest = JSON.parse(readFileSync(join(root, "experiments", "batches", m.a.batchId, "manifest.json"), "utf8"));
+    if (manifest.policy?.effective?.params?.neow_values_sha256 !== sha256) {
+      throw new Error(`${where}: ${m.a.batchId} was played with another version of neow-values-v1.json`);
+    }
+  }
+  const r1 = t.reachedAct2;
+  const test = {
+    id: "pooled-neow-values-vs-rules_v2-val",
+    contentSha256: t.contentSha256,
+    valuesSha256: sha256,
+    a: t.policies.a,
+    b: t.policies.b,
+    cohort: t.cohort,
+    alpha: NEOW_ALPHA,
+    pairedSeeds: t.pairedSeeds,
+    bothCompleted: t.bothCompleted,
+    excludedNotCompleted: t.excludedNotCompleted,
+    reachedAct2: r1,
+    reachedAct3: t.reachedAct3,
+    wins: t.wins,
+    floorDifference: t.floorDifference,
+    members: t.members.map((m) => ({
+      character: m.character,
+      a: m.a,
+      b: m.b,
+      pairedSeeds: m.pairedSeeds,
+      bothCompleted: m.bothCompleted,
+      reachedAct2: m.reachedAct2,
+      meanFloorDifference: m.meanFloorDifference,
+    })),
+    role: t.role,
+    // improved the primary endpoint at the pre-registered level (ADR-041 item 4)
+    passed: r1.a.rate > r1.b.rate && r1.pairedTable.mcnemar_p < NEOW_ALPHA,
+  };
+  return { values, test };
+}
+
 function parseVerification() {
   const golden = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "golden-python.json"), "utf8"));
   const published = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "published.json"), "utf8"));
@@ -323,6 +453,11 @@ const outputs = {
     schema: 1,
     generatedFrom: "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
     sets: parseCardValues(comparisons),
+  },
+  "neow.generated.json": {
+    schema: 1,
+    generatedFrom: "experiments/neow/neow-values-v1.json + experiments/neow/pooled-neow-values-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
+    ...parseNeow(reports),
   },
 };
 

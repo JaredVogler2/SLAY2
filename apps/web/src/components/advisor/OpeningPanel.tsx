@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
   ACT1_BRIEFS,
@@ -31,6 +31,7 @@ import { applyOpening, openingProblems, type OpeningAnswers } from "@/lib/openin
 import type { RunState } from "@/lib/run-state";
 
 import { Act1Brief } from "./Act1Brief";
+import { NeowOffer } from "./NeowOffer";
 
 type Pick = Extract<OpeningStep, { kind: "pick" }>["from"];
 
@@ -451,6 +452,7 @@ export function OpeningPanel({
   const character = run.character;
   const [optionId, setOptionId] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const openingSelect = useRef<HTMLSelectElement>(null);
   const option = optionId ? getOpeningOption(optionId) : undefined;
   if (!character) {
     return null;
@@ -572,6 +574,19 @@ export function OpeningPanel({
               only you know the result.
             </p>
           </div>
+          <NeowOffer
+            run={run}
+            disabled={disabled}
+            recorded={run.opening.entries.map((e) => e.id)}
+            onRecord={(id) => {
+              setOptionId(id);
+              setNotice(null);
+              // the form for the relic opens under the select that now names it: leave the keyboard there
+              requestAnimationFrame(() => {
+                openingSelect.current?.focus();
+              });
+            }}
+          />
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="min-w-0">
               <label
@@ -582,6 +597,7 @@ export function OpeningPanel({
               </label>
               <Select
                 id="adv-opening"
+                ref={openingSelect}
                 value={optionId}
                 disabled={disabled}
                 onChange={(e) => {

@@ -24,6 +24,20 @@ const PAGES = [
   "/about",
 ];
 
+/** The advisor with Neow's three relics set beside the simulated values: three tiles, a verdict and the caveats on the screen. */
+async function compareNeowOffer(page: Page): Promise<void> {
+  await page.goto("/advisor", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Try an example" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
+  await page.getByText(/What did Neow offer\? Compare the three/).click();
+  await page.getByLabel("First helpful option").selectOption("FISHING_ROD");
+  await page.getByLabel("Second helpful option").selectOption("WINGED_BOOTS");
+  await page.getByLabel("Costly option").selectOption("SILVER_CRUCIBLE");
+  await expect(
+    page.getByRole("list", { name: "Measured values of the relics offered" }).getByRole("listitem"),
+  ).toHaveCount(3);
+}
+
 async function documentOverflow(page: Page): Promise<number> {
   return page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -50,6 +64,13 @@ test.describe("phone widths", () => {
         await page.goto("/advisor", { waitUntil: "networkidle" });
         await page.getByRole("button", { name: "Try an example" }).click();
         await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
+        expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
+        await expectNoHorizontalOverflow(page);
+        await expectNoClippedText(page);
+      });
+
+      test("the advisor with Neow's three relics compared fits", async ({ page }) => {
+        await compareNeowOffer(page);
         expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
         await expectNoHorizontalOverflow(page);
         await expectNoClippedText(page);
@@ -101,6 +122,14 @@ test.describe("tablet and small laptop widths", () => {
         await page.goto("/advisor", { waitUntil: "networkidle" });
         await page.getByRole("button", { name: "Try an example" }).click();
         await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
+        expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
+        await expectNoClippedText(page);
+      });
+
+      test("the advisor with Neow's three relics compared fits and cuts nothing off", async ({
+        page,
+      }) => {
+        await compareNeowOffer(page);
         expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
         await expectNoClippedText(page);
       });

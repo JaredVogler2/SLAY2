@@ -174,3 +174,24 @@ export async function expectNoClippedText(page: Page): Promise<void> {
   });
   expect(clipped, "text cut off by an overflow:hidden box").toEqual([]);
 }
+
+export interface NeowInfo {
+  /** the held-out test of playing by the opening-relic values, when it has been run */
+  readonly test: { readonly passed: boolean; readonly bothCompleted: number } | null;
+  /** measured relics by the simulator's label */
+  readonly relics: readonly {
+    readonly label: string;
+    readonly beta: number;
+    readonly kind: string;
+  }[];
+}
+
+/** The opening-relic values and the result of their one test, read from the generated file the pages are built from. */
+export function neowInfo(): NeowInfo {
+  const file = join(__dirname, "..", "src", "content", "neow.generated.json");
+  const data = JSON.parse(readFileSync(file, "utf8")) as {
+    values: { relics: NeowInfo["relics"] };
+    test: NeowInfo["test"];
+  };
+  return { test: data.test, relics: data.values.relics };
+}

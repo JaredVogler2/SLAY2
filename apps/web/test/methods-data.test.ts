@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -469,5 +470,132 @@ describe("site-data exporter refuses a comparison whose batches changed", () => 
   it("reads an untouched copy without complaint about the comparison", () => {
     const result = run(tamperedRoot(() => undefined));
     expect(result.stderr).not.toContain("changed after the comparison was written");
+  });
+});
+
+describe("site-data exporter refuses opening-relic data that does not belong together", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+
+  const script = join(repo, "scripts", "export-site-data.mjs");
+  const hasTest = existsSync(
+    join(repo, "experiments", "neow", "pooled-neow-values-vs-rules_v2-val.json"),
+  );
+
+  function rootWith(mutate: (neowDir: string) => void): string {
+    const root = mkdtempSync(join(tmpdir(), "slay2-neow-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    mkdirSync(join(root, "experiments"));
+    symlinkSync(join(repo, "experiments", "batches"), join(root, "experiments", "batches"), "dir");
+    const neowDir = join(root, "experiments", "neow");
+    cpSync(join(repo, "experiments", "neow"), neowDir, { recursive: true });
+    mutate(neowDir);
+    return root;
+  }
+
+  function edit(neowDir: string, file: string, change: (body: Record<string, unknown>) => void) {
+    const path = join(neowDir, file);
+    const body = JSON.parse(readFileSync(path, "utf8")) as Record<string, unknown>;
+    change(body);
+    writeFileSync(path, JSON.stringify(body));
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  it("reads an untouched copy without complaint about the opening-relic files", () => {
+    const result = run(rootWith(() => undefined));
+    expect(result.stderr).not.toContain("neow-values-v1.json:");
+    expect(result.stderr).not.toContain("pooled-neow-values-vs-rules_v2-val.json:");
+  });
+
+  it("fails when an exploration batch changed after the values were fitted", () => {
+    const result = run(
+      rootWith((dir) => {
+        edit(dir, "neow-values-v1.json", (v) => {
+          const batches = v.batches as { content_sha256: string }[];
+          if (batches[0]) {
+            batches[0].content_sha256 = "0".repeat(64);
+          }
+        });
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("changed after the values were fitted");
+  });
+
+  it("fails when two relics carry the same label", () => {
+    const result = run(
+      rootWith((dir) => {
+        edit(dir, "neow-values-v1.json", (v) => {
+          const relics = v.relics as { label: string }[];
+          if (relics[1] && relics[0]) {
+            relics[1].label = relics[0].label;
+          }
+        });
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("is measured twice");
+  });
+
+  it.runIf(hasTest)("fails when the test was run with another version of the values", () => {
+    const result = run(
+      rootWith((dir) => {
+        // any change to the file changes its hash, which the batches of the test recorded
+        edit(dir, "neow-values-v1.json", (v) => {
+          v.pass_rate = 0.5;
+        });
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("was played with another version of neow-values-v1.json");
+  });
+
+  it.runIf(hasTest)("fails when a batch of the test changed after it was written", () => {
+    const result = run(
+      rootWith((dir) => {
+        edit(dir, "pooled-neow-values-vs-rules_v2-val.json", (t) => {
+          const members = t.members as { a: { contentSha256: string } }[];
+          if (members[0]) {
+            members[0].a.contentSha256 = "0".repeat(64);
+          }
+        });
+      }),
+    );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("changed after the comparison was written");
+  });
+
+  it.runIf(hasTest)("fails when the test is not a held-out comparison of all five classes", () => {
+    const notHeldOut = run(
+      rootWith((dir) => {
+        edit(dir, "pooled-neow-values-vs-rules_v2-val.json", (t) => {
+          t.role = "development (dev partition): not a held-out result";
+        });
+      }),
+    );
+    expect(notHeldOut.status).not.toBe(0);
+    expect(notHeldOut.stderr).toContain("not a held-out comparison");
+    const fewer = run(
+      rootWith((dir) => {
+        edit(dir, "pooled-neow-values-vs-rules_v2-val.json", (t) => {
+          const cohort = t.cohort as { characters: string[] };
+          cohort.characters = cohort.characters.slice(1);
+        });
+      }),
+    );
+    expect(fewer.status).not.toBe(0);
+    expect(fewer.stderr).toContain("must pool all five classes");
   });
 });

@@ -6,6 +6,7 @@ import {
   expectNoClippedText,
   expectNoHorizontalOverflow,
   expectNoSeriousA11yViolations,
+  neowInfo,
 } from "./helpers";
 
 /**
@@ -337,5 +338,97 @@ test.describe("where your run starts", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(over).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe("what did Neow offer?", () => {
+  test.beforeEach(async ({ context }) => {
+    await context.clearCookies();
+  });
+
+  const OFFER = [
+    ["First helpful option", "FISHING_ROD", "Fishing Rod"],
+    ["Second helpful option", "WINGED_BOOTS", "Winged Boots"],
+    ["Costly option", "SILVER_CRUCIBLE", "Silver Crucible"],
+  ] as const;
+
+  async function openOffer(page: Page): Promise<void> {
+    await page.getByText(/What did Neow offer\? Compare the three/).click();
+    await expect(page.getByLabel("First helpful option")).toBeVisible();
+  }
+
+  async function chooseOffer(page: Page): Promise<void> {
+    for (const [label, id] of OFFER) {
+      await page.getByLabel(label).selectOption(id);
+    }
+  }
+
+  test("sets the three relics beside what simulated runs say, says what the one test found, and hands the choice to the recorder", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await openOffer(page);
+    await expect(page.getByText("Simulated · unverified").first()).toBeVisible();
+    await chooseOffer(page);
+
+    const tiles = page
+      .getByRole("list", { name: "Measured values of the relics offered" })
+      .getByRole("listitem");
+    await expect(tiles).toHaveCount(3);
+    for (const [, , name] of OFFER) {
+      await expect(tiles.filter({ hasText: name })).toHaveCount(1);
+    }
+    await expect(tiles.filter({ hasText: "Silver Crucible" })).toContainText("costly");
+    await expect(tiles.filter({ hasText: "Fishing Rod" })).toContainText("helpful");
+    // Ironclad's own starting point is printed beside each value
+    await expect(tiles.first()).toContainText(/got past the Act-1 boss \(95%: \d+% to \d+%\)/);
+    await expect(tiles.first()).toContainText(/The average relic: \d+%/);
+
+    // what the page may say follows the registered test, not the other way round
+    const { test: held, relics } = neowInfo();
+    const betaOf = (label: string): number => relics.find((r) => r.label === label)?.beta ?? 0;
+    const best = [...OFFER].sort((a, b) => betaOf(b[2]) - betaOf(a[2]))[0]?.[2] ?? "";
+    if (held === null) {
+      await expect(page.getByText(/have not been tested against play yet/)).toBeVisible();
+      await expect(page.getByText(/would take/)).toHaveCount(0);
+    } else if (held.passed) {
+      await expect(page.getByText(/would take/).first()).toContainText(best);
+      await expect(page.getByText(/does not say which relic/)).toHaveCount(0);
+    } else {
+      await expect(page.getByText(/does not say which relic to take/)).toBeVisible();
+      await expect(page.getByText(/would take/)).toHaveCount(0);
+    }
+
+    // recording a relic from the comparison opens its form under the select, with the relic named
+    await page.getByRole("button", { name: "Record Silver Crucible" }).click();
+    await expect(page.locator("#adv-opening")).toHaveValue("SILVER_CRUCIBLE");
+    await expect(page.locator("#adv-opening")).toBeFocused();
+    await page.getByRole("button", { name: /Record this/ }).click();
+    await expect(
+      page.getByRole("list", { name: "Recorded from the opening Ancient" }),
+    ).toContainText("Silver Crucible");
+    // and a relic that is recorded cannot be recorded twice from here
+    await expect(page.getByRole("button", { name: "Recorded" })).toBeDisabled();
+  });
+
+  test("is accessible and fits the screen with three relics on the table", async ({ page }) => {
+    await startIronclad(page);
+    await openOffer(page);
+    await chooseOffer(page);
+    await expect(
+      page.getByRole("list", { name: "Measured values of the relics offered" }),
+    ).toBeVisible();
+    await expectNoSeriousA11yViolations(page, "advisor with the Neow offer compared");
+    await expectNoHorizontalOverflow(page);
+    await expectNoClippedText(page);
+  });
+
+  test("tells a player past Ascension 0 that the runs behind it were Ascension 0", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await page.locator("#adv-asc").selectOption("5");
+    await openOffer(page);
+    await expect(page.getByText(/you are at Ascension 5/)).toBeVisible();
   });
 });

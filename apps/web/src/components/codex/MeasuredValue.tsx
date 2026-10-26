@@ -43,7 +43,7 @@ const x = (v: number): number =>
   ((Math.min(AXIS_MAX, Math.max(AXIS_MIN, v)) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN)) * W;
 
 /** A forest-plot row: the point estimate and its 95 % bootstrap interval on a fixed axis with the zero line. */
-function Whisker({ m, sign }: { m: MeasuredCard; sign: ValueSign }) {
+export function Whisker({ m, sign }: { m: Pick<MeasuredCard, "beta" | "ci95">; sign: ValueSign }) {
   const [lo, hi] = m.ci95;
   return (
     <div aria-hidden="true">
