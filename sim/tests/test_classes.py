@@ -147,3 +147,17 @@ def test_a_gap_about_one_class_is_listed_for_that_class_only():
     # a gap that is not about a class keeps the exact shape every earlier manifest has
     g4 = next(g for g in gaps.applicable(0, "Silent") if g["id"].startswith("G4"))
     assert set(g4) == {"id", "summary", "min_ascension", "affects"}
+
+
+def test_the_game_hp_variant_starts_a_class_with_the_games_own_maximum_hp_and_is_off_everywhere_else(sim):
+    # gap G13: Necrobinder is 75 in the simulator and 66 in the game's source; the other four classes are equal in both
+    assert "game_hp" not in RunConfig().describe()  # the fingerprint of every earlier batch stays what it was
+    cfg = RunConfig(character="Necrobinder", game_hp=True)
+    assert cfg.describe()["game_hp"] is True and RunConfig(**cfg.describe()) == cfg
+    assert new_run(RunConfig(character="Necrobinder"), 7).run_state.player.max_hp == 75
+    mgr = new_run(cfg, 7)
+    assert mgr.run_state.player.max_hp == 66 and mgr.run_state.player.current_hp == 66
+    with pytest.raises(ClassError, match="maximum HP 66 \\(expected 75\\)"):
+        check_start(mgr, "Necrobinder")  # without the variant the same game is refused: the table is the simulator's
+    for name in ("Ironclad", "Silent", "Regent", "Defect"):
+        assert new_run(RunConfig(character=name, game_hp=True), 7).run_state.player.max_hp == SIM_START_HP[name]

@@ -50,18 +50,25 @@ def _facts() -> dict[str, dict]:
 ASCENDERS_BANE_FROM = 5  # rule ASC-3: the starting deck gains Ascender's Bane from Ascension 5 (the simulator models it)
 
 
-def expected_start(character: str, ascension: int = 0) -> tuple[int, Counter]:
-    """Starting maximum HP and starter deck (card id -> copies) of a class: the simulator's HP, the game's own deck."""
+def game_start_hp(character: str) -> int:
+    """The class's starting maximum HP as the game's own source gives it (``CharacterModel.StartingHp``)."""
+    exact_character(character)
+    return int(_facts()[character.lower()]["startingHp"])
+
+
+def expected_start(character: str, ascension: int = 0, game_hp: bool = False) -> tuple[int, Counter]:
+    """Starting maximum HP and starter deck (card id -> copies) of a class: the simulator's HP (the game's, for the harness
+    variant ``game_hp``), the game's own deck."""
     exact_character(character)
     deck = Counter({d["id"]: d["count"] for d in _facts()[character.lower()]["startingDeck"]})
     if ascension >= ASCENDERS_BANE_FROM:
         deck["ASCENDERS_BANE"] += 1
-    return SIM_START_HP[character], deck
+    return (game_start_hp(character) if game_hp else SIM_START_HP[character]), deck
 
 
-def check_start(manager, character: str, ascension: int = 0) -> None:
+def check_start(manager, character: str, ascension: int = 0, game_hp: bool = False) -> None:
     """Refuse a run that did not start as ``character``: its maximum HP and starter deck are those of that class."""
-    hp, deck = expected_start(character, ascension)
+    hp, deck = expected_start(character, ascension, game_hp)
     player = manager.run_state.player
     got_hp = int(player.max_hp)
     got_deck = Counter(c.card_id.name for c in player.deck)

@@ -15,7 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-from .classes import ClassError, check_start, exact_character
+from .classes import ClassError, check_start, exact_character, game_start_hp
 from .isolation import deliberation
 from .observation import obs_hash, observe
 from .outcomes import EpisodeRecord, Outcome
@@ -37,6 +37,9 @@ class RunConfig:
     # A harness variant, never the simulator's own behaviour and off in every batch written before G11 was recorded: the
     # game opens each act with an Ancient event that first heals the player (the simulator starts acts 2 and 3 on the map).
     ancient_heal: bool = False
+    # A harness variant for gap G13, never the simulator's own behaviour and off in every other batch: start the class with the
+    # maximum HP the game's source gives it (Necrobinder 66, the simulator says 75; the other four classes are equal).
+    game_hp: bool = False
 
     def __post_init__(self) -> None:
         # the simulator silently plays any class id it does not know exactly as Ironclad (classes.py, ADR-049)
@@ -47,8 +50,9 @@ class RunConfig:
 
     def describe(self) -> dict:
         d = dict(self.__dict__)
-        if not d["ancient_heal"]:
-            del d["ancient_heal"]  # the fingerprint of every earlier batch stays what it was
+        for variant in ("ancient_heal", "game_hp"):
+            if not d[variant]:
+                del d[variant]  # the fingerprint of every earlier batch stays what it was
         return d
 
 
@@ -122,7 +126,10 @@ def new_run(cfg: "RunConfig", seed: int):
         mgr = manager_cls(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
     finally:
         rm.RunState = previous
-    check_start(mgr, cfg.character, cfg.ascension)  # the class that was asked for is the class that was played
+    if cfg.game_hp:
+        player = mgr.run_state.player
+        player.max_hp = player.current_hp = game_start_hp(cfg.character)
+    check_start(mgr, cfg.character, cfg.ascension, cfg.game_hp)  # the class that was asked for is the class that was played
     return mgr
 
 

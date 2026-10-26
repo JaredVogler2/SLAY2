@@ -113,7 +113,7 @@ def _resolve_seeds(args) -> tuple[list[int], dict]:
 
 
 def _default_batch_id(args, n: int) -> str:
-    variant = "-ancientheal" if args.ancient_heal else ""
+    variant = ("-ancientheal" if args.ancient_heal else "") + ("-gamehp" if args.game_hp else "")
     where = f"{args.partition}-o{args.offset}" if getattr(args, "offset", 0) else args.partition
     return f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{where}-n{n}"
 
@@ -122,7 +122,7 @@ def _batch_common(args, *, default_trace: int) -> int:
     sim = external.locate()
     external.activate(sim.root)
     seeds, seed_info = _resolve_seeds(args)
-    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal)
+    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal, game_hp=args.game_hp)
     params = json.loads(args.policy_params) if args.policy_params else {}
     batch_id = args.batch_id or _default_batch_id(args, len(seeds))
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
@@ -375,6 +375,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="veteran: no tutorial scripting (default); first_run: simulator default with scripted early content")
         sp.add_argument("--ancient-heal", action="store_true",
                         help="harness variant (gap G11): heal at the start of acts 2 and 3 as the game's Ancient event does; recorded in the manifest")
+        sp.add_argument("--game-hp", action="store_true",
+                        help="harness variant (gap G13): start the class with the maximum HP of the game's source (Necrobinder 66, the simulator 75); recorded in the manifest")
         sp.add_argument("--seeds", default=str(DEFAULT_SEEDS))
         sp.add_argument("--partition", default="train", choices=list(PARTITIONS))
         sp.add_argument("--allow-sealed", action="store_true", help="required for the sealed test partition (recorded)")
