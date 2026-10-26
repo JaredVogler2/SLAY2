@@ -103,6 +103,26 @@ export function largestReport(policy: string, character = "Ironclad"): EvidenceR
   return [...(heldOut.length > 0 ? heldOut : mine)].sort((x, y) => y.completed - x.completed)[0];
 }
 
+/**
+ * Gap G13: what the game's own starting HP costs a class that the simulator starts with more. It is read from the committed
+ * development comparison of the `game_hp` variant with the simulator's start (the same pilot on the same seeds): the share of
+ * paired runs that got past the Act-1 boss with each. Undefined for a class nobody measured, which is every class but one.
+ */
+export function startHpGap(
+  character: string,
+): { simulator: number; game: number; pairs: number } | undefined {
+  const byId = new Map(ALL_REPORTS.map((r) => [r.id, r]));
+  const c = evidence.comparisons.find(
+    (x) =>
+      x.cohort.character.toLowerCase() === character.toLowerCase() &&
+      byId.get(x.a.batchId)?.gameHp === true &&
+      byId.get(x.b.batchId)?.gameHp === false,
+  );
+  return c
+    ? { game: c.reachedAct2.a.rate, simulator: c.reachedAct2.b.rate, pairs: c.bothCompleted }
+    : undefined;
+}
+
 export type ComparisonVerdict = "a-higher" | "b-higher" | "undetermined";
 
 /** Which side reached more floors, judged only by whether the 95% bootstrap interval of mean(A - B) excludes zero. */
