@@ -195,10 +195,18 @@ export function realizedMass(
   return mass;
 }
 
-/** Points an engine of this mechanic is worth to the deck: sources and payoffs together, each saturating. */
-export function engineValue(mechanic: MechanicId, supply: number, payoff: number): number {
+/**
+ * Points an engine of this mechanic is worth to the deck: sources and payoffs together, each saturating. `weighted` false gives
+ * the strength as first judged, before the part weight (what the deck is building, whatever the index counts of it).
+ */
+export function engineValue(
+  mechanic: MechanicId,
+  supply: number,
+  payoff: number,
+  weighted = true,
+): number {
   return (
-    PART_WEIGHT.engines *
+    (weighted ? PART_WEIGHT.engines : 1) *
     MECHANICS[mechanic].engine *
     saturation(mechanic, supply) *
     (1 - Math.exp(-Math.max(0, payoff) / ENGINE_PAYOFF_SCALE))
@@ -208,11 +216,12 @@ export function engineValue(mechanic: MechanicId, supply: number, payoff: number
 export function enginesOf(
   entries: readonly DeckEntry[],
   character?: PlayableClass | null,
+  weighted = true,
 ): Record<MechanicId, number> {
   const supply = supplyOf(entries, character);
   const payoff = payoffMassOf(entries);
   return Object.fromEntries(
-    MECHANIC_IDS.map((m) => [m, engineValue(m, supply[m], payoff[m])]),
+    MECHANIC_IDS.map((m) => [m, engineValue(m, supply[m], payoff[m], weighted)]),
   ) as Record<MechanicId, number>;
 }
 
@@ -361,7 +370,7 @@ export function explainAddition(
 export interface DeckEngine {
   readonly mechanic: MechanicId;
   readonly label: string;
-  /** What the engine is worth to the deck, in index points. */
+  /** How strong the engine is as first judged, in index points before the part weight (the index counts `PART_WEIGHT.engines` of it). */
   readonly value: number;
   readonly sources: readonly string[];
   readonly payoffs: readonly string[];
@@ -390,7 +399,9 @@ export function deckSynergy(
   character?: PlayableClass | null,
 ): DeckSynergy {
   const supply = supplyOf(entries, character);
-  const values = enginesOf(entries, character);
+  // what the deck is building is shown as first judged: the index may count little or none of an engine, but a player still wants
+  // to see which cards feed which
+  const values = enginesOf(entries, character, false);
   const engines: DeckEngine[] = MECHANIC_IDS.filter((m) => values[m] >= 0.5)
     .sort((a, b) => values[b] - values[a])
     .slice(0, 4)

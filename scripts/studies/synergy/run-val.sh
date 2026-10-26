@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Stage B2-val (ADR-050): the 2,000 val seeds of each class, A0, veteran profile. Start only after the addendum that records A*
 # is on the remote, from a clean checkout of the commit that carries it (the manifest records `dirty`), and only once.
-#   ASTAR='{"needs":0.95,"scalers":0.7,"engines":0,"margin":1.5}' MARGIN=1.5 run-val.sh <workers>
+#   ASTAR='{"needs":1,"scalers":0.7,"engines":0,"margin":1.5}' MARGIN=1.5 run-val.sh <workers>
 # Arms for every class: A* (astar); d0* (d0star: no synergy term, A*'s margin: the primary contrast changes the term and nothing
 # else); d0 (no synergy term, margin 0) only when the margin is not 0; and the reference R (rules_v3 with the class's measured card
 # values) for the four classes that have no rules_v3 batch on these seeds (Ironclad's: rules_v3-values2-ironclad-a0-veteran-val-n2000).

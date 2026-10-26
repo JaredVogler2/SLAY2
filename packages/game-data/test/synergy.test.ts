@@ -151,7 +151,7 @@ describe("the synergy tags (SLAY2's judgement of how cards work together)", () =
   it("give each class what its starting relic provides, as the game's own relic files say", () => {
     expect(innateSupply("necrobinder")).toMatchObject({
       relic: "Bound Phylactery",
-      gives: { osty: 3 },
+      gives: { osty: 9 },
     });
     expect(innateSupply("regent")).toMatchObject({ relic: "Divine Right", gives: { star: 2 } });
     expect(innateSupply("defect")).toMatchObject({ relic: "Cracked Core", gives: { orb: 1 } });
@@ -159,12 +159,12 @@ describe("the synergy tags (SLAY2's judgement of how cards work together)", () =
       relic: "Ring of the Snake",
       gives: { draw: 1 },
     });
-    // the Ironclad's relic heals after combat and supplies no mechanic; no class is given more than a standard supply
+    // the Ironclad's relic heals after combat and supplies no mechanic; Osty is always there, so it is written as always on (9)
     expect(innateSupply("ironclad")).toBeNull();
     expect(innateSupply(null)).toBeNull();
     for (const cls of PLAYABLE_CLASSES) {
       for (const w of Object.values(innateSupply(cls)?.gives ?? {}))
-        expect(w).toBeLessThanOrEqual(3);
+        expect(w).toBeLessThanOrEqual(9);
     }
   });
 });

@@ -259,13 +259,9 @@ const TWINS: Twin[] = [
     bare: {},
   },
   // ---- Necrobinder
-  {
-    name: "Flatten is worth more with Osty summoners",
-    cls: "necrobinder",
-    card: "FLATTEN",
-    supported: { AFTERLIFE: 1, REANIMATE: 1, SPUR: 1 },
-    bare: {},
-  },
+  // (the Osty cards are not here: Osty is always there, see "what a starting relic already gives" below. The first version of
+  // this list had "Flatten is worth more with Osty summoners" and "Reanimate is worth more with Osty attackers"; simulated runs
+  // showed no such dependence and the table was corrected, ADR-050.)
   {
     name: "Times Up is worth more with Doom",
     cls: "necrobinder",
@@ -285,13 +281,6 @@ const TWINS: Twin[] = [
     cls: "necrobinder",
     card: "HAUNT",
     supported: { CAPTURE_SPIRIT: 1, SEVERANCE: 1, GRAVE_WARDEN: 1 },
-    bare: {},
-  },
-  {
-    name: "Reanimate is worth more with Osty attackers",
-    cls: "necrobinder",
-    card: "REANIMATE",
-    supported: { POKE: 1, SNAP: 1, FLATTEN: 1 },
     bare: {},
   },
   {
@@ -328,13 +317,6 @@ const TWINS: Twin[] = [
     cls: "defect",
     card: "STORM",
     supported: { DEFRAGMENT: 1, LOOP: 1, CAPACITOR: 1 },
-    bare: {},
-  },
-  {
-    name: "Smokestack is worth more with Status makers",
-    cls: "defect",
-    card: "SMOKESTACK",
-    supported: { OVERCLOCK: 1, BOOST_AWAY: 1, FIGHT_THROUGH: 1 },
     bare: {},
   },
   {
@@ -506,5 +488,29 @@ describe("synergy: how the advisor says it", () => {
     const r = rank("silent", {}, ["SLICE"]);
     const synergy = r.response.ranking[0]?.reasons.filter((x) => x.kind === "synergy") ?? [];
     expect(synergy).toEqual([]);
+  });
+});
+
+describe("synergy: what a starting relic already gives", () => {
+  it("does not hold an Osty card back in a deck with no other Osty card (the Necrobinder's Bound Phylactery summons Osty every combat)", () => {
+    const r = rank("necrobinder", {}, ["POKE", "FLATTEN"]);
+    for (const o of r.response.ranking) {
+      const synergy = o.reasons.filter((x) => x.kind === "synergy");
+      expect(synergy.map((x) => x.text)).not.toEqual(
+        expect.arrayContaining([expect.stringMatching(/held back/)]),
+      );
+    }
+    expect(r.response.deckSynergy.waiting).toEqual([]);
+  });
+
+  it("names the relic as the source of a need it meets, for a class that needs it to be there (Stars for the Regent)", () => {
+    const r = rank("regent", {}, ["COMET"]);
+    const text = r.response.ranking[0]?.reasons.map((x) => x.text).join(" ") ?? "";
+    expect(text).toMatch(/Stars \(from Divine Right/);
+  });
+
+  it("does not make Kingly Punch wait for card draw: it grows each time it is drawn, and is strong without help", () => {
+    const bare = worth("regent", {}, "KINGLY_PUNCH");
+    expect(bare).toBeGreaterThan(-0.05);
   });
 });

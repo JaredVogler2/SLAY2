@@ -66,7 +66,7 @@ def test_the_golden_file_covers_what_the_port_must_get_right():
 
 def test_the_vocabulary_is_the_tag_files_own():
     ids = advisor.mechanic_ids()
-    assert len(ids) == len(set(ids)) == 28
+    assert len(ids) == len(set(ids)) == 27
     for card_id, entry in advisor.synergy_table()["cards"].items():
         assert card_id in advisor.catalog(), card_id
         for part in ("g", "w", "s"):
@@ -101,11 +101,11 @@ def test_the_synergy_parts_add_up_to_the_synergy_term(index):
 
 
 def test_a_class_starts_with_what_its_relic_supplies():
-    assert advisor.innate_supply("necrobinder") == {"osty": 3}
-    assert advisor.innate_supply("Necrobinder") == {"osty": 3}
+    assert advisor.innate_supply("necrobinder") == {"osty": 9}
+    assert advisor.innate_supply("Necrobinder") == {"osty": 9}
     assert advisor.innate_supply("ironclad") == {} and advisor.innate_supply(None) == {}
     bare = advisor.supply_of({"STRIKE_NECROBINDER": 4}, "necrobinder")
-    assert bare["osty"] == 3 and advisor.supply_of({"STRIKE_NECROBINDER": 4})["osty"] == 0
+    assert bare["osty"] == 9 and advisor.supply_of({"STRIKE_NECROBINDER": 4})["osty"] == 0
     # an Osty payoff is not held back in a deck without a single Osty card: the relic summons Osty every combat
     held = advisor.realized_of("FLATTEN", bare, 0)
-    assert held.fit > 0.5
+    assert held.fit > 0.9 and held.held_back < 0.05

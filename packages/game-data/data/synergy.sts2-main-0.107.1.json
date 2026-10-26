@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "build": "sts2-main-0.107.1",
-  "sha256": "182ce3e1eca819724d3404a593f6fcb7b824f7fc994f9839ce9d3ef830531a3d",
+  "sha256": "ed6c6952332ddf85749cf6acee7c86e8eebac5d74a76084feb21b868062efb51",
   "provenance": {
     "kind": "SLAY2's own judgement of how cards work together, written from reading each card's effect in a local, pinned, git-ignored reference (ADR-011); no card text, art or numbers are stored",
     "reading": "g = what the card provides to the deck, per mechanic: 1 minor or conditional, 2 standard, 3 major or repeatable; w = how much of the card's value depends on the mechanic: 1 a bonus, 2 significant, 3 the card's point; a negative g takes the mechanic away. Mechanics counted from card types, costs and names (attack, skill, power, cheap, zero_cost, strike), from the Exhaust keyword and from the block role are added by the code, not listed here.",
@@ -16,7 +16,8 @@
     "retrieved": "2026-10-26",
     "notAMeasurement": "The tags and weights are judgements about mechanics. Whether they carry signal in simulated runs is tested separately (docs/DECISIONS.md, ADR-050).",
     "revisions": [
-      "2026-10-26, after reading the tags against simulated runs (ADR-050): added each class's starting-relic supply (innate), which the first table lacked (every Osty card of the Necrobinder was held back for want of an Osty that is always there); Kingly Kick, Kingly Punch and the six Defect Status payoffs now need their mechanic as a bonus (1), not as a precondition (2 or 3), because in the simulated runs their value did not depend on it"
+      "2026-10-26, after reading the tags against simulated runs (ADR-050): added each class's starting-relic supply (innate), which the first table lacked (every Osty card of the Necrobinder was held back for want of an Osty that is always there)",
+      "2026-10-26, a second reading of the same runs after that correction: the Necrobinder's Osty is written as always on (9: the data still showed no benefit from more Osty suppliers, and the cards act through an Osty that is already there); Kingly Kick and Kingly Punch (they scale themselves each time they are drawn) and the six Defect Status payoffs (enemies create the Statuses) no longer need their mechanic and the Status mechanic, with nothing left to need it, is gone from the vocabulary: the simulated runs showed more of the need unmet in the decks that got further, a story the game's own text explains"
     ]
   },
   "mechanics": {
@@ -176,12 +177,6 @@
       "engine": 4,
       "about": "Cards that cost 0 energy (counted from costs)."
     },
-    "status": {
-      "label": "Status cards",
-      "k": 2,
-      "engine": 5,
-      "about": "Putting Status cards into the deck or hand, and what rewards it."
-    },
     "strike": {
       "label": "Strikes",
       "k": 8,
@@ -205,7 +200,7 @@
     "necrobinder": {
       "relic": "Bound Phylactery",
       "gives": {
-        "osty": 3
+        "osty": 9
       }
     },
     "defect": {
@@ -287,7 +282,6 @@
     "COLLISION_COURSE": {"g":{"create":2}},
     "COLOSSUS": {"w":{"vulnerable":1}},
     "COMET": {"w":{"star":3},"s":{"star":1.7}},
-    "COMPACT": {"w":{"status":1}},
     "COMPILE_DRIVER": {"w":{"orb":3}},
     "CONFLAGRATION": {"w":{"strength":2}},
     "CONQUEROR": {"g":{"forge":3},"w":{"forge":2}},
@@ -347,10 +341,8 @@
     "FETCH": {"g":{"draw":1},"w":{"osty":3}},
     "FIEND_FIRE": {"g":{"exhaust":3},"w":{"exhaust":1}},
     "FIGHT_ME": {"g":{"strength":2},"w":{"strength":1}},
-    "FIGHT_THROUGH": {"g":{"status":1}},
     "FINESSE": {"g":{"draw":1}},
     "FINISHER": {"w":{"attack":3}},
-    "FLAK_CANNON": {"w":{"status":1}},
     "FLASH_OF_STEEL": {"g":{"draw":1}},
     "FLATTEN": {"w":{"osty":3}},
     "FLECHETTES": {"w":{"skill":3}},
@@ -375,7 +367,7 @@
     "GRAND_FINALE": {"w":{"draw":3}},
     "GRAVE_WARDEN": {"g":{"soul":1}},
     "GUIDING_STAR": {"g":{"draw":2},"w":{"star":2}},
-    "GUNK_UP": {"g":{"status":1},"w":{"strength":2}},
+    "GUNK_UP": {"w":{"strength":2}},
     "HAILSTORM": {"w":{"orb":3}},
     "HAMMER_TIME": {"w":{"forge":1}},
     "HAND_TRICK": {"w":{"skill":1,"discard":1}},
@@ -399,13 +391,10 @@
     "INFINITE_BLADES": {"g":{"shiv":3}},
     "INFLAME": {"g":{"strength":2}},
     "INVOKE": {"g":{"osty":2,"energy":2}},
-    "ITERATION": {"w":{"status":1}},
     "JACKPOT": {"g":{"create":2}},
     "JACK_OF_ALL_TRADES": {"g":{"create":2}},
     "JUGGERNAUT": {"w":{"block":3}},
     "JUGGLING": {"w":{"attack":2}},
-    "KINGLY_KICK": {"w":{"draw":1}},
-    "KINGLY_PUNCH": {"w":{"draw":1}},
     "KNIFE_TRAP": {"w":{"shiv":3}},
     "KNOCKOUT_BLOW": {"g":{"star":3}},
     "KNOW_THY_PLACE": {"g":{"weak":1,"vulnerable":1}},
@@ -446,7 +435,7 @@
     "ONE_TWO_PUNCH": {"w":{"attack":1}},
     "ORBIT": {"w":{"energy":2}},
     "OUTBREAK": {"w":{"poison":3}},
-    "OVERCLOCK": {"g":{"draw":2,"status":1}},
+    "OVERCLOCK": {"g":{"draw":2}},
     "PACTS_END": {"w":{"exhaust":3}},
     "PAGESTORM": {"w":{"ethereal":3}},
     "PALE_BLUE_DOT": {"w":{"cheap":2}},
@@ -491,7 +480,6 @@
     "RESONANCE": {"g":{"strength":1},"w":{"star":2}},
     "RICOCHET": {"w":{"strength":2,"discard":1}},
     "RIGHT_HAND_HAND": {"w":{"osty":3}},
-    "ROCKET_PUNCH": {"w":{"status":1}},
     "ROYAL_GAMBLE": {"g":{"star":3},"w":{"star":3},"s":{"star":1.7}},
     "RUPTURE": {"g":{"strength":2},"w":{"hp_loss":3}},
     "SACRIFICE": {"w":{"osty":3}},
@@ -521,7 +509,6 @@
     "SKEWER": {"w":{"strength":2,"energy":2}},
     "SKIM": {"g":{"draw":2}},
     "SLEIGHT_OF_FLESH": {"w":{"weak":2,"vulnerable":2,"poison":2,"doom":1}},
-    "SMOKESTACK": {"w":{"status":1}},
     "SNAKEBITE": {"g":{"poison":3}},
     "SNAP": {"w":{"osty":3}},
     "SOLAR_STRIKE": {"g":{"star":1}},
@@ -568,10 +555,10 @@
     "TIMES_UP": {"w":{"doom":3}},
     "TOOLS_OF_THE_TRADE": {"g":{"draw":2,"discard":2}},
     "TRACKING": {"w":{"weak":3}},
-    "TRASH_TO_TREASURE": {"g":{"orb":1},"w":{"status":1}},
+    "TRASH_TO_TREASURE": {"g":{"orb":1}},
     "TREMBLE": {"g":{"vulnerable":3}},
     "TRUE_GRIT": {"g":{"exhaust":2}},
-    "TURBO": {"g":{"energy":2,"status":1}},
+    "TURBO": {"g":{"energy":2}},
     "TWIN_STRIKE": {"w":{"strength":2}},
     "TYRANNY": {"g":{"exhaust":2,"draw":1}},
     "UNLEASH": {"w":{"osty":3}},

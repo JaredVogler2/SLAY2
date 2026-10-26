@@ -2,9 +2,9 @@
   "schema": 1,
   "generatedFrom": "experiments/synergy/b1-calibration.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
   "table": {
-    "sha256": "182ce3e1eca819724d3404a593f6fcb7b824f7fc994f9839ce9d3ef830531a3d",
-    "cards": 375,
-    "mechanics": 28
+    "sha256": "ed6c6952332ddf85749cf6acee7c86e8eebac5d74a76084feb21b868062efb51",
+    "cards": 367,
+    "mechanics": 27
   },
   "b1": {
     "stage": "B1",
@@ -52,63 +52,63 @@
     ],
     "logLoss": {
       "index": 0.44298,
-      "indexAndSynergy": 0.43612
+      "indexAndSynergy": 0.43454
     },
     "auc": {
       "index": 0.8633,
-      "indexAndSynergy": 0.8685
+      "indexAndSynergy": 0.8696
     },
     "synergyAdded": {
-      "mean": -0.00686,
+      "mean": -0.00844,
       "ci95": [
-        -0.00841,
-        -0.00488
+        -0.01012,
+        -0.00629
       ]
     },
     "enginesAdded": {
-      "mean": 0.0001,
+      "mean": 0.00007,
       "ci95": [
-        -0.00001,
-        0.00022
+        -0.00009,
+        0.00025
       ]
     },
     "ratios": {
       "needs": {
-        "toQuality": 0.965,
+        "toQuality": 1.162,
         "ci95": [
-          0.783,
-          1.154
+          0.979,
+          1.358
         ]
       },
       "scalers": {
-        "toQuality": 0.712,
+        "toQuality": 0.678,
         "ci95": [
-          0.571,
-          0.919
+          0.542,
+          0.874
         ]
       },
       "engines": {
-        "toQuality": 0.075,
+        "toQuality": 0.124,
         "ci95": [
-          -0.065,
-          0.255
+          -0.01,
+          0.31
         ]
       },
       "coverage": {
-        "toQuality": -0.121,
+        "toQuality": -0.134,
         "ci95": [
-          -0.272,
-          0.049
+          -0.28,
+          0.03
         ]
       }
     },
     "beyondCards": {
       "logLossCards": 0.3801,
-      "logLossCardsAndParts": 0.37859,
+      "logLossCardsAndParts": 0.37855,
       "gap": {
-        "mean": -0.00151,
+        "mean": -0.00155,
         "ci95": [
-          -0.00247,
+          -0.00251,
           -0.00044
         ]
       }
@@ -117,50 +117,50 @@
       "ironclad-train": {
         "mean": -0.00467,
         "ci95": [
-          -0.00811,
+          -0.00809,
           -0.00091
         ]
       },
       "silent-train": {
-        "mean": -0.00033,
+        "mean": -0.00044,
         "ci95": [
-          -0.00298,
-          0.00261
+          -0.00317,
+          0.00254
         ]
       },
       "regent-train": {
-        "mean": -0.0026,
+        "mean": -0.00965,
         "ci95": [
-          -0.00582,
-          0.00045
+          -0.01522,
+          -0.0047
         ]
       },
       "necrobinder-train": {
-        "mean": 0.00067,
+        "mean": -0.00068,
         "ci95": [
-          -0.00044,
-          0.00174
+          -0.00255,
+          0.00129
         ]
       },
       "defect-train": {
-        "mean": -0.02104,
+        "mean": -0.02365,
         "ci95": [
-          -0.02802,
-          -0.01438
+          -0.03036,
+          -0.0168
         ]
       },
       "ironclad-dev": {
-        "mean": -0.01631,
+        "mean": -0.01632,
         "ci95": [
-          -0.02156,
-          -0.01056
+          -0.02154,
+          -0.01054
         ]
       }
     },
     "calibratedWeights": {
-      "unmet": 0.95,
+      "unmet": 1,
       "scaler": 0.7,
-      "engines": 0.05
+      "engines": 0.1
     }
   }
 }

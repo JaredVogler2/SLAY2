@@ -40,7 +40,6 @@ export const MECHANIC_IDS = [
   "power",
   "cheap",
   "zero_cost",
-  "status",
   "strike",
 ] as const;
 export type MechanicId = (typeof MECHANIC_IDS)[number];
@@ -65,10 +64,16 @@ const GivesSchema = z.partialRecord(
 );
 const WantsSchema = z.partialRecord(z.enum(MECHANIC_IDS), z.number().int().min(1).max(3));
 
-/** What a class's starting relic provides in every combat whatever cards the deck holds (same scale as a card's gives). */
+/**
+ * What a class's starting relic provides in every combat whatever cards the deck holds: the scale of a card's gives, except that a
+ * mechanic that is always on is written as 9, enough for a need of it to count as met (the Necrobinder's Osty).
+ */
 const InnateSchema = z.partialRecord(
   z.enum(PLAYABLE_CLASSES),
-  z.strictObject({ relic: z.string().min(1), gives: GivesSchema }),
+  z.strictObject({
+    relic: z.string().min(1),
+    gives: z.partialRecord(z.enum(MECHANIC_IDS), z.number().int().min(1).max(9)),
+  }),
 );
 
 const SynergyFileSchema = z.strictObject({

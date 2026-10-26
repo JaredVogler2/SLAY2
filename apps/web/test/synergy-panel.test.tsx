@@ -78,7 +78,7 @@ describe("the synergy panel", () => {
     expect(gain?.ci95[1]).toBeLessThan(0);
     // a negative figure is written with a real minus sign: the synergy term's gain and the gain beyond a model that knows the cards
     expect(
-      screen.getAllByText(/\u22120\.00\d\d \(95 % \u22120\.00\d\d to \u22120\.00\d\d\)/),
+      screen.getAllByText(/\u22120\.0\d{3} \(95 % \u22120\.0\d{3} to \u22120\.0\d{3}\)/),
     ).toHaveLength(2);
   });
 });

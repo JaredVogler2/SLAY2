@@ -145,7 +145,6 @@ export function SynergyPanel({ synergy }: { synergy: DeckSynergy }) {
               <li key={e.mechanic} className="text-sm">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="font-medium text-parchment">{e.label}</span>
-                  <span className="num text-xs text-muted">{e.value.toFixed(1)} points</span>
                 </div>
                 <div className="mt-1 h-1.5 w-full rounded-full bg-charcoal" aria-hidden="true">
                   <span
