@@ -1,6 +1,32 @@
 {
   "schema": 1,
-  "generatedFrom": "docs/game/MECHANICS-COVERAGE.md",
+  "generatedFrom": "docs/game/MECHANICS-COVERAGE.md + packages/odds/test/fixtures/*.json",
+  "verification": {
+    "goldenCases": 720,
+    "goldenKinds": [
+      "gold",
+      "hypergeometric",
+      "joint",
+      "pack",
+      "potion_forecast",
+      "potion_posterior",
+      "price",
+      "rarity_pmf",
+      "rarity_posterior",
+      "removal",
+      "reshuffle",
+      "unknown_marginal",
+      "unknown_posterior",
+      "upgrade"
+    ],
+    "publishedSources": [
+      "Slay the Spire 2 Wiki, Card reward odds (sts.wiki)",
+      "Almanauts, Card reward odds calculator",
+      "Almanauts, Potions, ? rooms and shop prices"
+    ],
+    "catalogCards": 577,
+    "catalogSha256": "6717e3d5d311588dda139d2c5dde1f5fe8493be3f9628ff013ac675f9608b147"
+  },
   "rules": [
     {
       "id": "RUN-1",

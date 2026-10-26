@@ -88,8 +88,26 @@ function parseEvidence() {
   return reports;
 }
 
+function parseVerification() {
+  const golden = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "golden-python.json"), "utf8"));
+  const published = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "published.json"), "utf8"));
+  const catalog = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"), "utf8"));
+  return {
+    goldenCases: golden.cases.length,
+    goldenKinds: [...new Set(golden.cases.map((c) => c.kind))].sort(),
+    publishedSources: published._provenance.sources.map((x) => x.name),
+    catalogCards: catalog.cards.length,
+    catalogSha256: catalog.sha256,
+  };
+}
+
 const outputs = {
-  "rules.generated.json": { schema: 1, generatedFrom: "docs/game/MECHANICS-COVERAGE.md", rules: parseRules() },
+  "rules.generated.json": {
+    schema: 1,
+    generatedFrom: "docs/game/MECHANICS-COVERAGE.md + packages/odds/test/fixtures/*.json",
+    verification: parseVerification(),
+    rules: parseRules(),
+  },
   "evidence.generated.json": {
     schema: 1,
     generatedFrom: "experiments/batches/*/manifest.json + sim/slay2_sim/gaps.json",
