@@ -1663,6 +1663,95 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2_neow_values-necrobinder-a0-veteran-val-n2000",
+      "policy": "rules_v2_neow_values",
+      "policyParams": {
+        "neow_values": "experiments/neow/neow-values-v1.json",
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1998,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 2,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1998,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019189625650760413
+      ],
+      "meanFloor": 17.11,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1178,
+        "1": 802,
+        "2": 18
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 198
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 191
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 114
+        },
+        {
+          "id": "FOGMOG",
+          "n": 112
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 92
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.72,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1998,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "a7a804e0c7e115009065a313bcb88e6d0e2e763baa766882503625f7d1aa87e3",
+      "episodesGzSha256": "c0222be5fcb39c2d167b9f15d63d40125e9b35e1f36a840eae220a3c0eb1a28b",
+      "finished": "2026-10-26T16:01:04+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v2_neow_values-regent-a0-veteran-val-n2000",
       "policy": "rules_v2_neow_values",
       "policyParams": {
