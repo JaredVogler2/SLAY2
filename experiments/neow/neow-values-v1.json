@@ -1,0 +1,828 @@
+{
+  "schema": 1,
+  "kind": "neow-values",
+  "outcome": "the run gets past the Act-1 boss",
+  "games": 14928,
+  "excluded_games": 72,
+  "excluded_by_outcome": {
+    "simulator_error": 45,
+    "timeout": 27
+  },
+  "pass_rate": 0.5569,
+  "classes": {
+    "defect": {
+      "games": 2980,
+      "pass_rate": 0.8953
+    },
+    "ironclad": {
+      "games": 2986,
+      "pass_rate": 0.64
+    },
+    "necrobinder": {
+      "games": 2994,
+      "pass_rate": 0.3741
+    },
+    "regent": {
+      "games": 2969,
+      "pass_rate": 0.5147
+    },
+    "silent": {
+      "games": 2999,
+      "pass_rate": 0.3621
+    }
+  },
+  "model": {
+    "l2": 10.0,
+    "folds": 5,
+    "cross_validation": {
+      "l2": {
+        "0.3": {
+          "log_loss": 0.594607623756058,
+          "auc": 0.7305233840866499
+        },
+        "1.0": {
+          "log_loss": 0.59458890346297,
+          "auc": 0.7305621726081934
+        },
+        "3.0": {
+          "log_loss": 0.5945434513537241,
+          "auc": 0.7305953419768271
+        },
+        "10.0": {
+          "log_loss": 0.5944575927286498,
+          "auc": 0.7306362581387928
+        },
+        "30.0": {
+          "log_loss": 0.5945447220096861,
+          "auc": 0.7304652285817758
+        },
+        "100.0": {
+          "log_loss": 0.5955622384887778,
+          "auc": 0.7291949726948266
+        }
+      },
+      "baseline_log_loss": 0.5998551144317992,
+      "best_l2": 10.0
+    },
+    "bootstrap_draws": 200,
+    "min_taken": 30,
+    "features": 32
+  },
+  "covariates": {
+    "intercept": 2.1764,
+    "class:ironclad": -1.583,
+    "class:necrobinder": -2.6886,
+    "class:regent": -2.1066,
+    "class:silent": -2.7408
+  },
+  "relics": [
+    {
+      "label": "Silver Crucible",
+      "kind": "cursed",
+      "beta": 0.8109,
+      "ci95": [
+        0.6388,
+        0.9732
+      ],
+      "taken": 530,
+      "offered": 1820,
+      "pass_rate_taken": 0.734,
+      "pass_rate_offered_not_taken": 0.5643,
+      "excluded": 5,
+      "exclusion_p": 0.117611,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Silken Tress",
+      "kind": "cursed",
+      "beta": 0.389,
+      "ci95": [
+        0.2534,
+        0.5551
+      ],
+      "taken": 609,
+      "offered": 1919,
+      "pass_rate_taken": 0.6453,
+      "pass_rate_offered_not_taken": 0.5557,
+      "excluded": 1,
+      "exclusion_p": 0.946872,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Nutritious Oyster",
+      "kind": "positive",
+      "beta": 0.2983,
+      "ci95": [
+        0.0365,
+        0.554
+      ],
+      "taken": 319,
+      "offered": 961,
+      "pass_rate_taken": 0.6301,
+      "pass_rate_offered_not_taken": 0.5794,
+      "excluded": 1,
+      "exclusion_p": 0.785554,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Fishing Rod",
+      "kind": "positive",
+      "beta": 0.2203,
+      "ci95": [
+        0.0667,
+        0.3876
+      ],
+      "taken": 601,
+      "offered": 1847,
+      "pass_rate_taken": 0.6073,
+      "pass_rate_offered_not_taken": 0.5642,
+      "excluded": 4,
+      "exclusion_p": 0.331219,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Small Capsule",
+      "kind": "positive",
+      "beta": 0.2055,
+      "ci95": [
+        -0.0422,
+        0.3815
+      ],
+      "taken": 209,
+      "offered": 739,
+      "pass_rate_taken": 0.6124,
+      "pass_rate_offered_not_taken": 0.5736,
+      "excluded": 1,
+      "exclusion_p": 0.635936,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Large Capsule",
+      "kind": "cursed",
+      "beta": 0.1696,
+      "ci95": [
+        0.0102,
+        0.3183
+      ],
+      "taken": 722,
+      "offered": 1940,
+      "pass_rate_taken": 0.5956,
+      "pass_rate_offered_not_taken": 0.5476,
+      "excluded": 13,
+      "exclusion_p": 7.8e-05,
+      "exclusion_flag": true
+    },
+    {
+      "label": "Neows Talisman",
+      "kind": "positive",
+      "beta": 0.1362,
+      "ci95": [
+        -0.0503,
+        0.3177
+      ],
+      "taken": 350,
+      "offered": 925,
+      "pass_rate_taken": 0.5914,
+      "pass_rate_offered_not_taken": 0.5287,
+      "excluded": 0,
+      "exclusion_p": 1.0,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Lost Coffer",
+      "kind": "positive",
+      "beta": 0.1066,
+      "ci95": [
+        -0.0457,
+        0.222
+      ],
+      "taken": 650,
+      "offered": 1984,
+      "pass_rate_taken": 0.5831,
+      "pass_rate_offered_not_taken": 0.5585,
+      "excluded": 0,
+      "exclusion_p": 1.0,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Scroll Boxes",
+      "kind": "positive",
+      "beta": 0.0956,
+      "ci95": [
+        -0.0485,
+        0.2435
+      ],
+      "taken": 670,
+      "offered": 1929,
+      "pass_rate_taken": 0.5806,
+      "pass_rate_offered_not_taken": 0.5639,
+      "excluded": 0,
+      "exclusion_p": 1.0,
+      "exclusion_flag": false
+    },
+    {
+      "label": "New Leaf",
+      "kind": "positive",
+      "beta": 0.0752,
+      "ci95": [
+        -0.0707,
+        0.235
+      ],
+      "taken": 582,
+      "offered": 1849,
+      "pass_rate_taken": 0.5756,
+      "pass_rate_offered_not_taken": 0.5856,
+      "excluded": 3,
+      "exclusion_p": 0.532913,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Neows Bones",
+      "kind": "cursed",
+      "beta": 0.0408,
+      "ci95": [
+        -0.1275,
+        0.1969
+      ],
+      "taken": 644,
+      "offered": 1968,
+      "pass_rate_taken": 0.5683,
+      "pass_rate_offered_not_taken": 0.5483,
+      "excluded": 6,
+      "exclusion_p": 0.096004,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Precarious Shears",
+      "kind": "cursed",
+      "beta": -0.0021,
+      "ci95": [
+        -0.1841,
+        0.1554
+      ],
+      "taken": 592,
+      "offered": 1829,
+      "pass_rate_taken": 0.5591,
+      "pass_rate_offered_not_taken": 0.5651,
+      "excluded": 3,
+      "exclusion_p": 0.54427,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Lead Paperweight",
+      "kind": "positive",
+      "beta": -0.0133,
+      "ci95": [
+        -0.15,
+        0.113
+      ],
+      "taken": 699,
+      "offered": 1887,
+      "pass_rate_taken": 0.5565,
+      "pass_rate_offered_not_taken": 0.5951,
+      "excluded": 1,
+      "exclusion_p": 0.965545,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Stone Humidifier",
+      "kind": "positive",
+      "beta": -0.0263,
+      "ci95": [
+        -0.1981,
+        0.1934
+      ],
+      "taken": 320,
+      "offered": 1103,
+      "pass_rate_taken": 0.5531,
+      "pass_rate_offered_not_taken": 0.53,
+      "excluded": 0,
+      "exclusion_p": 1.0,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Kaleidoscope",
+      "kind": "positive",
+      "beta": -0.0446,
+      "ci95": [
+        -0.1909,
+        0.1235
+      ],
+      "taken": 634,
+      "offered": 1765,
+      "pass_rate_taken": 0.5489,
+      "pass_rate_offered_not_taken": 0.5818,
+      "excluded": 1,
+      "exclusion_p": 0.952893,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Phial Holster",
+      "kind": "positive",
+      "beta": -0.0835,
+      "ci95": [
+        -0.2476,
+        0.0394
+      ],
+      "taken": 729,
+      "offered": 2119,
+      "pass_rate_taken": 0.5405,
+      "pass_rate_offered_not_taken": 0.5669,
+      "excluded": 1,
+      "exclusion_p": 0.970176,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Pomander",
+      "kind": "positive",
+      "beta": -0.0917,
+      "ci95": [
+        -0.3033,
+        0.1151
+      ],
+      "taken": 294,
+      "offered": 868,
+      "pass_rate_taken": 0.5374,
+      "pass_rate_offered_not_taken": 0.561,
+      "excluded": 1,
+      "exclusion_p": 0.758143,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Precise Scissors",
+      "kind": "positive",
+      "beta": -0.1329,
+      "ci95": [
+        -0.2876,
+        0.0455
+      ],
+      "taken": 592,
+      "offered": 1732,
+      "pass_rate_taken": 0.5287,
+      "pass_rate_offered_not_taken": 0.5421,
+      "excluded": 3,
+      "exclusion_p": 0.54427,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Neows Torment",
+      "kind": "positive",
+      "beta": -0.1405,
+      "ci95": [
+        -0.3112,
+        0.0076
+      ],
+      "taken": 644,
+      "offered": 1906,
+      "pass_rate_taken": 0.528,
+      "pass_rate_offered_not_taken": 0.5555,
+      "excluded": 1,
+      "exclusion_p": 0.955106,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Booming Conch",
+      "kind": "positive",
+      "beta": -0.1884,
+      "ci95": [
+        -0.3257,
+        -0.0561
+      ],
+      "taken": 628,
+      "offered": 1998,
+      "pass_rate_taken": 0.5175,
+      "pass_rate_offered_not_taken": 0.5642,
+      "excluded": 2,
+      "exclusion_p": 0.805123,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Golden Pearl",
+      "kind": "positive",
+      "beta": -0.2019,
+      "ci95": [
+        -0.3845,
+        -0.0198
+      ],
+      "taken": 526,
+      "offered": 1627,
+      "pass_rate_taken": 0.5133,
+      "pass_rate_offered_not_taken": 0.5577,
+      "excluded": 4,
+      "exclusion_p": 0.251632,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Hefty Tablet",
+      "kind": "cursed",
+      "beta": -0.2054,
+      "ci95": [
+        -0.3608,
+        -0.0323
+      ],
+      "taken": 589,
+      "offered": 1867,
+      "pass_rate_taken": 0.5127,
+      "pass_rate_offered_not_taken": 0.5344,
+      "excluded": 1,
+      "exclusion_p": 0.941505,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Arcane Scroll",
+      "kind": "positive",
+      "beta": -0.2138,
+      "ci95": [
+        -0.3643,
+        -0.0631
+      ],
+      "taken": 623,
+      "offered": 1736,
+      "pass_rate_taken": 0.512,
+      "pass_rate_offered_not_taken": 0.5642,
+      "excluded": 7,
+      "exclusion_p": 0.034364,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Leafy Poultice",
+      "kind": "cursed",
+      "beta": -0.2728,
+      "ci95": [
+        -0.4369,
+        -0.1107
+      ],
+      "taken": 598,
+      "offered": 1796,
+      "pass_rate_taken": 0.4983,
+      "pass_rate_offered_not_taken": 0.5392,
+      "excluded": 2,
+      "exclusion_p": 0.782928,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Cursed Pearl",
+      "kind": "cursed",
+      "beta": -0.2825,
+      "ci95": [
+        -0.4359,
+        -0.146
+      ],
+      "taken": 637,
+      "offered": 1789,
+      "pass_rate_taken": 0.4961,
+      "pass_rate_offered_not_taken": 0.5304,
+      "excluded": 3,
+      "exclusion_p": 0.59331,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Lava Rock",
+      "kind": "positive",
+      "beta": -0.2931,
+      "ci95": [
+        -0.496,
+        -0.0759
+      ],
+      "taken": 292,
+      "offered": 898,
+      "pass_rate_taken": 0.4897,
+      "pass_rate_offered_not_taken": 0.5281,
+      "excluded": 3,
+      "exclusion_p": 0.170039,
+      "exclusion_flag": false
+    },
+    {
+      "label": "Winged Boots",
+      "kind": "positive",
+      "beta": -0.3555,
+      "ci95": [
+        -0.5085,
+        -0.1824
+      ],
+      "taken": 645,
+      "offered": 1983,
+      "pass_rate_taken": 0.4775,
+      "pass_rate_offered_not_taken": 0.5336,
+      "excluded": 5,
+      "exclusion_p": 0.204918,
+      "exclusion_flag": false
+    }
+  ],
+  "rule": "take the offered relic with the largest beta; a relic taken in fewer than min_taken games counts as 0 (the average)",
+  "ascension": 0,
+  "profile": "veteran",
+  "batches": [
+    {
+      "batch_id": "explore-neow-ironclad-a0-train-n3000",
+      "character": "ironclad",
+      "content_sha256": "0385759aa3d16e407cf5db2481e67fbc76e839facb5ab23bf420f00965496efd",
+      "policy": {
+        "effective": {
+          "params": {
+            "neow_explore": 1.0,
+            "threshold": 0.0,
+            "tune": {
+              "boss_heal_below": 0.9,
+              "card_slope": 0.09,
+              "card_threshold": 3.2,
+              "danger_frac": 0.3,
+              "elite_bad_value": -2.5,
+              "elite_mid_hp": 0.65,
+              "elite_mid_value": 0.2,
+              "elite_ok_floor": 4,
+              "elite_ok_hp": 0.8,
+              "elite_value": 2.0,
+              "heal_below": 0.7,
+              "max_deck": 32,
+              "monster_hp_penalty": 0.5,
+              "monster_value": 1.0,
+              "potion_hp_abs": 6,
+              "potion_hp_frac": 0.15,
+              "rest_base": 1.0,
+              "rest_weight": 3.0,
+              "shop_base": 0.3,
+              "shop_card_threshold": 3.6,
+              "shop_mid": 0.5,
+              "shop_mid_gold": 75,
+              "shop_potion_margin": 40,
+              "shop_rich": 1.2,
+              "shop_rich_gold": 150,
+              "treasure_value": 1.8,
+              "unknown_value": 0.8
+            },
+            "values": "experiments/cardvalue/ironclad-a0-v1.json",
+            "values_sha256": "8b3fe2f4d88b87dcf7a0562df320c630a5513896832624214605a3bcf6d10d70"
+          },
+          "version": "1"
+        },
+        "name": "rules_v2_neow",
+        "params": {
+          "neow_explore": 1.0,
+          "threshold": 0.0
+        }
+      },
+      "known_simulator_gaps": [
+        "G3-sovereign-blade-crash",
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G6-undefined-name-in-reward-roll",
+        "G7-no-legal-actions",
+        "G8-dragon-fruit-lucky-fysh-shop",
+        "G9-particle-wall-loop",
+        "G10-first-game-card-id-shift",
+        "G11-no-act-start-ancient-heal"
+      ]
+    },
+    {
+      "batch_id": "explore-neow-silent-a0-train-n3000",
+      "character": "silent",
+      "content_sha256": "a1babc29460266bfb364a5d855e969bd4f57ea5bd37306cfc271077c521906d4",
+      "policy": {
+        "effective": {
+          "params": {
+            "neow_explore": 1.0,
+            "threshold": 0.0,
+            "tune": {
+              "boss_heal_below": 0.9,
+              "card_slope": 0.09,
+              "card_threshold": 3.2,
+              "danger_frac": 0.3,
+              "elite_bad_value": -2.5,
+              "elite_mid_hp": 0.65,
+              "elite_mid_value": 0.2,
+              "elite_ok_floor": 4,
+              "elite_ok_hp": 0.8,
+              "elite_value": 2.0,
+              "heal_below": 0.7,
+              "max_deck": 32,
+              "monster_hp_penalty": 0.5,
+              "monster_value": 1.0,
+              "potion_hp_abs": 6,
+              "potion_hp_frac": 0.15,
+              "rest_base": 1.0,
+              "rest_weight": 3.0,
+              "shop_base": 0.3,
+              "shop_card_threshold": 3.6,
+              "shop_mid": 0.5,
+              "shop_mid_gold": 75,
+              "shop_potion_margin": 40,
+              "shop_rich": 1.2,
+              "shop_rich_gold": 150,
+              "treasure_value": 1.8,
+              "unknown_value": 0.8
+            },
+            "values": "experiments/cardvalue/silent-a0-v1.json",
+            "values_sha256": "fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859"
+          },
+          "version": "1"
+        },
+        "name": "rules_v2_neow",
+        "params": {
+          "neow_explore": 1.0,
+          "threshold": 0.0,
+          "values": "experiments/cardvalue/silent-a0-v1.json"
+        }
+      },
+      "known_simulator_gaps": [
+        "G3-sovereign-blade-crash",
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G6-undefined-name-in-reward-roll",
+        "G7-no-legal-actions",
+        "G8-dragon-fruit-lucky-fysh-shop",
+        "G9-particle-wall-loop",
+        "G10-first-game-card-id-shift",
+        "G11-no-act-start-ancient-heal"
+      ]
+    },
+    {
+      "batch_id": "explore-neow-regent-a0-train-n3000",
+      "character": "regent",
+      "content_sha256": "5fbab717b41a3681409937e8d7c669aab09fa9367a14fb57871f53228086dde1",
+      "policy": {
+        "effective": {
+          "params": {
+            "neow_explore": 1.0,
+            "threshold": 0.0,
+            "tune": {
+              "boss_heal_below": 0.9,
+              "card_slope": 0.09,
+              "card_threshold": 3.2,
+              "danger_frac": 0.3,
+              "elite_bad_value": -2.5,
+              "elite_mid_hp": 0.65,
+              "elite_mid_value": 0.2,
+              "elite_ok_floor": 4,
+              "elite_ok_hp": 0.8,
+              "elite_value": 2.0,
+              "heal_below": 0.7,
+              "max_deck": 32,
+              "monster_hp_penalty": 0.5,
+              "monster_value": 1.0,
+              "potion_hp_abs": 6,
+              "potion_hp_frac": 0.15,
+              "rest_base": 1.0,
+              "rest_weight": 3.0,
+              "shop_base": 0.3,
+              "shop_card_threshold": 3.6,
+              "shop_mid": 0.5,
+              "shop_mid_gold": 75,
+              "shop_potion_margin": 40,
+              "shop_rich": 1.2,
+              "shop_rich_gold": 150,
+              "treasure_value": 1.8,
+              "unknown_value": 0.8
+            },
+            "values": "experiments/cardvalue/regent-a0-v1.json",
+            "values_sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db"
+          },
+          "version": "1"
+        },
+        "name": "rules_v2_neow",
+        "params": {
+          "neow_explore": 1.0,
+          "threshold": 0.0,
+          "values": "experiments/cardvalue/regent-a0-v1.json"
+        }
+      },
+      "known_simulator_gaps": [
+        "G3-sovereign-blade-crash",
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G6-undefined-name-in-reward-roll",
+        "G7-no-legal-actions",
+        "G8-dragon-fruit-lucky-fysh-shop",
+        "G9-particle-wall-loop",
+        "G10-first-game-card-id-shift",
+        "G11-no-act-start-ancient-heal"
+      ]
+    },
+    {
+      "batch_id": "explore-neow-necrobinder-a0-train-n3000",
+      "character": "necrobinder",
+      "content_sha256": "2403a21b7cb6cbf1d34b308cc0eaa35c130d0a9fa39e3a3cf3039cd1c47747af",
+      "policy": {
+        "effective": {
+          "params": {
+            "neow_explore": 1.0,
+            "threshold": 0.0,
+            "tune": {
+              "boss_heal_below": 0.9,
+              "card_slope": 0.09,
+              "card_threshold": 3.2,
+              "danger_frac": 0.3,
+              "elite_bad_value": -2.5,
+              "elite_mid_hp": 0.65,
+              "elite_mid_value": 0.2,
+              "elite_ok_floor": 4,
+              "elite_ok_hp": 0.8,
+              "elite_value": 2.0,
+              "heal_below": 0.7,
+              "max_deck": 32,
+              "monster_hp_penalty": 0.5,
+              "monster_value": 1.0,
+              "potion_hp_abs": 6,
+              "potion_hp_frac": 0.15,
+              "rest_base": 1.0,
+              "rest_weight": 3.0,
+              "shop_base": 0.3,
+              "shop_card_threshold": 3.6,
+              "shop_mid": 0.5,
+              "shop_mid_gold": 75,
+              "shop_potion_margin": 40,
+              "shop_rich": 1.2,
+              "shop_rich_gold": 150,
+              "treasure_value": 1.8,
+              "unknown_value": 0.8
+            },
+            "values": "experiments/cardvalue/necrobinder-a0-v1.json",
+            "values_sha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97"
+          },
+          "version": "1"
+        },
+        "name": "rules_v2_neow",
+        "params": {
+          "neow_explore": 1.0,
+          "threshold": 0.0,
+          "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+        }
+      },
+      "known_simulator_gaps": [
+        "G3-sovereign-blade-crash",
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G6-undefined-name-in-reward-roll",
+        "G7-no-legal-actions",
+        "G8-dragon-fruit-lucky-fysh-shop",
+        "G9-particle-wall-loop",
+        "G10-first-game-card-id-shift",
+        "G11-no-act-start-ancient-heal",
+        "G12-only-overgrowth-played"
+      ]
+    },
+    {
+      "batch_id": "explore-neow-defect-a0-train-n3000",
+      "character": "defect",
+      "content_sha256": "406d2d13e91cb055b5031e530811795afd5ac65cfd35e15ecd201677a993f973",
+      "policy": {
+        "effective": {
+          "params": {
+            "neow_explore": 1.0,
+            "threshold": 0.0,
+            "tune": {
+              "boss_heal_below": 0.9,
+              "card_slope": 0.09,
+              "card_threshold": 3.2,
+              "danger_frac": 0.3,
+              "elite_bad_value": -2.5,
+              "elite_mid_hp": 0.65,
+              "elite_mid_value": 0.2,
+              "elite_ok_floor": 4,
+              "elite_ok_hp": 0.8,
+              "elite_value": 2.0,
+              "heal_below": 0.7,
+              "max_deck": 32,
+              "monster_hp_penalty": 0.5,
+              "monster_value": 1.0,
+              "potion_hp_abs": 6,
+              "potion_hp_frac": 0.15,
+              "rest_base": 1.0,
+              "rest_weight": 3.0,
+              "shop_base": 0.3,
+              "shop_card_threshold": 3.6,
+              "shop_mid": 0.5,
+              "shop_mid_gold": 75,
+              "shop_potion_margin": 40,
+              "shop_rich": 1.2,
+              "shop_rich_gold": 150,
+              "treasure_value": 1.8,
+              "unknown_value": 0.8
+            },
+            "values": "experiments/cardvalue/defect-a0-v1.json",
+            "values_sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
+          },
+          "version": "1"
+        },
+        "name": "rules_v2_neow",
+        "params": {
+          "neow_explore": 1.0,
+          "threshold": 0.0,
+          "values": "experiments/cardvalue/defect-a0-v1.json"
+        }
+      },
+      "known_simulator_gaps": [
+        "G3-sovereign-blade-crash",
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G6-undefined-name-in-reward-roll",
+        "G7-no-legal-actions",
+        "G8-dragon-fruit-lucky-fysh-shop",
+        "G9-particle-wall-loop",
+        "G10-first-game-card-id-shift",
+        "G11-no-act-start-ancient-heal",
+        "G12-only-overgrowth-played"
+      ]
+    }
+  ]
+}
