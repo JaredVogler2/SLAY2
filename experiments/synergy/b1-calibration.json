@@ -1,0 +1,1311 @@
+{
+  "schema": 1,
+  "kind": "synergy-calibration",
+  "stage": "B1 of ADR-050 (exploratory: training and development seeds)",
+  "outcome": "the run gets past the Act-1 boss",
+  "act_index": 0,
+  "risk": "balanced",
+  "advisor": {
+    "synergy_table_sha256": "9946e3fa4648a86030cd6bcfd9748fd3bf9f3725afab8bba2deebc781face554",
+    "catalog_sha256": "6717e3d5d311588dda139d2c5dde1f5fe8493be3f9628ff013ac675f9608b147"
+  },
+  "folds": 5,
+  "bootstrap_draws": 200,
+  "cohorts": [
+    {
+      "name": "ironclad-train",
+      "character": "Ironclad",
+      "partition": "train",
+      "batch_id": "explore-ironclad-a0-train-rep0",
+      "episodes_gz_sha256": "60f218fa516bbd54754577a69a0250904c358ef529181e6e1c7189af29d46dac",
+      "boss_fights": 3812,
+      "pass_rate": 0.4095,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "silent-train",
+      "character": "Silent",
+      "partition": "train",
+      "batch_id": "explore-silent-a0-train-rep0",
+      "episodes_gz_sha256": "e9c24dcd8c4517756818258f8ef1fb3899605208370da1b269c458ccf4cd0fe4",
+      "boss_fights": 2332,
+      "pass_rate": 0.1068,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "regent-train",
+      "character": "Regent",
+      "partition": "train",
+      "batch_id": "explore-regent-a0-train-rep0",
+      "episodes_gz_sha256": "8a1f4d2b9f93a63c2f53cd755d02540038abd427ca7c0696d8d63a594d768234",
+      "boss_fights": 2703,
+      "pass_rate": 0.2238,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "necrobinder-train",
+      "character": "Necrobinder",
+      "partition": "train",
+      "batch_id": "explore-necrobinder-a0-train-rep0",
+      "episodes_gz_sha256": "cb3dc9e631f5ddf51cd47ec1c9bbcb8072152002031bbf3cc36dba25c89b87a8",
+      "boss_fights": 3389,
+      "pass_rate": 0.44,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "defect-train",
+      "character": "Defect",
+      "partition": "train",
+      "batch_id": "explore-defect-a0-train-rep0",
+      "episodes_gz_sha256": "721c3ab99b1e9b3159ce419c476dacfa1d16d9015be8830528170df347341d18",
+      "boss_fights": 3212,
+      "pass_rate": 0.4026,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "ironclad-dev",
+      "character": "Ironclad",
+      "partition": "dev",
+      "batch_id": "explore3-ironclad-a0-dev-o5000-n5000",
+      "episodes_gz_sha256": "5505c9409f81517e6f6dbe6e4a11d30095af564cff5dae253e15d8be60a66be4",
+      "boss_fights": 4269,
+      "pass_rate": 0.5488,
+      "policy": "rules_explore_v3"
+    }
+  ],
+  "pooled": {
+    "all_cohorts": {
+      "rows": 19717,
+      "pass_rate": 0.3825,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.45033,
+          "auc": 0.8582
+        },
+        "index": {
+          "log_loss": 0.44298,
+          "auc": 0.8633
+        },
+        "index+synergy": {
+          "log_loss": 0.4374,
+          "auc": 0.8676
+        },
+        "index+needs": {
+          "log_loss": 0.44038,
+          "auc": 0.8654
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.43724,
+          "auc": 0.8677
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.00559,
+          "ci95": [
+            -0.00707,
+            -0.00377
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.0026,
+          "ci95": [
+            -0.00366,
+            -0.00144
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": -0.00314,
+          "ci95": [
+            -0.00413,
+            -0.00186
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": 0.00016,
+          "ci95": [
+            7e-05,
+            0.00024
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.1619,
+          "ci95": [
+            0.1401,
+            0.1844
+          ],
+          "sd_points": 2.278
+        },
+        "coverage": {
+          "per_point": -0.0144,
+          "ci95": [
+            -0.0409,
+            0.014
+          ],
+          "sd_points": 1.758
+        },
+        "curve": {
+          "per_point": 0.334,
+          "ci95": [
+            0.0931,
+            0.5813
+          ],
+          "sd_points": 0.144
+        },
+        "unmet": {
+          "per_point": 0.1062,
+          "ci95": [
+            0.0853,
+            0.1326
+          ],
+          "sd_points": 1.881
+        },
+        "scaler": {
+          "per_point": 0.1245,
+          "ci95": [
+            0.104,
+            0.1466
+          ],
+          "sd_points": 2.084
+        },
+        "engines": {
+          "per_point": -0.0015,
+          "ci95": [
+            -0.0245,
+            0.0219
+          ],
+          "sd_points": 1.747
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": -0.089,
+          "ci95": [
+            -0.243,
+            0.089
+          ]
+        },
+        "curve": {
+          "to_quality": 2.063,
+          "ci95": [
+            0.589,
+            3.563
+          ]
+        },
+        "unmet": {
+          "to_quality": 0.656,
+          "ci95": [
+            0.505,
+            0.803
+          ]
+        },
+        "scaler": {
+          "to_quality": 0.769,
+          "ci95": [
+            0.617,
+            0.995
+          ]
+        },
+        "engines": {
+          "to_quality": -0.009,
+          "ci95": [
+            -0.138,
+            0.134
+          ]
+        }
+      }
+    },
+    "training_cohorts_only": {
+      "rows": 15448,
+      "pass_rate": 0.3365,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.42418,
+          "auc": 0.8665
+        },
+        "index": {
+          "log_loss": 0.41852,
+          "auc": 0.8705
+        },
+        "index+synergy": {
+          "log_loss": 0.41504,
+          "auc": 0.8731
+        },
+        "index+needs": {
+          "log_loss": 0.4171,
+          "auc": 0.8717
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.41495,
+          "auc": 0.8732
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.00348,
+          "ci95": [
+            -0.00476,
+            -0.002
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.00142,
+          "ci95": [
+            -0.00219,
+            -0.00055
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": -0.00215,
+          "ci95": [
+            -0.00325,
+            -0.00126
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": 9e-05,
+          "ci95": [
+            -0.00015,
+            0.00032
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.1316,
+          "ci95": [
+            0.1051,
+            0.1623
+          ],
+          "sd_points": 2.323
+        },
+        "coverage": {
+          "per_point": 0.0116,
+          "ci95": [
+            -0.022,
+            0.0452
+          ],
+          "sd_points": 1.777
+        },
+        "curve": {
+          "per_point": 0.1592,
+          "ci95": [
+            -0.0947,
+            0.4144
+          ],
+          "sd_points": 0.152
+        },
+        "unmet": {
+          "per_point": 0.0727,
+          "ci95": [
+            0.0506,
+            0.1015
+          ],
+          "sd_points": 1.966
+        },
+        "scaler": {
+          "per_point": 0.1157,
+          "ci95": [
+            0.0862,
+            0.1414
+          ],
+          "sd_points": 2.002
+        },
+        "engines": {
+          "per_point": 0.0237,
+          "ci95": [
+            -0.004,
+            0.0504
+          ],
+          "sd_points": 1.771
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": 0.088,
+          "ci95": [
+            -0.15,
+            0.395
+          ]
+        },
+        "curve": {
+          "to_quality": 1.209,
+          "ci95": [
+            -0.767,
+            3.168
+          ]
+        },
+        "unmet": {
+          "to_quality": 0.553,
+          "ci95": [
+            0.37,
+            0.768
+          ]
+        },
+        "scaler": {
+          "to_quality": 0.879,
+          "ci95": [
+            0.591,
+            1.236
+          ]
+        },
+        "engines": {
+          "to_quality": 0.18,
+          "ci95": [
+            -0.026,
+            0.399
+          ]
+        }
+      }
+    }
+  },
+  "per_cohort": {
+    "ironclad-train": {
+      "rows": 3812,
+      "pass_rate": 0.4095,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.50273,
+          "auc": 0.822
+        },
+        "index": {
+          "log_loss": 0.49038,
+          "auc": 0.8326
+        },
+        "index+synergy": {
+          "log_loss": 0.48572,
+          "auc": 0.8369
+        },
+        "index+needs": {
+          "log_loss": 0.4863,
+          "auc": 0.836
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.48558,
+          "auc": 0.8369
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.00466,
+          "ci95": [
+            -0.00808,
+            -0.00089
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.00408,
+          "ci95": [
+            -0.00772,
+            -0.00084
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": -0.00072,
+          "ci95": [
+            -0.00232,
+            0.00079
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": 0.00014,
+          "ci95": [
+            -0.0006,
+            0.00087
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.2234,
+          "ci95": [
+            0.1769,
+            0.2694
+          ],
+          "sd_points": 2.076
+        },
+        "coverage": {
+          "per_point": -0.077,
+          "ci95": [
+            -0.1347,
+            -0.0166
+          ],
+          "sd_points": 1.628
+        },
+        "curve": {
+          "per_point": 0.9741,
+          "ci95": [
+            0.3439,
+            1.8026
+          ],
+          "sd_points": 0.128
+        },
+        "unmet": {
+          "per_point": 0.169,
+          "ci95": [
+            0.1133,
+            0.2251
+          ],
+          "sd_points": 1.503
+        },
+        "scaler": {
+          "per_point": 0.0612,
+          "ci95": [
+            0.0245,
+            0.0954
+          ],
+          "sd_points": 2.4
+        },
+        "engines": {
+          "per_point": 0.0365,
+          "ci95": [
+            -0.0195,
+            0.0966
+          ],
+          "sd_points": 1.698
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": -0.345,
+          "ci95": [
+            -0.562,
+            -0.075
+          ]
+        },
+        "curve": {
+          "to_quality": 4.361,
+          "ci95": [
+            1.519,
+            8.647
+          ]
+        },
+        "unmet": {
+          "to_quality": 0.757,
+          "ci95": [
+            0.496,
+            1.09
+          ]
+        },
+        "scaler": {
+          "to_quality": 0.274,
+          "ci95": [
+            0.096,
+            0.471
+          ]
+        },
+        "engines": {
+          "to_quality": 0.163,
+          "ci95": [
+            -0.087,
+            0.475
+          ]
+        }
+      }
+    },
+    "silent-train": {
+      "rows": 2332,
+      "pass_rate": 0.1068,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.26078,
+          "auc": 0.8446
+        },
+        "index": {
+          "log_loss": 0.25781,
+          "auc": 0.852
+        },
+        "index+synergy": {
+          "log_loss": 0.25758,
+          "auc": 0.8537
+        },
+        "index+needs": {
+          "log_loss": 0.25705,
+          "auc": 0.8545
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.25727,
+          "auc": 0.8542
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.00023,
+          "ci95": [
+            -0.00293,
+            0.00279
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.00076,
+          "ci95": [
+            -0.00316,
+            0.00207
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": 0.00022,
+          "ci95": [
+            -0.00143,
+            0.0018
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": 0.00032,
+          "ci95": [
+            -0.00075,
+            0.0013
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.2017,
+          "ci95": [
+            0.082,
+            0.2962
+          ],
+          "sd_points": 1.931
+        },
+        "coverage": {
+          "per_point": 0.082,
+          "ci95": [
+            -0.0508,
+            0.2332
+          ],
+          "sd_points": 1.454
+        },
+        "curve": {
+          "per_point": -0.3423,
+          "ci95": [
+            -16.7459,
+            2.7478
+          ],
+          "sd_points": 0.019
+        },
+        "unmet": {
+          "per_point": 0.1418,
+          "ci95": [
+            0.0146,
+            0.2758
+          ],
+          "sd_points": 1.362
+        },
+        "scaler": {
+          "per_point": 0.1153,
+          "ci95": [
+            -0.0127,
+            0.2685
+          ],
+          "sd_points": 1.173
+        },
+        "engines": {
+          "per_point": -0.0544,
+          "ci95": [
+            -0.2001,
+            0.0843
+          ],
+          "sd_points": 1.381
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": 0.407,
+          "ci95": [
+            -0.228,
+            2.454
+          ]
+        },
+        "curve": {
+          "to_quality": -1.697,
+          "ci95": [
+            -94.412,
+            21.826
+          ]
+        },
+        "unmet": {
+          "to_quality": 0.703,
+          "ci95": [
+            0.086,
+            1.94
+          ]
+        },
+        "scaler": {
+          "to_quality": 0.572,
+          "ci95": [
+            -0.049,
+            2.133
+          ]
+        },
+        "engines": {
+          "to_quality": -0.27,
+          "ci95": [
+            -1.029,
+            0.524
+          ]
+        }
+      }
+    },
+    "regent-train": {
+      "rows": 2703,
+      "pass_rate": 0.2238,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.39768,
+          "auc": 0.8341
+        },
+        "index": {
+          "log_loss": 0.39286,
+          "auc": 0.8395
+        },
+        "index+synergy": {
+          "log_loss": 0.39053,
+          "auc": 0.8427
+        },
+        "index+needs": {
+          "log_loss": 0.38997,
+          "auc": 0.8433
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.39066,
+          "auc": 0.8426
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.00232,
+          "ci95": [
+            -0.00527,
+            0.00076
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.00289,
+          "ci95": [
+            -0.00613,
+            -0.00038
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": 0.00069,
+          "ci95": [
+            -7e-05,
+            0.00152
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": -0.00013,
+          "ci95": [
+            -0.00121,
+            0.00091
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.205,
+          "ci95": [
+            0.1355,
+            0.2797
+          ],
+          "sd_points": 2.175
+        },
+        "coverage": {
+          "per_point": -0.0805,
+          "ci95": [
+            -0.1623,
+            -0.008
+          ],
+          "sd_points": 1.549
+        },
+        "curve": {
+          "per_point": 0.3193,
+          "ci95": [
+            -2.2455,
+            16.1638
+          ],
+          "sd_points": 0.042
+        },
+        "unmet": {
+          "per_point": 0.0929,
+          "ci95": [
+            0.0257,
+            0.1475
+          ],
+          "sd_points": 2.294
+        },
+        "scaler": {
+          "per_point": -0.0537,
+          "ci95": [
+            -0.2097,
+            0.0971
+          ],
+          "sd_points": 0.859
+        },
+        "engines": {
+          "per_point": 0.0472,
+          "ci95": [
+            -0.0234,
+            0.1165
+          ],
+          "sd_points": 1.86
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": -0.393,
+          "ci95": [
+            -0.786,
+            -0.043
+          ]
+        },
+        "curve": {
+          "to_quality": 1.557,
+          "ci95": [
+            -14.229,
+            65.047
+          ]
+        },
+        "unmet": {
+          "to_quality": 0.453,
+          "ci95": [
+            0.163,
+            0.706
+          ]
+        },
+        "scaler": {
+          "to_quality": -0.262,
+          "ci95": [
+            -0.991,
+            0.514
+          ]
+        },
+        "engines": {
+          "to_quality": 0.23,
+          "ci95": [
+            -0.119,
+            0.72
+          ]
+        }
+      }
+    },
+    "necrobinder-train": {
+      "rows": 3389,
+      "pass_rate": 0.44,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.40556,
+          "auc": 0.8937
+        },
+        "index": {
+          "log_loss": 0.39897,
+          "auc": 0.8975
+        },
+        "index+synergy": {
+          "log_loss": 0.39848,
+          "auc": 0.8976
+        },
+        "index+needs": {
+          "log_loss": 0.39915,
+          "auc": 0.8975
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.39892,
+          "auc": 0.8975
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.00049,
+          "ci95": [
+            -0.00233,
+            0.00165
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": 0.00019,
+          "ci95": [
+            -0.00085,
+            0.00145
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": -0.00023,
+          "ci95": [
+            -0.001,
+            0.00061
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": -0.00044,
+          "ci95": [
+            -0.0022,
+            0.00134
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.0561,
+          "ci95": [
+            0.0034,
+            0.1156
+          ],
+          "sd_points": 2.204
+        },
+        "coverage": {
+          "per_point": 0.1606,
+          "ci95": [
+            0.0984,
+            0.238
+          ],
+          "sd_points": 1.803
+        },
+        "curve": {
+          "per_point": -0.0622,
+          "ci95": [
+            -0.3543,
+            0.2365
+          ],
+          "sd_points": 0.28
+        },
+        "unmet": {
+          "per_point": -0.033,
+          "ci95": [
+            -0.0789,
+            0.0155
+          ],
+          "sd_points": 2.195
+        },
+        "scaler": {
+          "per_point": 0.1909,
+          "ci95": [
+            -0.0094,
+            0.3912
+          ],
+          "sd_points": 0.473
+        },
+        "engines": {
+          "per_point": -0.0693,
+          "ci95": [
+            -0.1184,
+            -0.0112
+          ],
+          "sd_points": 1.931
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": 2.863,
+          "ci95": [
+            0.306,
+            15.001
+          ]
+        },
+        "curve": {
+          "to_quality": -1.11,
+          "ci95": [
+            -13.653,
+            8.559
+          ]
+        },
+        "unmet": {
+          "to_quality": -0.589,
+          "ci95": [
+            -4.878,
+            0.418
+          ]
+        },
+        "scaler": {
+          "to_quality": 3.405,
+          "ci95": [
+            -4.98,
+            20.224
+          ]
+        },
+        "engines": {
+          "to_quality": -1.237,
+          "ci95": [
+            -5.203,
+            0.407
+          ]
+        }
+      }
+    },
+    "defect-train": {
+      "rows": 3212,
+      "pass_rate": 0.4026,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.49152,
+          "auc": 0.8327
+        },
+        "index": {
+          "log_loss": 0.48987,
+          "auc": 0.8343
+        },
+        "index+synergy": {
+          "log_loss": 0.4693,
+          "auc": 0.8498
+        },
+        "index+needs": {
+          "log_loss": 0.48523,
+          "auc": 0.8382
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.4732,
+          "auc": 0.8468
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.02056,
+          "ci95": [
+            -0.02714,
+            -0.01376
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.00464,
+          "ci95": [
+            -0.00767,
+            -0.00157
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": -0.01203,
+          "ci95": [
+            -0.01776,
+            -0.00677
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": -0.0039,
+          "ci95": [
+            -0.00706,
+            -0.00078
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.0088,
+          "ci95": [
+            -0.0477,
+            0.0667
+          ],
+          "sd_points": 2.202
+        },
+        "coverage": {
+          "per_point": 0.0742,
+          "ci95": [
+            0.0142,
+            0.1432
+          ],
+          "sd_points": 1.838
+        },
+        "curve": {
+          "per_point": 1.6124,
+          "ci95": [
+            0.3177,
+            7.1843
+          ],
+          "sd_points": 0.073
+        },
+        "unmet": {
+          "per_point": 0.0821,
+          "ci95": [
+            0.0052,
+            0.1494
+          ],
+          "sd_points": 1.584
+        },
+        "scaler": {
+          "per_point": 0.2094,
+          "ci95": [
+            0.1639,
+            0.2681
+          ],
+          "sd_points": 2.064
+        },
+        "engines": {
+          "per_point": 0.1652,
+          "ci95": [
+            0.0982,
+            0.2306
+          ],
+          "sd_points": 1.576
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": 8.454,
+          "ci95": [
+            -24.652,
+            54.295
+          ]
+        },
+        "curve": {
+          "to_quality": 183.74,
+          "ci95": [
+            -876.451,
+            1606.483
+          ]
+        },
+        "unmet": {
+          "to_quality": 9.356,
+          "ci95": [
+            -30.414,
+            61.072
+          ]
+        },
+        "scaler": {
+          "to_quality": 23.862,
+          "ci95": [
+            -73.619,
+            183.507
+          ]
+        },
+        "engines": {
+          "to_quality": 18.829,
+          "ci95": [
+            -55.216,
+            155.373
+          ]
+        }
+      }
+    },
+    "ironclad-dev": {
+      "rows": 4269,
+      "pass_rate": 0.5488,
+      "cross_validation": {
+        "controls": {
+          "log_loss": 0.54495,
+          "auc": 0.781
+        },
+        "index": {
+          "log_loss": 0.52998,
+          "auc": 0.7967
+        },
+        "index+synergy": {
+          "log_loss": 0.51368,
+          "auc": 0.8154
+        },
+        "index+needs": {
+          "log_loss": 0.51973,
+          "auc": 0.8085
+        },
+        "index+needs+scalers": {
+          "log_loss": 0.51415,
+          "auc": 0.8149
+        }
+      },
+      "loss_gaps": {
+        "synergy_added_to_index": {
+          "mean": -0.0163,
+          "ci95": [
+            -0.02159,
+            -0.01059
+          ]
+        },
+        "needs_added_to_index": {
+          "mean": -0.01025,
+          "ci95": [
+            -0.01415,
+            -0.00621
+          ]
+        },
+        "scalers_added_to_needs": {
+          "mean": -0.00558,
+          "ci95": [
+            -0.00875,
+            -0.00226
+          ]
+        },
+        "engines_added_to_needs_and_scalers": {
+          "mean": -0.00047,
+          "ci95": [
+            -0.00157,
+            0.00055
+          ]
+        }
+      },
+      "coefficients": {
+        "quality": {
+          "per_point": 0.2724,
+          "ci95": [
+            0.2078,
+            0.3309
+          ],
+          "sd_points": 2.074
+        },
+        "coverage": {
+          "per_point": -0.1113,
+          "ci95": [
+            -0.1646,
+            -0.0567
+          ],
+          "sd_points": 1.62
+        },
+        "curve": {
+          "per_point": 1.2235,
+          "ci95": [
+            0.6177,
+            2.1545
+          ],
+          "sd_points": 0.107
+        },
+        "unmet": {
+          "per_point": 0.224,
+          "ci95": [
+            0.1686,
+            0.2836
+          ],
+          "sd_points": 1.492
+        },
+        "scaler": {
+          "per_point": 0.1451,
+          "ci95": [
+            0.1132,
+            0.1807
+          ],
+          "sd_points": 2.191
+        },
+        "engines": {
+          "per_point": -0.0674,
+          "ci95": [
+            -0.1139,
+            -0.0095
+          ],
+          "sd_points": 1.656
+        }
+      },
+      "ratios": {
+        "quality": {
+          "to_quality": 1.0,
+          "ci95": [
+            1.0,
+            1.0
+          ]
+        },
+        "coverage": {
+          "to_quality": -0.408,
+          "ci95": [
+            -0.603,
+            -0.245
+          ]
+        },
+        "curve": {
+          "to_quality": 4.492,
+          "ci95": [
+            2.092,
+            8.237
+          ]
+        },
+        "unmet": {
+          "to_quality": 0.822,
+          "ci95": [
+            0.622,
+            1.113
+          ]
+        },
+        "scaler": {
+          "to_quality": 0.533,
+          "ci95": [
+            0.377,
+            0.75
+          ]
+        },
+        "engines": {
+          "to_quality": -0.247,
+          "ci95": [
+            -0.438,
+            -0.039
+          ]
+        }
+      }
+    }
+  },
+  "calibration": {
+    "rule": "weight = pooled slope relative to the average card rating, rounded to 0.05, within [0, 1]; read from all cohorts pooled",
+    "weights": {
+      "unmet": 0.65,
+      "scaler": 0.75,
+      "engines": 0.0
+    },
+    "ratios": {
+      "unmet": {
+        "to_quality": 0.656,
+        "ci95": [
+          0.505,
+          0.803
+        ]
+      },
+      "scaler": {
+        "to_quality": 0.769,
+        "ci95": [
+          0.617,
+          0.995
+        ]
+      },
+      "engines": {
+        "to_quality": -0.009,
+        "ci95": [
+          -0.138,
+          0.134
+        ]
+      }
+    }
+  }
+}
