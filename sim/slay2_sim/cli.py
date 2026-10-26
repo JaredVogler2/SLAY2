@@ -1,4 +1,4 @@
-"""Command line: ``python -m slay2_sim <doctor|seeds|smoke|run|audit|compare|oracle|catalog>``."""
+"""Command line: ``python -m slay2_sim <doctor|seeds|smoke|run|audit|compare|oracle|catalog|patchdiff>``."""
 
 from __future__ import annotations
 
@@ -186,6 +186,30 @@ def cmd_compare(args) -> int:
     return 0
 
 
+def cmd_patchdiff(args) -> int:
+    from . import patchdiff
+
+    # resolve output paths first: activating the simulator changes the working directory
+    out_path = Path(args.out).resolve() if args.out else None
+    coverage_path = Path(args.coverage_out).resolve() if args.coverage_out else None
+    diff = patchdiff.build_patch_diff(args.old, args.new)
+    print(patchdiff.render_markdown([diff]))
+    if out_path:
+        out = out_path
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(diff, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"wrote {out}")
+    if args.coverage:
+        sim = external.locate()
+        external.activate(sim.root)
+        cov = patchdiff.simulator_coverage(args.new)
+        print(json.dumps(cov, indent=2))
+        if coverage_path:
+            coverage_path.parent.mkdir(parents=True, exist_ok=True)
+            coverage_path.write_text(json.dumps(cov, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="slay2_sim", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -240,6 +264,14 @@ def build_parser() -> argparse.ArgumentParser:
     cat = sub.add_parser("catalog", help="derive the facts-only card catalog from the pinned local references")
     cat.add_argument("--dry-run", action="store_true")
     cat.set_defaults(fn=cmd_catalog)
+
+    pd = sub.add_parser("patchdiff", help="diff the factual layer (ids, categories, changed fields) of two archived STS2 versions")
+    pd.add_argument("old")
+    pd.add_argument("new")
+    pd.add_argument("--out", help="write the machine-readable diff, e.g. docs/patches/sts2-0.103.2-to-0.107.1.json")
+    pd.add_argument("--coverage", action="store_true", help="also list ids of NEW that the pinned simulator does not implement")
+    pd.add_argument("--coverage-out")
+    pd.set_defaults(fn=cmd_patchdiff)
 
     cp = sub.add_parser("compare", help="paired comparison of two batches played on the same seeds (a minus b)")
     cp.add_argument("a")
