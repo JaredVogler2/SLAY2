@@ -146,3 +146,54 @@ Original new **Slay the Spire 2**, solo-first, 5-character / 3-act / Ascension A
 **Alternatives rejected.** Training from scratch on the starter deck only (not the distribution the policy will meet); a flat MLP over concatenated slots (no weight sharing across slots, slow to learn); end-to-end full-run RL first (sparse reward, the combat part dominates the variance); the simulator's own gym wrapper (turns exceptions and timeouts into losses, ADR-012).
 
 **What would count as success.** A paired improvement on held-out combats with the confidence interval excluding zero **and** a run-level improvement in mean floor on `val`. Anything less is reported as a negative result.
+
+## 2026-10-26 — ADR-027: the odds API does not guess what the caller did not state
+
+**Context.** The first red-team round (docs/ADVERSARIAL-AUDIT.md, RT-3-01 and RT-2-04) found two places where an omission silently became a confident number. A card-reward request with neither `counter` nor `history` was answered as if no reward had ever been offered (the start-of-run state); potion and "?" `history` were optional with the same default. `removal` and `gold` had no `build` field, so the unverified beta could not even be named, let alone refused, and the answer did not say which patch it was for.
+
+**Decision.**
+1. Calculators that depend on hidden state require the caller to say what they know: `counter`, or `history` where `[]` means "nothing has happened yet". Omission is a `400` that explains the choice. The potion and "?" `history` are required.
+2. Every calculator that depends on the patch requires `build` and refuses an unverified one; `removal` and `gold` joined the others, and every answer echoes `build`.
+3. Every answer states its `evidence` (`kind`: `history` or `counter`, and the number of observations), so a client can show how much a number rests on.
+
+**Alternatives rejected.** Defaulting to the start of the run with a warning field (a client that ignores warnings shows a confident wrong number); defaulting `build` to the supported main build (hides that the caller is thinking of another patch).
+
+**Evidence.** `apps/web/test/redteam.test.ts` RT-3-01..04 and RT-2-04 failed on the previous code and pass now; `apps/web/test/api.test.ts` was updated to the stricter contract.
+
+**Rollback.** Revert the schema changes in `apps/web/src/lib/odds-api.ts`. Saved runs are unaffected (a run file stores its history, `[]` included).
+
+## 2026-10-26 — ADR-028: exact arithmetic stays, untrusted input gets integer fast paths and caps taken from the game
+
+**Context.** RT-10-07 and RT-10-13. Reward-rarity inference at Ascension 7 with a 100-pack unknown history took 179 s on the development machine because every posterior update normalised a `Rational`; a "?" history of 60 entries took about 17 s. Both histories come from strangers (API body or imported run file), so one request could occupy a serverless function for minutes.
+
+**Decision.** `Rational` stays the specification and the public result type. The three inference hot paths are evaluated over integers instead: reward-pack tables are compiled once into integer weights over a common denominator (scale 10,000; the compiler asserts the weights are integral), posterior, forecast and position marginals are plain `bigint` sums normalised once at the end; "?" masses are integer percents (every probability there is a whole number of percent). Untrusted sizes are bounded by facts of the game: an act has fewer than 20 "?" rooms (`MAX_UNKNOWN_ROOMS_PER_ACT`, enforced in the engine, the API schema, the run-file schema and the UI), 100 pack observations, 200 potion observations.
+
+**Evidence.** The previous rational implementations live on inside `packages/odds/test/fastpath.test.ts` as reference oracles and must agree with the fast paths on random inputs; the same file holds CPU budgets (a 20-entry "?" history in under 3 s, the A7 worst case in under 5 s, on a loaded machine). Measured on the development machine: A7 with 100 unknown packs 179 s to 0.44 s. `redteam.test.ts` RT-10-07 sends the worst legal request of every calculator through the route handlers and demands an answer in under 1.5 s each.
+
+**Alternatives rejected.** Floating point (gives up the exactness the product is built on); memoisation only (the first request is the attack); a longer function timeout (pays for the attack instead of removing it); rate limiting alone (the expensive request is a single request).
+
+**Rollback.** The reference implementations are still in the tests; swapping back is a one-file change that reopens RT-10-07.
+
+## 2026-10-26 — ADR-029: the repository carries its own Vercel contract
+
+**Context.** The owner imported the repository into a Vercel project with default settings (Root Directory `./`, no framework preset, Node 24.x). The first production build published nothing (it ran while `main` held documents only) and the second failed at install with `ERR_PNPM_UNSUPPORTED_ENGINE`: `apps/web` required Node 22.x, the project ran 24.x, and `.npmrc` sets `engine-strict=true`. Both left the production URL on a 404.
+
+**Decision.** Make the default import work without dashboard settings, and keep the textbook layout working too (docs/DEPLOY.md): `engines.node` is the bounded `^22.12.0` in the root and in `apps/web` (Vercel maps it to the latest Node 22 and lets it override the project setting); `vercel.json` at the root sets framework `nextjs`, a frozen-lockfile install, the root `build` script and output `apps/web/.next`; `next` is also a root devDependency at the app's exact version because the Next.js builder resolves `next/package.json` from the project directory; `apps/web/vercel.json` selects the framework for the Root Directory `apps/web` layout. `apps/web/test/deploy-config.test.ts` pins all of it.
+
+**Alternatives rejected.** Dashboard-only settings (not reproducible, and exactly what failed); the legacy `builds` key (disables project settings); `public-hoist-pattern[]=next` in `.npmrc` (an invisible pnpm detail instead of an explicit dependency); an open `>=` engines range (jumps major versions on its own and was the other half of the failure); supporting Node 24 now (not tested in CI, so not claimed).
+
+**Evidence.** A clean checkout of the commit: `pnpm install --frozen-lockfile` and `pnpm run build` exit 0 and write the manifests the builder reads. A real Vercel preview build of the same commit: log lines "Node.js Version defined in your Project Settings ("24.x") will not apply, Node.js Version "22.x" will be used instead", "Detected Next.js version: 16.4.3", all 13 routes built, "Build Completed [33s]", deployment READY; `/`, `/api/v1/health`, `/api/v1/capabilities` and `/robots.txt` answered 200 with the security headers (through the platform's share link, protection stays on). Production verification is recorded in docs/DEPLOY.md only after the merge.
+
+**Rollback.** Delete `vercel.json`, `apps/web/vercel.json` and the root `next` devDependency; the Root Directory `apps/web` layout keeps working.
+
+## 2026-10-26 — ADR-030: dependency licences are a CI gate, not a review habit
+
+**Context.** prompts/11 campaign 11: no dependency or artifact may put restricted terms inside a permissively licensed app.
+
+**Decision.** `scripts/check-licenses.mjs` (CI step `pnpm licenses:check` after `pnpm guard`) lists licences with `pnpm licenses list --json` for the production tree and for everything. A production dependency must be MIT, Apache-2.0, ISC, BSD-2/3-Clause, 0BSD, OFL-1.1, Unlicense or CC0-1.0, or an explicit exception that names its packages and says why it is acceptable (LGPL-3.0-or-later `@img/sharp-libvips-*`: optional prebuilt libvips of Next's image optimiser, which SLAY2 does not use, dynamically linked and unmodified; CC-BY-4.0 `caniuse-lite`: build-time data; MPL-2.0 `axe-core` and `lightningcss`: unmodified file-level copyleft, test and CSS-build tools). Strong copyleft or non-commercial terms (AGPL, GPL, SSPL, BUSL, PolyForm, CC-BY-NC, Commons Clause) are refused anywhere in the tree, build tools included. An exception that no longer matches a package is reported so the list stays honest.
+
+**Evidence.** On the current tree: production licences MIT 47, Apache-2.0 9, ISC 5, OFL-1.1 3, LGPL-3.0-or-later 2 (the exception), BSD-3-Clause 1, CC-BY-4.0 1 (the exception), 0BSD 1; "license gate: clean". `apps/web/test/licenses.test.ts` feeds synthetic trees through the script.
+
+**Alternatives rejected.** A one-off audit (the next `pnpm add` would void it); denying all non-MIT (would drop Next's own optional image libraries and the accessibility test engine for no gain).
+
+**Rollback.** Remove the CI step; the script is inert on its own.
