@@ -77,6 +77,7 @@ Recommended for both:
 | Dependency audit (high and above) | PASS on the last CI run | `pnpm audit --audit-level high` |
 | Deployment configuration is consistent | PASS | `apps/web/test/deploy-config.test.ts` |
 | Real hosted URL smoke test | **PASS** (2026-10-26, `453864d`) | the section "Hosted smoke test" below |
+| Vercel builds the pull request's head (preview) | **PASS** (2026-10-26 12:49 UTC, head `20d4efe`, deployment `dpl_FRWHDADHgMsw5wmv8hr96L1kiW4r`) | build log: Node 22.x, Next.js 16.4.3, 16 static pages including `/routes` and `/opengraph-image`, 7 API routes, "Build Completed in /vercel/output [16s]"; the preview URL itself sits behind Vercel login, so the hosted page was not fetched |
 | Web Vitals on a local production build (lab) | **MEASURED** (2026-10-26, see "Web Vitals (lab)" below): layout shift 0 on all seven pages, first and largest paint 0.26 to 0.42 s on a desktop and 0.96 to 1.75 s on a throttled phone | `pnpm --filter @slay2/web vitals`; `e2e/stability.spec.ts` pins the layout shift |
 | Web Vitals and Lighthouse on the hosted URL | **UNVERIFIED** | the hosted site predates these changes; run `BASE_URL=https://slay-part2.vercel.app pnpm --filter @slay2/web vitals` after the merge. Lighthouse itself was not run (it would download and run an external package) |
 | Simulator-to-game parity | **UNVERIFIED** | needs an owned game copy; shown as such on `/methods` |
