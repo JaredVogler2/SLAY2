@@ -291,6 +291,63 @@ describe("site-data exporter refuses wins that were not re-derived", () => {
   });
 });
 
+describe("site-data exporter refuses a sample audit written for other content", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+  const script = join(repo, "scripts", "export-site-data.mjs");
+  const target = evidence.reports.find((r) => r.counts.win === 0);
+
+  function rootWith(audit: Record<string, unknown>): string {
+    if (!target) {
+      throw new Error("expected a committed batch without wins");
+    }
+    const root = mkdtempSync(join(tmpdir(), "slay2-sample-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    const batch = join(root, "experiments", "batches", target.id);
+    mkdirSync(batch, { recursive: true });
+    for (const f of ["manifest.json", "episodes.jsonl.gz"]) {
+      cpSync(join(repo, "experiments", "batches", target.id, f), join(batch, f));
+    }
+    writeFileSync(join(batch, "sample-audit.json"), JSON.stringify(audit));
+    return root;
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  const audit = (over: Record<string, unknown>) => ({
+    batch_id: target?.id,
+    batch_content_sha256: target?.contentSha256,
+    sample: { drawn: 1, completed_in_batch: 1, rng_seed: 0 },
+    verified: 1,
+    ledger: { ok: true },
+    criteria: "x",
+    ...over,
+  });
+
+  it("fails when the audit names another batch", () => {
+    const result = run(rootWith(audit({ batch_id: "some-other-batch" })));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("sample-audit.json was written for other content");
+  });
+
+  it("fails when the batch content changed after the audit", () => {
+    const result = run(rootWith(audit({ batch_content_sha256: "0".repeat(64) })));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("sample-audit.json was written for other content");
+  });
+});
+
 describe("site-data exporter refuses a comparison whose batches changed", () => {
   const dirs: string[] = [];
   afterEach(() => {

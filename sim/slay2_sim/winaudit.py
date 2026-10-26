@@ -165,6 +165,7 @@ def audit_sample(batch_dir: Path, *, n: int = 50, rng_seed: int = 0) -> dict:
     report = {
         "schema": 1,
         "batch_id": manifest["batch_id"],
+        "batch_content_sha256": manifest.get("content_sha256"),
         "policy": {"name": name, "params": params},
         "sample": {"requested": n, "drawn": len(rows), "rng_seed": rng_seed, "completed_in_batch": len(completed)},
         "ledger": ledger,
