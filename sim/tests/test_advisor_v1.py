@@ -113,3 +113,15 @@ def test_the_model_scales_what_the_index_keeps_of_each_part():
     # the weights apply to the parts separately
     only_engines = advisor.synergy_components(deck, 0, advisor.Model(needs=0.0, scalers=0.0, engines=1.0))
     assert abs(only_engines[0]) < 1e-12 and abs(only_engines[1]) < 1e-12 and only_engines[2] == pytest.approx(full[2])
+
+
+def test_a_margin_makes_it_skip_a_card_that_adds_less_than_the_margin(sim):
+    offered = ["POMMEL_STRIKE"]
+    obs, actions = reward(offered)
+    gain = advisor.rank_options({"STRIKE_IRONCLAD": 5, "DEFEND_IRONCLAD": 4, "BASH": 1}, offered, 0)[0][1]
+    assert gain > 0
+    assert pilot()._card_reward(obs, actions) == 0
+    assert pilot(margin=gain - 0.01)._card_reward(obs, actions) == 0
+    assert pilot(margin=gain + 0.01)._card_reward(obs, actions) == 1  # skip
+    with pytest.raises(ValueError, match="margin"):
+        make_policy("advisor_v1", margin=-1.0)

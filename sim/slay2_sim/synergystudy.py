@@ -12,7 +12,12 @@ read against its index:
 
 ``b_u / b_q`` is the worth of a point of unmet-need penalty relative to a point of the average card rating, as the simulator
 sees it; the same for scalers and engines. A ratio near 1 says the advisor's weight is about right, near 0 that the part carries
-no signal. What this is not: a test of the advisor (stage B2 is, with the advisor playing), a statement about the real game
+no signal. A second question guards against a trap: the index parts are functions of which cards the deck holds, so they could carry
+signal only because they stand in for card quality. ``beyond_additive_card_values`` asks whether they add to a model that
+already knows every card (a ridge logistic on card counts, one model per class, the form of the measured values of
+``slay2_sim.cardvalue``): the held-out log loss of that model with and without the three parts.
+
+What this is not: a test of the advisor (stage B2 is, with the advisor playing), a statement about the real game
 (the simulator is unverified), a statement about engines for a pilot that builds them on purpose (random decks rarely hold
 a whole engine), or confirmatory (it reads the training and development seeds the measured values were fitted on).
 
@@ -234,6 +239,42 @@ def analyse(table: Table, draws: int, seed: int) -> dict:
     }
 
 
+L2_GRID = (1.0, 3.0, 10.0, 30.0)  # the card-count model's penalty, chosen by the cross-validation of the model without the parts
+
+
+def _cv_losses(X: np.ndarray, y: np.ndarray, g: np.ndarray, penalised: np.ndarray, l2: float) -> np.ndarray:
+    fold = g % FOLDS
+    p = np.zeros(len(y))
+    for k in range(FOLDS):
+        tr, te = fold != k, fold == k
+        p[te] = cardvalue.predict(X[te], cardvalue.fit_logistic(X[tr], y[tr], l2, penalised))
+    return -(y * np.log(p + 1e-12) + (1 - y) * np.log(1 - p + 1e-12))
+
+
+def beyond_additive_card_values(draws: int, seed: int, cohort_set: tuple[Cohort, ...] = COHORTS) -> dict:
+    """Held-out log loss of a model that knows every card (one ridge-logistic per class, the controls, a coefficient per card
+    seen in 30 or more decks) against the same model with the three synergy parts added. Negative gaps: the parts help."""
+    per_cohort, all_a, all_b, all_g = {}, [], [], []
+    for cohort in cohort_set:
+        records, _ = load_cohort(cohort)
+        X, y, g, _, penalised = cardvalue.design(records, cardvalue.vocabulary(records))
+        parts = np.array([[deck_features(r["deck"])[f] for f in ("unmet", "scaler", "engines")] for r in records])
+        l2 = min(L2_GRID, key=lambda v: _cv_losses(X, y, g, penalised, v).mean())
+        loss_a = _cv_losses(X, y, g, penalised, l2)
+        loss_b = _cv_losses(np.column_stack([X, parts]), y, g, np.concatenate([penalised, np.zeros(3, dtype=bool)]), l2)
+        per_cohort[cohort.name] = {
+            "rows": int(len(y)), "l2": l2, "log_loss_cards": round(float(loss_a.mean()), 5), "log_loss_cards_and_parts": round(float(loss_b.mean()), 5),
+            "gap": paired_loss_gap(loss_a, loss_b, g, draws, seed),
+        }
+        all_a.append(loss_a), all_b.append(loss_b), all_g.append(g)
+    a, b, g = np.concatenate(all_a), np.concatenate(all_b), np.concatenate(all_g)
+    return {
+        "model": "ridge logistic on card counts and the controls, one per class; the parts are added unpenalised",
+        "per_cohort": per_cohort,
+        "pooled": {"rows": int(len(g)), "log_loss_cards": round(float(a.mean()), 5), "log_loss_cards_and_parts": round(float(b.mean()), 5), "gap": paired_loss_gap(a, b, g, draws, seed)},
+    }
+
+
 def calibrated_weight(ratio: float) -> float:
     """The weight a synergy part keeps: its slope relative to the average card rating, in steps of 0.05 and no larger than the
     hand-set 1 (a part the data value less than the advisor does is scaled down; one they value more is left at its judgement)."""
@@ -255,6 +296,7 @@ def build_report(draws: int = 200, seed: int = 0, cohort_set: tuple[Cohort, ...]
         "folds": FOLDS, "bootstrap_draws": draws, "cohorts": metas,
         "pooled": {"all_cohorts": analyse(select(table, all_cohorts), draws, seed), "training_cohorts_only": analyse(select(table, train_only), draws, seed)},
         "per_cohort": {name: analyse(select(table, [k]), draws, seed) for name, k in cohorts.items()},
+        "beyond_additive_card_values": beyond_additive_card_values(draws, seed, cohort_set),
     }
     pooled = report["pooled"]["all_cohorts"]["ratios"]
     report["calibration"] = {
@@ -280,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
     for part in FEATURES:
         c, r = pooled["coefficients"][part], pooled["ratios"][part]
         print(f"  {part:9s} {c['per_point']:+.3f} per point {c['ci95']}   ratio to quality {r['to_quality']:+.2f} {r['ci95']}")
+    extra = report["beyond_additive_card_values"]["pooled"]
+    print(f"  beyond a model that knows every card: log loss {extra['log_loss_cards']} -> {extra['log_loss_cards_and_parts']}, gap {extra['gap']['mean']:+.5f} {extra['gap']['ci95']}")
     print("  calibrated weights:", report["calibration"]["weights"])
     return 0
 

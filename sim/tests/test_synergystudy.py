@@ -76,6 +76,8 @@ def test_a_small_report_has_every_part_and_is_reproducible():
     assert set(pooled["coefficients"]) == set(study.FEATURES)
     assert set(a["calibration"]["weights"]) == {"unmet", "scaler", "engines"}
     assert {"controls", "index", "index+synergy"} <= set(pooled["cross_validation"])
+    beyond = a["beyond_additive_card_values"]["pooled"]
+    assert beyond["rows"] == pooled["rows"] and set(beyond["gap"]) == {"mean", "ci95"}
 
 
 def test_the_committed_report_is_about_the_data_and_the_tags_that_exist_now():

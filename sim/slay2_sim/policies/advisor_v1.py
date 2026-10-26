@@ -9,7 +9,8 @@ skipping ranks first. A deck at the size cap (``max_deck``, as in rules_v2) skip
 Everything else (map, shop, rest, events, combat, elite thresholds) is rules_v3, so two advisor_v1 arms that differ only in the
 index's parameters differ only in the cards they take. The parameters are ``synergy`` (the advisor's weight for the whole synergy
 term; 0 switches it off) and ``needs`` / ``scalers`` / ``engines`` (how much of each hand-set part the index keeps, see
-``advisor.Model``), plus ``risk`` ("safe", "balanced", "aggressive"; the page's default is balanced).
+``advisor.Model``), ``risk`` ("safe", "balanced", "aggressive"; the page's default is balanced) and ``margin`` (the index points a
+card must add over skipping to be taken; 0 is what the page does, and it almost never recommends skipping).
 
 Fair: the policy sees the deck and the offered card ids (a human sees both), the act, and the public catalog; no hidden state.
 It does not use the Act-1 version or boss the page can take as an input, so it is the page without that optional context.
@@ -27,13 +28,18 @@ from .rules3 import V3_TUNE
 class AdvisorCards:
     """The card-reward screen, decided by the deck index; any other screen (relics, potions) is rules_v1's."""
 
-    def __init__(self, synergy: float = 1.0, needs: float = 1.0, scalers: float = 1.0, engines: float = 1.0, risk: str = "balanced", **params):
-        super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, **params)
+    def __init__(
+        self, synergy: float = 1.0, needs: float = 1.0, scalers: float = 1.0, engines: float = 1.0, risk: str = "balanced", margin: float = 0.0, **params
+    ):
+        super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, margin=margin, **params)
         if risk not in advisor.RISK_MULTIPLIERS:
             raise ValueError(f"unknown risk {risk!r}; known: {sorted(advisor.RISK_MULTIPLIERS)}")
+        if margin < 0:
+            raise ValueError("margin is the index points a card must add over skipping: not negative")
         self.synergy = float(synergy)
         self.model = advisor.Model(needs=float(needs), scalers=float(scalers), engines=float(engines))
         self.risk = risk
+        self.margin = float(margin)
 
     def reset(self, rng_seed: int) -> None:
         super().reset(rng_seed)
@@ -55,10 +61,10 @@ class AdvisorCards:
                 by_card.setdefault(card, a["idx"])
         act = min(max(int(run["act"]), 0), 2)
         weights = advisor.base_weights(act, self.risk, self.synergy)
-        best = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model)[0][0]
+        best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model)[0]
         self.offers += 1
         skip = _first(actions, "skip")
-        if best == advisor.SKIP or sum(deck.values()) >= self.tune["max_deck"]:
+        if best == advisor.SKIP or gain < self.margin or sum(deck.values()) >= self.tune["max_deck"]:
             self.skipped += 1
             return skip if skip is not None else super()._card_reward(obs, actions)
         self.taken += 1

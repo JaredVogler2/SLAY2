@@ -1277,6 +1277,101 @@
       }
     }
   },
+  "beyond_additive_card_values": {
+    "model": "ridge logistic on card counts and the controls, one per class; the parts are added unpenalised",
+    "per_cohort": {
+      "ironclad-train": {
+        "rows": 3812,
+        "l2": 10.0,
+        "log_loss_cards": 0.43858,
+        "log_loss_cards_and_parts": 0.43534,
+        "gap": {
+          "mean": -0.00324,
+          "ci95": [
+            -0.00631,
+            -0.00027
+          ]
+        }
+      },
+      "silent-train": {
+        "rows": 2332,
+        "l2": 3.0,
+        "log_loss_cards": 0.24137,
+        "log_loss_cards_and_parts": 0.23991,
+        "gap": {
+          "mean": -0.00145,
+          "ci95": [
+            -0.00489,
+            0.00322
+          ]
+        }
+      },
+      "regent-train": {
+        "rows": 2703,
+        "l2": 3.0,
+        "log_loss_cards": 0.32319,
+        "log_loss_cards_and_parts": 0.32311,
+        "gap": {
+          "mean": -8e-05,
+          "ci95": [
+            -0.00206,
+            0.00198
+          ]
+        }
+      },
+      "necrobinder-train": {
+        "rows": 3389,
+        "l2": 3.0,
+        "log_loss_cards": 0.36704,
+        "log_loss_cards_and_parts": 0.36771,
+        "gap": {
+          "mean": 0.00067,
+          "ci95": [
+            -0.00014,
+            0.0014
+          ]
+        }
+      },
+      "defect-train": {
+        "rows": 3212,
+        "l2": 3.0,
+        "log_loss_cards": 0.38459,
+        "log_loss_cards_and_parts": 0.38317,
+        "gap": {
+          "mean": -0.00142,
+          "ci95": [
+            -0.00427,
+            0.0009
+          ]
+        }
+      },
+      "ironclad-dev": {
+        "rows": 4269,
+        "l2": 3.0,
+        "log_loss_cards": 0.44669,
+        "log_loss_cards_and_parts": 0.44433,
+        "gap": {
+          "mean": -0.00236,
+          "ci95": [
+            -0.00472,
+            0.00048
+          ]
+        }
+      }
+    },
+    "pooled": {
+      "rows": 19717,
+      "log_loss_cards": 0.3801,
+      "log_loss_cards_and_parts": 0.37866,
+      "gap": {
+        "mean": -0.00143,
+        "ci95": [
+          -0.00242,
+          -0.00035
+        ]
+      }
+    }
+  },
   "calibration": {
     "rule": "weight = pooled slope relative to the average card rating, rounded to 0.05, within [0, 1]; read from all cohorts pooled",
     "weights": {
