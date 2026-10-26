@@ -121,7 +121,7 @@ test.describe("methods", () => {
     ).toBeVisible();
     await expect(panel).toContainText("It has not been run on its held-out seeds");
     await expect(panel).toContainText("whether the readings themselves hold at the game's HP");
-    await panel.getByText("How the first reading changed the tags").click();
+    await panel.getByText("How the readings changed the tags").click();
     await expect(panel).toContainText("the figures flatter them");
   });
 

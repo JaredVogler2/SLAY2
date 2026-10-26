@@ -141,6 +141,62 @@ describe("the synergy tags (SLAY2's judgement of how cards work together)", () =
     expect(gives("HYPERBEAM", "focus")).toBeLessThan(0);
   });
 
+  it("keep the corrections of the independent second reading (ADR-050 addendum B), each checked against the card's own effect", () => {
+    const wants = (id: string, m: (typeof MECHANIC_IDS)[number]) => tags(id).wants[m] ?? 0;
+    const gives = (id: string, m: (typeof MECHANIC_IDS)[number]) => tags(id).gives[m] ?? 0;
+    // a second effect is written: Comet applies Weak and Vulnerable as well as costing Stars; Afterimage and Mirage give Block
+    expect(gives("COMET", "weak")).toBeGreaterThanOrEqual(2);
+    expect(gives("COMET", "vulnerable")).toBeGreaterThanOrEqual(2);
+    expect(gives("AFTERIMAGE", "block")).toBeGreaterThanOrEqual(2);
+    expect(gives("MIRAGE", "block")).toBeGreaterThanOrEqual(2);
+    expect(gives("PARSE", "draw")).toBeGreaterThanOrEqual(2);
+    expect(gives("CALAMITY", "create")).toBe(3);
+    expect(gives("CHARGE", "create")).toBeGreaterThanOrEqual(2);
+    // what a card takes away is written (Hyperbeam costs three Focus, Friendship and Shared Fate two Strength, Wraith Form Dexterity)
+    expect(gives("HYPERBEAM", "focus")).toBeLessThanOrEqual(-3);
+    expect(gives("FRIENDSHIP", "strength")).toBeLessThan(0);
+    expect(gives("SHARED_FATE", "strength")).toBeLessThan(0);
+    expect(gives("WRAITH_FORM", "dexterity")).toBeLessThan(0);
+    // the Defect's Status payoffs trigger on Statuses the player creates, so they need card creation and the makers supply it
+    for (const payoff of ["SMOKESTACK", "TRASH_TO_TREASURE", "FLAK_CANNON", "ITERATION"]) {
+      expect(wants(payoff, "create"), payoff).toBeGreaterThanOrEqual(2);
+    }
+    for (const maker of ["BOOST_AWAY", "FIGHT_THROUGH", "GUNK_UP", "OVERCLOCK", "TURBO"]) {
+      expect(gives(maker, "create"), maker).toBeGreaterThan(0);
+    }
+    // Stardust spends Stars (X is the Stars spent), not energy
+    expect(wants("STARDUST", "star")).toBe(3);
+    expect(wants("STARDUST", "energy")).toBe(0);
+    // a card that brings what it needs does not wait for it, and a need no card of the class can meet is not written
+    expect(hasWrittenTags("BOMBARDMENT")).toBe(false);
+    expect(wants("SLEIGHT_OF_FLESH", "poison")).toBe(0);
+    expect(wants("SLEIGHT_OF_FLESH", "doom")).toBe(3);
+  });
+
+  it("write no need of weight 2 or more that the card's own class cannot meet (a need nobody can supply is a flat penalty, not a signal about the deck)", () => {
+    const counted = new Set(["attack", "skill", "power", "cheap", "zero_cost", "strike"]);
+    // colorless cards are in every class's pool and a static table cannot say which class they suit
+    const colorless = new Set(["REND", "VOLLEY"]);
+    for (const cls of PLAYABLE_CLASSES) {
+      const pool = [...rewardPool(cls), ...rewardPool("colorless")];
+      for (const card of rewardPool(cls)) {
+        for (const [m, w] of Object.entries(synergyTags(card).wants)) {
+          if (w < 2 || counted.has(m)) continue;
+          const others = pool.filter(
+            (c) =>
+              c.id !== card.id && ((synergyTags(c).gives as Record<string, number>)[m] ?? 0) > 0,
+          ).length;
+          const innate = (innateSupply(cls)?.gives as Record<string, number> | undefined)?.[m] ?? 0;
+          expect(
+            others >= 3 || innate > 0,
+            `${card.id} needs ${m} (${String(w)}): ${cls} has ${String(others)} other suppliers`,
+          ).toBe(true);
+        }
+      }
+    }
+    for (const id of colorless) expect(hasWrittenTags(id)).toBe(true);
+  });
+
   it("never write a weight that the schema forbids (a typo in the file fails the build, not the page)", () => {
     for (const [id, entry] of Object.entries(SYNERGY.cards)) {
       for (const w of Object.values(entry.w ?? {})) expect(w, id).toBeGreaterThanOrEqual(1);

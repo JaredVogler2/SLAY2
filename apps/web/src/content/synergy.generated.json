@@ -2,14 +2,14 @@
   "schema": 1,
   "generatedFrom": "experiments/synergy/b1-calibration.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
   "table": {
-    "sha256": "ed6c6952332ddf85749cf6acee7c86e8eebac5d74a76084feb21b868062efb51",
-    "cards": 367,
+    "sha256": "bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a",
+    "cards": 385,
     "mechanics": 27
   },
   "b1": {
     "stage": "B1",
     "file": "experiments/synergy/b1-calibration.json",
-    "sha256": "70d3fac673b830e3cd82ae4ebf3251b7578999dd43e1cc85700bf4c30a1f2c09",
+    "sha256": "cac9e9b18496f88f7c91de11a82f31689510e79eae7ea60e1591dc16c4568153",
     "outcome": "the run gets past the Act-1 boss",
     "bossFights": 19717,
     "passRate": 0.3825,
@@ -53,115 +53,115 @@
     ],
     "logLoss": {
       "index": 0.44298,
-      "indexAndSynergy": 0.43454
+      "indexAndSynergy": 0.43518
     },
     "auc": {
       "index": 0.8633,
-      "indexAndSynergy": 0.8696
+      "indexAndSynergy": 0.8692
     },
     "synergyAdded": {
-      "mean": -0.00844,
+      "mean": -0.0078,
       "ci95": [
-        -0.01012,
-        -0.00629
+        -0.00942,
+        -0.0056
       ]
     },
     "enginesAdded": {
-      "mean": 0.00007,
+      "mean": 0.00012,
       "ci95": [
-        -0.00009,
-        0.00025
+        0.00002,
+        0.00024
       ]
     },
     "ratios": {
       "needs": {
-        "toQuality": 1.162,
+        "toQuality": 1.109,
         "ci95": [
-          0.979,
-          1.358
+          0.93,
+          1.323
         ]
       },
       "scalers": {
-        "toQuality": 0.678,
+        "toQuality": 0.683,
         "ci95": [
-          0.542,
-          0.874
+          0.547,
+          0.875
         ]
       },
       "engines": {
-        "toQuality": 0.124,
+        "toQuality": 0.075,
         "ci95": [
-          -0.01,
-          0.31
+          -0.076,
+          0.269
         ]
       },
       "coverage": {
-        "toQuality": -0.134,
+        "toQuality": -0.122,
         "ci95": [
-          -0.28,
-          0.03
+          -0.273,
+          0.042
         ]
       }
     },
     "beyondCards": {
       "logLossCards": 0.3801,
-      "logLossCardsAndParts": 0.37855,
+      "logLossCardsAndParts": 0.37867,
       "gap": {
-        "mean": -0.00155,
+        "mean": -0.00143,
         "ci95": [
-          -0.00251,
-          -0.00044
+          -0.00239,
+          -0.00018
         ]
       }
     },
     "perCohortGain": {
       "ironclad-train": {
-        "mean": -0.00467,
+        "mean": -0.00438,
         "ci95": [
-          -0.00809,
-          -0.00091
+          -0.00785,
+          -0.00078
         ]
       },
       "silent-train": {
-        "mean": -0.00044,
+        "mean": -0.00054,
         "ci95": [
-          -0.00317,
-          0.00254
+          -0.00318,
+          0.0025
         ]
       },
       "regent-train": {
-        "mean": -0.00965,
+        "mean": -0.00972,
         "ci95": [
-          -0.01522,
-          -0.0047
+          -0.01515,
+          -0.00476
         ]
       },
       "necrobinder-train": {
-        "mean": -0.00068,
+        "mean": -0.00039,
         "ci95": [
-          -0.00255,
-          0.00129
+          -0.00216,
+          0.00143
         ]
       },
       "defect-train": {
-        "mean": -0.02365,
+        "mean": -0.0202,
         "ci95": [
-          -0.03036,
-          -0.0168
+          -0.02711,
+          -0.014
         ]
       },
       "ironclad-dev": {
-        "mean": -0.01632,
+        "mean": -0.0163,
         "ci95": [
-          -0.02154,
-          -0.01054
+          -0.0214,
+          -0.01061
         ]
       }
     },
     "calibratedWeights": {
       "unmet": 1,
       "scaler": 0.7,
-      "engines": 0.1
+      "engines": 0.05
     }
   }
 }

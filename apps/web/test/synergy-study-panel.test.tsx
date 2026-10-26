@@ -77,9 +77,11 @@ describe("the /methods synergy section", () => {
   it("explains the audit that changed the tags and why the figures flatter them", () => {
     render(<SynergyStudyPanel />);
     const audit = screen
-      .getByText("How the first reading changed the tags")
+      .getByText("How the readings changed the tags")
       .closest("details") as HTMLElement;
     expect(audit).toHaveTextContent("Bound Phylactery");
     expect(audit).toHaveTextContent("the figures flatter them");
+    expect(audit).toHaveTextContent("independent second reading");
+    expect(audit).toHaveTextContent("thrown away unread");
   });
 });

@@ -139,7 +139,7 @@ export function SynergyStudyPanel() {
         </table>
       </ScrollRegion>
 
-      <Disclosure summary="How the first reading changed the tags" className="mt-5">
+      <Disclosure summary="How the readings changed the tags" className="mt-5">
         <div className="space-y-3">
           <p>
             The first reading showed three needs whose slope ran the wrong way: decks with more of
@@ -152,10 +152,19 @@ export function SynergyStudyPanel() {
             create.
           </p>
           <p>
-            The table was corrected twice, before any held-out game was played (the changes are
-            listed in ADR-050), and the figures above come from the corrected table. The tags were
-            read against these very runs, so the figures flatter them: the test below is on other
-            seeds.
+            The table was corrected twice on that evidence, before any held-out game was played. The
+            tags were read against these very runs, so the figures flatter them: the test below is
+            on other seeds.
+          </p>
+          <p>
+            An independent second reading then tagged every card again, blind, from the game&rsquo;s
+            own card data (six readers, one for each class and one for the colorless cards). It
+            found the table wrong in more than thirty places that mattered: a card&rsquo;s second
+            effect not written, a need the card meets by itself or its class cannot meet, and the
+            Defect&rsquo;s Status payoffs, which trigger on Statuses the player creates. All were
+            corrected before any held-out game, the figures above come from the corrected table, and
+            the test run that had started on the old table was thrown away unread (ADR-050, addenda
+            A and B).
           </p>
         </div>
       </Disclosure>

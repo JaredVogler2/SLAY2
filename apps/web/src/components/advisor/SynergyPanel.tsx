@@ -88,9 +88,10 @@ function Evidence() {
             winning (wins are rare), and not people who build engines on purpose: random decks
             seldom hold a whole engine, and the pilot does not build around one. The tags were read
             against these same runs (a flaw in the Necrobinder&rsquo;s Osty was found and fixed that
-            way), so the figures flatter them. A held-out test of a pilot that picks cards by this
-            index is registered before any of its games (ADR-050); its result is not in yet. The
-            study, with its figures by class, is in{" "}
+            way), and a second, independent reading of every card corrected more, so the figures
+            flatter them. A held-out test of a pilot that picks cards by this index is registered
+            before any of its games (ADR-050); its result is not in yet. The study, with its figures
+            by class, is in{" "}
             <Link
               className="text-teal underline decoration-dotted underline-offset-4"
               href="/methods#synergy"

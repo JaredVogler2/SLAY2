@@ -344,13 +344,16 @@ export function explainAddition(
   }));
   const e0 = enginesOf(entries, character);
   const e1 = enginesOf(withCardEntries, character);
-  const changes: EngineChange[] = MECHANIC_IDS.map((m) => ({
+  const everyChange = MECHANIC_IDS.map((m) => ({
     mechanic: m,
     label: MECHANICS[m].label,
     delta: e1[m] - e0[m],
     sources: suppliersOf(withCardEntries, m, character),
     payoffs: ranked(withCardEntries, (c) => synergyTags(c).wants[m] ?? 0),
-  }))
+  }));
+  // the sum is over every mechanic, so that the parts add up to the change in the deck's synergy exactly; only the list that is
+  // shown leaves out the changes too small to mention
+  const changes: EngineChange[] = everyChange
     .filter((c) => Math.abs(c.delta) >= 0.01)
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
   return {
@@ -361,7 +364,7 @@ export function explainAddition(
       scaler: own.scaler,
     },
     support: { delta: support / SYNERGY_CARDS, partners },
-    engines: { delta: changes.reduce((acc, c) => acc + c.delta, 0), changes },
+    engines: { delta: everyChange.reduce((acc, c) => acc + c.delta, 0), changes },
   };
 }
 

@@ -141,6 +141,23 @@ describe("synergy: adding a card", () => {
     );
   });
 
+  it("adds up even when an engine changes by less than the amount that is listed (a case that failed one run in twenty)", () => {
+    const cards = [
+      "DECISIONS_DECISIONS",
+      "BLACK_HOLE",
+      "ASTRAL_PULSE",
+      "BIG_BANG",
+      "STARDUST",
+      "BLACK_HOLE",
+    ].map(card);
+    const extra = card("ASTRAL_PULSE");
+    const entries = entriesOf(cards);
+    const withIt = entriesOf([...cards, extra]);
+    const ex = explainAddition(entries, extra, 0, withIt);
+    const whole = synergyOf(withIt, 0) - synergyOf(entries, 0);
+    expect(ex.own.delta + ex.support.delta + ex.engines.delta).toBeCloseTo(whole, 10);
+  });
+
   it("supplying a mechanic never lowers a card that needs it", () => {
     fc.assert(
       fc.property(classPool, ({ cards, act }) => {

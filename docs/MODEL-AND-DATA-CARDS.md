@@ -200,18 +200,18 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 ## D10. Synergy tags
 
 * **What:** `packages/game-data/data/synergy.sts2-main-0.107.1.json`: for every tagged card, what it **supplies** to a deck (`g`, per mechanic, 1 minor or conditional, 2 standard, 3 major or repeatable; negative when it takes the mechanic away) and what its worth **needs** (`w`, 1 a bonus, 2 significant, 3 the card's point), over a vocabulary of 27 mechanics (Strength, Dexterity, Block, Exhaust, card draw, energy, Vulnerable, Weak, Poison, Shivs, discarding, orbs, Focus, Stars, Forge, card creation, Osty, Souls, Doom, Ethereal cards, losing HP, Attacks, Skills, Powers, cheap and free cards, Strikes), each with a saturation scale and an engine value; plus what each class's starting relic supplies in every combat (`innate`). The code adds what the catalog says by itself (types, costs, Strike names, the Exhaust and Ethereal keywords, the block role, Sly), so the file lists only what the catalog cannot say.
-* **Provenance:** SLAY2's own judgement, written from reading each card's effect in the local reference (ADR-011). It stores ids, mechanic names and small whole numbers, never card text, art or effect numbers. The hash (`ed6c6952…`) covers the mechanics, the cards and the innate supplies. **Two revisions on 2026-10-26** (recorded in the file and in ADR-050), both after reading the tags against the simulated runs (M8): the table gained the starting-relic supplies, which the first version lacked, and then the Necrobinder's Osty became always on, Kingly Kick, Kingly Punch and six Defect Status payoffs stopped needing their mechanic, and the Status mechanic left the vocabulary, because in the runs the decks that got further had more of those needs unmet and the game's own card texts say why.
+* **Provenance:** SLAY2's own judgement, written from reading each card's effect in the local reference (ADR-011). It stores ids, mechanic names and small whole numbers, never card text, art or effect numbers. The hash (`bd0b8a9f…`) covers the mechanics, the cards and the innate supplies. **Three revisions on 2026-10-26** (the third, below, after an independent second reading) (recorded in the file and in ADR-050), both after reading the tags against the simulated runs (M8): the table gained the starting-relic supplies, which the first version lacked, and then the Necrobinder's Osty became always on, Kingly Kick, Kingly Punch and six Defect Status payoffs stopped needing their mechanic, and the Status mechanic left the vocabulary, because in the runs the decks that got further had more of those needs unmet and the game's own card texts say why. **The third revision** followed an independent re-tagging of every card by six readers (blind, from the game's own card data; ADR-050 addenda A and B): 62 pairs of card, side and mechanic on 51 cards were corrected (a card's second effect written, a need the card meets by itself or its class cannot meet lowered or dropped, signed losses written, and the Defect's Status payoffs made needs of card creation again because the card texts and the patch notes say they trigger on Statuses the player creates, which the second revision had got wrong); the table is frozen until the held-out test is over.
 * **Coverage:**
 
 <!-- table:synergy_coverage:begin -->
 | Class | Reward cards | With written tags | Starting relic's supply (the table's `innate`) |
 |---|---|---|---|
-| Ironclad | 82 | 69 (84 %) | none (the starting relic heals after combat) |
-| Silent | 82 | 67 (82 %) | Ring of the Snake: draw 1 |
-| Regent | 82 | 66 (80 %) | Divine Right: star 2 |
-| Necrobinder | 82 | 64 (78 %) | Bound Phylactery: osty 9 |
-| Defect | 82 | 63 (77 %) | Cracked Core: orb 1 |
-| All tagged cards in the table | | 367 (hash `ed6c6952332d`) | 27 mechanics |
+| Ironclad | 82 | 70 (85 %) | none (the starting relic heals after combat) |
+| Silent | 82 | 68 (83 %) | Ring of the Snake: draw 1 |
+| Regent | 82 | 68 (83 %) | Divine Right: star 2 |
+| Necrobinder | 82 | 68 (83 %) | Bound Phylactery: osty 9 |
+| Defect | 82 | 71 (87 %) | Cracked Core: orb 1 |
+| All tagged cards in the table | | 385 (hash `bd0b8a9fd4f9`) | 27 mechanics |
 <!-- table:synergy_coverage:end -->
 
 * **Intended use:** the advisor's synergy term and the sentences that name the cards behind a number. **Not for:** saying how strong a card is, or what wins: the weights are hand-set judgements (partly calibrated against simulated runs, M8), not measurements.
@@ -355,23 +355,23 @@ Co-op (declared `unsupported` by the capability endpoint, and no team or ally mo
 <!-- table:synergy_b1:begin -->
 | What was asked | Answer (95 % interval, resampling whole seeds) |
 |---|---|
-| Held-out log loss of the advisor's index without the synergy term, then with it (19,717 runs that brought a random deck to the Act-1 boss) | 0.4430, then 0.4345: change **−0.0084** (−0.0101 to −0.0063); AUC 0.8633 to 0.8696 |
-| The same for a model that already knows every card (ridge logistic regression on card counts, one model per class) | 0.3801, then 0.3785: change **−0.0015** (−0.0025 to −0.0004) |
-| Worth of a point of unmet needs, relative to a point of average card rating | **1.16** (0.98 to 1.36) |
-| Worth of a point of Strength, Dexterity and Focus lifting the cards they help, relative to a point of average card rating | **0.68** (0.54 to 0.87) |
-| Worth of a point of engines (sources and payoffs together), relative to a point of average card rating | **0.12** (−0.01 to 0.31) |
-| Worth of a point of role coverage, as the index weights it, relative to a point of average card rating | **−0.13** (−0.28 to 0.03) |
+| Held-out log loss of the advisor's index without the synergy term, then with it (19,717 runs that brought a random deck to the Act-1 boss) | 0.4430, then 0.4352: change **−0.0078** (−0.0094 to −0.0056); AUC 0.8633 to 0.8692 |
+| The same for a model that already knows every card (ridge logistic regression on card counts, one model per class) | 0.3801, then 0.3787: change **−0.0014** (−0.0024 to −0.0002) |
+| Worth of a point of unmet needs, relative to a point of average card rating | **1.11** (0.93 to 1.32) |
+| Worth of a point of Strength, Dexterity and Focus lifting the cards they help, relative to a point of average card rating | **0.68** (0.55 to 0.88) |
+| Worth of a point of engines (sources and payoffs together), relative to a point of average card rating | **0.07** (−0.08 to 0.27) |
+| Worth of a point of role coverage, as the index weights it, relative to a point of average card rating | **−0.12** (−0.27 to 0.04) |
 <!-- table:synergy_b1:end -->
 
 <!-- table:synergy_cohorts:begin -->
 | Cohort | Runs at the Act-1 boss | Passed it | Held-out log-loss change when the synergy term is added to the index | When added to a model that knows every card |
 |---|---|---|---|---|
-| ironclad-train (train seeds) | 3,812 | 40.9 % | −0.0047 (−0.0081 to −0.0009) | −0.0032 (−0.0063 to −0.0003) |
-| silent-train (train seeds) | 2,332 | 10.7 % | −0.0004 (−0.0032 to 0.0025) | −0.0015 (−0.0050 to 0.0033) |
-| regent-train (train seeds) | 2,703 | 22.4 % | −0.0097 (−0.0152 to −0.0047) | +0.0001 (−0.0018 to 0.0021) |
-| necrobinder-train (train seeds) | 3,389 | 44.0 % | −0.0007 (−0.0026 to 0.0013) | −0.0001 (−0.0016 to 0.0017) |
-| defect-train (train seeds) | 3,212 | 40.3 % | −0.0237 (−0.0304 to −0.0168) | −0.0013 (−0.0037 to 0.0010) |
-| ironclad-dev (dev seeds) | 4,269 | 54.9 % | −0.0163 (−0.0215 to −0.0105) | −0.0024 (−0.0049 to 0.0004) |
+| ironclad-train (train seeds) | 3,812 | 40.9 % | −0.0044 (−0.0078 to −0.0008) | −0.0029 (−0.0060 to 0.0000) |
+| silent-train (train seeds) | 2,332 | 10.7 % | −0.0005 (−0.0032 to 0.0025) | −0.0014 (−0.0050 to 0.0035) |
+| regent-train (train seeds) | 2,703 | 22.4 % | −0.0097 (−0.0152 to −0.0048) | +0.0003 (−0.0018 to 0.0021) |
+| necrobinder-train (train seeds) | 3,389 | 44.0 % | −0.0004 (−0.0022 to 0.0014) | −0.0001 (−0.0016 to 0.0015) |
+| defect-train (train seeds) | 3,212 | 40.3 % | −0.0202 (−0.0271 to −0.0140) | −0.0013 (−0.0042 to 0.0011) |
+| ironclad-dev (dev seeds) | 4,269 | 54.9 % | −0.0163 (−0.0214 to −0.0106) | −0.0023 (−0.0046 to 0.0004) |
 <!-- table:synergy_cohorts:end -->
 
 * **Reading:** the simulated runs support the needs part at the weight the first judgement gave it (the estimate is a little above it, which is not applied) and the scalers part at about 0.7 of it, and give **weak support at most to an engine credit** (the interval includes no effect; random decks rarely hold a whole engine, and the pilot does not build around one, so this says little about people who do). Ironclad, Regent and Defect show a clear gain; for Silent and Necrobinder the intervals include no change. The parts add to a model that already knows every card, a little: most of what they predict the cards themselves also predict.
