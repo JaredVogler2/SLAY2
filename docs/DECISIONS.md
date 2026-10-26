@@ -294,7 +294,8 @@ So acting on the measured values helped this pilot in simulation, by a lot; the 
 **The files this test is fixed to (sha256 of the values file, recorded in the commit that adds it, before the `val` runs):**
 
 * Silent: `experiments/cardvalue/silent-a0-v1.json`, sha256 `fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859`. 5,000 `train` games, none won, 2,332 reached the Act-1 boss and 10.7 % got past it; 75 cards measured (14 with an interval above zero, 10 below); grouped cross-validation AUC 0.878 (log loss 0.241 against 0.263 without the cards); Spearman with the hand-written rating 0.43.
-* Regent, Necrobinder, Defect: added below, each by the commit that adds its values, before its `val` runs.
+* Regent: `experiments/cardvalue/regent-a0-v1.json`, sha256 `1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db`. 5,000 `train` games, none won (4,967 deaths and 33 games that reached the 20,000-step limit, which are excluded and never read as losses), 2,703 reached the Act-1 boss and 22.4 % got past it; 88 cards measured (12 with an interval above zero, 14 below); grouped cross-validation AUC 0.898 (log loss 0.323 against 0.398 without the cards); Spearman with the hand-written rating 0.07.
+* Necrobinder, Defect: added below, each by the commit that adds its values, before its `val` runs.
 
 **Alternatives rejected.** One pooled model across classes (a card's value is class-specific and the covariates are not comparable); a different outcome for the weak-pilot classes (the point of one protocol is that none of its choices is made after seeing results); skipping the tests and publishing measurements (ADR-031 showed the measurement and the intervention can disagree in size; the test is what earns the word "validated").
 

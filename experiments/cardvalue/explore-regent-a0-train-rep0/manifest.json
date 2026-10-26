@@ -1,0 +1,155 @@
+{
+  "batch_id": "explore-regent-a0-train-rep0",
+  "config": {
+    "ascension": 0,
+    "character": "Regent",
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "6da7f793a28c2165b57522903ecde77a504d63f1c985aa5af8fc062e6ab2f06f",
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": true,
+      "head": "d48f0c63e52fa2c900229aba8543564d7003dd06"
+    }
+  },
+  "episodes_file": {
+    "lines": 5000,
+    "name": "episodes.jsonl",
+    "sha256": "033eecef83fde721a198e91b8ac0a4d4708db92f561609ba5eb53c0abf4e8d5e"
+  },
+  "episodes_gz": {
+    "bytes": 258890,
+    "name": "episodes.jsonl.gz",
+    "sha256": "8a1f4d2b9f93a63c2f53cd755d02540038abd427ca7c0696d8d63a594d768234"
+  },
+  "finished": "2026-10-26T07:29:42+00:00",
+  "known_simulator_gaps": [
+    {
+      "affects": "coverage",
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "results",
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "affects": "results",
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "affects": "coverage",
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+    },
+    {
+      "affects": "coverage",
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    }
+  ],
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "effective": {
+      "params": {
+        "explore": 0.6,
+        "replicate": 0,
+        "tune": {
+          "boss_heal_below": 0.9,
+          "card_slope": 0.09,
+          "card_threshold": 3.2,
+          "danger_frac": 0.3,
+          "elite_bad_value": -2.5,
+          "elite_mid_hp": 0.65,
+          "elite_mid_value": 0.2,
+          "elite_ok_floor": 4,
+          "elite_ok_hp": 0.8,
+          "elite_value": 2.0,
+          "heal_below": 0.7,
+          "max_deck": 32,
+          "monster_hp_penalty": 0.5,
+          "monster_value": 1.0,
+          "potion_hp_abs": 6,
+          "potion_hp_frac": 0.15,
+          "rest_base": 1.0,
+          "rest_weight": 3.0,
+          "shop_base": 0.3,
+          "shop_card_threshold": 3.6,
+          "shop_mid": 0.5,
+          "shop_mid_gold": 75,
+          "shop_potion_margin": 40,
+          "shop_rich": 1.2,
+          "shop_rich_gold": 150,
+          "treasure_value": 1.8,
+          "unknown_value": 0.8
+        }
+      },
+      "version": "1"
+    },
+    "name": "rules_explore",
+    "params": {
+      "explore": 0.6,
+      "replicate": 0
+    }
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v1.json",
+    "file_sha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb",
+    "manifest_sha256": "3c803d061efb97dc93501960d5601ebd98cf55a858e56789b9d6dc42d2c2f27c",
+    "n": 5000,
+    "partition": "train",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 4967,
+    "counts": {
+      "aborted": 0,
+      "death": 4967,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 0,
+      "timeout": 33,
+      "win": 0
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 5000,
+    "win_rate_95ci_wilson": [
+      0.0,
+      0.0007727984995130962
+    ],
+    "win_rate_of_completed": 0.0
+  },
+  "traces": {
+    "count": 0,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 4915.5,
+  "workers": 1
+}
