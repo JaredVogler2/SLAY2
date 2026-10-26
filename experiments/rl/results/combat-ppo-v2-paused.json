@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "kind": "combat-network-run",
+  "run": "combat-ppo-v2",
+  "note": "Paused by the operator at iteration 50 of 150 (819,200 steps) to free the CPU for other experiments; not finished and not resumed. Warm start: behaviour cloning of rules_v1 (combat-bc-v1, hash in combat-bc-v1.json). The validation trajectory is on the monitor set, which is also where best.pt was chosen (iteration 40), so it is optimistic and no held-out evaluation was run: no claim about this network rests on it. The rules baseline on the same 796 pairs is 86.6 % (combat-ppo-v1-run1.json).",
+  "config": {
+    "iterations": 150,
+    "workers": 4,
+    "envs": 16,
+    "steps": 256,
+    "train_seeds": 300,
+    "val_seeds": 80,
+    "keep_monster": 0.35,
+    "epochs": 3,
+    "minibatch": 2048,
+    "lr": 0.0001,
+    "lr_end": 3e-05,
+    "gamma": 0.995,
+    "lam": 0.95,
+    "clip": 0.2,
+    "ent": 0.003,
+    "ent_end": 0.001,
+    "vf": 0.5,
+    "target_kl": 0.02,
+    "hp_weight": 0.5,
+    "potion_cost": 0.1,
+    "d": 48,
+    "layers": 2,
+    "eval_every": 10,
+    "eval_repeats": 2,
+    "seed": 2,
+    "threads": 2,
+    "value_warmup": 8
+  },
+  "net": {
+    "d": 48,
+    "layers": 2,
+    "heads": 4,
+    "d_pw": 16
+  },
+  "libraries": {
+    "train": 1558,
+    "val": 398
+  },
+  "library_nodes": {
+    "train": {
+      "MONSTER": 885,
+      "ELITE": 341,
+      "BOSS": 293,
+      "UNKNOWN": 32,
+      "EVENT": 7
+    },
+    "val": {
+      "MONSTER": 229,
+      "ELITE": 88,
+      "BOSS": 72,
+      "UNKNOWN": 8,
+      "EVENT": 1
+    }
+  },
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "dirty": false
+  },
+  "iterations_logged": 50,
+  "steps": 819200,
+  "validation": [
+    {
+      "iteration": 10,
+      "steps": 163840,
+      "n": 796,
+      "win": 0.853,
+      "hp_lost_on_win": 0.1577
+    },
+    {
+      "iteration": 20,
+      "steps": 327680,
+      "n": 796,
+      "win": 0.8656,
+      "hp_lost_on_win": 0.1638
+    },
+    {
+      "iteration": 30,
+      "steps": 491520,
+      "n": 796,
+      "win": 0.8693,
+      "hp_lost_on_win": 0.1619
+    },
+    {
+      "iteration": 40,
+      "steps": 655360,
+      "n": 796,
+      "win": 0.8744,
+      "hp_lost_on_win": 0.1604
+    },
+    {
+      "iteration": 50,
+      "steps": 819200,
+      "n": 796,
+      "win": 0.8693,
+      "hp_lost_on_win": 0.1604
+    }
+  ],
+  "checkpoints": {
+    "best.pt": {
+      "sha256": "1346a969afe3f46dddd92b1b20d9e933e34f6db7fb26e8672aed353765bb8e13",
+      "bytes": 1422967
+    },
+    "latest.pt": {
+      "sha256": "4827de8942561295b8e45b1028c3834b480feb07e1fc62cbcc5a97ec5499d16f",
+      "bytes": 1423009
+    }
+  }
+}
