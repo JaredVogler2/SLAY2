@@ -279,3 +279,23 @@ So acting on the measured values helped this pilot in simulation, by a lot; the 
 **What was not re-measured.** `search_v1` (obsolete; its batch is flagged), the `search_v2` combat evaluation on `val` (a negative finding about a defective value function, still true), and the `search_v3` development combat evaluation: these are simulated combats that are valid as played, and the run-level evidence (the claims that matter) is what is re-run. Everything is labelled with what it was produced by.
 
 **Rollback.** Remove the wrapper in `runner.py` / `evalcombat.py`; nothing else depends on it, but search traces will again fail the replay audit.
+
+## 2026-10-26 — ADR-034: the card-value protocol is repeated, unchanged, for the other four classes
+
+**Context.** ADR-031 measured and tested Ironclad's card values. The advisor serves five classes, and a probe of the rules policy on 100 development seeds per class showed that all four others play to the Act-1 boss often enough to measure (mean floors 13.2 Silent, 13.7 Regent, 18.2 Necrobinder, about 16 Defect; got past the Act-1 boss in 11 %, 12 %, 50 % and about 38 % of games). The pilot has no class-specific combat knowledge (poison, orbs, stars, Osty are read only through generic card fields), so each class's values are conditional on a weaker pilot than Ironclad's; that is stated next to them.
+
+**Decision.** For each class C in {Silent, Regent, Necrobinder, Defect}, exactly the ADR-031 protocol, nothing re-tuned:
+
+1. *Measure.* `rules_explore` (explore 0.6, replicate 0) on the 5,000 `train` seeds of seed manifest v1 with `--character C`, A0, `veteran` profile; `cardvalue` with its defaults (ridge-logistic, penalty by 5-fold grouped cross-validation, 200 bootstrap draws over seeds; constant starting relics left out of the covariates, which does not move the Ironclad values: the committed estimates are reproduced bit for bit by a test). Dataset and values are committed (`experiments/cardvalue/explore-<c>-a0-train-rep0/`, `experiments/cardvalue/<c>-a0-v1.json`); a values file declares its class and `rules_v2` refuses it for another class.
+2. *Test, once, written down before any `val` game of `rules_v2` for that class exists.* `rules_v2` with C's values (`threshold` 0, deck cap 32) against `rules_v1`, same 2,000 `val` seeds, paired, `--character C`. Primary endpoint: got past the Act-1 boss, exact McNemar, two-sided. **Significance level 0.0125 per class** (0.05 shared by four tests, Bonferroni); the Ironclad test keeps its 0.05. Secondary: floors reached (paired bootstrap), wins. No threshold, cap or value is tuned on `val`; `test` stays sealed.
+3. *Reading rule* (as ADR-031, per class). A class whose primary endpoint improves at its level is shown as "validated in simulation" and may give a second opinion on `/advisor`; a class that does not is shown as a measurement only, with the result next to it, and gives no advice.
+4. *What this does not claim.* Nothing about the live game; nothing about a better pilot; per class, the values are conditional on the rules policy's play of that class.
+
+**The files this test is fixed to (sha256 of the values file, recorded in the commit that adds it, before the `val` runs):**
+
+* Silent: `experiments/cardvalue/silent-a0-v1.json`, sha256 `fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859`. 5,000 `train` games, none won, 2,332 reached the Act-1 boss and 10.7 % got past it; 75 cards measured (14 with an interval above zero, 10 below); grouped cross-validation AUC 0.878 (log loss 0.241 against 0.263 without the cards); Spearman with the hand-written rating 0.43.
+* Regent, Necrobinder, Defect: added below, each by the commit that adds its values, before its `val` runs.
+
+**Alternatives rejected.** One pooled model across classes (a card's value is class-specific and the covariates are not comparable); a different outcome for the weak-pilot classes (the point of one protocol is that none of its choices is made after seeing results); skipping the tests and publishing measurements (ADR-031 showed the measurement and the intervention can disagree in size; the test is what earns the word "validated").
+
+**Rollback.** Delete the class's values file: the site drops the class and `rules_v2` for it.
