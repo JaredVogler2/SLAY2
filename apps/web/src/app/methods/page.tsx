@@ -6,6 +6,7 @@ import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import evidence from "@/content/evidence.generated.json";
 import {
+  ALL_REPORTS,
   GROUP_LABEL,
   comparisonSentence,
   formatP,
@@ -61,7 +62,7 @@ const NOT_EVALUATED = [
 export default function MethodsPage() {
   const summary = ruleSummary();
   const sections = rulesBySection();
-  const reports = evidence.reports;
+  const reports = ALL_REPORTS;
   const comparisons = evidence.comparisons;
   const total = totals();
   const randomPolicy = largestReport("random_legal");
@@ -245,6 +246,32 @@ export default function MethodsPage() {
                 <tr key={r.id} className="align-top">
                   <th scope="row" className="py-3 pr-3 font-medium text-parchment">
                     {policyLabel({ policy: r.policy, params: r.policyParams })}
+                    {r.preIsolation ? (
+                      <span className="mt-1 block">
+                        <Badge
+                          tone="unverified"
+                          title="Search on clones advanced the live game's card-id counter when this batch was produced (ADR-035): a valid simulated game, but its action trace does not replay"
+                        >
+                          before isolation fix
+                        </Badge>
+                      </span>
+                    ) : null}
+                    {r.sampleAudit ? (
+                      <span className="mt-1 block">
+                        <Badge
+                          tone={
+                            r.sampleAudit.ledgerOk && r.sampleAudit.verified === r.sampleAudit.drawn
+                              ? "neutral"
+                              : "unverified"
+                          }
+                          title={`Sample audit (campaign 6): ${r.sampleAudit.criteria}. Sample drawn with a fixed random seed (${String(r.sampleAudit.rngSeed)}) from ${String(r.sampleAudit.completedInBatch)} completed games.`}
+                        >
+                          {String(r.sampleAudit.verified)} of {String(r.sampleAudit.drawn)} sampled
+                          games re-derived
+                          {r.sampleAudit.ledgerOk ? "" : " · ledger inconsistent"}
+                        </Badge>
+                      </span>
+                    ) : null}
                     <span className="block font-mono text-[0.65rem] font-normal text-dim">
                       {r.id}
                     </span>
@@ -308,6 +335,16 @@ export default function MethodsPage() {
                     <tr key={c.id} className="align-top">
                       <th scope="row" className="py-3 pr-3 font-medium text-parchment">
                         {policyLabel(c.a)} vs {policyLabel(c.b)}
+                        {c.preIsolation ? (
+                          <span className="mt-1 block">
+                            <Badge
+                              tone="unverified"
+                              title="A search batch in this comparison was produced before the isolation fix (ADR-035)"
+                            >
+                              before isolation fix
+                            </Badge>
+                          </span>
+                        ) : null}
                         <span className="block font-mono text-[0.65rem] font-normal text-dim">
                           {c.cohort.character} A{c.cohort.ascension} · {c.cohort.profile} · sha{" "}
                           {c.contentSha256.slice(0, 10)}
@@ -352,10 +389,10 @@ export default function MethodsPage() {
             <ul className="mt-2 list-disc space-y-1.5 pl-5">
               {randomPolicy && rulesPolicy ? (
                 <li>
-                  Mean floor rises from {randomPolicy.meanFloor.toFixed(1)} (random legal moves,{" "}
-                  {randomPolicy.completed} games) to {rulesPolicy.meanFloor.toFixed(1)}{" "}
-                  (hand-written rules, {rulesPolicy.completed} games), so the harness does measure
-                  skill.
+                  For {rulesPolicy.character}, mean floor rises from{" "}
+                  {randomPolicy.meanFloor.toFixed(1)} (random legal moves, {randomPolicy.completed}{" "}
+                  games) to {rulesPolicy.meanFloor.toFixed(1)} (hand-written rules,{" "}
+                  {rulesPolicy.completed} games), so the harness does measure skill.
                 </li>
               ) : null}
               {comparisons.map((c) => (

@@ -1,5 +1,92 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
+
+export interface MeasuredSetInfo {
+  readonly character: string;
+  /** the label the pages print for the class */
+  readonly label: string;
+  /** simulated runs of this class that reached the Act-1 boss */
+  readonly bossFights: number;
+  /** the held-out test of acting on the class's values, when it has been run */
+  readonly validation: {
+    readonly passed: boolean;
+    readonly passRate: number;
+    readonly passRateBase: number;
+    readonly pairedGames: number;
+  } | null;
+}
+
+/**
+ * The classes whose card values the site ships, read from the generated file the pages are built from, so a test follows the
+ * data (a class whose held-out test finishes changes what its pages say) instead of a hard-coded idea of which class is which.
+ */
+export function measuredSets(): readonly MeasuredSetInfo[] {
+  const file = join(__dirname, "..", "src", "content", "cardvalues.generated.json");
+  const data = JSON.parse(readFileSync(file, "utf8")) as {
+    sets: {
+      character: string;
+      bossFights: number;
+      validation: MeasuredSetInfo["validation"];
+    }[];
+  };
+  return data.sets.map((s) => ({
+    character: s.character,
+    label: s.character.charAt(0).toUpperCase() + s.character.slice(1),
+    bossFights: s.bossFights,
+    validation: s.validation,
+  }));
+}
+
+/**
+ * The display names of a class's best-measured cards that the advisor can offer (cards of the class's own pool, eligible as a
+ * card reward), best first. Read from the same generated file and the same catalog the pages are built from.
+ */
+export function bestMeasuredCardNames(character: string, n: number): string[] {
+  const catalogFile = join(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "packages",
+    "game-data",
+    "data",
+    "cards.sts2-main-0.107.1.json",
+  );
+  const catalog = (
+    JSON.parse(readFileSync(catalogFile, "utf8")) as {
+      cards: { id: string; name: string; class: string; rewardEligible: boolean }[];
+    }
+  ).cards;
+  const byId = new Map(catalog.map((c) => [c.id, c]));
+  const valuesFile = join(__dirname, "..", "src", "content", "cardvalues.generated.json");
+  const data = JSON.parse(readFileSync(valuesFile, "utf8")) as {
+    sets: { character: string; cards: { id: string }[] }[];
+  };
+  const set = data.sets.find((x) => x.character === character);
+  if (!set) {
+    throw new Error(`expected shipped card values for ${character}`);
+  }
+  const names: string[] = [];
+  for (const c of set.cards) {
+    const entry = byId.get(c.id);
+    if (entry?.class === character && entry.rewardEligible) {
+      names.push(entry.name);
+    }
+  }
+  return names.slice(0, n);
+}
+
+/** One class's shipped set; the test fails loudly when the class is missing instead of passing on `undefined`. */
+export function requireMeasuredSet(character: string): MeasuredSetInfo {
+  const set = measuredSets().find((s) => s.character === character);
+  if (!set) {
+    throw new Error(`expected shipped card values for ${character}`);
+  }
+  return set;
+}
 
 /** Fails the test on serious/critical axe violations (WCAG 2.2 A/AA tags). */
 export async function expectNoSeriousA11yViolations(page: Page, context?: string): Promise<void> {

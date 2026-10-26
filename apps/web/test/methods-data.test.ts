@@ -140,6 +140,24 @@ describe("comparison wording is derived from the data", () => {
     }
   });
 
+  it("never mixes classes: a headline report belongs to the class that was asked for", () => {
+    for (const policy of ["random_legal", "rules_v1", "rules_v2"]) {
+      for (const character of ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect"]) {
+        const r = largestReport(policy, character);
+        if (r) {
+          expect(r.character, `${policy} ${character}`).toBe(character);
+        }
+      }
+    }
+    // Silent's largest held-out rules_v1 batch has more completed games than Ironclad's; it must not win the default
+    expect(largestReport("rules_v1", "Silent")?.completed).toBeGreaterThan(
+      largestReport("rules_v1")?.completed ?? Number.POSITIVE_INFINITY,
+    );
+    expect(largestReport("rules_v1")?.character).toBe("Ironclad");
+    // nothing was played by this policy as this class
+    expect(largestReport("random_legal", "Silent")).toBeUndefined();
+  });
+
   it("formats exact p-values without printing a misleading zero", () => {
     expect(formatP(0.0173)).toBe("p = 0.017");
     expect(formatP(8.13e-261)).toBe("p = 8.1e-261");
@@ -149,8 +167,18 @@ describe("comparison wording is derived from the data", () => {
   it("headline reports are the held-out batches, even when a development batch is as large", () => {
     const rules = largestReport("rules_v1");
     const random = largestReport("random_legal");
-    expect(rules).toMatchObject({ partition: "val", role: "held-out", completed: 1997 });
-    expect(random).toMatchObject({ partition: "val", role: "held-out", completed: 2000 });
+    expect(rules).toMatchObject({
+      character: "Ironclad",
+      partition: "val",
+      role: "held-out",
+      completed: 1997,
+    });
+    expect(random).toMatchObject({
+      character: "Ironclad",
+      partition: "val",
+      role: "held-out",
+      completed: 2000,
+    });
     // the 300-game development batch of rules_v1 and the 2,000-game development ladder still exist in the ledger
     expect(evidence.reports.some((r) => r.policy === "rules_v1" && r.partition === "train")).toBe(
       true,
@@ -260,6 +288,63 @@ describe("site-data exporter refuses wins that were not re-derived", () => {
     );
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("without a passing wins-audit.json");
+  });
+});
+
+describe("site-data exporter refuses a sample audit written for other content", () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    for (const d of dirs.splice(0)) {
+      rmSync(d, { recursive: true, force: true });
+    }
+  });
+  const script = join(repo, "scripts", "export-site-data.mjs");
+  const target = evidence.reports.find((r) => r.counts.win === 0);
+
+  function rootWith(audit: Record<string, unknown>): string {
+    if (!target) {
+      throw new Error("expected a committed batch without wins");
+    }
+    const root = mkdtempSync(join(tmpdir(), "slay2-sample-"));
+    dirs.push(root);
+    for (const name of ["docs", "packages", "sim"]) {
+      symlinkSync(join(repo, name), join(root, name), "dir");
+    }
+    const batch = join(root, "experiments", "batches", target.id);
+    mkdirSync(batch, { recursive: true });
+    for (const f of ["manifest.json", "episodes.jsonl.gz"]) {
+      cpSync(join(repo, "experiments", "batches", target.id, f), join(batch, f));
+    }
+    writeFileSync(join(batch, "sample-audit.json"), JSON.stringify(audit));
+    return root;
+  }
+
+  const run = (root: string) =>
+    spawnSync(process.execPath, [script, "--check"], {
+      encoding: "utf8",
+      env: { ...process.env, SLAY2_ROOT: root },
+    });
+
+  const audit = (over: Record<string, unknown>) => ({
+    batch_id: target?.id,
+    batch_content_sha256: target?.contentSha256,
+    sample: { drawn: 1, completed_in_batch: 1, rng_seed: 0 },
+    verified: 1,
+    ledger: { ok: true },
+    criteria: "x",
+    ...over,
+  });
+
+  it("fails when the audit names another batch", () => {
+    const result = run(rootWith(audit({ batch_id: "some-other-batch" })));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("sample-audit.json was written for other content");
+  });
+
+  it("fails when the batch content changed after the audit", () => {
+    const result = run(rootWith(audit({ batch_content_sha256: "0".repeat(64) })));
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("sample-audit.json was written for other content");
   });
 });
 

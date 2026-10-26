@@ -94,3 +94,85 @@ def audit_wins(batch_dir: Path, *, limit: int | None = None) -> dict:
     }
     save_json(batch_dir / "wins-audit.json", report)
     return report
+
+
+def audit_sample(batch_dir: Path, *, n: int = 50, rng_seed: int = 0) -> dict:
+    """Full-run truth for a sample of completed games, deaths included (red-team campaign 6). Simulator must be activated.
+
+    Two checks. The *ledger*: every seed the batch was asked to play has exactly one record, the recorded outcomes add up to
+    the manifest's summary, and incomplete episodes (timeouts, simulator errors, ...) are present with their outcome, not
+    dropped. The *sample*: ``n`` completed games drawn uniformly with a fixed ``rng_seed``; each is re-run with a trace and
+    must agree with the stored record, its trace must replay observation hash for observation hash, and the replayed run
+    must be over in the way the record claims: a win ended with the player alive having won, a death with the player at 0 HP
+    and not having won. Written next to the batch as ``sample-audit.json``.
+    """
+    import random
+    import tempfile
+    from collections import Counter
+
+    from . import external
+    from .manifest import load_seed_manifest, partition_seeds
+
+    batch_dir = Path(batch_dir)
+    manifest = json.loads((batch_dir / "manifest.json").read_text(encoding="utf-8"))
+    cfg = RunConfig(**manifest["config"])
+    name, params = manifest["policy"]["name"], _policy_params(manifest)
+    records = read_episodes(batch_dir)
+
+    seeds_info = manifest["seeds"]
+    seeds_file = Path(seeds_info["file"])
+    if not seeds_file.is_absolute():  # recorded relative to the repository; activating the simulator changes the working directory
+        seeds_file = external.REPO_ROOT / seeds_file
+    wanted = partition_seeds(load_seed_manifest(seeds_file), seeds_info["partition"])[: seeds_info["n"]]
+    counts = Counter(r.outcome for r in records)
+    declared = {k: v for k, v in manifest["summary"]["counts"].items() if v}
+    ledger = {
+        "requested_seeds": len(wanted),
+        "records": len(records),
+        "every_requested_seed_has_one_record": sorted(r.seed for r in records) == sorted(wanted),
+        "outcome_counts": dict(sorted(counts.items())),
+        "matches_manifest_summary": dict(counts) == declared,
+        "incomplete_recorded_not_dropped": {k: v for k, v in sorted(counts.items()) if k not in ("win", "death")},
+    }
+    ledger["ok"] = bool(ledger["every_requested_seed_has_one_record"] and ledger["matches_manifest_summary"])
+
+    completed = sorted((r for r in records if r.outcome in ("win", "death")), key=lambda r: r.seed)
+    sample = sorted(random.Random(rng_seed).sample(completed, min(n, len(completed))), key=lambda r: r.seed)
+    fields = STORED_FIELDS + ("killed_by",)
+    rows = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for rec in sample:
+            trace = Path(tmp) / f"{rec.seed}.jsonl.gz"
+            again = run_episode(cfg, rec.seed, make_policy(name, **params), batch_id=rec.batch_id, trace_path=trace)
+            mismatched = [k for k in fields if getattr(again, k) != getattr(rec, k)]
+            ok, message, mgr = replay_manager(cfg, rec.seed, trace)
+            over, won, hp = bool(mgr.is_over), bool(mgr.player_won), int(mgr.run_state.player.current_hp)
+            terminal = over and (won and hp > 0 if rec.outcome == "win" else (not won and hp <= 0))
+            rows.append(
+                {
+                    "seed": rec.seed,
+                    "outcome": rec.outcome,
+                    "floor": rec.floor,
+                    "steps": rec.steps,
+                    "rerun_matches_stored_record": not mismatched,
+                    "rerun_mismatched_fields": mismatched,
+                    "replay_ok": ok,
+                    "replay_message": message,
+                    "terminal_state": {"is_over": over, "player_won": won, "hp": hp},
+                    "verified": bool(ok and not mismatched and terminal),
+                }
+            )
+    report = {
+        "schema": 1,
+        "batch_id": manifest["batch_id"],
+        "batch_content_sha256": manifest.get("content_sha256"),
+        "policy": {"name": name, "params": params},
+        "sample": {"requested": n, "drawn": len(rows), "rng_seed": rng_seed, "completed_in_batch": len(completed)},
+        "ledger": ledger,
+        "verified": sum(1 for r in rows if r["verified"]),
+        "all_verified": bool(rows) and all(r["verified"] for r in rows) and ledger["ok"],
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win",
+        "games": rows,
+    }
+    save_json(batch_dir / "sample-audit.json", report)
+    return report

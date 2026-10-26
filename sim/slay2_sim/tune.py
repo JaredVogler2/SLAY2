@@ -11,6 +11,10 @@ candidate against the baseline and on the seeds both completed:
 Only ``dev`` (or ``train``) seeds are accepted: choosing a threshold on held-out seeds would turn them into development seeds.
 The winner is then confirmed on seeds the search never saw (``val``), once, against the baseline.
 
+The selection between stages is the rule fixed in ADR-036, written as code so that nobody applies it by hand: :func:`screen`
+(stage 1 -> 2), :func:`confirm` (stage 2 -> 3) and :func:`combined_candidate` (the one configuration stage 3 plays), driven by
+``slay2_sim tune-select``.
+
     python -m slay2_sim tune --policy rules_v2 --base '{"threshold":0.0}' --one-at-a-time "heal_below=0.5,0.6,0.8" \\
         --n 500 --out scratch/tune/heal
 """
@@ -73,6 +77,76 @@ def compare_records(base, cand, *, iters: int = 5000, seed: int = 0) -> dict:
         out[label] = {"rate": sum(a) / len(a), "rateBase": sum(b) / len(b), "onlyCandidate": t["a_only"], "onlyBase": t["b_only"], "mcnemarP": t["mcnemar_p"]}
     out["wins"] = sum(cand[s].outcome == Outcome.WIN.value for s in both)
     out["winsBase"] = sum(base[s].outcome == Outcome.WIN.value for s in both)
+    return out
+
+
+# ADR-036: the levels and sizes are fixed before any candidate is played.
+SCREEN_LEVEL = 0.10        # stage 1: exact McNemar p below this, and a higher share past the Act-1 boss than the base's
+SCREEN_LIMIT = 8           # stage 1: at most this many candidates advance, best paired mean floor first
+CONFIRM_FAMILY_ALPHA = 0.05  # stage 2: divided by the number of candidates that advanced (Bonferroni)
+COMBINE_ALPHA = 0.05       # stage 3: the combination against the base
+
+
+def parameter_of(name: str) -> str:
+    """``"heal_below=0.5"`` -> ``"heal_below"`` (candidate names are ``key=value``)."""
+    return name.partition("=")[0]
+
+
+def higher_than_base(row: dict, level: float) -> bool:
+    """The primary endpoint: a higher share of games past the Act-1 boss than the base's, exact McNemar p < ``level``."""
+    a1 = row["pastAct1Boss"]
+    return a1["rate"] > a1["rateBase"] and a1["mcnemarP"] < level
+
+
+def screen(rows: list[dict], *, level: float = SCREEN_LEVEL, limit: int = SCREEN_LIMIT) -> list[dict]:
+    """ADR-036 stage 1: the candidates that advance to confirmation (generous on purpose; this stage is not evidence)."""
+    passing = [r for r in rows if higher_than_base(r, level)]
+    return sorted(passing, key=lambda r: (-r["floorDiff"], r["name"]))[:limit]
+
+
+def confirm(rows: list[dict], *, family_alpha: float = CONFIRM_FAMILY_ALPHA) -> dict:
+    """ADR-036 stage 2: ``rows`` are the advanced candidates replayed on fresh seeds.
+
+    Each is held to ``family_alpha / len(rows)``. Of several confirmed values of one threshold the one with the larger mean-floor
+    gain is kept. Returns the level used, every confirmed name and the kept rows."""
+    if not rows:
+        return {"alpha": family_alpha, "confirmed": [], "kept": []}
+    alpha = family_alpha / len(rows)
+    confirmed = [r for r in rows if higher_than_base(r, alpha)]
+    best: dict[str, dict] = {}
+    for r in confirmed:
+        key = parameter_of(r["name"])
+        if key not in best or (r["floorDiff"], r["name"]) > (best[key]["floorDiff"], best[key]["name"]):
+            best[key] = r
+    return {"alpha": alpha, "confirmed": [r["name"] for r in confirmed], "kept": [best[k] for k in sorted(best)]}
+
+
+def candidate_spec(base: dict, row: dict) -> dict:
+    """The candidate a summary row came from: its own overrides (what differs from ``base``), usable as ``--candidates`` input."""
+    base_tune = base.get("tune", {})
+    spec: dict = {"name": row["name"]}
+    tune = {k: v for k, v in row["params"].get("tune", {}).items() if base_tune.get(k) != v}
+    params = {k: v for k, v in row["params"].items() if k != "tune" and base.get(k) != v}
+    if tune:
+        spec["tune"] = tune
+    if params:
+        spec["params"] = params
+    return spec
+
+
+def combined_candidate(base: dict, kept: list[dict], name: str = "combined") -> dict:
+    """One candidate holding every kept change at once (stage 3)."""
+    tune: dict = {}
+    params: dict = {}
+    for row in kept:
+        spec = candidate_spec(base, row)
+        tune.update(spec.get("tune", {}))
+        params.update(spec.get("params", {}))
+    out: dict = {"name": name}
+    if tune:
+        out["tune"] = tune
+    if params:
+        out["params"] = params
     return out
 
 

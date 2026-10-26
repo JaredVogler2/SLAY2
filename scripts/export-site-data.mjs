@@ -63,6 +63,13 @@ function parseEvidence() {
     if (wins > 0 && !(audit && audit.all_verified === true && audit.wins_audited === wins && audit.batch_id === m.batch_id)) {
       throw new Error(`${name}: ${wins} win(s) without a passing wins-audit.json (run: slay2_sim audit wins --batch experiments/batches/${name})`);
     }
+    // The sample audit (slay2_sim audit sample: ledger check + replay-verified random sample of completed games) belongs to one
+    // exact batch; an audit of other content is refused rather than shown against this batch.
+    const sampleFile = join(dir, name, "sample-audit.json");
+    const sample = existsSync(sampleFile) ? JSON.parse(readFileSync(sampleFile, "utf8")) : null;
+    if (sample && !(sample.batch_id === m.batch_id && sample.batch_content_sha256 === m.content_sha256)) {
+      throw new Error(`${name}: sample-audit.json was written for other content; rerun slay2_sim audit sample --batch experiments/batches/${name}`);
+    }
     const completed = eps.filter((e) => e.outcome === "win" || e.outcome === "death");
     const floors = completed.map((e) => e.floor).sort((a, b) => a - b);
     const mean = floors.reduce((a, b) => a + b, 0) / Math.max(1, floors.length);
@@ -73,6 +80,9 @@ function parseEvidence() {
       id: m.batch_id,
       policy: m.policy.name,
       policyParams: m.policy.params ?? {},
+      // search on clones used to advance the live game's card-id counter (ADR-035): such batches are valid simulations but
+      // their action traces do not replay; batches written after the fix say so in their manifest
+      preIsolation: m.policy.name.startsWith("search") && m.deliberation_isolated !== true,
       character: m.config.character,
       ascension: m.config.ascension,
       profile: m.config.profile,
@@ -90,6 +100,16 @@ function parseEvidence() {
       meanWallSecondsPerEpisode: Math.round(wall * 100) / 100,
       winsAudit: audit
         ? { audited: audit.wins_audited, verified: audit.wins_verified, seeds: audit.wins.map((w) => w.seed), criteria: audit.criteria }
+        : null,
+      sampleAudit: sample
+        ? {
+            drawn: sample.sample.drawn,
+            verified: sample.verified,
+            completedInBatch: sample.sample.completed_in_batch,
+            rngSeed: sample.sample.rng_seed,
+            ledgerOk: sample.ledger.ok,
+            criteria: sample.criteria,
+          }
         : null,
       simulator: { id: m.simulator.id, sha: m.simulator.pinned, parityWithLiveGame: m.simulator.parity_with_live_game },
       gapsRecordedInManifest: Array.isArray(m.known_simulator_gaps),
@@ -131,6 +151,7 @@ function parseComparisons(reports) {
       floorDifference: c.floorDifference,
       wallTimeRatioBOverA: c.wallTimeRatioBOverA,
       role: c.role,
+      preIsolation: Boolean(byId.get(c.a.batchId)?.preIsolation || byId.get(c.b.batchId)?.preIsolation),
       contentSha256: c.contentSha256,
     });
   }
@@ -258,7 +279,9 @@ for (const [file, body] of Object.entries(outputs)) {
   if (check) {
     const current = existsSync(path) ? readFileSync(path, "utf8") : "";
     if (current !== text) {
-      console.error(`stale: ${file} (run: node scripts/export-site-data.mjs)`);
+      console.error(
+        `stale: ${file} (run: node scripts/export-site-data.mjs, or scripts/export-site-data-clean.sh when the working tree holds unfinished experiments)`,
+      );
       stale = true;
     }
   } else {

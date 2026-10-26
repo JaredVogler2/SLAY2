@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from .isolation import deliberation
 from .observation import obs_hash, observe
 from .outcomes import EpisodeRecord, Outcome
 
@@ -192,7 +193,8 @@ def run_episode(
                 if "combat" in obs:
                     last_enemies = [e["id"] for e in obs["combat"]["enemies"] if e["alive"]]
                 stage = "policy"
-                idx = policy.act(obs, actions, fm)
+                with deliberation():  # search on clones must leave no trace in the live game (isolation.py)
+                    idx = policy.act(obs, actions, fm)
                 stage = "sim"
                 if not isinstance(idx, int) or not 0 <= idx < len(actions):
                     outcome, rec.error = Outcome.INVALID_ACTION, f"policy returned {idx!r} for {len(actions)} legal actions"

@@ -178,6 +178,7 @@ def run_batch(
         "known_simulator_gaps": gaps.applicable(cfg.ascension),
         "environment": environment_fingerprint(external.REPO_ROOT),
         "workers": workers,
+        "deliberation_isolated": True,  # a policy's search leaves the live game's card-id counter alone (ADR-035)
         "summary": {**summary, "win_rate_95ci_wilson": ci},
         "wall_seconds_this_invocation": round(wall, 1),
         "episodes_file": {"name": episodes_path.name, "sha256": sha256_file(episodes_path), "lines": len(records)},

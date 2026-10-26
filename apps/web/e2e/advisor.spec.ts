@@ -2,7 +2,13 @@ import { readFile } from "node:fs/promises";
 
 import { expect, test, type Page } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations } from "./helpers";
+import {
+  bestMeasuredCardNames,
+  expectNoHorizontalOverflow,
+  expectNoSeriousA11yViolations,
+  measuredSets,
+  requireMeasuredSet,
+} from "./helpers";
 
 async function addOffered(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: /offered card/i });
@@ -165,18 +171,89 @@ test.describe("advisor journey", () => {
     // the heuristic's own call is still the headline and still says what it is
     await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
     await expect(page.getByText("Heuristic v0").first()).toBeVisible();
+
+    // what the disclosure says about the numbers is this class's own, read from the data
+    const ironclad = requireMeasuredSet("ironclad");
+    expect(ironclad.validation?.passed).toBe(true);
+    const test = ironclad.validation;
+    await panel.getByText("How to read this, and what it is not").click();
+    await expect(panel).toContainText(
+      `${ironclad.bossFights.toLocaleString("en-US")} simulated Ironclad runs that reached the Act-1 boss`,
+    );
+    await expect(panel).toContainText(
+      `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(0)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} held-out seeds`,
+    );
   });
 
-  test("says plainly when the class on screen has no simulated opinion to offer", async ({
-    page,
-  }) => {
-    await startClass(page, "Silent");
-    await addOffered(page, "backflip");
-    const panel = page.locator("#simulation-opinion");
-    await expect(panel).toBeVisible();
-    await expect(panel).toContainText("no measurement for this offer");
-    await expect(panel).toContainText(/not measured this class|not been tested|did not beat/);
-  });
+  // Every other class whose held-out test passed gives the same second opinion as Ironclad, from its own values.
+  for (const s of measuredSets()) {
+    const v = s.validation;
+    if (v?.passed !== true || s.character === "ironclad") {
+      continue;
+    }
+    test(`${s.label}: a class whose values passed their test gets the simulated second opinion`, async ({
+      page,
+    }) => {
+      const names = bestMeasuredCardNames(s.character, 3);
+      expect(names).toHaveLength(3);
+      await startClass(page, s.label);
+      for (const name of names) {
+        await addOffered(page, name);
+      }
+      const panel = page.locator("#simulation-opinion");
+      await expect(panel).toBeVisible();
+      await expect(panel.getByRole("heading", { level: 2 })).toHaveText("What simulated runs say");
+      await expect(panel.getByText("Simulated · unverified")).toBeVisible();
+      // the card with the largest measured value is offered, so the pilot takes it
+      await expect(panel).toContainText(`would take ${names[0] ?? ""}`);
+      const cards = panel.getByRole("list", { name: "Measured values of the offered cards" });
+      await expect(cards.locator("> li")).toHaveCount(3);
+      await panel.getByText("How to read this, and what it is not").click();
+      await expect(panel).toContainText(
+        `${s.bossFights.toLocaleString("en-US")} simulated ${s.label} runs that reached the Act-1 boss`,
+      );
+      await expect(panel).toContainText(
+        `+${((v.passRate - v.passRateBase) * 100).toFixed(0)} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} held-out seeds`,
+      );
+    });
+  }
+
+  // The panel speaks only for a class whose held-out test passed. Which classes those are is a fact about the shipped data
+  // (it changes when a class's test finishes), so each class below is checked against what the data says about it.
+  const OFFER: Record<string, { label: string; card: string }> = {
+    silent: { label: "Silent", card: "backflip" },
+    regent: { label: "Regent", card: "astral pulse" },
+    necrobinder: { label: "Necrobinder", card: "afterlife" },
+    defect: { label: "Defect", card: "ball lightning" },
+  };
+  const byClass = new Map(measuredSets().map((s) => [s.character, s]));
+  for (const [character, { label, card }] of Object.entries(OFFER)) {
+    const set = byClass.get(character);
+    if (set?.validation?.passed === true) {
+      continue; // a validated class gives an opinion; the Ironclad test above covers that path
+    }
+    const why = !set
+      ? /not measured this class/
+      : set.validation === null
+        ? /not been tested/
+        : /did not beat/;
+    const note = !set
+      ? "No simulated runs of this class have been measured yet"
+      : set.validation === null
+        ? `The ${label} values have not been tested against play yet`
+        : `The ${label} values did not beat the hand-written ratings`;
+    test(`${label}: says plainly why the simulated runs give no opinion`, async ({ page }) => {
+      await startClass(page, label);
+      await addOffered(page, card);
+      const panel = page.locator("#simulation-opinion");
+      await expect(panel).toBeVisible();
+      await expect(panel).toContainText("no measurement for this offer");
+      await expect(panel).toContainText(why);
+      await expect(panel).not.toContainText(/would take|would skip/);
+      await panel.getByText("How to read this, and what it is not").click();
+      await expect(panel).toContainText(note);
+    });
+  }
 
   test("meets layout and accessibility basics with an offer on screen", async ({ page }) => {
     await startIronclad(page);

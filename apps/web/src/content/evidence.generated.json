@@ -43,6 +43,18 @@
       "min_ascension": 0,
       "affects": "coverage",
       "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    },
+    {
+      "id": "G8-dragon-fruit-lucky-fysh-shop",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "Buying a card in a shop while holding Lucky Fysh (+15 gold per card added) and Dragon Fruit (max HP on gold gained) raises `TypeError: unhashable type: 'PlayerState'` in the pinned simulator (Dragon Fruit's gold handler looks the owner up in a dict keyed by creature). Seen in 1 of 2,000 rules_v1 Silent validation games (seed 605866524, Act 2); the episode is reported as simulator_error and excluded from win rates and paired comparisons."
+    },
+    {
+      "id": "G9-particle-wall-loop",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "Regent's Particle Wall (catalog: 0 energy and 2 stars; gains block and returns to hand) is offered again at cost 0 after every play in the pinned simulator, and the rules policies keep playing it: 33 of 5,000 Regent exploration games (0.66 %) reached the 20,000-step limit with block in the hundreds of thousands. Such games end as timeout, are excluded from card values and paired comparisons and are never read as losses. Whether the simulator charges the stars was not examined; the policies have no guard against replaying a card that returns to hand."
     }
   ],
   "reports": [
@@ -50,6 +62,7 @@
       "id": "ladder-random_legal-ironclad-a0-first_run-train-n100",
       "policy": "random_legal",
       "policyParams": {},
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "first_run",
@@ -101,6 +114,7 @@
       ],
       "meanWallSecondsPerEpisode": 0.43,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -117,6 +131,7 @@
       "id": "ladder-random_legal-ironclad-a0-veteran-train-n2000",
       "policy": "random_legal",
       "policyParams": {},
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -169,6 +184,7 @@
       ],
       "meanWallSecondsPerEpisode": 0.4,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -185,6 +201,7 @@
       "id": "random_legal-ironclad-a0-veteran-val-n2000",
       "policy": "random_legal",
       "policyParams": {},
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -236,6 +253,7 @@
       ],
       "meanWallSecondsPerEpisode": 0.37,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -255,6 +273,7 @@
       "id": "rules_v1-ironclad-a0-veteran-train-n300",
       "policy": "rules_v1",
       "policyParams": {},
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -308,6 +327,7 @@
       ],
       "meanWallSecondsPerEpisode": 0.65,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -327,6 +347,7 @@
       "id": "rules_v1-ironclad-a0-veteran-val-n2000",
       "policy": "rules_v1",
       "policyParams": {},
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -380,6 +401,7 @@
       ],
       "meanWallSecondsPerEpisode": 0.62,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -396,11 +418,86 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v1-silent-a0-veteran-val-n2000",
+      "policy": "rules_v1",
+      "policyParams": {},
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1999,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1999,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019180044450228416
+      ],
+      "meanFloor": 13.36,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1770,
+        "1": 228,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 339
+        },
+        {
+          "id": "VANTOM",
+          "n": 278
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 219
+        },
+        {
+          "id": "FOGMOG",
+          "n": 124
+        },
+        {
+          "id": "KIN_FOLLOWER,KIN_PRIEST",
+          "n": 87
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.88,
+      "winsAudit": null,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "ebf95798bae04a41215323ae1f23dab25eb986eec5fe7ac97ac2bc2d951a7a47",
+      "episodesGzSha256": "86cf2dc1803b151f283f313d89b0731384cf0b2f6fe5126a89199db1698cd47f",
+      "finished": "2026-10-26T07:03:19+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v2-ironclad-a0-veteran-dev-n500",
       "policy": "rules_v2",
       "policyParams": {
         "threshold": 0
       },
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -454,6 +551,7 @@
       ],
       "meanWallSecondsPerEpisode": 0.72,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -475,6 +573,7 @@
       "policyParams": {
         "threshold": 0
       },
+      "preIsolation": false,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -540,6 +639,7 @@
         ],
         "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
       },
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -556,9 +656,86 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2-silent-a0-veteran-val-n2000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 2000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019170472812529331
+      ],
+      "meanFloor": 14.34,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 1630,
+        "1": 370
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 363
+        },
+        {
+          "id": "VANTOM",
+          "n": 270
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 234
+        },
+        {
+          "id": "KIN_FOLLOWER,KIN_PRIEST",
+          "n": 124
+        },
+        {
+          "id": "TUNNELER",
+          "n": 107
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.66,
+      "winsAudit": null,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "b9f4863b1792fb8e4595d7678088b55cec7edd2ea42effb13187dec84d543ad7",
+      "episodesGzSha256": "e3966a606c7e55f766ecf78a2bc36d8451de891df729deecc329a5f3fbc9082b",
+      "finished": "2026-10-26T07:14:25+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "search_v1-ironclad-a0-veteran-train-n200",
       "policy": "search_v1",
       "policyParams": {},
+      "preIsolation": true,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -612,6 +789,7 @@
       ],
       "meanWallSecondsPerEpisode": 12.81,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -633,6 +811,7 @@
       "policyParams": {
         "scope": "boss"
       },
+      "preIsolation": true,
       "character": "Ironclad",
       "ascension": 0,
       "profile": "veteran",
@@ -686,6 +865,7 @@
       ],
       "meanWallSecondsPerEpisode": 12.02,
       "winsAudit": null,
+      "sampleAudit": null,
       "simulator": {
         "id": "sts2-rl-agent",
         "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
@@ -786,6 +966,7 @@
       },
       "wallTimeRatioBOverA": 0.603,
       "role": "held-out",
+      "preIsolation": false,
       "contentSha256": "0a442434266e30c3df748af4398548bc92fd9872b1ab090c6da3ee83db3eca4a"
     },
     {
@@ -871,6 +1052,7 @@
       },
       "wallTimeRatioBOverA": 19.659,
       "role": "development (train partition): not a held-out result",
+      "preIsolation": true,
       "contentSha256": "fb860edec24c84bdf8205ba29b38be5ee1c6c360bf624c8179bbc4ffa4acd6b8"
     },
     {
@@ -958,7 +1140,97 @@
       },
       "wallTimeRatioBOverA": 0.707,
       "role": "held-out",
+      "preIsolation": false,
       "contentSha256": "6c62f583794bd668aa7492dead4274ac71575a022cca5170bec7f1e3d0692ea5"
+    },
+    {
+      "id": "rules_v2-vs-rules_v1-silent-a0-veteran-val",
+      "a": {
+        "batchId": "rules_v2-silent-a0-veteran-val-n2000",
+        "contentSha256": "b9f4863b1792fb8e4595d7678088b55cec7edd2ea42effb13187dec84d543ad7",
+        "meanFloor": 14.337668834417208,
+        "meanWallSecondsPerEpisode": 0.6636,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/silent-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019180044450228416
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "rules_v1-silent-a0-veteran-val-n2000",
+        "contentSha256": "ebf95798bae04a41215323ae1f23dab25eb986eec5fe7ac97ac2bc2d951a7a47",
+        "meanFloor": 13.364682341170585,
+        "meanWallSecondsPerEpisode": 0.8765,
+        "params": {},
+        "policy": "rules_v1",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0019180044450228416
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Silent",
+        "partition": "val",
+        "profile": "veteran",
+        "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+      },
+      "pairedSeeds": 2000,
+      "bothCompleted": 1999,
+      "excludedNotCompleted": 1,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 1999
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 369,
+          "rate": 0.18459229614807404,
+          "wilson95": [
+            0.16819548126630376,
+            0.20219901778580915
+          ]
+        },
+        "b": {
+          "games": 229,
+          "rate": 0.11455727863931967,
+          "wilson95": [
+            0.1013288387169715,
+            0.1292642802674108
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 263,
+          "b_only": 123,
+          "both": 106,
+          "mcnemar_p": 8.453497426555093e-13,
+          "neither": 1507
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          0.7448724362181091,
+          1.1980990495247623
+        ],
+        "meanAMinusB": 0.9729864932466233,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 1.321,
+      "role": "held-out",
+      "preIsolation": false,
+      "contentSha256": "f8da0207311af9e14a5736c37ed8eb3d44e58593df355d75cf7afb2db6739014"
     },
     {
       "id": "search_v3-boss-vs-rules_v2-ironclad-a0-veteran-dev",
@@ -1047,6 +1319,7 @@
       },
       "wallTimeRatioBOverA": 0.06,
       "role": "development (dev partition): not a held-out result",
+      "preIsolation": true,
       "contentSha256": "fcc65c6198b007382f7815c37a413f762a38b34c91ba061884a6a74392872a3a"
     }
   ]
