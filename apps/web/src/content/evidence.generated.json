@@ -1786,6 +1786,114 @@
       "role": "held-out"
     },
     {
+      "id": "rules_v2_neow_values-ironclad-a0-veteran-val-n2000",
+      "policy": "rules_v2_neow_values",
+      "policyParams": {
+        "neow_values": "experiments/neow/neow-values-v2.json",
+        "threshold": 0
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "val",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1972,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 16,
+        "timeout": 0,
+        "win": 12
+      },
+      "completed": 1984,
+      "winRate": 0.006048387096774193,
+      "winRateWilson95": [
+        0.003463326976957525,
+        0.010542547936835315
+      ],
+      "meanFloor": 22.69,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 572,
+        "1": 1236,
+        "2": 176
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 143
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 139
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 130
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 119
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 104
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.71,
+      "winsAudit": {
+        "audited": 12,
+        "verified": 12,
+        "seeds": [
+          670925224,
+          957246266,
+          1017904533,
+          1075378227,
+          1208917312,
+          1221086619,
+          1298167963,
+          1661102747,
+          1757602669,
+          1906526499,
+          1964116731,
+          2026071477
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 1984,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "1723229d909cbedbcd61b23f512c35b86a50091f5035f35d35d6bcca14374d20",
+      "episodesGzSha256": "9ee9fc0306b182ba7e073b67a78880ef727806049f0952b1d69684434d30eb69",
+      "finished": "2026-10-26T18:08:37+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "rules_v3-ironclad-a0-veteran-val-n2000",
       "policy": "rules_v3",
       "policyParams": {
