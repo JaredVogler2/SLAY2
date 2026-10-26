@@ -24,6 +24,7 @@ import {
   largestReport,
   newValuesSentence,
   policyLabel,
+  sideLabel,
   signed,
   ratingsValidation,
   valuesValidation,
@@ -107,7 +108,7 @@ describe("comparison wording is derived from the data", () => {
       expect(lo <= c.reachedAct2.a.rate && c.reachedAct2.a.rate <= hi, c.id).toBe(true);
       // a wins-only table must still agree: a game won is also past the Act-1 boss
       expect(c.reachedAct2.a.games, c.id).toBeGreaterThanOrEqual(c.a.wins);
-      expect(actTwoSentence(c)).toContain(`${policyLabel(c.a)} and`);
+      expect(actTwoSentence(c)).toContain(`${sideLabel(c.a)} and`);
     }
   });
 
@@ -224,6 +225,17 @@ describe("comparison wording is derived from the data", () => {
     expect(evidence.reports.filter((r) => !r.ancientHeal && r.id.includes("ancientheal"))).toEqual(
       [],
     );
+  });
+
+  it("the start-HP variant (gap G13) is shown with its label and is never a headline report either", () => {
+    const variants = evidence.reports.filter((r) => r.gameHp);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const v of variants) {
+      expect(v.id).toContain("gamehp");
+      expect(v.role).toContain("development");
+      expect(largestReport(v.policy, v.character)?.gameHp).toBe(false);
+    }
+    expect(evidence.reports.filter((r) => !r.gameHp && r.id.includes("gamehp"))).toEqual([]);
   });
 
   it("formats exact p-values without printing a misleading zero", () => {

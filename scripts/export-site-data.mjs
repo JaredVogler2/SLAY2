@@ -95,6 +95,8 @@ function parseEvidence() {
       profile: m.config.profile,
       // a harness variant (gap G11: the game's start-of-act Ancient heal restored in acts two and three); never a headline
       ancientHeal: m.config.ancient_heal === true,
+      // a harness variant (gap G13: a class started with the maximum HP of the game's source instead of the simulator's); never a headline
+      gameHp: m.config.game_hp === true,
       partition: m.seeds.partition,
       sealedPartitionUsed: m.seeds.sealed_partition_used,
       seeds: m.seeds.n,

@@ -81,10 +81,192 @@
       "classes": [
         "Necrobinder"
       ],
-      "summary": "The pinned simulator starts a Necrobinder run with 75 HP; the game's own source (CharacterModel.StartingHp of the Necrobinder) says 66. Every simulated Necrobinder result, the card values and the held-out tests among them, starts 9 HP (14 %) above the game and makes the class look sturdier than it is. Found on 2026-10-26 by comparing the simulator's starting state with the repository's class facts; the size of the effect on the results has not been measured (the other four classes' starting HP and every class's starter deck match the game)."
+      "summary": "The pinned simulator starts a Necrobinder run with 75 HP; the game's own source (CharacterModel.StartingHp of the Necrobinder) says 66. Every simulated Necrobinder result, the card values and the held-out tests among them, starts 9 HP (14 %) above the game and makes the class look sturdier than it is. A harness variant (`game_hp`, off in every other batch) starts the class with the game's number. On 499 paired development games of `rules_v2` (Necrobinder, A0) it lowers the share of runs that get past the Act-1 boss from 63.5 % to 51.5 % (86 pairs one way, 26 the other, exact McNemar p = 1.1e-8) and the mean floors reached from 19.7 to 18.1 (difference -1.63, 95 % bootstrap -2.10 to -1.16); no game is won either way. So the level of every simulated Necrobinder number is too high, by an amount measured for this one pilot; whether the order of choices (cards, relics) holds at 66 HP has not been measured (ADR-049). Found on 2026-10-26 by comparing the simulator's starting state with the repository's class facts (the other four classes' starting HP and every class's starter deck match the game)."
     }
   ],
   "reports": [
+    {
+      "id": "g13-necrobinder-base-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 500,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 500,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007624340461552238
+      ],
+      "meanFloor": 19.68,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 183,
+        "1": 315,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 46
+        },
+        {
+          "id": "VANTOM",
+          "n": 44
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 28
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 26
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 24
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.77,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 500,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "e229542e300467067c9c8eb951ef1e7028bd9dcb0ecba6f8f6f2258e60a8d781",
+      "episodesGzSha256": "bddae658ad7eb0f01f663e174ed4ac49fb3ff4e0539cd61cbdcfcfc4e14d834a",
+      "finished": "2026-10-26T17:05:00+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g13-necrobinder-gamehp-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": true,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 499,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 1,
+        "win": 0
+      },
+      "completed": 499,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007639502975159277
+      ],
+      "meanFloor": 18.08,
+      "medianFloor": 17,
+      "deathsByAct": {
+        "0": 242,
+        "1": 254,
+        "2": 3
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 66
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 54
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 31
+        },
+        {
+          "id": "TUNNELER",
+          "n": 29
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 25
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.69,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 499,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "8949438fffb77eb00dee4984bc57777995e4542b5b4a3e437731d8ac723f0379",
+      "episodesGzSha256": "16c359b65e5922909777fdcda1ccea2224e22aac0f4be3c7574d18214d09f032",
+      "finished": "2026-10-26T17:10:47+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
     {
       "id": "ladder-random_legal-ironclad-a0-first_run-train-n100",
       "policy": "random_legal",
@@ -94,6 +276,7 @@
       "ascension": 0,
       "profile": "first_run",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 100,
@@ -167,6 +350,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -241,6 +425,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -324,6 +509,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -409,6 +595,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 300,
@@ -487,6 +674,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -572,6 +760,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -657,6 +846,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -742,6 +932,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -830,6 +1021,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -938,6 +1130,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": true,
+      "gameHp": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -1033,6 +1226,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -1114,6 +1308,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -1201,6 +1396,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1306,6 +1502,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1403,6 +1600,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1503,6 +1701,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1597,6 +1796,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1698,6 +1898,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1792,6 +1993,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 200,
@@ -1872,6 +2074,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 200,
@@ -1966,6 +2169,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 300,
@@ -2062,6 +2266,7 @@
       "ascension": 0,
       "profile": "veteran",
       "ancientHeal": false,
+      "gameHp": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -2133,6 +2338,98 @@
     }
   ],
   "comparisons": [
+    {
+      "id": "g13-gamehp-vs-base-necrobinder-a0-veteran-dev",
+      "a": {
+        "batchId": "g13-necrobinder-gamehp-dev-n500",
+        "contentSha256": "8949438fffb77eb00dee4984bc57777995e4542b5b4a3e437731d8ac723f0379",
+        "meanFloor": 18.082164328657313,
+        "meanWallSecondsPerEpisode": 0.6904,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.007639502975159277
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "g13-necrobinder-base-dev-n500",
+        "contentSha256": "e229542e300467067c9c8eb951ef1e7028bd9dcb0ecba6f8f6f2258e60a8d781",
+        "meanFloor": 19.707414829659317,
+        "meanWallSecondsPerEpisode": 0.7724,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.007639502975159277
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Necrobinder",
+        "partition": "dev",
+        "profile": "veteran",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+      },
+      "pairedSeeds": 500,
+      "bothCompleted": 499,
+      "excludedNotCompleted": 1,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 499
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 257,
+          "rate": 0.5150300601202404,
+          "wilson95": [
+            0.4712327111782985,
+            0.5585977646841717
+          ]
+        },
+        "b": {
+          "games": 317,
+          "rate": 0.6352705410821643,
+          "wilson95": [
+            0.5921520475589921,
+            0.6763222352032394
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 26,
+          "b_only": 86,
+          "both": 231,
+          "mcnemar_p": 1.1009223084560129e-8,
+          "neither": 156
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          -2.1022044088176353,
+          -1.1582665330661366
+        ],
+        "meanAMinusB": -1.625250501002004,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 1.119,
+      "role": "development (dev partition): not a held-out result",
+      "preIsolation": false,
+      "contentSha256": "370f84173ef5900e6cae8ddfab052939ca6d05f609202dd9e700d84eb6c9f0cc"
+    },
     {
       "id": "rules_v1-vs-random_legal-ironclad-a0-veteran-val",
       "a": {

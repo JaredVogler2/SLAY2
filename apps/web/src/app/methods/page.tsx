@@ -13,6 +13,7 @@ import {
   formatP,
   largestReport,
   policyLabel,
+  sideLabel,
   pct,
   ruleSummary,
   rulesBySection,
@@ -309,6 +310,11 @@ export default function MethodsPage() {
                         variant: acts 2 and 3 start healed (gap G11)
                       </span>
                     ) : null}
+                    {r.gameHp ? (
+                      <span className="block text-xs text-copper">
+                        variant: starts with the game&apos;s own maximum HP (gap G13)
+                      </span>
+                    ) : null}
                   </td>
                   <td className="num py-3 pr-3">{r.completed}</td>
                   <td className="num py-3 pr-3">{r.counts.win}</td>
@@ -364,7 +370,7 @@ export default function MethodsPage() {
                   {comparisons.map((c) => (
                     <tr key={c.id} className="align-top">
                       <th scope="row" className="py-3 pr-3 font-medium text-parchment">
-                        {policyLabel(c.a)} vs {policyLabel(c.b)}
+                        {sideLabel(c.a)} vs {sideLabel(c.b)}
                         {c.preIsolation ? (
                           <span className="mt-1 block">
                             <Badge
