@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "gaps": [
+    {
+      "id": "G1-double-boss-not-entered",
+      "min_ascension": 10,
+      "affects": "results",
+      "summary": "A10 Double Boss is not modelled: the second Act-3 boss is rolled but the map has no second boss point and the run is won after the first boss (game: StandardActMap.SecondBossMapPoint, one row above the boss). Simulator A10 win rates are therefore NOT Double Boss win rates."
+    },
+    {
+      "id": "G2-a8-hp-scaling",
+      "min_ascension": 8,
+      "affects": "coverage",
+      "summary": "Living Shield, Scroll of Biting and The Merchant??? ignore the A8 HP increase (97 of 100 audited enemy rows match)."
+    },
+    {
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "affects": "results",
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "affects": "results",
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    }
+  ]
+}

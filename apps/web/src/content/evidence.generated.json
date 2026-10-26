@@ -1,0 +1,309 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/batches/*/manifest.json + sim/slay2_sim/gaps.json",
+  "simulatorGaps": [
+    {
+      "id": "G1-double-boss-not-entered",
+      "min_ascension": 10,
+      "affects": "results",
+      "summary": "A10 Double Boss is not modelled: the second Act-3 boss is rolled but the map has no second boss point and the run is won after the first boss (game: StandardActMap.SecondBossMapPoint, one row above the boss). Simulator A10 win rates are therefore NOT Double Boss win rates."
+    },
+    {
+      "id": "G2-a8-hp-scaling",
+      "min_ascension": 8,
+      "affects": "coverage",
+      "summary": "Living Shield, Scroll of Biting and The Merchant??? ignore the A8 HP increase (97 of 100 audited enemy rows match)."
+    },
+    {
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "affects": "coverage",
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "affects": "results",
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "affects": "results",
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    }
+  ],
+  "reports": [
+    {
+      "id": "ladder-random_legal-ironclad-a0-first_run-train-n100",
+      "policy": "random_legal",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "first_run",
+      "partition": "train",
+      "sealedPartitionUsed": false,
+      "seeds": 100,
+      "counts": {
+        "aborted": 0,
+        "death": 100,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 100,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.03699349820698566
+      ],
+      "meanFloor": 4.9,
+      "medianFloor": 5,
+      "deathsByAct": {
+        "0": 100
+      },
+      "topKillers": [
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 19
+        },
+        {
+          "id": "SHRINKER_BEETLE",
+          "n": 10
+        },
+        {
+          "id": "NIBBIT",
+          "n": 7
+        },
+        {
+          "id": "BYRDONIS",
+          "n": 6
+        },
+        {
+          "id": "CUBEX_CONSTRUCT",
+          "n": 5
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.43,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": false,
+      "knownGaps": [],
+      "contentSha256": "570dd90b3617ea7294fb7e40367a8d48ab51b4a355a591aea48c58e2e824810e",
+      "episodesGzSha256": "ecffc998e3a212490051cf28b234b19e06960095662f2c79af5f0e9dd9da9194",
+      "finished": "2026-10-25T23:04:57+00:00",
+      "role": "development (train partition): not a held-out result"
+    },
+    {
+      "id": "ladder-random_legal-ironclad-a0-veteran-train-n2000",
+      "policy": "random_legal",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "train",
+      "sealedPartitionUsed": false,
+      "seeds": 2000,
+      "counts": {
+        "aborted": 0,
+        "death": 1999,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1999,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0019180044450228416
+      ],
+      "meanFloor": 4.47,
+      "medianFloor": 4,
+      "deathsByAct": {
+        "0": 1998,
+        "1": 1
+      },
+      "topKillers": [
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 354
+        },
+        {
+          "id": "SHRINKER_BEETLE",
+          "n": 217
+        },
+        {
+          "id": "NIBBIT",
+          "n": 192
+        },
+        {
+          "id": "CUBEX_CONSTRUCT",
+          "n": 86
+        },
+        {
+          "id": "NIBBIT,NIBBIT",
+          "n": 69
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.4,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": false,
+      "knownGaps": [],
+      "contentSha256": "3ab5c405217047e6762ce67e6aab670fffc77b5464ea12dd24c38dd534d25b29",
+      "episodesGzSha256": "9a05af4842862218ec9b3e097f4f892d3e0cdd9e17046f951ef9cc9e2538104b",
+      "finished": "2026-10-25T23:08:21+00:00",
+      "role": "development (train partition): not a held-out result"
+    },
+    {
+      "id": "rules_v1-ironclad-a0-veteran-train-n300",
+      "policy": "rules_v1",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "train",
+      "sealedPartitionUsed": false,
+      "seeds": 300,
+      "counts": {
+        "aborted": 0,
+        "death": 300,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 300,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.012642971224546029
+      ],
+      "meanFloor": 18.29,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 173,
+        "1": 121,
+        "2": 6
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 52
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 39
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 35
+        },
+        {
+          "id": "TUNNELER",
+          "n": 19
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 18
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.65,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "f0b6fb7eec8f9ccce9aa71e1abebe7dbf8a764f88c6b0c5b30e945aa85e675c9",
+      "episodesGzSha256": "b08ccc655701436c32d1c10db51bc2a67910bbfb0b5bed11fdde4789fa18e604",
+      "finished": "2026-10-25T23:25:49+00:00",
+      "role": "development (train partition): not a held-out result"
+    },
+    {
+      "id": "search_v1-ironclad-a0-veteran-train-n200",
+      "policy": "search_v1",
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "partition": "train",
+      "sealedPartitionUsed": false,
+      "seeds": 200,
+      "counts": {
+        "aborted": 0,
+        "death": 200,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 200,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.018845326377266564
+      ],
+      "meanFloor": 16.04,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 144,
+        "1": 54,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "WRIGGLER,WRIGGLER,WRIGGLER,WRIGGLER",
+          "n": 28
+        },
+        {
+          "id": "VANTOM",
+          "n": 26
+        },
+        {
+          "id": "PHROG_PARASITE",
+          "n": 24
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 19
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 12
+        }
+      ],
+      "meanWallSecondsPerEpisode": 12.81,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity"
+      ],
+      "contentSha256": "5edbd6700442b69a7b1dc0de2513a6b18f8c9b0ab021d783350ee967eca9f71c",
+      "episodesGzSha256": "9dc6e8380b36be9bd77f713bb8c8d2ec14ae5bb3a75b315d6d819efa863cc673",
+      "finished": "2026-10-25T23:40:42+00:00",
+      "role": "development (train partition): not a held-out result"
+    }
+  ]
+}

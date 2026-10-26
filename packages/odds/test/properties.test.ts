@@ -22,6 +22,7 @@ import {
   maxCounter,
   nextHandWithReshuffle,
   offsetFor,
+  positionMarginals,
   potionRollProbability,
   priceDistribution,
   summarizePack,
@@ -527,6 +528,38 @@ describe("expected rarity counts and card appearance", () => {
     // P(a given rare is among 3 distinct picks from 25) = 3/25
     expect(cardAppearanceProbability(s.expectedByRarity.rare, 25).eq(Rational.of(3, 25))).toBe(
       true,
+    );
+  });
+});
+
+describe("position marginals", () => {
+  it("each slot is a distribution; the first slot equals the single-card PMF; rare slots add up to the expected rares", () => {
+    fc.assert(
+      fc.property(
+        arbEncounter,
+        arbCounter,
+        arbScarcity,
+        fc.integer({ min: 1, max: 5 }),
+        (src, k, sc, cards) => {
+          const r = rules(sc);
+          const marg = positionMarginals(
+            new Map([[Math.min(k, maxCounter(r)), Rational.ONE]]),
+            src,
+            cards,
+            r,
+          );
+          expect(marg).toHaveLength(cards);
+          for (const slot of marg) {
+            expect(slot.common.add(slot.uncommon).add(slot.rare).eq(1)).toBe(true);
+          }
+          const first = cardRarityPmf(src, k, r);
+          expect(marg[0]?.rare.eq(first.rare)).toBe(true);
+          expect(marg[0]?.uncommon.eq(first.uncommon)).toBe(true);
+          const summary = summarizePack(enumeratePack(src, k, cards, r), cards);
+          expect(sumAll(marg.map((m) => m.rare)).eq(summary.expectedRares)).toBe(true);
+        },
+      ),
+      { numRuns: 80 },
     );
   });
 });

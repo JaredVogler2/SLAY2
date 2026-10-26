@@ -365,3 +365,29 @@ export function cardAppearanceProbability(
   }
   return expectedSlotsOfItsRarity.div(poolSize).min(1);
 }
+
+/**
+ * Marginal rarity distribution of each card slot of a pack, given a distribution over the counter. Slot i is NOT
+ * independent of slot i-1 (a non-rare raises the next slot's chance), but its marginal is well defined and exact.
+ */
+export function positionMarginals(
+  posterior: CounterDist,
+  source: RewardSource,
+  cards: number,
+  rules: RarityRules,
+): Record<Rarity, Rational>[] {
+  const slots = Array.from({ length: cards }, () => ({
+    common: Rational.ZERO,
+    uncommon: Rational.ZERO,
+    rare: Rational.ZERO,
+  }));
+  for (const [counter, mass] of posterior) {
+    for (const o of enumeratePack(source, counter, cards, rules)) {
+      o.rarities.forEach((r, i) => {
+        const slot = at(slots, i);
+        slot[r] = slot[r].add(mass.mul(o.probability));
+      });
+    }
+  }
+  return slots;
+}

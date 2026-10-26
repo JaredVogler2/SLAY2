@@ -9,3 +9,4 @@ export * from "./unknown-room";
 export * from "./gold";
 export * from "./shop";
 export * from "./draw";
+export * from "./provenance-catalog";
