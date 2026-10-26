@@ -1,0 +1,44 @@
+name: patch-watch
+
+# Is the build the site supports still the newest one Mega Crit has announced? (scripts/patch-watch.mjs, ADR-047.)
+# Slay the Spire 2 is in Early Access: a rule that was right last month can be wrong after a patch, and nothing else in the
+# repository would notice. A failure of the scheduled run is the notification. It never runs in a request to the website.
+on:
+  schedule:
+    - cron: "41 6 * * 1" # Mondays, 06:41 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/patch-watch.yml"
+      - "scripts/patch-watch.mjs"
+      - "scripts/fixtures/steam-news-*.json"
+      - "packages/game-schema/src/builds.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: patch-watch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  watch:
+    name: patch-watch (official announcements against the supported build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compare Steam's official announcements with packages/game-schema/src/builds.ts
+        run: |
+          code=0
+          node scripts/patch-watch.mjs || code=$?
+          # exit 1 = a newer main build was announced (always a failure); exit 2 = the feed could not be read: a failure on a
+          # schedule (a blind watch must be seen), only a warning in a pull request (a network blip must not block a merge)
+          if [ "$code" = 2 ] && [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            echo "::warning title=patch-watch could not check::the Steam news feed was not usable in this run"
+            code=0
+          fi
+          exit "$code"
