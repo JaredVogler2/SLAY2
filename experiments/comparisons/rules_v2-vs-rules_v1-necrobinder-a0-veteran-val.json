@@ -1,0 +1,95 @@
+{
+  "a": {
+    "batchId": "rules_v2-necrobinder-a0-veteran-val-n2000",
+    "contentSha256": "124099adcf748184d7294a11a72d13e2a63d2c3ede87b761cf61b68d4fd5eda6",
+    "meanFloor": 19.620430645968952,
+    "meanWallSecondsPerEpisode": 1.1517,
+    "params": {
+      "threshold": 0.0,
+      "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+    },
+    "policy": "rules_v2",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.0019199216428463545
+    ],
+    "wins": 0
+  },
+  "b": {
+    "batchId": "rules_v1-necrobinder-a0-veteran-val-n2000",
+    "contentSha256": "ef7ce115f7371aa6b348ed0b0552865b68d96869f468a0a8cc729f05f915fda2",
+    "meanFloor": 17.628442663995994,
+    "meanWallSecondsPerEpisode": 1.2303,
+    "params": {},
+    "policy": "rules_v1",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.0019199216428463545
+    ],
+    "wins": 0
+  },
+  "bothCompleted": 1997,
+  "cohort": {
+    "ascension": 0,
+    "character": "Necrobinder",
+    "partition": "val",
+    "profile": "veteran",
+    "seedManifestSha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb"
+  },
+  "contentSha256": "c1158801ba11cdc8cb61222f184dc3ae02d1014bcf5806c845a6352118098c39",
+  "difference": "a minus b",
+  "excludedNotCompleted": 3,
+  "floorDifference": {
+    "ci95": [
+      1.687030545818728,
+      2.301952929394091
+    ],
+    "meanAMinusB": 1.9919879819729593,
+    "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "kind": "paired-comparison",
+  "pairedSeeds": 2000,
+  "pairedWinTable": {
+    "a_only": 0,
+    "b_only": 0,
+    "both": 0,
+    "mcnemar_p": 1.0,
+    "neither": 1997
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 1240,
+      "rate": 0.6209313970956435,
+      "wilson95": [
+        0.5994399471290774,
+        0.6419584894490424
+      ]
+    },
+    "b": {
+      "games": 954,
+      "rate": 0.47771657486229346,
+      "wilson95": [
+        0.45587262839191434,
+        0.4996460861930697
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 468,
+      "b_only": 182,
+      "both": 772,
+      "mcnemar_p": 5.903884191711282e-30,
+      "neither": 575
+    }
+  },
+  "role": "held-out",
+  "schema": 1,
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "parityWithLiveGame": "UNVERIFIED",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "wallTimeRatioBOverA": 1.068
+}

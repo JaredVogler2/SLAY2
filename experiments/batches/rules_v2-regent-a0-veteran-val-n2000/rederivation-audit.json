@@ -1,0 +1,47 @@
+{
+  "all_rederived": true,
+  "batch_content_sha256": "a20b58d12a9f0e093d6f42789906bbbcd925571257ce9ffc6ebf3b18250039ad",
+  "batch_id": "rules_v2-regent-a0-veteran-val-n2000",
+  "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record",
+  "differing": [],
+  "games": 2000,
+  "policy": {
+    "name": "rules_v2",
+    "params": {
+      "threshold": 0.0,
+      "tune": {
+        "boss_heal_below": 0.9,
+        "card_slope": 0.09,
+        "card_threshold": 3.2,
+        "danger_frac": 0.3,
+        "elite_bad_value": -2.5,
+        "elite_mid_hp": 0.65,
+        "elite_mid_value": 0.2,
+        "elite_ok_floor": 4,
+        "elite_ok_hp": 0.8,
+        "elite_value": 2.0,
+        "heal_below": 0.7,
+        "max_deck": 32,
+        "monster_hp_penalty": 0.5,
+        "monster_value": 1.0,
+        "potion_hp_abs": 6,
+        "potion_hp_frac": 0.15,
+        "rest_base": 1.0,
+        "rest_weight": 3.0,
+        "shop_base": 0.3,
+        "shop_card_threshold": 3.6,
+        "shop_mid": 0.5,
+        "shop_mid_gold": 75,
+        "shop_potion_margin": 40,
+        "shop_rich": 1.2,
+        "shop_rich_gold": 150,
+        "treasure_value": 1.8,
+        "unknown_value": 0.8
+      },
+      "values": "experiments/cardvalue/regent-a0-v1.json",
+      "values_sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db"
+    }
+  },
+  "rederived_exactly": 2000,
+  "schema": 1
+}

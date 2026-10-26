@@ -1,0 +1,169 @@
+{
+  "batch_id": "rules_v2-necrobinder-a0-veteran-val-n2000",
+  "config": {
+    "ascension": 0,
+    "character": "Necrobinder",
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "124099adcf748184d7294a11a72d13e2a63d2c3ede87b761cf61b68d4fd5eda6",
+  "deliberation_isolated": true,
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v153-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": false,
+      "head": "463a0aca2b1e8cd21d9499180f404cd1910c7522"
+    }
+  },
+  "episodes_file": {
+    "lines": 2000,
+    "name": "episodes.jsonl",
+    "sha256": "bdff0e2fcb99f80f67ce4ee43aabdfe501c1407a926b0fd221dc8f2ff2745c3a"
+  },
+  "episodes_gz": {
+    "bytes": 51696,
+    "name": "episodes.jsonl.gz",
+    "sha256": "744ecbf1be1595236249ad137a759128504abdce1440a4e8cebbc781f34aeee1"
+  },
+  "finished": "2026-10-26T08:11:39+00:00",
+  "known_simulator_gaps": [
+    {
+      "affects": "coverage",
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "results",
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "affects": "results",
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "affects": "coverage",
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+    },
+    {
+      "affects": "coverage",
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "coverage",
+      "id": "G8-dragon-fruit-lucky-fysh-shop",
+      "min_ascension": 0,
+      "summary": "Buying a card in a shop while holding Lucky Fysh (+15 gold per card added) and Dragon Fruit (max HP on gold gained) raises `TypeError: unhashable type: 'PlayerState'` in the pinned simulator (Dragon Fruit's gold handler looks the owner up in a dict keyed by creature). Seen in 1 of 2,000 rules_v1 Silent validation games (seed 605866524, Act 2); the episode is reported as simulator_error and excluded from win rates and paired comparisons."
+    },
+    {
+      "affects": "coverage",
+      "id": "G9-particle-wall-loop",
+      "min_ascension": 0,
+      "summary": "Regent's Particle Wall (catalog: 0 energy and 2 stars; gains block and returns to hand) is offered again at cost 0 after every play in the pinned simulator, and the rules policies keep playing it: 33 of 5,000 Regent exploration games (0.66 %) reached the 20,000-step limit with block in the hundreds of thousands. Such games end as timeout, are excluded from card values and paired comparisons and are never read as losses. Whether the simulator charges the stars was not examined; the policies have no guard against replaying a card that returns to hand."
+    }
+  ],
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "effective": {
+      "params": {
+        "threshold": 0.0,
+        "tune": {
+          "boss_heal_below": 0.9,
+          "card_slope": 0.09,
+          "card_threshold": 3.2,
+          "danger_frac": 0.3,
+          "elite_bad_value": -2.5,
+          "elite_mid_hp": 0.65,
+          "elite_mid_value": 0.2,
+          "elite_ok_floor": 4,
+          "elite_ok_hp": 0.8,
+          "elite_value": 2.0,
+          "heal_below": 0.7,
+          "max_deck": 32,
+          "monster_hp_penalty": 0.5,
+          "monster_value": 1.0,
+          "potion_hp_abs": 6,
+          "potion_hp_frac": 0.15,
+          "rest_base": 1.0,
+          "rest_weight": 3.0,
+          "shop_base": 0.3,
+          "shop_card_threshold": 3.6,
+          "shop_mid": 0.5,
+          "shop_mid_gold": 75,
+          "shop_potion_margin": 40,
+          "shop_rich": 1.2,
+          "shop_rich_gold": 150,
+          "treasure_value": 1.8,
+          "unknown_value": 0.8
+        },
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json",
+        "values_sha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97"
+      },
+      "version": "1"
+    },
+    "name": "rules_v2",
+    "params": {
+      "threshold": 0.0,
+      "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+    }
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v1.json",
+    "file_sha256": "39b06aeb62c70daf1ae14ac3c46cf7f5c82634e37cf0b8d88861849309b7feeb",
+    "manifest_sha256": "3c803d061efb97dc93501960d5601ebd98cf55a858e56789b9d6dc42d2c2f27c",
+    "n": 2000,
+    "partition": "val",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 1999,
+    "counts": {
+      "aborted": 0,
+      "death": 1999,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 1,
+      "timeout": 0,
+      "win": 0
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 2000,
+    "win_rate_95ci_wilson": [
+      0.0,
+      0.0019180044450228416
+    ],
+    "win_rate_of_completed": 0.0
+  },
+  "traces": {
+    "count": 0,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 1156.4,
+  "workers": 2
+}
