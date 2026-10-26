@@ -1,5 +1,5 @@
 import { R, Rational } from "./rational";
-import { addMass, normalize, type Dist } from "./util";
+import type { Dist } from "./util";
 
 /**
  * "?" room engine (UNK-1, UNK-2). One roll r ~ U[0,1] is scanned against cumulative counters in the order
@@ -61,33 +61,59 @@ export interface UnknownInference {
   readonly impossible: boolean;
 }
 
+/**
+ * An act has fewer than 20 "?" rooms (the map is about 15 rows tall), so a longer history is not a real act. The bound
+ * also keeps the all-outcomes-unknown inference cheap, which matters because the API takes the history from strangers.
+ */
+export const MAX_UNKNOWN_ROOMS_PER_ACT = 20;
+
+/** Every probability here is a whole number of percent (1/10, 1/50 and 3/100 per counter step), so masses are exact integers over 100^n. */
+function percentPmf(s: UnknownState): readonly [bigint, bigint, bigint, bigint] {
+  const cap = (x: bigint): bigint => (x > 100n ? 100n : x);
+  const fight = cap(10n * BigInt(s.fight));
+  const toTreasure = cap(fight + 2n * BigInt(s.treasure));
+  const toShop = cap(toTreasure + 3n * BigInt(s.shop));
+  return [fight, toTreasure - fight, toShop - toTreasure, 100n - toShop];
+}
+
+const OUTCOMES = ["fight", "treasure", "shop", "event"] as const;
+
 /** Posterior over the counters after the recorded "?" rooms of the CURRENT act (counters reset at each act). */
 export function inferUnknownState(history: readonly UnknownObservation[]): UnknownInference {
+  if (history.length > MAX_UNKNOWN_ROOMS_PER_ACT) {
+    throw new RangeError(`an act has at most ${String(MAX_UNKNOWN_ROOMS_PER_ACT)} "?" rooms`);
+  }
   const states = new Map<string, UnknownState>([[stateKey(UNKNOWN_START), UNKNOWN_START]]);
-  let dist: Dist<string> = new Map([[stateKey(UNKNOWN_START), Rational.ONE]]);
+  let masses = new Map<string, bigint>([[stateKey(UNKNOWN_START), 1n]]);
   for (const obs of history) {
-    const next: Dist<string> = new Map();
-    for (const [key, mass] of dist) {
+    const next = new Map<string, bigint>();
+    for (const [key, mass] of masses) {
       const s = states.get(key) ?? UNKNOWN_START;
-      const pmf = unknownRoomPmf(s);
-      for (const outcome of ["fight", "treasure", "shop", "event"] as const) {
-        if (obs.outcome !== undefined && obs.outcome !== outcome) {
-          continue;
-        }
-        const p = pmf[outcome];
-        if (p.isZero()) {
-          continue;
+      const pct = percentPmf(s);
+      OUTCOMES.forEach((outcome, i) => {
+        const p = pct[i];
+        if ((obs.outcome !== undefined && obs.outcome !== outcome) || p === undefined || p === 0n) {
+          return;
         }
         const ns = nextUnknownState(s, outcome);
         const nk = stateKey(ns);
         states.set(nk, ns);
-        addMass(next, nk, mass.mul(p));
-      }
+        next.set(nk, (next.get(nk) ?? 0n) + mass * p);
+      });
     }
-    dist = next;
+    masses = next;
   }
-  const { dist: posterior, evidence } = normalize(dist);
-  return { posterior, states, evidence, impossible: evidence.isZero() };
+  let total = 0n;
+  for (const m of masses.values()) {
+    total += m;
+  }
+  const posterior: Dist<string> = new Map();
+  for (const [key, m] of masses) {
+    posterior.set(key, Rational.of(m, total));
+  }
+  const evidence =
+    total === 0n ? Rational.ZERO : Rational.of(total, 100n ** BigInt(history.length));
+  return { posterior, states, evidence, impossible: total === 0n };
 }
 
 /** Marginal outcome distribution of the NEXT "?" given the posterior. */

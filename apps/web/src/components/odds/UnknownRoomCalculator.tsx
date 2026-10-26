@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import {
   forecastUnknownRoom,
   inferUnknownState,
+  MAX_UNKNOWN_ROOMS_PER_ACT,
   marginalTable,
   type UnknownObservation,
   type UnknownOutcome,
@@ -46,7 +47,11 @@ export function UnknownRoomCalculator({ run }: { run: RunState | null }) {
   );
   const table = useMemo(() => marginalTable(6), []);
 
+  const full = rows.length >= MAX_UNKNOWN_ROOMS_PER_ACT;
   const add = (outcome: UnknownOutcome | null): void => {
+    if (full) {
+      return;
+    }
     setRows((p) => [...p, { id: nextId, outcome }]);
     setNextId((n) => n + 1);
   };
@@ -70,6 +75,7 @@ export function UnknownRoomCalculator({ run }: { run: RunState | null }) {
                 <Button
                   key={o}
                   variant="primary"
+                  disabled={full}
                   onClick={() => {
                     add(o);
                   }}
@@ -78,6 +84,7 @@ export function UnknownRoomCalculator({ run }: { run: RunState | null }) {
                 </Button>
               ))}
               <Button
+                disabled={full}
                 onClick={() => {
                   add(null);
                 }}
@@ -85,6 +92,12 @@ export function UnknownRoomCalculator({ run }: { run: RunState | null }) {
                 Didn’t note
               </Button>
             </div>
+            {full ? (
+              <p className="text-sm text-muted" role="status">
+                An act has fewer than {MAX_UNKNOWN_ROOMS_PER_ACT} “?” rooms, so this list is full.
+                Start a new act to reset the counters.
+              </p>
+            ) : null}
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -111,7 +124,7 @@ export function UnknownRoomCalculator({ run }: { run: RunState | null }) {
                   size="sm"
                   variant="ghost"
                   onClick={() => {
-                    const obs = unknownObservations(run);
+                    const obs = unknownObservations(run).slice(0, MAX_UNKNOWN_ROOMS_PER_ACT);
                     setRows(obs.map((o, i) => ({ id: i + 1, outcome: o.outcome ?? null })));
                     setNextId(obs.length + 1);
                   }}

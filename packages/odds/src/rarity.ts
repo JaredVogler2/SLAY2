@@ -1,5 +1,5 @@
 import { R, Rational } from "./rational";
-import { addMass, at, credibleBand, normalize, type Dist, type WeightedValue } from "./util";
+import { addMass, at, credibleBand, type Dist, type WeightedValue } from "./util";
 
 /**
  * Card-reward rarity engine (rules CARD-1..CARD-6, CARD-8 in docs/game/MECHANICS-COVERAGE.md; STS2 main v0.107.1).
@@ -227,43 +227,143 @@ export interface CounterInference {
   readonly impossible: boolean;
 }
 
-function matches(o: PackOutcome, obs: PackObservation): boolean {
-  if (obs.rares !== undefined && o.rarities.filter((r) => r === "rare").length !== obs.rares) {
-    return false;
+/**
+ * One pack's outcomes grouped by what a player can record (rares, uncommons) and where the counter ends, with the
+ * probability held as an exact integer over SCALE^cards. Every per-card probability in the verified rules is a whole
+ * number of 1/10000 (a hundredth, or the A7 half-points and 1.49 %), which the compile step asserts rather than assumes.
+ */
+const SCALE = 10_000n;
+
+interface CompiledOutcome {
+  readonly rares: number;
+  readonly uncommons: number;
+  readonly endCounter: number;
+  readonly weight: bigint;
+}
+
+interface CompiledPackTable {
+  readonly outcomes: readonly CompiledOutcome[];
+  /** slots[i][r]: weight (over SCALE^cards) of the packs whose slot i has rarity r. */
+  readonly slots: readonly Readonly<Record<Rarity, bigint>>[];
+}
+
+const compiledPacks = new Map<string, CompiledPackTable>();
+
+function sourceKey(source: RewardSource): string {
+  return source.kind === "encounter"
+    ? `encounter:${source.room}`
+    : source.kind === "shop"
+      ? "shop"
+      : `base:${source.table}`;
+}
+
+function compiledPack(
+  source: RewardSource,
+  counter: number,
+  cards: number,
+  rules: RarityRules,
+): CompiledPackTable {
+  const key = `${sourceKey(source)}|${String(counter)}|${String(cards)}|${rules.scarcity ? "A7" : "base"}`;
+  const hit = compiledPacks.get(key);
+  if (hit) {
+    return hit;
   }
-  if (
-    obs.uncommons !== undefined &&
-    o.rarities.filter((r) => r === "uncommon").length !== obs.uncommons
-  ) {
-    return false;
+  const scale = SCALE ** BigInt(cards);
+  const merged = new Map<string, CompiledOutcome>();
+  const slots = Array.from({ length: cards }, () => ({ common: 0n, uncommon: 0n, rare: 0n }));
+  for (const o of enumeratePack(source, counter, cards, rules)) {
+    const weight = o.probability.mul(scale);
+    if (weight.d !== 1n) {
+      throw new Error("rarity probabilities are no longer whole units of 1/10000; update SCALE");
+    }
+    o.rarities.forEach((r, i) => {
+      const slot = at(slots, i);
+      slot[r] += weight.n;
+    });
+    const rares = o.rarities.filter((r) => r === "rare").length;
+    const uncommons = o.rarities.filter((r) => r === "uncommon").length;
+    const k = `${String(rares)}|${String(uncommons)}|${String(o.endCounter)}`;
+    const prev = merged.get(k);
+    merged.set(k, {
+      rares,
+      uncommons,
+      endCounter: o.endCounter,
+      weight: (prev?.weight ?? 0n) + weight.n,
+    });
   }
-  return true;
+  const table: CompiledPackTable = { outcomes: [...merged.values()], slots };
+  compiledPacks.set(key, table);
+  return table;
+}
+
+/** A distribution over counters as exact integers over one common denominator (the denominators are huge after long histories, the numerators are cheap to add). */
+function scaledPosterior(posterior: CounterDist): { den: bigint; nums: [number, bigint][] } {
+  let den = 1n;
+  for (const m of posterior.values()) {
+    den = lcm(den, m.d);
+  }
+  return { den, nums: [...posterior].map(([counter, m]) => [counter, (m.n * den) / m.d]) };
+}
+
+function lcm(a: bigint, b: bigint): bigint {
+  const gcd = (x: bigint, y: bigint): bigint => (y === 0n ? x : gcd(y, x % y));
+  return (a / gcd(a, b)) * b;
 }
 
 /**
  * Exact posterior over the pity counter after a recorded history (a hidden-Markov forward pass). The run starts at
  * counter 0 (offset -5%) by rule, so the posterior is a deterministic function of what was observed and what was not.
+ *
+ * The pass runs on integers (masses over one common denominator) so that a long history with unknown pack contents
+ * costs microseconds per step instead of a gcd per multiplication; the result is identical to the rational pass.
  */
 export function inferCounter(
   history: readonly PackObservation[],
   rules: RarityRules,
   prior: CounterDist = pointMass(0, rules),
 ): CounterInference {
-  let dist: CounterDist = new Map(prior);
+  let denominator = 1n;
+  for (const m of prior.values()) {
+    denominator = lcm(denominator, m.d);
+  }
+  let masses = new Map<number, bigint>();
+  for (const [counter, m] of prior) {
+    masses.set(counter, (m.n * denominator) / m.d);
+  }
+  let cardsSoFar = 0;
   for (const obs of history) {
     const cards = obs.cards ?? 3;
-    const next: CounterDist = new Map();
-    for (const [counter, mass] of dist) {
-      for (const o of enumeratePack(obs.source, counter, cards, rules)) {
-        if (matches(o, obs)) {
-          addMass(next, o.endCounter, mass.mul(o.probability));
+    cardsSoFar += cards;
+    const next = new Map<number, bigint>();
+    for (const [counter, mass] of masses) {
+      for (const o of compiledPack(obs.source, counter, cards, rules).outcomes) {
+        if (
+          (obs.rares !== undefined && o.rares !== obs.rares) ||
+          (obs.uncommons !== undefined && o.uncommons !== obs.uncommons)
+        ) {
+          continue;
         }
+        next.set(o.endCounter, (next.get(o.endCounter) ?? 0n) + mass * o.weight);
       }
     }
-    dist = next;
+    masses = next;
   }
-  const { dist: posterior, evidence } = normalize(dist);
-  return { posterior, evidence, impossible: evidence.isZero() };
+  let total = 0n;
+  for (const m of masses.values()) {
+    total += m;
+  }
+  if (total === 0n) {
+    return { posterior: new Map(), evidence: Rational.ZERO, impossible: true };
+  }
+  const posterior: CounterDist = new Map();
+  for (const [counter, m] of masses) {
+    posterior.set(counter, Rational.of(m, total));
+  }
+  return {
+    posterior,
+    evidence: Rational.of(total, denominator * SCALE ** BigInt(cardsSoFar)),
+    impossible: false,
+  };
 }
 
 export interface PackForecast {
@@ -281,7 +381,11 @@ export interface PackForecast {
   readonly firstCard: RarityPmf;
 }
 
-/** Forecast of the next pack when the counter is only known as a distribution. */
+/**
+ * Forecast of the next pack when the counter is only known as a distribution. Sums run on integers over one common
+ * denominator and are divided once at the end, so a long, vague history (posterior denominators of 1000+ digits) costs
+ * milliseconds instead of a gcd per term.
+ */
 export function forecastPack(
   posterior: CounterDist,
   source: RewardSource,
@@ -292,52 +396,56 @@ export function forecastPack(
   if (posterior.size === 0) {
     throw new RangeError("forecastPack: empty posterior");
   }
-  let atLeast = Rational.ZERO;
-  let expected = Rational.ZERO;
-  const byRarity: Record<Rarity, Rational> = {
-    common: Rational.ZERO,
-    uncommon: Rational.ZERO,
-    rare: Rational.ZERO,
-  };
-  const pmf = Array.from({ length: cards + 1 }, () => Rational.ZERO);
+  const { den, nums } = scaledPosterior(posterior);
+  const scale = SCALE ** BigInt(cards);
+  const pmfNum: bigint[] = Array.from({ length: cards + 1 }, () => 0n);
+  let rareCards = 0n;
+  let uncommonCards = 0n;
+  const first = { common: 0n, uncommon: 0n, rare: 0n };
   const perCounter: WeightedValue[] = [];
-  let first: Record<Rarity, Rational> = {
-    common: Rational.ZERO,
-    uncommon: Rational.ZERO,
-    rare: Rational.ZERO,
-  };
-  for (const [counter, mass] of posterior) {
-    const s = summarizePack(enumeratePack(source, counter, cards, rules), cards);
-    atLeast = atLeast.add(mass.mul(s.atLeastOneRare));
-    expected = expected.add(mass.mul(s.expectedRares));
-    for (const r of RARITIES) {
-      byRarity[r] = byRarity[r].add(mass.mul(s.expectedByRarity[r]));
+  for (const [counter, num] of nums) {
+    let noRare = 0n;
+    for (const o of compiledPack(source, counter, cards, rules).outcomes) {
+      const w = num * o.weight;
+      pmfNum[o.rares] = (pmfNum[o.rares] ?? 0n) + w;
+      rareCards += w * BigInt(o.rares);
+      uncommonCards += w * BigInt(o.uncommons);
+      if (o.rares === 0) {
+        noRare += o.weight;
+      }
     }
-    s.rareCountPmf.forEach((p, i) => {
-      pmf[i] = at(pmf, i).add(mass.mul(p));
-    });
-    perCounter.push({ value: s.atLeastOneRare, weight: mass });
+    perCounter.push({ value: Rational.of(scale - noRare, scale), weight: Rational.of(num, den) });
     const c1 = cardRarityPmf(source, counter, rules);
-    first = {
-      common: first.common.add(mass.mul(c1.common)),
-      uncommon: first.uncommon.add(mass.mul(c1.uncommon)),
-      rare: first.rare.add(mass.mul(c1.rare)),
-    };
+    for (const r of RARITIES) {
+      first[r] += num * c1[r].mul(SCALE).n;
+    }
   }
+  const whole = den * scale;
+  const rareCountPmf = pmfNum.map((x) => Rational.of(x, whole));
+  const expectedRares = Rational.of(rareCards, whole);
+  const expectedUncommon = Rational.of(uncommonCards, whole);
   const values = perCounter.map((x) => x.value);
   const band = credibleBand(perCounter, lowerTail);
   return {
-    atLeastOneRare: atLeast,
-    expectedRares: expected,
-    expectedByRarity: byRarity,
-    rareCountPmf: pmf,
+    atLeastOneRare: Rational.ONE.sub(at(rareCountPmf, 0)),
+    expectedRares,
+    expectedByRarity: {
+      common: Rational.of(cards).sub(expectedRares).sub(expectedUncommon),
+      uncommon: expectedUncommon,
+      rare: expectedRares,
+    },
+    rareCountPmf,
     atLeastOneRareBand: {
       min: values.reduce((a, b) => a.min(b)),
       max: values.reduce((a, b) => a.max(b)),
       lo: band.lo,
       hi: band.hi,
     },
-    firstCard: first,
+    firstCard: {
+      common: Rational.of(first.common, den * SCALE),
+      uncommon: Rational.of(first.uncommon, den * SCALE),
+      rare: Rational.of(first.rare, den * SCALE),
+    },
   };
 }
 
@@ -376,18 +484,20 @@ export function positionMarginals(
   cards: number,
   rules: RarityRules,
 ): Record<Rarity, Rational>[] {
-  const slots = Array.from({ length: cards }, () => ({
-    common: Rational.ZERO,
-    uncommon: Rational.ZERO,
-    rare: Rational.ZERO,
-  }));
-  for (const [counter, mass] of posterior) {
-    for (const o of enumeratePack(source, counter, cards, rules)) {
-      o.rarities.forEach((r, i) => {
-        const slot = at(slots, i);
-        slot[r] = slot[r].add(mass.mul(o.probability));
-      });
-    }
+  const { den, nums } = scaledPosterior(posterior);
+  const acc = Array.from({ length: cards }, () => ({ common: 0n, uncommon: 0n, rare: 0n }));
+  for (const [counter, num] of nums) {
+    compiledPack(source, counter, cards, rules).slots.forEach((slot, i) => {
+      const a = at(acc, i);
+      for (const r of RARITIES) {
+        a[r] += num * slot[r];
+      }
+    });
   }
-  return slots;
+  const whole = den * SCALE ** BigInt(cards);
+  return acc.map((a) => ({
+    common: Rational.of(a.common, whole),
+    uncommon: Rational.of(a.uncommon, whole),
+    rare: Rational.of(a.rare, whole),
+  }));
 }

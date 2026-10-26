@@ -148,7 +148,7 @@ describe("POST /api/v1/odds", () => {
     );
     expect(potion.nextDrop.monster.approx).toBeCloseTo(0.5, 12);
     const room = await json(
-      await odds(post({ calculator: "unknown_room", build: "sts2-main-0.107.1" })),
+      await odds(post({ calculator: "unknown_room", build: "sts2-main-0.107.1", history: [] })),
     );
     expect(room.next.event.approx).toBeCloseTo(0.85, 12);
     const draw = await json(
@@ -178,10 +178,20 @@ describe("POST /api/v1/odds", () => {
     );
     expect([price.min, price.max]).toEqual([48, 52]);
     expect(
-      (await json(await odds(post({ calculator: "removal", ascension: 6, removals: 2 })))).cost,
+      (
+        await json(
+          await odds(
+            post({ calculator: "removal", build: "sts2-main-0.107.1", ascension: 6, removals: 2 }),
+          ),
+        )
+      ).cost,
     ).toBe(200);
     expect(
-      await json(await odds(post({ calculator: "gold", ascension: 3, room: "elite" }))),
+      await json(
+        await odds(
+          post({ calculator: "gold", build: "sts2-main-0.107.1", ascension: 3, room: "elite" }),
+        ),
+      ),
     ).toMatchObject({ min: 26, max: 33 });
   });
 
