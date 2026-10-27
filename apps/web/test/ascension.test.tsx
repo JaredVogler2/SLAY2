@@ -11,6 +11,7 @@ import { SynergyPanel } from "@/components/advisor/SynergyPanel";
 import { AscensionPanel } from "@/components/methods/AscensionPanel";
 import {
   ASCENSION,
+  ascensionCoverage,
   ascensionNote,
   ascensionTested,
   neowAdviceAllowed,
@@ -698,6 +699,35 @@ describe("the /methods section", () => {
     const { container } = render(<AscensionPanel data={tested()} />);
     expect(container).toHaveTextContent("all three ahead at Ascension 9");
     expect(container.textContent).not.toMatch(/\bhold at Ascension 9/);
+  });
+});
+
+describe("the landing page's coverage line", () => {
+  it("is absent when the study is not registered, and says it is registered and not run before the tests", () => {
+    expect(ascensionCoverage(NOT_REGISTERED)).toBeNull();
+    const registered = ascensionCoverage(REGISTERED);
+    expect(registered?.state).toBe("registered");
+    expect(registered?.detail).toContain(
+      "Every simulated result on this page was measured at Ascension 0",
+    );
+    expect(registered?.detail).toContain("registered (ADR-058) and has not been run yet");
+  });
+
+  it("says how each test came out, with the size of a passed one beside Ascension 0, and what is not tested", () => {
+    const data = tested(
+      { synergy: "passed", values: "not-shown", neow: "reversed" },
+      { synergy: { size: "larger" } },
+    );
+    const covered = ascensionCoverage(data);
+    expect(covered?.state).toBe("tested");
+    expect(covered?.detail).toContain("the synergy term was ahead, larger than at Ascension 0");
+    expect(covered?.detail).toContain("the card values not shown ahead");
+    expect(covered?.detail).toContain("the opening-relic rule behind");
+    expect(covered?.detail).toContain("Ascension 10 and the levels from 1 to 8 are not tested");
+    expect(covered?.detail).not.toMatch(/\bhold/);
+    // a passed result without a size to set it beside says only that it was ahead
+    const bare = ascensionCoverage(tested({}, { synergy: { a0: null, size: null } }));
+    expect(bare?.detail).toContain("the synergy term was ahead, the card values");
   });
 });
 

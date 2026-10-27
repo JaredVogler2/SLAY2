@@ -198,6 +198,41 @@ export function neowAdviceAllowed(
   return test?.verdict === "passed" && test.classes[character.toLowerCase()]?.ahead === true;
 }
 
+/** How one test came out, in a few words, for the landing page's coverage table (a passed result with its size beside Ascension 0). */
+function verdictWords(t: AscensionTest): string {
+  switch (t.verdict) {
+    case "passed":
+      return t.size ? `ahead, ${SIZE_WORDS[t.size]} at Ascension 0` : "ahead";
+    case "not-shown":
+      return "not shown ahead";
+    case "reversed":
+      return "behind";
+  }
+}
+
+export type AscensionCoverageState = "registered" | "tested";
+
+/**
+ * Where the simulated evidence stands above Ascension 0, in words, read from the data: registered and not run, or how each of the three
+ * tests came out. Nothing (null) when the decision log carries no registration.
+ */
+export function ascensionCoverage(
+  data: AscensionData = ASCENSION,
+): { readonly state: AscensionCoverageState; readonly detail: string } | null {
+  if (!data.registered) return null;
+  const tests = data.tests;
+  if (!tests) {
+    return {
+      state: "registered",
+      detail: `Every simulated result on this page was measured at Ascension 0. A test at Ascension 9 of the synergy term, the card values and the opening-relic rule is registered (${data.adr ?? "ADR-058"}) and has not been run yet; a run at Ascension 1 to 10 is told on the advisor's panels that the finding was measured at Ascension 0 only`,
+    };
+  }
+  return {
+    state: "tested",
+    detail: `Each of three results was tested again at Ascension 9 with nothing refitted: the synergy term was ${verdictWords(tests.synergy)}, the card values ${verdictWords(tests.values)}, the opening-relic rule ${verdictWords(tests.neow)}. Ascension 10 and the levels from 1 to 8 are not tested`,
+  };
+}
+
 // ---- the note an Ascension 1 to 10 run gets on each of the three panels
 
 export interface AscensionNoteText {

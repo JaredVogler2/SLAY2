@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { ascensionCoverage } from "@/lib/ascension";
 import { coverage } from "@/lib/cardvalues";
 import { neowCoverage, neowValues } from "@/lib/neow";
 
@@ -173,6 +174,15 @@ export default function Home() {
                           "Simulated opening-relic values",
                           "Research",
                           `${neowCoverage().detail}. Simulator unverified against the live game; see Evidence & methods.`,
+                        ],
+                      ]
+                    : []),
+                  ...(ascensionCoverage()
+                    ? [
+                        [
+                          "Simulated results above Ascension 0",
+                          "Research",
+                          `${ascensionCoverage()?.detail ?? ""}. Simulator unverified against the live game; see Evidence & methods.`,
                         ],
                       ]
                     : []),
