@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AscensionPanel } from "@/components/methods/AscensionPanel";
 import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { NeowValuesPanel } from "@/components/methods/NeowValuesPanel";
 import { SynergyStudyPanel } from "@/components/methods/SynergyStudyPanel";
@@ -478,6 +479,8 @@ export default function MethodsPage() {
       <SynergyStudyPanel />
 
       <NeowValuesPanel />
+
+      <AscensionPanel />
 
       <Panel eyebrow="Not yet evaluated" title="Things this site does not know" headingLevel={2}>
         <dl className="grid gap-3 md:grid-cols-2">

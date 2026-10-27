@@ -137,6 +137,27 @@ def test_pooling_adds_the_discordant_pairs_of_every_class_and_tests_the_total_on
     assert build_pooled_comparison([iron, silent], iters=200) == pooled  # deterministic
 
 
+def test_a_level_can_be_asked_for_the_whole_seed_interval_and_changes_nothing_else(tmp_path: Path):
+    rows_a = [(s, "death", 18, 1.0, 1 if s % 5 else 0) for s in range(400)]
+    rows_b = [(s, "death", 18, 1.0, 1 if s % 2 else 0) for s in range(400)]
+    pairs = [(make_batch(tmp_path, f"alpha-l{k}", rows_a, character=c), make_batch(tmp_path, f"beta-l{k}", rows_b, character=c))
+             for k, c in enumerate(("Ironclad", "Silent"))]
+    plain = build_pooled_comparison(pairs, iters=2000)
+    assert "ciAtLevel" not in plain["clusteredDifference"]  # the output of every earlier study is unchanged
+    asked = build_pooled_comparison(pairs, iters=2000, confidence=1 - 0.05 / 3)
+    extra = asked["clusteredDifference"].pop("ciAtLevel")
+    assert extra["level"] == pytest.approx(1 - 0.05 / 3)
+    lo95, hi95 = plain["clusteredDifference"]["ci95"]
+    lo, hi = extra["ci"]
+    assert lo < lo95 and hi > hi95  # a higher level is a wider interval of the same resamples
+    assert lo < asked["clusteredDifference"]["meanAMinusB"] < hi
+    # nothing else moves, content hash apart (the hash covers the body that now holds the extra interval)
+    assert {k: v for k, v in asked.items() if k != "contentSha256"} == {k: v for k, v in plain.items() if k != "contentSha256"}
+    for bad in (0.5, 1.0, 1.2, 0.0):
+        with pytest.raises(ValueError):
+            build_pooled_comparison(pairs, iters=50, confidence=bad)
+
+
 def test_the_pooled_difference_is_also_checked_with_whole_seeds_as_the_resampling_unit(tmp_path: Path):
     from slay2_sim.stats import clustered_bootstrap_ci, paired_bootstrap_ci
 

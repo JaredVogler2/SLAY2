@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/ascension9/precondition.json + experiments/ascension9/ascension-check.json + experiments/ascension9/pooled-a9-*.json (the Ascension 9 transfer study, ADR-058) + experiments/batches/*/manifest.json",
+  "adr": "ADR-058",
+  "registered": true,
+  "ascension": 9,
+  "level": 0.016666666666666666,
+  "classLevel": 0.01,
+  "seeds": 2000,
+  "precondition": {
+    "file": "experiments/ascension9/precondition.json",
+    "sha256": "161c7175af38bec34055ba32091006e6658038123feaef7b9b624567bd470f32",
+    "games": 3500,
+    "pooledShownValues": {
+      "ascension0": {
+        "completed": 491,
+        "pastActOneBoss": 334,
+        "rate": 0.6802
+      },
+      "ascension9": {
+        "completed": 499,
+        "pastActOneBoss": 140,
+        "rate": 0.2806
+      }
+    }
+  },
+  "ascensionCheck": {
+    "file": "experiments/ascension9/ascension-check.json",
+    "sha256": "957d7457e64f28edd39f6990afc1b6a5bc49cfd42592a169ada115b933013048",
+    "claims": [
+      "A1 elites 5 -> 8",
+      "A4 potion slots 3 -> 2",
+      "A5 Ascender's Bane in the starting deck",
+      "A6 card removal 75/100/125 -> 100/150/200",
+      "A7 scarcity: rarer cards are rarer, the pity counter grows by half"
+    ]
+  },
+  "tests": null
+}

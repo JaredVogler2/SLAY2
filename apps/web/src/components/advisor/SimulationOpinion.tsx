@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCard } from "@slay2/game-data";
 import type { DraftAction } from "@slay2/decision";
 
+import { AscensionNote } from "@/components/advisor/AscensionNote";
 import { MeasuredValue } from "@/components/codex/MeasuredValue";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
@@ -87,6 +88,13 @@ export function SimulationOpinion({
           ? "You said you are in Underdocks. These runs were all played in Overgrowth (the simulator never plays Underdocks), so the numbers below were not measured for your Act 1: read them as a prior about the cards, not about your fights."
           : "Every simulated run was played in Overgrowth, the Act 1 every profile starts with. The simulator never plays Underdocks."}
       </p>
+      <AscensionNote
+        finding="values"
+        level={run.ascension}
+        confirmed={run.ascensionConfirmed}
+        character={run.character}
+        className="mt-3"
+      />
       <p className="mt-3 text-xs text-dim">
         {set?.relicsKept
           ? "These simulated runs kept the relics they gained, as the game does (the pinned simulator drops them; a harness variant repairs that, gap G14). One rules pilot played them in a simulator that has not been compared with the live game, so read the values below as a ranking of cards in a simulated game, not in yours."

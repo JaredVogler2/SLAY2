@@ -18,9 +18,9 @@ from slay2_sim.runner import ManagerForwardModel, RunConfig, new_run
 POLICY_SEED = 987654321
 
 
-def sample_points(seed: int, steps: int = 500, every: int = 5) -> list:
+def sample_points(seed: int, steps: int = 500, every: int = 5, cfg: RunConfig | None = None) -> list:
     """Snapshot (clone) a random-play run every ``every`` decisions: diverse phases, mid-combat states included."""
-    mgr = new_run(RunConfig(), seed)
+    mgr = new_run(cfg or RunConfig(), seed)
     rnd = random.Random(seed)
     points = []
     for step in range(steps):
@@ -256,3 +256,54 @@ def test_search2_state_key_merges_play_orders_and_keeps_different_boards_apart(s
 
     assert after("STRIKE_IRONCLAD", "DEFEND_IRONCLAD") == after("DEFEND_IRONCLAD", "STRIKE_IRONCLAD")
     assert after("STRIKE_IRONCLAD") != after("DEFEND_IRONCLAD")
+
+
+# The six arms of the Ascension 9 study (ADR-058) in the game it is played in: Ascension 9, the relics kept, every class. A policy must
+# not read more of that game than of Ascension 0 (the Ascender's Bane in the deck, the relics a run gains later, the other classes' cards).
+A9_CLASSES = ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect"]
+
+
+def a9_arms(cls: str) -> list[tuple[str, dict]]:
+    shown = "ironclad-a0-v2" if cls == "Ironclad" else f"{cls.lower()}-a0-keep-v1"
+    first = {} if cls == "Ironclad" else {"values": f"experiments/cardvalue/{cls.lower()}-a0-v1.json"}
+    return [
+        ("advisor_v1", {"engines": 0, "margin": 0.0, "needs": 1, "scalers": 0.7}),
+        ("advisor_v1", {"synergy": 0, "margin": 0}),
+        ("rules_v1", {}),
+        ("rules_v2", {"threshold": 0.0, "values": f"experiments/cardvalue/{shown}.json"}),
+        ("rules_v2_neow_values", {"threshold": 0.0, "neow_values": "experiments/neow/neow-values-keep-v1.json", **first}),
+        ("rules_v2", {"threshold": 0.0, **first}),
+    ]
+
+
+_A9_POINTS: dict[str, list] = {}
+
+
+def a9_points(cls: str) -> list:
+    if cls not in _A9_POINTS:
+        cfg = RunConfig(character=cls, ascension=9, keep_relics=True)
+        pts = []
+        for seed in (31, 32, 33):
+            pts.extend(sample_points(seed, steps=420, every=7, cfg=cfg))
+        _A9_POINTS[cls] = pts
+    return _A9_POINTS[cls]
+
+
+@pytest.mark.parametrize("cls", A9_CLASSES)
+def test_the_ascension_9_game_is_the_one_the_arms_are_tested_in(sim, cls):
+    pts = a9_points(cls)
+    assert all(p.run_state.ascension_level == 9 for p in pts)
+    assert any(p.phase == "COMBAT" for p in pts) and len({p.phase for p in pts}) >= 2
+    # Ascender's Bane is in the deck from the first point on
+    assert any(c.card_id.name == "ASCENDERS_BANE" for c in pts[0].run_state.player.deck)
+
+
+@pytest.mark.parametrize("cls", A9_CLASSES)
+def test_the_arms_of_the_ascension_9_study_ignore_hidden_state(sim, cls):
+    pts = a9_points(cls)
+    for name, params in a9_arms(cls):
+        for i, p in enumerate(pts):
+            a, b = twins(p, 15000 + i)
+            assert decide(name, a, **params) == decide(name, b, **params), (
+                f"{name} {params} depends on hidden state at point {i} ({p.phase}) of {cls} at Ascension 9"
+            )

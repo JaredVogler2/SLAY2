@@ -259,7 +259,7 @@ def _character(value: str) -> str:
 
 def cmd_pool(args) -> int:
     pairs = [(Path(a), Path(b)) for a, b in args.pair]
-    pooled = build_pooled_comparison(pairs, iters=args.iters, seed=args.bootstrap_seed)
+    pooled = build_pooled_comparison(pairs, iters=args.iters, seed=args.bootstrap_seed, confidence=args.confidence)
     print(render_pooled_text(pooled))
     if args.out:
         write_comparison(pooled, Path(args.out))
@@ -467,6 +467,9 @@ def build_parser() -> argparse.ArgumentParser:
     pp.add_argument("--out", help="write the pooled comparison, e.g. experiments/neow/pooled-test.json (NOT experiments/comparisons: the site reads that directory)")
     pp.add_argument("--iters", type=int, default=20000, help="bootstrap resamples")
     pp.add_argument("--bootstrap-seed", type=int, default=0)
+    pp.add_argument("--confidence", type=float, default=None,
+                    help="also write the whole-seed bootstrap interval of the pooled difference at this level (e.g. 0.98333 for a test read at 0.05 / 3); "
+                         "without it the output is unchanged")
     pp.set_defaults(fn=cmd_pool)
     return p
 

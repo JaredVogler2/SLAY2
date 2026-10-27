@@ -443,6 +443,7 @@ test.describe("what did Neow offer?", () => {
     await startIronclad(page);
     await page.locator("#adv-asc").selectOption("5");
     await openOffer(page);
-    await expect(page.getByText(/you are at Ascension 5/)).toBeVisible();
+    await expect(page.getByText(/Your run is at Ascension 5/)).toBeVisible();
+    await expect(page.getByText(/measured at Ascension 0 only/)).toBeVisible();
   });
 });
