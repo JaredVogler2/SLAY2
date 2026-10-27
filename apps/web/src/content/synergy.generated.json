@@ -503,6 +503,131 @@
       ]
     }
   },
+  "keep": {
+    "file": "experiments/synergy/keep-b1.json",
+    "sha256": "197cdf4b318a3c7af7238f51bed94146bd80c9dbd6a2fe6edeae95457cdebc88",
+    "outcome": "the run gets past the Act-1 boss",
+    "bossFights": 18522,
+    "withTaggedRelic": 10044,
+    "partsDiffer": 2534,
+    "passRate": 0.5695,
+    "bootstrapDraws": 200,
+    "classAlone": {
+      "logLoss": 0.45508,
+      "synergyAdded": {
+        "mean": -0.00929,
+        "ci95": [
+          -0.01129,
+          -0.00708
+        ]
+      },
+      "ratios": {
+        "needs": {
+          "toQuality": 1.167,
+          "ci95": [
+            1.014,
+            1.392
+          ]
+        },
+        "scalers": {
+          "toQuality": 0.552,
+          "ci95": [
+            0.411,
+            0.725
+          ]
+        },
+        "engines": {
+          "toQuality": -0.137,
+          "ci95": [
+            -0.261,
+            0
+          ]
+        }
+      }
+    },
+    "relicsCounted": {
+      "logLoss": 0.45419,
+      "synergyAdded": {
+        "mean": -0.01018,
+        "ci95": [
+          -0.01217,
+          -0.00794
+        ]
+      },
+      "ratios": {
+        "needs": {
+          "toQuality": 1.194,
+          "ci95": [
+            1.041,
+            1.422
+          ]
+        },
+        "scalers": {
+          "toQuality": 0.622,
+          "ci95": [
+            0.491,
+            0.792
+          ]
+        },
+        "engines": {
+          "toQuality": -0.13,
+          "ci95": [
+            -0.258,
+            0.009
+          ]
+        }
+      }
+    },
+    "relicGain": {
+      "mean": -0.00089,
+      "ci95": [
+        -0.00132,
+        -0.00041
+      ]
+    },
+    "perClass": {
+      "ironclad-keep": {
+        "rows": 4275,
+        "mean": -0.0009,
+        "ci95": [
+          -0.0018,
+          0.00004
+        ]
+      },
+      "silent-keep": {
+        "rows": 3025,
+        "mean": -0.00035,
+        "ci95": [
+          -0.00147,
+          0.0007
+        ]
+      },
+      "regent-keep": {
+        "rows": 3543,
+        "mean": -0.00042,
+        "ci95": [
+          -0.00154,
+          0.0006
+        ]
+      },
+      "necrobinder-keep": {
+        "rows": 3829,
+        "mean": -0.00125,
+        "ci95": [
+          -0.00223,
+          -0.00044
+        ]
+      },
+      "defect-keep": {
+        "rows": 3850,
+        "mean": -0.00135,
+        "ci95": [
+          -0.00229,
+          -0.00034
+        ]
+      }
+    }
+  },
   "b2": {
     "tableSha256": "bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a",
     "alpha": 0.05,
@@ -1246,129 +1371,5 @@
       }
     }
   },
-  "keep": {
-    "file": "experiments/synergy/keep-b1.json",
-    "sha256": "197cdf4b318a3c7af7238f51bed94146bd80c9dbd6a2fe6edeae95457cdebc88",
-    "outcome": "the run gets past the Act-1 boss",
-    "bossFights": 18522,
-    "withTaggedRelic": 10044,
-    "partsDiffer": 2534,
-    "passRate": 0.5695,
-    "bootstrapDraws": 200,
-    "classAlone": {
-      "logLoss": 0.45508,
-      "synergyAdded": {
-        "mean": -0.00929,
-        "ci95": [
-          -0.01129,
-          -0.00708
-        ]
-      },
-      "ratios": {
-        "needs": {
-          "toQuality": 1.167,
-          "ci95": [
-            1.014,
-            1.392
-          ]
-        },
-        "scalers": {
-          "toQuality": 0.552,
-          "ci95": [
-            0.411,
-            0.725
-          ]
-        },
-        "engines": {
-          "toQuality": -0.137,
-          "ci95": [
-            -0.261,
-            0
-          ]
-        }
-      }
-    },
-    "relicsCounted": {
-      "logLoss": 0.45419,
-      "synergyAdded": {
-        "mean": -0.01018,
-        "ci95": [
-          -0.01217,
-          -0.00794
-        ]
-      },
-      "ratios": {
-        "needs": {
-          "toQuality": 1.194,
-          "ci95": [
-            1.041,
-            1.422
-          ]
-        },
-        "scalers": {
-          "toQuality": 0.622,
-          "ci95": [
-            0.491,
-            0.792
-          ]
-        },
-        "engines": {
-          "toQuality": -0.13,
-          "ci95": [
-            -0.258,
-            0.009
-          ]
-        }
-      }
-    },
-    "relicGain": {
-      "mean": -0.00089,
-      "ci95": [
-        -0.00132,
-        -0.00041
-      ]
-    },
-    "perClass": {
-      "ironclad-keep": {
-        "rows": 4275,
-        "mean": -0.0009,
-        "ci95": [
-          -0.0018,
-          0.00004
-        ]
-      },
-      "silent-keep": {
-        "rows": 3025,
-        "mean": -0.00035,
-        "ci95": [
-          -0.00147,
-          0.0007
-        ]
-      },
-      "regent-keep": {
-        "rows": 3543,
-        "mean": -0.00042,
-        "ci95": [
-          -0.00154,
-          0.0006
-        ]
-      },
-      "necrobinder-keep": {
-        "rows": 3829,
-        "mean": -0.00125,
-        "ci95": [
-          -0.00223,
-          -0.00044
-        ]
-      },
-      "defect-keep": {
-        "rows": 3850,
-        "mean": -0.00135,
-        "ci95": [
-          -0.00229,
-          -0.00034
-        ]
-      }
-    }
-  }
+  "b2keep": null
 }

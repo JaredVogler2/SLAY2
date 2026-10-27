@@ -14,6 +14,7 @@ import {
   part,
   verdictOf,
   type SynergyEvidence,
+  type SynergyKeepTest,
   type SynergyTest,
   type Verdict,
 } from "@/lib/synergy-evidence";
@@ -29,6 +30,20 @@ const LABEL: Record<Verdict, string> = {
   "not-shown": "Judgement, not shown to help",
   behind: "Judgement, worse in simulation",
 };
+
+/**
+ * The page's label from how the registered tests came out: the first (the simulator as it is) and, once it has been read, the same
+ * test with the relics kept (ADR-054 item 4). A test that has not been read leaves the label to the one that has.
+ */
+export function labelOf(evidence: Pick<SynergyEvidence, "b2" | "b2keep">): string {
+  if (!evidence.b2) return "Judgement, partly checked";
+  const first = verdictOf(evidence.b2);
+  if (!evidence.b2keep) return LABEL[first];
+  const keep = verdictOf(evidence.b2keep);
+  if (first === "behind" || keep === "behind") return LABEL.behind;
+  if (first === keep) return LABEL[first];
+  return "Judgement, mixed in simulation";
+}
 
 /** The registered test in a few words, with its numbers: the part of the evidence that is about picking cards, not about predicting. */
 function TestResult({ test }: { test: SynergyTest }) {
@@ -73,6 +88,36 @@ function TestResult({ test }: { test: SynergyTest }) {
   );
 }
 
+/** The same test with the relics kept (ADR-054), in a few words and its numbers; what it says follows the registered reading rule. */
+function KeepTestResult({ test }: { test: SynergyKeepTest }) {
+  const verdict = verdictOf(test);
+  const e = test.primary.reachedAct2;
+  const figures = (
+    <>
+      <span className="num">{pct(e.a.rate, 1)}</span> against{" "}
+      <span className="num">{pct(e.b.rate, 1)}</span> got past the Act&nbsp;1 boss (held-out seeds,
+      five classes, {formatP(e.pairedTable.mcnemar_p)})
+    </>
+  );
+  return (
+    <p>
+      <strong className="text-parchment">The same test with the relics kept.</strong> The test above
+      was played in a simulator that drops the relics a run gains after its first fight, so it was
+      registered again with them kept (ADR-054):{" "}
+      {verdict === "ahead" ? (
+        <>{figures}. The term helped there too.</>
+      ) : verdict === "behind" ? (
+        <>{figures}. With the relics kept, adding the term made the simulated picks worse.</>
+      ) : (
+        <>
+          {figures}. With the relics kept the test did not show that the term helps, which is not
+          the same as showing that it does not.
+        </>
+      )}
+    </p>
+  );
+}
+
 /**
  * What the simulated runs say about the synergy term, read from the study's own report (ADR-050): a measured claim and its
  * limits, beside a heuristic that stays a judgement.
@@ -80,6 +125,7 @@ function TestResult({ test }: { test: SynergyTest }) {
 function Evidence({ evidence }: { evidence: SynergyEvidence }) {
   const b1 = evidence.b1;
   const b2 = evidence.b2;
+  const b2keep = evidence.b2keep;
   if (!b1) {
     return (
       <p className="mt-4 text-xs text-muted">
@@ -97,7 +143,7 @@ function Evidence({ evidence }: { evidence: SynergyEvidence }) {
     <>
       <p className="mt-4 text-xs text-muted">
         SLAY2&rsquo;s judgement of how the cards work,{" "}
-        {b2 ? "tested in simulation" : "partly checked"}. In{" "}
+        {labelOf(evidence).replace(/^Judgement, /, "")}. In{" "}
         <span className="num">{b1.bossFights.toLocaleString("en-US")}</span> simulated runs that
         brought a random deck to the Act&nbsp;1 boss, decks with fewer unmet needs, and with more
         Strength, Dexterity or Focus behind the cards they lift, got past it more often; the engine
@@ -140,6 +186,7 @@ function Evidence({ evidence }: { evidence: SynergyEvidence }) {
               : "The data cannot tell for any single class."}
           </p>
           {b2 ? <TestResult test={b2} /> : null}
+          {b2keep ? <KeepTestResult test={b2keep} /> : null}
           <p>
             <strong className="text-parchment">What it is not.</strong> Not the live game, not
             winning (wins are rare), and not people who build engines on purpose: random decks
@@ -147,9 +194,11 @@ function Evidence({ evidence }: { evidence: SynergyEvidence }) {
             against these same runs (a flaw in the Necrobinder&rsquo;s Osty was found and fixed that
             way), and a second, independent reading of every card corrected more, so the figures
             flatter them.{" "}
-            {b2
-              ? null
-              : "A held-out test of a pilot that picks cards by this index is registered before any of its games (ADR-050); its result is not in yet. "}
+            {!b2
+              ? "A held-out test of a pilot that picks cards by this index is registered before any of its games (ADR-050); its result is not in yet. "
+              : !b2keep
+                ? "The same test with the relics kept is registered before any of its games (ADR-054); its result is not in yet. "
+                : null}
             The study, with its figures by class, is in{" "}
             <Link
               className="text-teal underline decoration-dotted underline-offset-4"
@@ -180,7 +229,7 @@ export function SynergyPanel({
   relics?: DraftResponse["relics"];
   evidence?: SynergyEvidence;
 }) {
-  const label = evidence.b2 ? LABEL[verdictOf(evidence.b2)] : "Judgement, partly checked";
+  const label = labelOf(evidence);
   const top = Math.max(...synergy.engines.map((e) => e.value), 1);
   return (
     <Panel

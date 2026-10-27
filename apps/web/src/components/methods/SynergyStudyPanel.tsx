@@ -6,7 +6,7 @@ import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { Tile } from "@/components/ui/Tile";
-import { SynergyTestPanel } from "@/components/methods/SynergyTestPanel";
+import { SynergyKeepTestPanel, SynergyTestPanel } from "@/components/methods/SynergyTestPanel";
 import { pct } from "@/lib/methods-data";
 import {
   SYNERGY_EVIDENCE,
@@ -202,7 +202,7 @@ function KeepReadingBlock({ keep }: { keep: KeepReading }) {
 export function SynergyStudyPanel({
   evidence = SYNERGY_EVIDENCE,
 }: { evidence?: SynergyEvidence } = {}) {
-  const { table, b1, keep, b2 } = evidence;
+  const { table, b1, keep, b2, b2keep } = evidence;
   if (!b1) {
     return null;
   }
@@ -379,6 +379,23 @@ export function SynergyStudyPanel({
           </p>
         </section>
       )}
+
+      {b2keep ? (
+        <SynergyKeepTestPanel test={b2keep} first={b2} />
+      ) : b2 ? (
+        <section className="mt-5 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
+          <h3 className="mb-2 font-display text-lg text-parchment">
+            The same test with the relics kept
+          </h3>
+          <p>
+            Registered (ADR-054) before any of its games, and not on this page yet: the test above
+            was played in a simulator that drops the relics a run gains after its first fight (gap
+            G14), and the same two pilots are to play the same kind of held-out seeds with the
+            relics kept, once, at the same level. It is published here as it comes out, whichever
+            way it goes.
+          </p>
+        </section>
+      ) : null}
 
       <ul className="mt-5 list-disc space-y-1.5 pl-5 text-sm text-muted">
         <li>

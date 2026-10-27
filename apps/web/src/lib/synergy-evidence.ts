@@ -203,6 +203,20 @@ export interface SynergyTest {
   readonly profile: TestProfile | null;
 }
 
+/**
+ * The registered test repeated with the relics kept (ADR-054): the same two arms on the same kind of seeds, in a simulator whose runs
+ * keep the relics they gain (the first test was played in one that drops them, gap G14). One pooled comparison was registered.
+ */
+export interface SynergyKeepTest {
+  readonly tableSha256: string;
+  readonly alpha: number;
+  readonly astar: SynergyConfig;
+  readonly primary: PooledTest;
+  /** the exporter's reading of `primary` (a `Verdict`); the page recomputes it with `verdictOf` */
+  readonly verdict: string;
+  readonly profile: TestProfile | null;
+}
+
 /** Stage B1 read again on random drafts played with the relics kept, with and without the relics a run held counted (ADR-053 item 6). */
 export interface KeepReading {
   readonly file: string;
@@ -237,6 +251,8 @@ export interface SynergyEvidence {
   readonly b1: SynergyReading | null;
   readonly keep: KeepReading | null;
   readonly b2: SynergyTest | null;
+  /** the registered test repeated with the relics kept (ADR-054); null until it has been run */
+  readonly b2keep: SynergyKeepTest | null;
 }
 
 export const SYNERGY_EVIDENCE: SynergyEvidence = synergy;

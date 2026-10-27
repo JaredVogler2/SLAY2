@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { PART_WEIGHT, deckSynergy, type DeckEntry } from "@slay2/decision";
 import { getCard } from "@slay2/game-data";
 
-import { SynergyPanel } from "../src/components/advisor/SynergyPanel";
-import { SYNERGY_EVIDENCE, kept, verdictOf } from "../src/lib/synergy-evidence";
+import { SynergyPanel, labelOf } from "../src/components/advisor/SynergyPanel";
+import { SYNERGY_EVIDENCE, kept } from "../src/lib/synergy-evidence";
 
 import { fixtureTest, withTest } from "./fixtures/synergy-test";
 
@@ -161,19 +161,17 @@ describe.runIf(shipped !== null)("the synergy panel with the shipped held-out re
   it("is labelled by what the registered test showed, and quotes its own figures", () => {
     if (!shipped) throw new Error("no B2 result");
     render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
-    const label = {
-      ahead: "Judgement, tested in simulation",
-      "not-shown": "Judgement, not shown to help",
-      behind: "Judgement, worse in simulation",
-    }[verdictOf(shipped)];
-    expect(screen.getByText(label)).toBeInTheDocument();
+    // the label follows from the tests that have been read (the repeated test with the relics kept too, once it is in)
+    expect(screen.getByText(labelOf(SYNERGY_EVIDENCE))).toBeInTheDocument();
     expect(screen.queryByText("Judgement, partly checked")).toBeNull();
     const e = shipped.primary.reachedAct2;
     const text = screen.getByText(/The registered test\./).closest("p")?.textContent ?? "";
     expect(text).toContain(`${(e.a.rate * 100).toFixed(1)}%`);
     expect(text).toContain(`${(e.b.rate * 100).toFixed(1)}%`);
     expect(text).toContain("same pilot without the synergy term");
-    expect(screen.queryByText(/its result is not in yet/)).toBeNull();
+    expect(
+      screen.queryByText(/A held-out test of a pilot that picks cards by this index/),
+    ).toBeNull();
   });
 });
 
@@ -201,8 +199,14 @@ describe("the synergy panel once the registered test has been run", () => {
       expect(screen.getByText(label)).toBeInTheDocument();
       expect(screen.queryByText("Judgement, partly checked")).toBeNull();
       expect(screen.getByText(sentence)).toBeInTheDocument();
-      // the test is no longer "not in yet", and the claim is limited to the simulator
-      expect(screen.queryByText(/its result is not in yet/)).toBeNull();
+      // the first test is no longer "not in yet" (the repeated one, with the relics kept, is registered and says so), and the claim is
+      // limited to the simulator
+      expect(
+        screen.queryByText(/A held-out test of a pilot that picks cards by this index/),
+      ).toBeNull();
+      expect(
+        screen.getByText(/The same test with the relics kept is registered/),
+      ).toBeInTheDocument();
       expect(screen.getByText(/Not the live game/)).toBeInTheDocument();
     },
   );
@@ -221,7 +225,9 @@ describe("the synergy panel once the registered test has been run", () => {
   it("keeps saying the test is registered but not in while it has not been run", () => {
     render(<SynergyPanel synergy={ironclad()} evidence={withTest(null)} />);
     expect(screen.getByText("Judgement, partly checked")).toBeInTheDocument();
-    expect(screen.getByText(/its result is not in yet/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/A held-out test of a pilot that picks cards by this index is registered/),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/The registered test\./)).toBeNull();
   });
 });

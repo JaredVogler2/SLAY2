@@ -3,6 +3,7 @@ import {
   verdictOf,
   type PooledTest,
   type SynergyEvidence,
+  type SynergyKeepTest,
   type SynergyTest,
   type TestProfile,
 } from "../../src/lib/synergy-evidence";
@@ -149,6 +150,29 @@ export function fixtureTest(aOnly: number, bOnly: number, margin = 0): SynergyTe
   return { ...test, verdict: verdictOf(test) };
 }
 
+/** A made-up result of the same test repeated with the relics kept (ADR-054): one pooled comparison, nothing else. */
+export function fixtureKeepTest(aOnly: number, bOnly: number): SynergyKeepTest {
+  const primary = pooled("pooled-astar-vs-d0star-keep", aOnly, bOnly);
+  const test: SynergyKeepTest = {
+    tableSha256: SYNERGY_EVIDENCE.table.sha256,
+    alpha: 0.05,
+    astar: { arm: "d2", needs: 1, scalers: 0.7, engines: 0, margin: 0 },
+    primary,
+    verdict: "x",
+    profile: null,
+  };
+  return { ...test, verdict: verdictOf(test) };
+}
+
+/** The evidence with the first test as given and the repeated test not run (whatever the real files hold). */
 export function withTest(test: SynergyTest | null): SynergyEvidence {
-  return { ...SYNERGY_EVIDENCE, b2: test };
+  return { ...SYNERGY_EVIDENCE, b2: test, b2keep: null };
+}
+
+/** The evidence with both registered tests as given. */
+export function withTests(
+  first: SynergyTest | null,
+  keep: SynergyKeepTest | null,
+): SynergyEvidence {
+  return { ...SYNERGY_EVIDENCE, b2: first, b2keep: keep };
 }
