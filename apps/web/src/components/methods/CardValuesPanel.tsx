@@ -386,22 +386,25 @@ function ClassBlock({ set }: { set: CardValueSet }) {
       {set.drift ? (
         <div className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
           <p className="font-medium text-parchment">
-            How these values moved when the pilot got stronger
+            {set.relicsKept
+              ? "How these values moved when the relics were kept"
+              : "How these values moved when the pilot got stronger"}
           </p>
           <p className="mt-2">
-            These values replace the first measurement ({set.drift.previous}), which was made while
-            a weaker pilot played: {set.drift.previousBossFights.toLocaleString("en-US")} runs
-            reached the Act-1 boss and {pct(set.drift.previousPassRate, 1)} got past it, against{" "}
-            {pct(set.passRate, 1)} now. Over the {set.drift.cardsInBoth} cards measured in both, the
-            two sets of values correlate at {set.drift.spearman.toFixed(2)}, where two measurements
-            of the same pilot agree at {set.drift.noiseSpearmanBrown.toFixed(2)} (the new games
-            split by seed, {set.drift.noiseCards} cards fitted in both halves, corrected to the full
-            number of games). {set.drift.bestShared} of the {set.drift.k} best and{" "}
-            {set.drift.worstShared} of the {set.drift.k} worst cards are shared, and{" "}
-            {set.drift.disjointIntervals} cards have intervals that do not overlap (about one would
-            by chance). The values depend on the pilot, moderately; this is a description, not a
-            test.
-            {earlier
+            {set.relicsKept
+              ? `These values replace the earlier measurement (${set.drift.previous}), which was made in a simulator that dropped the relics a run gains after its first fight (gap G14): ${set.drift.previousBossFights.toLocaleString("en-US")} runs reached the Act-1 boss and ${pct(set.drift.previousPassRate, 1)} got past it, against ${pct(set.passRate, 1)} now, with the relics kept.`
+              : `These values replace the first measurement (${set.drift.previous}), which was made while a weaker pilot played: ${set.drift.previousBossFights.toLocaleString("en-US")} runs reached the Act-1 boss and ${pct(set.drift.previousPassRate, 1)} got past it, against ${pct(set.passRate, 1)} now.`}{" "}
+            Over the {set.drift.cardsInBoth} cards measured in both, the two sets of values
+            correlate at {set.drift.spearman.toFixed(2)}, where two measurements of the same pilot
+            agree at {set.drift.noiseSpearmanBrown.toFixed(2)} (the new games split by seed,{" "}
+            {set.drift.noiseCards} cards fitted in both halves, corrected to the full number of
+            games). {set.drift.bestShared} of the {set.drift.k} best and {set.drift.worstShared} of
+            the {set.drift.k} worst cards are shared, and {set.drift.disjointIntervals} cards have
+            intervals that do not overlap (about one would by chance).{" "}
+            {set.relicsKept
+              ? "This is a description, not a test."
+              : "The values depend on the pilot, moderately; this is a description, not a test."}
+            {earlier && !set.relicsKept
               ? ` In its own test the first measurement took the pilot from ${pct(earlier.reachedAct2.b.rate, 1)} to ${pct(earlier.reachedAct2.a.rate, 1)} past the Act-1 boss against the hand-written ratings (${formatP(earlier.reachedAct2.pairedTable.mcnemar_p)}).`
               : ""}
           </p>
