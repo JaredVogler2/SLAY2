@@ -41,6 +41,9 @@ FOLDS = 5
 RIDGE = 1e-3
 FEATURES = ("quality", "coverage", "curve", "unmet", "scaler", "engines")
 ACT_INDEX = 0  # the Act-1 boss: the advisor's act-1 weights
+# The parts are always read at the hand-set strengths: a study of what the parts predict must not move when the strengths the
+# website's index keeps are changed (ADR-050 addendum C), and the parts of two arms' decks must be read on one yardstick.
+FIRST_JUDGEMENT = advisor.Model(needs=1.0, scalers=1.0, engines=1.0)
 
 
 @dataclass(frozen=True)
@@ -63,12 +66,14 @@ COHORTS = (
 
 
 # ------------------------------------------------------------------------------------------------------------ data
-def deck_features(deck_counts: dict[str, int], character: str | None = None, act_index: int = ACT_INDEX) -> dict[str, float]:
-    """The advisor's index parts for one deck of a class (balanced risk), in index points."""
+def deck_features(
+    deck_counts: dict[str, int], character: str | None = None, act_index: int = ACT_INDEX, model: advisor.Model = FIRST_JUDGEMENT
+) -> dict[str, float]:
+    """The advisor's index parts for one deck of a class (balanced risk), in index points, at the strengths of ``model``."""
     deck = advisor.deck_from_ids([card for card, n in deck_counts.items() for _ in range(n)])
-    profile = advisor.profile_deck(deck, act_index, character=character)
+    profile = advisor.profile_deck(deck, act_index, model, character)
     terms = advisor.score_terms(profile, advisor.base_weights(act_index, "balanced"))
-    unmet, scaler, engines = advisor.synergy_components(deck, act_index, character=character)
+    unmet, scaler, engines = advisor.synergy_components(deck, act_index, model, character)
     return {
         "quality": terms.quality,
         "coverage": sum(terms.coverage.values()),

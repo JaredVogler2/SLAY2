@@ -8,6 +8,7 @@ same rule (a tie within 0.5 points goes to the lower margin; margin 0 if neither
 
     python -m slay2_sim.synergydev --phase 1 --dir experiments/synergy/dev --out experiments/synergy/dev/selection-phase1.json
     python -m slay2_sim.synergydev --phase 2 --chosen d2 --dir experiments/synergy/dev --out experiments/synergy/dev/selection-phase2.json
+    python -m slay2_sim.synergydev --astar --dir experiments/synergy/dev      # A*, read back from the two selection files, as a JSON object
 """
 
 from __future__ import annotations
@@ -19,6 +20,13 @@ from pathlib import Path
 TIE = 0.005  # 0.5 percentage points
 PHASE1_ARMS = ("d1", "d2", "d3", "d4")
 PHASE2_ARMS = {"m1": 1.5, "m2": 3.0}
+# What each phase-1 arm keeps of the index's hand-set parts (scripts/studies/synergy/common.sh runs the same arms; a test holds the two together).
+ARM_PARAMS = {
+    "d1": {"needs": 1, "scalers": 0.7, "engines": 0},
+    "d2": {"needs": 1, "scalers": 0.7, "engines": 0.25},
+    "d3": {"needs": 1, "scalers": 0.7, "engines": 0.5},
+    "d4": {"needs": 1, "scalers": 1, "engines": 1},
+}
 
 
 def pooled_difference(pooled: dict) -> dict:
@@ -55,14 +63,34 @@ def read(directory: Path, arm: str, baseline: str) -> dict:
     return pooled_difference(json.loads((directory / f"{arm}-vs-{baseline}-pooled.json").read_text(encoding="utf-8")))
 
 
+def astar(directory: Path) -> dict:
+    """A*, the configuration phase 1 chose with the margin phase 2 chose, read back from the two selection files. The rule is applied
+    again to the numbers in them, so a file that was edited by hand, or written for another choice, is refused."""
+    first = json.loads((directory / "selection-phase1.json").read_text(encoding="utf-8"))
+    second = json.loads((directory / "selection-phase2.json").read_text(encoding="utf-8"))
+    chosen = choose_configuration({arm: first["differences"][arm]["difference"] for arm in PHASE1_ARMS})
+    if first["phase"] != 1 or first["chosen"] != chosen:
+        raise ValueError(f"selection-phase1.json chooses {first.get('chosen')}; the rule chooses {chosen} from its numbers")
+    margin = choose_margin({arm: second["differences"][arm]["difference"] for arm in PHASE2_ARMS})
+    if second["phase"] != 2 or second["baseline"] != chosen or second["chosen_margin"] != margin:
+        raise ValueError(f"selection-phase2.json chooses margin {second.get('chosen_margin')} on {second.get('baseline')}; the rule chooses {margin} on {chosen}")
+    return {**ARM_PARAMS[chosen], "margin": margin}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--phase", type=int, choices=(1, 2), required=True)
+    ap.add_argument("--phase", type=int, choices=(1, 2))
     ap.add_argument("--dir", required=True, help="the folder compare-dev.sh wrote the pooled comparisons into")
     ap.add_argument("--chosen", help="phase 2: the arm phase 1 chose (d1 to d4)")
-    ap.add_argument("--out", required=True)
+    ap.add_argument("--out")
+    ap.add_argument("--astar", action="store_true", help="print A*, read back from the two selection files in --dir")
     args = ap.parse_args(argv)
     directory = Path(args.dir)
+    if args.astar:
+        print(json.dumps(astar(directory), separators=(",", ":")))
+        return 0
+    if args.phase is None or args.out is None:
+        ap.error("--phase and --out are required unless --astar is given")
     if args.phase == 1:
         reads = {arm: read(directory, arm, "d0") for arm in PHASE1_ARMS}
         chosen = choose_configuration({a: r["difference"] for a, r in reads.items()})

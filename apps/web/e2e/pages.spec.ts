@@ -93,12 +93,15 @@ test.describe("methods", () => {
     }
   });
 
-  test("reports the synergy reading with its intervals and its limits, and says the registered test is not in", async ({
+  test("reports the synergy reading with its intervals and its limits, and the state of the registered test", async ({
     page,
   }) => {
     const study = JSON.parse(
       readFileSync(join(__dirname, "..", "src", "content", "synergy.generated.json"), "utf8"),
-    ) as { b1: { bossFights: number; cohorts: unknown[] } | null };
+    ) as {
+      b1: { bossFights: number; cohorts: unknown[]; mechanics: { rows: unknown[] } | null } | null;
+      b2: { verdict: string } | null;
+    };
     test.skip(study.b1 === null, "no synergy reading is exported");
     await page.goto("/methods#synergy");
     const panel = page.locator("#synergy");
@@ -114,13 +117,28 @@ test.describe("methods", () => {
     await expect(tiles).toContainText("95 %");
     const table = panel.getByRole("table", { name: /By class and seed set/ });
     await expect(table.getByRole("row")).toHaveCount((study.b1?.cohorts.length ?? 0) + 1);
-    await expect(panel).toContainText("Exploratory");
+    await expect(panel).toContainText("The exploratory readings above, not the registered test");
     await expect(panel).toContainText("Simulated, not measured in the live game");
     await expect(
       panel.getByRole("heading", { level: 3, name: "The registered test" }),
     ).toBeVisible();
-    await expect(panel).toContainText("It has not been run on its held-out seeds");
-    await expect(panel).toContainText("whether the readings themselves hold at the game's HP");
+    if (study.b2 === null) {
+      await expect(panel).toContainText("It has not been run on its held-out seeds");
+      await expect(panel).toContainText("whether the readings themselves hold at the game's HP");
+    } else {
+      const said = {
+        ahead: "adding the synergy term improved what the heuristic index picks",
+        "not-shown": "does not show that the term makes no difference",
+        behind: "made the simulated picks worse",
+      }[study.b2.verdict];
+      await expect(panel).toContainText(said ?? "no such verdict");
+      await expect(panel).not.toContainText("It has not been run on its held-out seeds");
+    }
+    if (study.b1?.mechanics) {
+      await panel.getByText("Which needs the runs support, one mechanic at a time").click();
+      const mechanics = panel.getByRole("table", { name: /Worth of a point of each mechanic/ });
+      await expect(mechanics.getByRole("row")).toHaveCount(study.b1.mechanics.rows.length + 2);
+    }
     await panel.getByText("How the readings changed the tags").click();
     await expect(panel).toContainText("the figures flatter them");
   });

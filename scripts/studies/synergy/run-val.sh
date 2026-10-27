@@ -9,6 +9,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 : "${ASTAR:?ASTAR is the registered configuration of A* as a JSON object}"
 W=${1:-3}
 MARGIN=${MARGIN:-0}
+source "$(dirname "${BASH_SOURCE[0]}")/preflight-val.sh" || exit 1   # stops here unless the addendum is public and A* is what it records
+[ -z "${PREFLIGHT_ONLY:-}" ] || exit 0
 run() { # <batch id> <policy> <params json> <ExactClass>
   nice -n 8 "$PY" -m slay2_sim run --policy "$2" --policy-params "$3" --character "$4" --ascension 0 --profile veteran \
     --seeds "$SEEDS" --partition val --n 2000 --workers "$W" --trace 0 --batch-id "$1" > "$OUT/val-$1.log" 2>&1

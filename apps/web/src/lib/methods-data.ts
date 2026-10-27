@@ -1,6 +1,9 @@
 import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
 import { setFor } from "@/lib/cardvalues";
+import { formatP, pct } from "@/lib/stat-format";
+
+export { formatP, pct };
 
 export type RuleRow = (typeof rules.rules)[number];
 /** What `slay2_sim audit sample` found for one batch: the ledger and a replay-verified random sample of its completed games. */
@@ -82,10 +85,6 @@ export function rulesBySection(): { section: string; rows: RuleRow[] }[] {
   return order.map((section) => ({ section, rows: map.get(section) ?? [] }));
 }
 
-export function pct(x: number, digits = 2): string {
-  return `${(x * 100).toFixed(digits)}%`;
-}
-
 /**
  * The headline report of a policy for one class: the largest *held-out* veteran-profile batch if one exists (a development
  * batch never outranks it). Classes are never mixed: what a policy does as Silent says nothing about it as Ironclad.
@@ -161,12 +160,6 @@ export function newValuesSentence(c: Comparison): string {
     `Past the Act-1 boss: ${pct(r.a.rate, 1)} with the new values and ${pct(r.b.rate, 1)} with the earlier ones ` +
     `(${String(t.a_only)} games only with the new values, ${String(t.b_only)} only with the earlier ones; exact McNemar ${formatP(t.mcnemar_p)})`
   );
-}
-
-/** "p = 0.0018", or exponent form when tiny (exact paired tests reach hundreds of orders of magnitude below 1e-4). */
-export function formatP(p: number): string {
-  if (p === 0) return "p < 1e-300";
-  return `p = ${p < 1e-4 ? p.toExponential(1) : p.toPrecision(2)}`;
 }
 
 /** The intermediate endpoint: share of paired games that got past the Act-1 boss, with the exact McNemar test on the pairs. */

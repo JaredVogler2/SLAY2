@@ -501,20 +501,15 @@ function parseNeow(reports) {
 
 // What the simulated runs say about the advisor's synergy term (ADR-050). The page's panel quotes these numbers, so they are read from
 // the study's own reports and refused when the study was made on another table than the one the page computes with.
-function parseSynergy() {
+function parseSynergy(reports) {
   const table = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "synergy.sts2-main-0.107.1.json"), "utf8"));
-  const out = { table: { sha256: table.sha256, cards: Object.keys(table.cards).length, mechanics: Object.keys(table.mechanics).length }, b1: null };
+  const out = { table: { sha256: table.sha256, cards: Object.keys(table.cards).length, mechanics: Object.keys(table.mechanics).length }, b1: null, b2: null };
   const b1File = join(root, "experiments", "synergy", "b1-calibration.json");
   if (!existsSync(b1File)) return out;
   const rawB1 = readFileSync(b1File);
   const b1 = JSON.parse(rawB1.toString("utf8"));
   if (b1.advisor.synergy_table_sha256 !== table.sha256) {
     throw new Error("experiments/synergy/b1-calibration.json was made on another synergy table than the page uses: run python -m slay2_sim.synergystudy");
-  }
-  // The one registered test (stage B2-val) is not read yet. When its pooled result is committed this exporter has to read it, or the
-  // /methods panel would still say that the test has not been run.
-  if (existsSync(join(root, "experiments", "synergy", "val", "pooled-astar-vs-d0star.json"))) {
-    throw new Error("experiments/synergy/val holds the B2 result, which parseSynergy does not read yet: add it, and the panel's account of it, before committing the result");
   }
   const pooled = b1.pooled.all_cohorts;
   const gap = (g) => ({ mean: g.mean, ci95: g.ci95 });
@@ -539,8 +534,240 @@ function parseSynergy() {
     },
     perCohortGain: Object.fromEntries(Object.entries(b1.per_cohort).map(([name, a]) => [name, gap(a.loss_gaps.synergy_added_to_index)])),
     calibratedWeights: b1.calibration.weights,
+    mechanics: null,
   };
+  // The same runs read one mechanic's unmet need at a time (descriptive; it changes no tag). It is optional, but when it is there it has to
+  // be about the table and the runs the page quotes, or it would say something about other ones.
+  const mechanicsFile = join(root, "experiments", "synergy", "b1-mechanics.json");
+  if (existsSync(mechanicsFile)) {
+    const rawMechanics = readFileSync(mechanicsFile);
+    const m = JSON.parse(rawMechanics.toString("utf8"));
+    if (m.advisor.synergy_table_sha256 !== table.sha256) {
+      throw new Error("experiments/synergy/b1-mechanics.json was made on another synergy table than the page uses: run python -m slay2_sim.synergymechanics");
+    }
+    if (m.rows !== pooled.rows) {
+      throw new Error("experiments/synergy/b1-mechanics.json reads other runs than b1-calibration.json: run both again");
+    }
+    out.b1.mechanics = {
+      file: "experiments/synergy/b1-mechanics.json",
+      sha256: createHash("sha256").update(rawMechanics).digest("hex"),
+      bootstrapDraws: m.bootstrap_draws,
+      pooled: ratio(m.pooled_unmet_ratio),
+      rows: m.mechanics.map((r) => ({
+        mechanic: r.mechanic,
+        label: r.label,
+        decks: r.decks_with_the_need,
+        meanPoints: r.mean_points,
+        ratio: { toQuality: r.ratio_to_quality, ci95: r.ratio_ci95 },
+      })),
+    };
+  }
+  // The one registered test (stage B2-val). When its pooled result exists it is read, with everything it rests on, or the export stops:
+  // the /methods panel must never say that the test has not been run when it has.
+  out.b2 = parseSynergyTest(reports, table.sha256);
   return out;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Stage B2 of the synergy study (ADR-050): the one registered held-out test of a pilot that picks card rewards by the deck index with the
+// synergy term (A*) against the same pilot without it at the same skip margin (d0*), on the 2,000 val seeds of each class, the five
+// classes pooled. Nothing here is taken on trust. The arms are read from the batches' own manifests (the parameters each pilot ran with,
+// not the names the files give them); A* has to be the configuration the development stage chose, by the selection rule applied again to
+// the numbers in its selection files; every batch must be the class, partition, policy and seed count the pooled file claims for it,
+// with the per-game class check; and both primary arms carry a passing sample audit. Anything that does not belong together stops the
+// export, so a result that was not the registered one cannot reach the page.
+const SYN_ALPHA = 0.05;
+const SYN_VAL_SEEDS = 2000;
+const SYN_TIE = 0.005; // 0.5 percentage points, the tie of ADR-050 item 3
+const SYN_CONFIGS = {
+  d1: { needs: 1, scalers: 0.7, engines: 0 },
+  d2: { needs: 1, scalers: 0.7, engines: 0.25 },
+  d3: { needs: 1, scalers: 0.7, engines: 0.5 },
+  d4: { needs: 1, scalers: 1, engines: 1 },
+};
+const SYN_MARGINS = { m1: 1.5, m2: 3 };
+const SYN_POLICY = "advisor_v1";
+
+// What the development stage chose, read from its two selection files and checked by applying the rule again.
+function parseSynergySelection() {
+  const dir = join(root, "experiments", "synergy", "dev");
+  const files = ["selection-phase1.json", "selection-phase2.json"].map((f) => join(dir, f));
+  for (const f of files) {
+    if (!existsSync(f)) throw new Error(`experiments/synergy/val holds a result, but the development stage's ${f.slice(root.length + 1)} is missing`);
+  }
+  const raws = files.map((f) => readFileSync(f));
+  const [p1, p2] = raws.map((r) => JSON.parse(r.toString("utf8")));
+  const arms = Object.keys(SYN_CONFIGS);
+  if (p1.phase !== 1 || p1.baseline !== "d0" || arms.some((a) => typeof p1.differences?.[a]?.difference !== "number")) {
+    throw new Error("experiments/synergy/dev/selection-phase1.json: not the phase-1 comparison of d1 to d4 with d0");
+  }
+  const best = Math.max(...arms.map((a) => p1.differences[a].difference));
+  const chosen = best <= 0 ? "d1" : arms.find((a) => p1.differences[a].difference >= best - SYN_TIE);
+  if (p1.chosen !== chosen) throw new Error(`experiments/synergy/dev/selection-phase1.json chooses ${p1.chosen}; the rule of ADR-050 chooses ${chosen} from its numbers`);
+  if (p2.phase !== 2 || p2.baseline !== chosen || Object.keys(SYN_MARGINS).some((a) => typeof p2.differences?.[a]?.difference !== "number")) {
+    throw new Error("experiments/synergy/dev/selection-phase2.json: not the phase-2 comparison of the two skip margins with the chosen configuration");
+  }
+  const options = [[0, 0], ...Object.entries(SYN_MARGINS).map(([a, m]) => [m, p2.differences[a].difference])];
+  const bestMargin = Math.max(...options.map(([, d]) => d));
+  const margin = options.find(([, d]) => d >= bestMargin - SYN_TIE)[0];
+  if (p2.chosen_margin !== margin) throw new Error(`experiments/synergy/dev/selection-phase2.json chooses margin ${p2.chosen_margin}; the rule of ADR-050 chooses ${margin} from its numbers`);
+  const read = (d) => ({ difference: d.difference, ci95: d.ci95, pairs: d.pairs, mcnemarP: d.mcnemar_p });
+  return {
+    arm: chosen,
+    config: SYN_CONFIGS[chosen],
+    margin,
+    phase1: { sha256: createHash("sha256").update(raws[0]).digest("hex"), differences: Object.fromEntries(arms.map((a) => [a, read(p1.differences[a])])) },
+    phase2: { sha256: createHash("sha256").update(raws[1]).digest("hex"), differences: Object.fromEntries(Object.keys(SYN_MARGINS).map((a) => [a, read(p2.differences[a])])) },
+  };
+}
+
+function parseSynergyTest(reports, tableSha256) {
+  const valDir = join(root, "experiments", "synergy", "val");
+  const primaryFile = join(valDir, "pooled-astar-vs-d0star.json");
+  if (!existsSync(primaryFile)) return null;
+  const choice = parseSynergySelection();
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const effective = (id) => JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8")).policy?.effective?.params ?? {};
+  const isAstar = (p) => p.synergy === 1 && p.margin === choice.margin && ["needs", "scalers", "engines"].every((k) => p[k] === choice.config[k]);
+  const isNoTerm = (margin) => (p) => p.synergy === 0 && p.margin === margin;
+  const measuredValues = (r) =>
+    r.policy === "rules_v3" && String(r.policyParams?.values ?? "").endsWith(`${r.character.toLowerCase()}-a0-${r.character === "Ironclad" ? "v2" : "v1"}.json`);
+  // an arm: what the manifest of each of its five batches has to show; null when it does
+  const arm = {
+    astar: (r) => (r.policy !== SYN_POLICY ? `its policy is ${r.policy}` : isAstar(effective(r.id)) ? null : "its parameters are not the configuration the development stage chose"),
+    d0star: (r) => (r.policy !== SYN_POLICY ? `its policy is ${r.policy}` : isNoTerm(choice.margin)(effective(r.id)) ? null : "it is not the index without the synergy term at A*'s margin"),
+    d0: (r) => (r.policy !== SYN_POLICY ? `its policy is ${r.policy}` : isNoTerm(0)(effective(r.id)) ? null : "it is not the index without the synergy term at margin 0"),
+    rules_v3: (r) => (measuredValues(r) ? null : "it is not rules_v3 with the class's measured card values"),
+  };
+
+  function pooled(file, a, b) {
+    const where = `experiments/synergy/val/${file}`;
+    const t = JSON.parse(readFileSync(join(valDir, file), "utf8"));
+    if (t.kind !== "pooled-paired-comparison" || t.schema !== 1) throw new Error(`${where}: not a pooled paired comparison of schema 1`);
+    if (t.cohort?.partition !== "val" || t.role !== "held-out") throw new Error(`${where}: not a held-out comparison`);
+    if (t.cohort.ascension !== 0 || t.cohort.profile !== "veteran") throw new Error(`${where}: not played at Ascension 0 with the veteran profile`);
+    const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
+    const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
+    const everyClassOnce = (list) => list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+    if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed)) throw new Error(`${where}: it must pool all five classes, once each`);
+    const sums = { a_only: 0, b_only: 0, both: 0, neither: 0, pairedSeeds: 0, bothCompleted: 0, winsA: 0, winsB: 0 };
+    for (const m of t.members) {
+      const cls = String(m.character).toLowerCase();
+      for (const [side, name] of [[m.a, a], [m.b, b]]) {
+        const current = byId.get(side.batchId);
+        if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
+        if (current.contentSha256 !== side.contentSha256) throw new Error(`${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`);
+        const bad =
+          current.character !== EXACT[cls]
+            ? `it was played as "${current.character}", not as ${EXACT[cls]}`
+            : current.partition !== "val" || current.seeds !== SYN_VAL_SEEDS
+              ? `it is not the ${SYN_VAL_SEEDS} val seeds`
+              : current.ascension !== 0 || current.profile !== "veteran"
+                ? "it is not Ascension 0 with the veteran profile"
+                : !current.classStartVerified
+                  ? "its games were not checked against the class they were played as"
+                  : !current.canonicalProcessState
+                    ? "it was not played in the harness's canonical process state"
+                    : arm[name](current);
+        if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}, ${name}): ${bad}`);
+      }
+      if (m.pairedSeeds !== SYN_VAL_SEEDS) throw new Error(`${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${SYN_VAL_SEEDS}`);
+      const tab = m.reachedAct2.pairedTable;
+      for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
+      sums.pairedSeeds += m.pairedSeeds;
+      sums.bothCompleted += m.bothCompleted;
+      sums.winsA += m.a.wins;
+      sums.winsB += m.b.wins;
+    }
+    const r1 = t.reachedAct2;
+    for (const k of ["a_only", "b_only", "both", "neither"]) {
+      if (r1.pairedTable[k] !== sums[k]) throw new Error(`${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`);
+    }
+    if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted) throw new Error(`${where}: its totals are not the sum of the classes'`);
+    if (t.wins.a !== sums.winsA || t.wins.b !== sums.winsB) throw new Error(`${where}: its wins are not the sum of the classes'`);
+    return {
+      id: file.replace(/\.json$/, ""),
+      contentSha256: t.contentSha256,
+      pairedSeeds: t.pairedSeeds,
+      bothCompleted: t.bothCompleted,
+      excludedNotCompleted: t.excludedNotCompleted,
+      reachedAct2: r1,
+      reachedAct3: t.reachedAct3,
+      wins: t.wins,
+      floorDifference: t.floorDifference,
+      clusteredDifference: t.clusteredDifference,
+      members: t.members.map((m) => ({
+        character: String(m.character).toLowerCase(),
+        a: m.a,
+        b: m.b,
+        pairedSeeds: m.pairedSeeds,
+        bothCompleted: m.bothCompleted,
+        reachedAct2: m.reachedAct2,
+        meanFloorDifference: m.meanFloorDifference,
+      })),
+    };
+  }
+
+  const primary = pooled("pooled-astar-vs-d0star.json", "astar", "d0star");
+  // the two arms of the primary contrast each carry a passing sample audit (ADR-050 item 6)
+  for (const m of primary.members) {
+    for (const side of [m.a, m.b]) {
+      const s = byId.get(side.batchId).sampleAudit;
+      if (!s || !s.ledgerOk || s.verified !== s.drawn || s.drawn < 40) throw new Error(`${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`);
+    }
+  }
+  const optional = (file, a, b) => (existsSync(join(valDir, file)) ? pooled(file, a, b) : null);
+  const noTermAtZero = optional("pooled-astar-vs-d0.json", "astar", "d0");
+  if (choice.margin !== 0 && !noTermAtZero) throw new Error("the margin is not 0, so the comparison with the index without the term at margin 0 (pooled-astar-vs-d0.json) is part of the result");
+  if (choice.margin === 0 && noTermAtZero) throw new Error("pooled-astar-vs-d0.json exists, but at margin 0 it is the primary comparison: remove it");
+  const measured = optional("pooled-astar-vs-rules_v3.json", "astar", "rules_v3");
+  if (!measured) throw new Error("the comparison with the measured-values pilot (pooled-astar-vs-rules_v3.json) is part of the registered result");
+
+  // how often each arm skipped and what its decks at the boss held (slay2_sim.synergyreport), tied to the very batches of the test
+  let profile = null;
+  const profileFile = join(valDir, "arm-profile.json");
+  if (existsSync(profileFile)) {
+    const pr = JSON.parse(readFileSync(profileFile, "utf8"));
+    if (pr.kind !== "arm-profile" || pr.schema !== 1) throw new Error("experiments/synergy/val/arm-profile.json: not an arm profile of schema 1");
+    for (const [name, side] of [["astar", "a"], ["d0star", "b"]]) {
+      for (const m of primary.members) {
+        const mine = pr.arms?.[name]?.batches?.[m.character];
+        const current = byId.get(m[side].batchId);
+        if (!mine || mine.batch_id !== current.id || mine.episodes_gz_sha256 !== current.episodesGzSha256) {
+          throw new Error(`experiments/synergy/val/arm-profile.json: its ${name} ${m.character} batch is not the one the test used`);
+        }
+      }
+    }
+    const summary = (a) => ({
+      games: a.pooled.games,
+      offers: a.pooled.offers,
+      skipped: a.pooled.skipped,
+      skipRate: a.pooled.skip_rate,
+      bossDecks: a.pooled.boss_decks,
+      atBoss: a.pooled.at_boss,
+    });
+    profile = {
+      sha256: createHash("sha256").update(readFileSync(profileFile)).digest("hex"),
+      astar: summary(pr.arms.astar),
+      d0star: summary(pr.arms.d0star),
+      difference: pr.differences["astar-vs-d0star"].pooled,
+    };
+  }
+
+  const t = primary.reachedAct2.pairedTable;
+  const significant = t.mcnemar_p < SYN_ALPHA;
+  return {
+    tableSha256,
+    alpha: SYN_ALPHA,
+    astar: { arm: choice.arm, ...choice.config, margin: choice.margin },
+    selection: { phase1: choice.phase1, phase2: choice.phase2 },
+    primary,
+    // the reading rule of ADR-050 item 7, from the numbers alone
+    verdict: significant ? (t.a_only > t.b_only ? "ahead" : "behind") : "not-shown",
+    noTermAtZero,
+    measured,
+    profile,
+  };
 }
 
 function parseVerification() {
@@ -593,8 +820,8 @@ const outputs = {
   },
   "synergy.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/synergy/b1-calibration.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
-    ...parseSynergy(),
+    generatedFrom: "experiments/synergy/b1-calibration.json + experiments/synergy/b1-mechanics.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
+    ...parseSynergy(reports),
   },
   "neow.generated.json": {
     schema: 1,

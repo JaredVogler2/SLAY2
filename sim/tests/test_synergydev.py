@@ -53,3 +53,48 @@ def test_the_pooled_file_is_read_the_way_its_fields_are_named(tmp_path):
     out2 = tmp_path / "selection2.json"
     assert dev.main(["--phase", "2", "--chosen", "d2", "--dir", str(tmp_path), "--out", str(out2)]) == 0
     assert json.loads(out2.read_text())["chosen_margin"] == 1.5
+
+
+def selection_files(tmp_path, *, chosen="d2", margin=1.5, phase1=None, phase2=None):
+    one = phase1 or {"d1": 0.004, "d2": 0.020, "d3": 0.012, "d4": 0.006}
+    two = phase2 or {"m1": 0.010 if margin == 1.5 else -0.004, "m2": 0.011 if margin == 3.0 else -0.01}
+    point = lambda d: {"difference": d, "a_rate": 0.5 + d, "b_rate": 0.5, "ci95": [d - 0.01, d + 0.01], "pairs": 4900, "mcnemar_p": 0.2}
+    (tmp_path / "selection-phase1.json").write_text(
+        json.dumps({"phase": 1, "baseline": "d0", "differences": {a: point(d) for a, d in one.items()}, "chosen": chosen}), encoding="utf-8"
+    )
+    (tmp_path / "selection-phase2.json").write_text(
+        json.dumps({"phase": 2, "baseline": chosen, "differences": {a: point(d) for a, d in two.items()}, "chosen_margin": margin}), encoding="utf-8"
+    )
+
+
+def test_a_star_is_the_chosen_configuration_with_the_chosen_margin(tmp_path):
+    selection_files(tmp_path, chosen="d2", margin=1.5)
+    assert dev.astar(tmp_path) == {"needs": 1, "scalers": 0.7, "engines": 0.25, "margin": 1.5}
+    selection_files(tmp_path, chosen="d2", margin=0.0, phase2={"m1": -0.004, "m2": -0.01})
+    assert dev.astar(tmp_path) == {"needs": 1, "scalers": 0.7, "engines": 0.25, "margin": 0.0}
+
+
+def test_a_star_is_refused_when_a_selection_file_does_not_say_what_the_rule_chooses_from_its_numbers(tmp_path):
+    selection_files(tmp_path, chosen="d4")  # the numbers choose d2
+    with pytest.raises(ValueError, match="rule chooses d2"):
+        dev.astar(tmp_path)
+    selection_files(tmp_path, chosen="d2", margin=3.0, phase2={"m1": 0.02, "m2": 0.0})  # the numbers choose margin 1.5
+    with pytest.raises(ValueError, match="the rule chooses 1.5 on d2"):
+        dev.astar(tmp_path)
+
+
+def test_the_command_prints_a_star_as_json(tmp_path, capsys):
+    selection_files(tmp_path)
+    assert dev.main(["--astar", "--dir", str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == {"needs": 1, "scalers": 0.7, "engines": 0.25, "margin": 1.5}
+    with pytest.raises(SystemExit):
+        dev.main(["--dir", str(tmp_path)])  # neither a phase nor --astar
+
+
+def test_the_arms_the_scripts_run_are_the_arms_the_program_chooses_among():
+    import re
+    from pathlib import Path
+
+    common = (Path(__file__).resolve().parents[2] / "scripts" / "studies" / "synergy" / "common.sh").read_text(encoding="utf-8")
+    shell = {arm: json.loads(body) for arm, body in re.findall(r"(d[1-4])\) echo '(\{.*?\})' ;;", common)}
+    assert shell == dev.ARM_PARAMS

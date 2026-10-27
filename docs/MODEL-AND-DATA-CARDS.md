@@ -375,6 +375,40 @@ Co-op (declared `unsupported` by the capability endpoint, and no team or ally mo
 <!-- table:synergy_cohorts:end -->
 
 * **Reading:** the simulated runs support the needs part at the weight the first judgement gave it (the estimate is a little above it, which is not applied) and the scalers part at about 0.7 of it, and give **weak support at most to an engine credit** (the interval includes no effect; random decks rarely hold a whole engine, and the pilot does not build around one, so this says little about people who do). Ironclad, Regent and Defect show a clear gain; for Silent and Necrobinder the intervals include no change. The parts add to a model that already knows every card, a little: most of what they predict the cards themselves also predict.
+* **Which needs the runs support, one mechanic at a time (descriptive, `experiments/synergy/b1-mechanics.json`, `slay2_sim.synergymechanics`):** the same runs and model as stage B1, with the unmet-need part split into one column per mechanic instead of their sum (the columns add up to the part B1 reads, and a test holds them to it). Each row is the worth of a point of that mechanic's unmet need relative to a point of average card rating, 95 % interval from 200 resamples of whole seeds. It is read as a description, not a result: the intervals are read together and not corrected for it, the tags were not changed because of it, and the runs are the ones the tags were audited against. A mechanic few decks left unmet has an interval too wide to read.
+
+<!-- table:synergy_mechanics:begin -->
+| Mechanic whose unmet need is read | Decks that need it | Mean index points held back | Worth of a point of it, relative to a point of average card rating (95 % interval) |
+|---|---|---|---|
+| All needs together, one slope (stage B1) | all 19,717 runs | | **1.11** (0.92 to 1.35) |
+| Exhaust | 3,356 | −0.242 | **1.06** (0.74 to 1.48) |
+| Stars | 2,789 | −0.178 | **2.37** (1.71 to 3.06) |
+| Losing HP | 2,521 | −0.168 | **0.51** (0.13 to 0.89) |
+| Strength | 6,838 | −0.263 | **0.69** (0.24 to 1.16) |
+| Orbs | 3,169 | −0.123 | **2.25** (1.59 to 3.01) |
+| Vulnerable | 4,594 | −0.166 | **1.58** (0.99 to 2.44) |
+| Doom | 1,073 | −0.066 | **1.59** (0.90 to 2.29) |
+| Card creation | 1,265 | −0.072 | **−0.14** (−0.76 to 0.55) |
+| Discarding | 1,431 | −0.075 | **0.36** (−0.71 to 1.45) |
+| Ethereal cards | 823 | −0.059 | **0.07** (−0.59 to 0.81) |
+| Card draw | 592 | −0.048 | **0.82** (0.01 to 1.56) |
+| Energy | 1,282 | −0.065 | **1.70** (0.85 to 2.62) |
+| Block | 954 | −0.054 | **1.81** (0.98 to 2.68) |
+| Powers | 548 | −0.039 | **1.37** (0.53 to 2.17) |
+| Free cards | 686 | −0.037 | **1.54** (0.65 to 2.46) |
+| Attacks | 2,980 | −0.070 | **3.88** (2.79 to 5.24) |
+| Poison | 204 | −0.017 | **1.90** (0.26 to 4.01) |
+| Weak | 612 | −0.030 | **−0.95** (−2.54 to 0.53) |
+| Souls | 188 | −0.015 | **1.87** (0.38 to 3.52) |
+| Skills | 1,294 | −0.034 | **0.51** (−1.33 to 2.06) |
+| Shivs | 191 | −0.013 | **0.70** (−1.12 to 2.92) |
+| Forge | 229 | −0.013 | **1.35** (−0.26 to 3.03) |
+| Strikes | 736 | −0.025 | **1.75** (0.42 to 3.13) |
+| Osty | 3,442 | −0.021 | **−1.34** (−3.90 to 0.89) |
+| Cheap cards | 733 | −0.007 | **3.60** (−2.52 to 10.76) |
+<!-- table:synergy_mechanics:end -->
+
+* **Reading (per mechanic):** uneven, as 25 intervals read together will be. Per index point, the needs for Stars (2.37), Orbs (2.25) and attacks (3.88) are worth about twice what the pooled slope (1.11) says, and those for Strength (0.69, 95 % 0.24 to 1.16) and HP loss (0.51, 0.13 to 0.89) about half; for Create, Ethereal, Discard, Skill, Shiv and Forge the runs cannot tell the need from nothing at all, and Weak and Osty (whose need is nearly always met, because Bound Phylactery supplies it) point the other way with intervals that include nothing. These are the tags' strengths as seen by random drafts and one rules pilot; they say nothing about players who build around a mechanic on purpose. The table is **not** changed by this: it is frozen until the held-out test is over (ADR-050 addendum B), and a list of 25 intervals is a place to look for the next table, not a result.
 * **The audit that changed the table (twice):** the first reading (commit `c62eac6`: needs 0.66, scalers 0.77, engines -0.01) came with three needs whose slope was *negative* (the Necrobinder's Osty, the Regent's Draw, the Defect's Status) and a card-by-card check that agreed; the cause of the clearest, Osty, was found in the game's own files (the starting relic summons Osty every combat), the table was corrected and the study read again, found the same three still negative, and was corrected a second time. The tags were therefore read against the runs the study measures, twice, and its numbers are optimistic for the tags. ADR-050 records both rounds.
 * **Stage B2 (registered before any game, pending):** a pilot that picks card rewards by the index, with and without the synergy term, on the 2,000 held-out `val` seeds of each class, five classes pooled into one exact test (ADR-050). Its result is not in yet; until it is, the advisor's panel says *Judgement, not measured*.
 * **Intended use:** to say how far the synergy term is supported by simulated play. **Not for:** claims about the live game, about winning, or about people who build engines on purpose.

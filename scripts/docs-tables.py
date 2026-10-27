@@ -330,6 +330,10 @@ def interval(ci: list[float], places: int = 4) -> str:
     return f"{signed(ci[0], places)} to {signed(ci[1], places)}".replace("+", "")
 
 
+def minus(x: float, places: int = 2) -> str:
+    return f"{x:.{places}f}".replace("-", "−")
+
+
 def table_synergy_b1() -> str:
     d = load(ROOT / "experiments" / "synergy" / "b1-calibration.json")
     p = d["pooled"]["all_cohorts"]
@@ -363,6 +367,24 @@ def table_synergy_cohorts() -> str:
     return "\n".join(head + rows)
 
 
+def table_synergy_mechanics() -> str:
+    d = load(ROOT / "experiments" / "synergy" / "b1-mechanics.json")
+
+    def worth(r: dict) -> str:
+        return f"**{minus(r['to_quality'])}** ({minus(r['ci95'][0])} to {minus(r['ci95'][1])})"
+
+    head = [
+        "| Mechanic whose unmet need is read | Decks that need it | Mean index points held back | Worth of a point of it, relative to a point of average card rating (95 % interval) |",
+        "|---|---|---|---|",
+        f"| All needs together, one slope (stage B1) | all {d['rows']:,} runs | | {worth(d['pooled_unmet_ratio'])} |",
+    ]
+    rows = []
+    for r in d["mechanics"]:
+        mean = minus(r["mean_points"], 3)
+        rows.append(f"| {r['label']} | {r['decks_with_the_need']:,} | {mean} | {worth({'to_quality': r['ratio_to_quality'], 'ci95': r['ratio_ci95']})} |")
+    return "\n".join(head + rows)
+
+
 def table_synergy_coverage() -> str:
     cat = load(ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json")["cards"]
     syn = load(ROOT / "packages" / "game-data" / "data" / "synergy.sts2-main-0.107.1.json")
@@ -383,7 +405,7 @@ def table_synergy_coverage() -> str:
 
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
 }
@@ -400,6 +422,7 @@ BLOCKS = {
     "synergy_coverage": table_synergy_coverage,
     "synergy_b1": table_synergy_b1,
     "synergy_cohorts": table_synergy_cohorts,
+    "synergy_mechanics": table_synergy_mechanics,
 }
 
 
