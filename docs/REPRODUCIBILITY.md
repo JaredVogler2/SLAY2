@@ -214,10 +214,15 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `ladder-random_legal-ironclad-a0-first_run-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `570dd90b3617…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `77b084b95fbf…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n2000` | random_legal | Ironclad | train · 2000 | 1999 | 0 | `3ab5c4052170…` | dirty | – | predates |
+| `neow-explore-defect-a0-keeprelics-train-n3000` | rules_v2_neow | Defect | train · 3000 | 2913 | 106 | `ee3e02278d4d…` | clean | – | yes |
 | `neow-explore-defect-a0-train-n3000` | rules_v2_neow | Defect | train · 3000 | 2991 | 18 | `38518f7ff41b…` | clean | wins,sample | yes |
+| `neow-explore-ironclad-a0-keeprelics-train-n3000` | rules_v2_neow | Ironclad | train · 3000 | 2879 | 173 | `b68f67487356…` | clean | – | yes |
 | `neow-explore-ironclad-a0-train-n3000` | rules_v2_neow | Ironclad | train · 3000 | 2984 | 13 | `212359e9bd5f…` | clean | wins,sample | yes |
+| `neow-explore-necrobinder-a0-keeprelics-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2931 | 0 | `933b49fb8296…` | clean | – | yes |
 | `neow-explore-necrobinder-a0-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2995 | 0 | `71bcd527e5ec…` | clean | sample | yes |
+| `neow-explore-regent-a0-keeprelics-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2907 | 10 | `2d1000bac89a…` | clean | – | yes |
 | `neow-explore-regent-a0-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2964 | 0 | `c5d25c54549d…` | clean | sample | yes |
+| `neow-explore-silent-a0-keeprelics-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2981 | 0 | `80dc39cb3013…` | clean | – | yes |
 | `neow-explore-silent-a0-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2999 | 0 | `4367f6c6b434…` | clean | sample | yes |
 | `r4dev-defect-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Defect | dev · 500 | 495 | 0 | `60fa2da8fc3c…` | clean | sample | yes |
 | `r4dev-defect-relics-keeprelics-dev-o500-n500` | advisor_v1 | Defect | dev · 500 | 495 | 0 | `d0cc2525c1eb…` | clean | sample | yes |
