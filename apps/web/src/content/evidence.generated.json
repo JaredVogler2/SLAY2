@@ -86,6 +86,2945 @@
   ],
   "reports": [
     {
+      "id": "advisor_v1-d0-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "synergy": 0
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 15.56,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 650,
+        "1": 350
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 164
+        },
+        {
+          "id": "VANTOM",
+          "n": 127
+        },
+        {
+          "id": "TUNNELER",
+          "n": 80
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 74
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 57
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.71,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "5f28f56c474d99d8c3c8532fa5af82789e8565d4b6984321c4ce6d4bf930adce",
+      "episodesGzSha256": "86a5aeb423dc0afbcd76ba32ee7740293b253b48ad2917ac91156f64173ebf1a",
+      "finished": "2026-10-26T23:31:07+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d0-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "synergy": 0
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 999,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 999,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.003830574401273301
+      ],
+      "meanFloor": 17.24,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 609,
+        "1": 371,
+        "2": 19
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 153
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 149
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 103
+        },
+        {
+          "id": "TUNNELER",
+          "n": 76
+        },
+        {
+          "id": "FOGMOG",
+          "n": 58
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.55,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "1e80771827ca4d6ceb283104f8167ba106028560342bd168664810cd93b9e979",
+      "episodesGzSha256": "f5a555b0216ce50a28180c727a77d7124a55f59681384c806ad2c38ad476a883",
+      "finished": "2026-10-26T23:17:42+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d0-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "synergy": 0
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 15.58,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 647,
+        "1": 353
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 136
+        },
+        {
+          "id": "VANTOM",
+          "n": 133
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 62
+        },
+        {
+          "id": "TUNNELER",
+          "n": 56
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 53
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.16,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "5723808d69b990dc251e0f174bd6e6e03af73b8970d4a0077db642f768bf90b6",
+      "episodesGzSha256": "f60ac60c50a6216069e2101ab2e12e12bea176fe81600e1cc629b1530b1e8261",
+      "finished": "2026-10-26T23:28:07+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d0-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "synergy": 0
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 998,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 2,
+        "win": 0
+      },
+      "completed": 998,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038343979347950437
+      ],
+      "meanFloor": 12.68,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 884,
+        "1": 114
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 155
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 140
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 86
+        },
+        {
+          "id": "FOGMOG",
+          "n": 83
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 39
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.78,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "3a98dbe91d0186eab72a7003ba3ed2291caab8b2e5ab4b11cff8e7cb9e977126",
+      "episodesGzSha256": "0b2e668129af2266fabd479a89ae6c73b07e763d4e4a4334616d4edb27ddc2a3",
+      "finished": "2026-10-26T23:23:13+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d0-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "synergy": 0
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 12.41,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 937,
+        "1": 63
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 162
+        },
+        {
+          "id": "VANTOM",
+          "n": 148
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 90
+        },
+        {
+          "id": "FOGMOG",
+          "n": 88
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 43
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.52,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "165d8631ec0d88e668906eaaa4dd586cfb9ba09e2eaab3d7fc174013e71fed3f",
+      "episodesGzSha256": "88ddc73deb317b048ac82a2567dd7870cb399b41e27a28330ce5dfa204b78e15",
+      "finished": "2026-10-26T23:19:55+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d1-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.58,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 550,
+        "1": 450
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 136
+        },
+        {
+          "id": "VANTOM",
+          "n": 103
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 87
+        },
+        {
+          "id": "TUNNELER",
+          "n": 87
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 75
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.16,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "c8bd5abc57f783173ddca22b5861840bf4f612f6df75eb77c90994e8a1708a01",
+      "episodesGzSha256": "bc760593d51253dacbfc7523271e8e3215019b41abf960c1e313f3c6d2780db7",
+      "finished": "2026-10-26T23:54:38+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d1-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 18.71,
+      "medianFloor": 17,
+      "deathsByAct": {
+        "0": 497,
+        "1": 475,
+        "2": 28
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 146
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 128
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 89
+        },
+        {
+          "id": "TUNNELER",
+          "n": 84
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 63
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.75,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "913967cb9d65ed0f7c3679f36a194230bc993385cf3dc092e3925a8cf5aefdbc",
+      "episodesGzSha256": "5ea3bb547b14dd664d6b899bf6df9bd95d2590eb238dc6bd449aea27d7b6a180",
+      "finished": "2026-10-26T23:34:19+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d1-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.37,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 600,
+        "1": 398,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 133
+        },
+        {
+          "id": "VANTOM",
+          "n": 130
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 58
+        },
+        {
+          "id": "TUNNELER",
+          "n": 53
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 48
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.2,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "e75a16dc7d69cb623e2bf1892d81fe6f735ae30be84ed6e693cd3904048cf739",
+      "episodesGzSha256": "3d6a421bbb08f2421a1e22210188cd1ab7059b84c48857dc12a421835b2c0399",
+      "finished": "2026-10-26T23:49:44+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d1-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 994,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 5,
+        "win": 0
+      },
+      "completed": 994,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038497687049746138
+      ],
+      "meanFloor": 13.91,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 801,
+        "1": 192,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 164
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 150
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 91
+        },
+        {
+          "id": "FOGMOG",
+          "n": 63
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 41
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.06,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "316dc3545c5d9abd3358e7ee672581a29798b6e205072233a9fdb04c0ddfa6be",
+      "episodesGzSha256": "c4510bd16b6d62a65e9d3bbd1a86a41808ffafdaccfa3077a82f821c98d45ea8",
+      "finished": "2026-10-26T23:44:39+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d1-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 12.68,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 918,
+        "1": 82
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 168
+        },
+        {
+          "id": "VANTOM",
+          "n": 141
+        },
+        {
+          "id": "FOGMOG",
+          "n": 93
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 84
+        },
+        {
+          "id": "KIN_FOLLOWER,KIN_PRIEST",
+          "n": 53
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.39,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "575627368adcda9dcabcc9d1792ea8e78ac2add15d9e0c8de569363b35fadcd8",
+      "episodesGzSha256": "3664cc715746018b0542033c549864cb1b181167d06df616d2f3ee8671334597",
+      "finished": "2026-10-26T23:40:11+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d2-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.25,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.41,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 573,
+        "1": 427
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 144
+        },
+        {
+          "id": "VANTOM",
+          "n": 110
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 81
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 78
+        },
+        {
+          "id": "TUNNELER",
+          "n": 73
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.72,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "23d4abc982fcd0e66eb1e99e56f7dc6e03ed8755b655feafb29598fcd764b786",
+      "episodesGzSha256": "4510b5b9dcf228d96b9d8eaa009bd8214abf0f9bf762e35afdc64dda865c7e51",
+      "finished": "2026-10-27T00:15:55+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d2-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.25,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 18.44,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 523,
+        "1": 454,
+        "2": 23
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 145
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 132
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 100
+        },
+        {
+          "id": "TUNNELER",
+          "n": 80
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 50
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.36,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "cefc89ef2433a1bed3bd7c4dce7f36935e28ed134f047b764fe466c67d8b0d92",
+      "episodesGzSha256": "4fd1446e29f79ba44d6bd139442ede5598754e37ae786f54db112e0c6a62b562",
+      "finished": "2026-10-27T00:00:22+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d2-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.25,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.41,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 599,
+        "1": 400,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 131
+        },
+        {
+          "id": "VANTOM",
+          "n": 131
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 57
+        },
+        {
+          "id": "TUNNELER",
+          "n": 52
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 49
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.59,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "2018a3a35cafa72b342c048af3f35bc9e47a9624315cf9a20f0b38cf9d67acea",
+      "episodesGzSha256": "3399cc81c827edb9e44143bc1e58a8fd06344faaee84f3fd3911591697877299",
+      "finished": "2026-10-27T00:08:17+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d2-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.25,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 997,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 3,
+        "win": 0
+      },
+      "completed": 997,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.003838229108954549
+      ],
+      "meanFloor": 13.68,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 823,
+        "1": 173,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 162
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 139
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 91
+        },
+        {
+          "id": "FOGMOG",
+          "n": 65
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 38
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.6,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "f907859e574d82d536a20e316b3ea3d0e6372abfb528a447cb19ceb4f8e9d16d",
+      "episodesGzSha256": "a24f3afb2174b77f066ce2cf70d09a6207e34148097862f04003bcec5282160b",
+      "finished": "2026-10-27T00:05:46+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d2-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.25,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 12.62,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 913,
+        "1": 87
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 165
+        },
+        {
+          "id": "VANTOM",
+          "n": 142
+        },
+        {
+          "id": "FOGMOG",
+          "n": 90
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 75
+        },
+        {
+          "id": "KIN_FOLLOWER,KIN_PRIEST",
+          "n": 57
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.67,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "cab50f3f702e1a75fa506be4de7b7e945eb09267b4248bcd2c3f14c3010a3166",
+      "episodesGzSha256": "192772963e37eb56213522d1f2d66ace3703f2338d9d0945f6353f574b20d247",
+      "finished": "2026-10-27T00:03:13+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d3-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.14,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 593,
+        "1": 407
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 148
+        },
+        {
+          "id": "VANTOM",
+          "n": 112
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 80
+        },
+        {
+          "id": "TUNNELER",
+          "n": 76
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 75
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.8,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "4175c609d40254949bcaf9a77c88198c012f4abd5f55ee97c90c73afd2a2712b",
+      "episodesGzSha256": "b51273e01e77a4b22108746fd74700d410c7d4877583bd4f9477ec5fd0d9a372",
+      "finished": "2026-10-27T00:30:38+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d3-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 18.02,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 549,
+        "1": 430,
+        "2": 21
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 149
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 129
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 96
+        },
+        {
+          "id": "TUNNELER",
+          "n": 78
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 50
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.71,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "d100fd5f42ba920ca2885560b15eb6ca6b7e109b0a15bf37ee3ec60b96b31b1c",
+      "episodesGzSha256": "b2de8890a7ae80a99c507fdcd221e3195afd7ddcf677d95bd38466163fda3797",
+      "finished": "2026-10-27T00:18:55+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d3-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.14,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 606,
+        "1": 392,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 129
+        },
+        {
+          "id": "VANTOM",
+          "n": 128
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 60
+        },
+        {
+          "id": "TUNNELER",
+          "n": 48
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 47
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.75,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "0ad147d050d25f4942473baa31ebacf0af6b762382441af4891ec91fdbc512ed",
+      "episodesGzSha256": "7c743dbe09c92bd59534a0393336ca24823a8924e9359a0d41825f2020be6f91",
+      "finished": "2026-10-27T00:27:17+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d3-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 997,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 3,
+        "win": 0
+      },
+      "completed": 997,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.003838229108954549
+      ],
+      "meanFloor": 13.34,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 828,
+        "1": 169
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 159
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 135
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 82
+        },
+        {
+          "id": "FOGMOG",
+          "n": 79
+        },
+        {
+          "id": "KIN_FOLLOWER,KIN_PRIEST",
+          "n": 38
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.6,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "1e8738b91c5995cf3e86821ff1bd6d73c74bd94aca0f8d5d563aa09305e05afc",
+      "episodesGzSha256": "b08c1b79a31097e772ef9c2c4fd25ea3ae61b54744c3342eadb214144b02ed14",
+      "finished": "2026-10-27T00:24:06+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d3-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 12.53,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 926,
+        "1": 74
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 168
+        },
+        {
+          "id": "VANTOM",
+          "n": 145
+        },
+        {
+          "id": "FOGMOG",
+          "n": 96
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 84
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 52
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.63,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "238c6dc184a7a9d8aa8d9f63db153e2c321a04b1a242bc8302a0a4162c481ae9",
+      "episodesGzSha256": "4165a7f861ecf5ad0f2bca31662039be03c81b052620178bec224ab3e1dba646",
+      "finished": "2026-10-27T00:21:35+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d4-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 1,
+        "needs": 1,
+        "scalers": 1
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 15.77,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 616,
+        "1": 383,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 147
+        },
+        {
+          "id": "VANTOM",
+          "n": 122
+        },
+        {
+          "id": "TUNNELER",
+          "n": 79
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 76
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 66
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.66,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "bcbc55e4c56cf05d3189b29e37236302fefaf35109bd873488ed8a4cebbdc9ec",
+      "episodesGzSha256": "2f81c5e17d2a1e31dbcd343c53f7e0ef977c8ff0a8abbd34d1ae9b96a482ec99",
+      "finished": "2026-10-27T00:44:14+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d4-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 1,
+        "needs": 1,
+        "scalers": 1
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 17.38,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 579,
+        "1": 405,
+        "2": 16
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 150
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 139
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 100
+        },
+        {
+          "id": "TUNNELER",
+          "n": 72
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 56
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.66,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "d0f237c1292b409fadb2042d35ba7757a4addb5166f7e089798ab133d5ea6424",
+      "episodesGzSha256": "7d4573330eed3ea7656d600066e0919f5c0905642bb48b441755edb192e13594",
+      "finished": "2026-10-27T00:33:27+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d4-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 1,
+        "needs": 1,
+        "scalers": 1
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 15.87,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 634,
+        "1": 364,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 134
+        },
+        {
+          "id": "VANTOM",
+          "n": 128
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 59
+        },
+        {
+          "id": "TUNNELER",
+          "n": 56
+        },
+        {
+          "id": "FOGMOG",
+          "n": 43
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.7,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "d85ac84b3e6c1c3618c3fa40d9f2c0444e60c8264396cbd93c42aae12d797241",
+      "episodesGzSha256": "97493a812d19c6a0cdafb6324f27a008b1dbabf57132f73f95c180196e9d746d",
+      "finished": "2026-10-27T00:41:27+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d4-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 1,
+        "needs": 1,
+        "scalers": 1
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 998,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 2,
+        "win": 0
+      },
+      "completed": 998,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038343979347950437
+      ],
+      "meanFloor": 12.82,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 862,
+        "1": 136
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 154
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 139
+        },
+        {
+          "id": "FOGMOG",
+          "n": 83
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 80
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 49
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.59,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "a8706cfdebb22b163c19e98170206b094d8246eecb3621b00aa8584c4bd63666",
+      "episodesGzSha256": "e8368edcdd93ccb5dc15cdd72afe5ee7705b89dff775c75d1f7e284128ba32df",
+      "finished": "2026-10-27T00:38:30+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-d4-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 1,
+        "needs": 1,
+        "scalers": 1
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 12.28,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 946,
+        "1": 54
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 168
+        },
+        {
+          "id": "VANTOM",
+          "n": 143
+        },
+        {
+          "id": "FOGMOG",
+          "n": 92
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 80
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 53
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.6,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "3e803f61d067a1a830afa04b18c3f32360c835577fbc0a8e1c355f8e7a722fff",
+      "episodesGzSha256": "6a2183ef5d3e0d96566774c0253d5d3be49725d1cc4f46f43ea022ab0d379436",
+      "finished": "2026-10-27T00:36:00+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m1-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 1.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 15.92,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 625,
+        "1": 373,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 156
+        },
+        {
+          "id": "VANTOM",
+          "n": 132
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 85
+        },
+        {
+          "id": "TUNNELER",
+          "n": 83
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 69
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.91,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "9cdd4b0cf61dd0da6602ab8d3d7b8f29c8d91d3bddce384bc11018404826bdbc",
+      "episodesGzSha256": "ac332b906525bda18133e1a00c7ecd7624e37f7fa91d777aefdd6430cab30543",
+      "finished": "2026-10-27T01:02:39+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m1-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 1.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 18.57,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 533,
+        "1": 432,
+        "2": 35
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 148
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 143
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 104
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 67
+        },
+        {
+          "id": "TUNNELER",
+          "n": 61
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.74,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "f559f006e1899044976c4968c7abd3f290ffa46ef9f4508a55597c6956948f79",
+      "episodesGzSha256": "7437dba345fe2aa5ccb74c2480aededcf62e53d0dba190d02ddb7c4f13b712c8",
+      "finished": "2026-10-27T00:48:27+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m1-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 1.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 16.23,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 632,
+        "1": 363,
+        "2": 5
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 139
+        },
+        {
+          "id": "VANTOM",
+          "n": 137
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 61
+        },
+        {
+          "id": "TUNNELER",
+          "n": 41
+        },
+        {
+          "id": "FOGMOG",
+          "n": 40
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.1,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "bdea570cf1693bbff7706ef354f363fe6ebed9bbd8a74766ea6a07c40b4eb3db",
+      "episodesGzSha256": "99a4281f0e61bbead221f7e38bbae7e033fe39eea4f920256cb940aeb924c853",
+      "finished": "2026-10-27T00:58:48+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m1-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 1.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 994,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 6,
+        "win": 0
+      },
+      "completed": 994,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038497687049746138
+      ],
+      "meanFloor": 13.79,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 815,
+        "1": 179
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 167
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 147
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 92
+        },
+        {
+          "id": "FOGMOG",
+          "n": 70
+        },
+        {
+          "id": "TUNNELER",
+          "n": 38
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.71,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "a58f0b142f00f24ca2701cf1324761aff16c2d1ff0096c58c9744e3c08c58729",
+      "episodesGzSha256": "1a5ab1a9fd64d8cbb15adbeb9bb3e4f385569997767c1f09b741ee47743af032",
+      "finished": "2026-10-27T00:54:10+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m1-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 1.5,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 12.53,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 919,
+        "1": 81
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 166
+        },
+        {
+          "id": "VANTOM",
+          "n": 144
+        },
+        {
+          "id": "FOGMOG",
+          "n": 93
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 76
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 53
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.64,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "744d7b2eb54e9e0f2a3bf19ca50b497429e27b9a05a0145a90c6c052a67af29a",
+      "episodesGzSha256": "0c85640e8575015d383802b714b25372c2531f6a660e743adbab8885e69ea772",
+      "finished": "2026-10-27T00:51:09+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m2-defect-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 3,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 14.09,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 798,
+        "1": 200,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 171
+        },
+        {
+          "id": "VANTOM",
+          "n": 152
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 81
+        },
+        {
+          "id": "TUNNELER",
+          "n": 54
+        },
+        {
+          "id": "FOGMOG",
+          "n": 42
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.36,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "d01b205c5e0dd67c18454717e1c1222feb75dbbb24dc5c694176602d203a9fb6",
+      "episodesGzSha256": "449f4cbc297247001f9868d16a1d2c4a92b22484d9d7ae0010102e318a458a1b",
+      "finished": "2026-10-27T01:21:03+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m2-ironclad-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 3,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 998,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 2
+      },
+      "completed": 1000,
+      "winRate": 0.002,
+      "winRateWilson95": [
+        0.0005486435881207267,
+        0.007262807863492175
+      ],
+      "meanFloor": 15.7,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 703,
+        "1": 278,
+        "2": 19
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 165
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 137
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 100
+        },
+        {
+          "id": "FOGMOG",
+          "n": 96
+        },
+        {
+          "id": "TUNNELER",
+          "n": 50
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.7,
+      "winsAudit": {
+        "audited": 2,
+        "verified": 2,
+        "seeds": [
+          47233674,
+          925182139
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "49f8cf39d1ab793361c879d62f3ceb3f3fbae4ab4b17005587f1742c348d1f0e",
+      "episodesGzSha256": "4535d207d8c9d41a5e3b4350a62ce48f51f873eb34d00f208edbc6dcd9afc493",
+      "finished": "2026-10-27T01:05:37+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m2-necrobinder-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 3,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 1000,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 1000,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0038267584855551217
+      ],
+      "meanFloor": 14.41,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 768,
+        "1": 229,
+        "2": 3
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 152
+        },
+        {
+          "id": "VANTOM",
+          "n": 151
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 64
+        },
+        {
+          "id": "FOGMOG",
+          "n": 55
+        },
+        {
+          "id": "CUBEX_CONSTRUCT",
+          "n": 42
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.01,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp"
+      ],
+      "contentSha256": "c0903f12fb93d3e6062a9c9c5addbb2d387b572438e34b9f418c6384104f1955",
+      "episodesGzSha256": "e1c4bec4b72b91cdddf558f947deda867fd5b8d3eedb76db96ae95cdb6243c9e",
+      "finished": "2026-10-27T01:15:21+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m2-regent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 3,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 997,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 3,
+        "win": 0
+      },
+      "completed": 997,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.003838229108954549
+      ],
+      "meanFloor": 12.12,
+      "medianFloor": 14,
+      "deathsByAct": {
+        "0": 913,
+        "1": 83,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 136
+        },
+        {
+          "id": "VANTOM",
+          "n": 136
+        },
+        {
+          "id": "FOGMOG",
+          "n": 109
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 76
+        },
+        {
+          "id": "CUBEX_CONSTRUCT",
+          "n": 44
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.64,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "67109e933bab5eda763a88d507eed67a83baef236d0b787d36d1df77c500d160",
+      "episodesGzSha256": "66f909f90f78465b75c81a8961e4bc5829f96f29a907575064090e3eac064d88",
+      "finished": "2026-10-27T01:11:04+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "advisor_v1-m2-silent-a0-veteran-dev-o4000-n1000",
+      "policy": "advisor_v1",
+      "policyParams": {
+        "engines": 0,
+        "margin": 3,
+        "needs": 1,
+        "scalers": 0.7
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 1000,
+      "counts": {
+        "aborted": 0,
+        "death": 999,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 999,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.003830574401273301
+      ],
+      "meanFloor": 11.01,
+      "medianFloor": 12,
+      "deathsByAct": {
+        "0": 963,
+        "1": 36
+      },
+      "topKillers": [
+        {
+          "id": "FOGMOG",
+          "n": 134
+        },
+        {
+          "id": "VANTOM",
+          "n": 123
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 111
+        },
+        {
+          "id": "FUZZY_WURM_CRAWLER",
+          "n": 68
+        },
+        {
+          "id": "CUBEX_CONSTRUCT",
+          "n": 54
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.65,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": null,
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal"
+      ],
+      "contentSha256": "e9c687c6f97fa8e920cada9eb2bf2430871d251c47d1af889b4ef6578ef80c8c",
+      "episodesGzSha256": "400db8cc824ca31c7452144ac5cb7e6e5de60432838aaab59fc89b802deac36c",
+      "finished": "2026-10-27T01:08:22+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
       "id": "g13-necrobinder-base-dev-n500",
       "policy": "rules_v2",
       "policyParams": {
