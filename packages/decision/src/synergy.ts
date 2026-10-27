@@ -2,7 +2,11 @@ import {
   MECHANICS,
   MECHANIC_IDS,
   benefitsFrom,
+  getRelic,
   innateSupply,
+  relicSupply,
+  relicTags,
+  resolveRelics,
   synergyTags,
   type CardEntry,
   type MechanicId,
@@ -83,14 +87,36 @@ export function emptySupply(): Record<MechanicId, number> {
   return Object.fromEntries(MECHANIC_IDS.map((m) => [m, 0])) as Record<MechanicId, number>;
 }
 
-/** What the deck supplies of each mechanic: the class's starting relic (always there) and every card's `gives`, per copy. */
+/**
+ * What a run has besides the cards of its deck: the class (its starting relic supplies some mechanics) and the relics it has taken
+ * since, which stay for the rest of the run (their tags are SLAY2's judgement and are not yet tested in simulation, ADR-051).
+ */
+export interface Setting {
+  readonly character: PlayableClass | null;
+  readonly relics: readonly string[];
+}
+
+/** A class on its own (what the index always took) or the whole setting. */
+export type SettingInput = PlayableClass | Setting | null | undefined;
+
+export function settingOf(input: SettingInput): Setting {
+  if (input === null || input === undefined) return { character: null, relics: [] };
+  return typeof input === "string" ? { character: input, relics: [] } : input;
+}
+
+/**
+ * What the deck supplies of each mechanic: the class's starting relic (always there), the relics taken since, and every card's
+ * `gives`, per copy.
+ */
 export function supplyOf(
   entries: readonly DeckEntry[],
-  character?: PlayableClass | null,
+  input?: SettingInput,
 ): Record<MechanicId, number> {
+  const { character, relics } = settingOf(input);
   const supply = emptySupply();
   const innate = innateSupply(character)?.gives ?? {};
-  for (const m of MECHANIC_IDS) supply[m] += innate[m] ?? 0;
+  const fromRelics = relicSupply(relics);
+  for (const m of MECHANIC_IDS) supply[m] += (innate[m] ?? 0) + fromRelics[m];
   for (const { card, count } of entries) {
     const gives = synergyTags(card).gives;
     for (const m of MECHANIC_IDS) {
@@ -187,9 +213,9 @@ export function realizedOf(card: CardEntry, supply: Supply, actIndex: 0 | 1 | 2)
 export function realizedMass(
   entries: readonly DeckEntry[],
   actIndex: 0 | 1 | 2,
-  character?: PlayableClass | null,
+  setting?: SettingInput,
 ): number {
-  const supply = supplyOf(entries, character);
+  const supply = supplyOf(entries, setting);
   let mass = 0;
   for (const { card, count } of entries) {
     const r = realizedOf(card, supply, actIndex);
@@ -218,10 +244,10 @@ export function engineValue(
 
 export function enginesOf(
   entries: readonly DeckEntry[],
-  character?: PlayableClass | null,
+  setting?: SettingInput,
   weighted = true,
 ): Record<MechanicId, number> {
-  const supply = supplyOf(entries, character);
+  const supply = supplyOf(entries, setting);
   const payoff = payoffMassOf(entries);
   return Object.fromEntries(
     MECHANIC_IDS.map((m) => [m, engineValue(m, supply[m], payoff[m], weighted)]),
@@ -232,11 +258,11 @@ export function enginesOf(
 export function synergyOf(
   entries: readonly DeckEntry[],
   actIndex: 0 | 1 | 2,
-  character?: PlayableClass | null,
+  setting?: SettingInput,
 ): number {
-  const engines = enginesOf(entries, character);
+  const engines = enginesOf(entries, setting);
   return (
-    realizedMass(entries, actIndex, character) / SYNERGY_CARDS +
+    realizedMass(entries, actIndex, setting) / SYNERGY_CARDS +
     MECHANIC_IDS.reduce((acc, m) => acc + engines[m], 0)
   );
 }
@@ -300,15 +326,26 @@ function ranked(
     .map((s) => s.name);
 }
 
-/** Who supplies a mechanic, best first: the class's starting relic when it does, then the cards of the deck. */
+/**
+ * Who supplies a mechanic, best first: the class's starting relic when it does, the relics taken since, then the cards of the deck.
+ */
 function suppliersOf(
   entries: readonly DeckEntry[],
   mechanic: MechanicId,
-  character: PlayableClass | null | undefined,
+  input: SettingInput,
 ): string[] {
+  const { character, relics } = settingOf(input);
   const innate = innateSupply(character);
-  const relic = innate && (innate.gives[mechanic] ?? 0) > 0 ? [innate.relic] : [];
-  return [...relic, ...ranked(entries, (c) => synergyTags(c).gives[mechanic] ?? 0)].slice(0, 4);
+  const start = innate && (innate.gives[mechanic] ?? 0) > 0 ? [innate.relic] : [];
+  const taken = resolveRelics(relics)
+    .known.map((id) => ({ name: getRelic(id)?.name ?? id, g: relicTags(id).gives[mechanic] ?? 0 }))
+    .filter((r) => r.g > 0)
+    .sort((a, b) => b.g - a.g || (a.name < b.name ? -1 : 1))
+    .map((r) => r.name);
+  return [...start, ...taken, ...ranked(entries, (c) => synergyTags(c).gives[mechanic] ?? 0)].slice(
+    0,
+    4,
+  );
 }
 
 /** What adding one copy of `card` does to the synergy, split into its own needs, its support for others and the engines. */
@@ -317,10 +354,10 @@ export function explainAddition(
   card: CardEntry,
   actIndex: 0 | 1 | 2,
   withCardEntries: readonly DeckEntry[],
-  character?: PlayableClass | null,
+  setting?: SettingInput,
 ): SynergyExplanation {
-  const before = supplyOf(entries, character);
-  const after = supplyOf(withCardEntries, character);
+  const before = supplyOf(entries, setting);
+  const after = supplyOf(withCardEntries, setting);
   const partners: Partner[] = [];
   let support = 0;
   for (const { card: d, count } of entries) {
@@ -344,20 +381,20 @@ export function explainAddition(
     mechanic,
     label: MECHANICS[mechanic].label,
     weight,
-    suppliers: suppliersOf(withCardEntries, mechanic, character).map((n) =>
+    suppliers: suppliersOf(withCardEntries, mechanic, setting).map((n) =>
       n === card.name ? "itself" : n,
     ),
   }));
-  const e0 = enginesOf(entries, character);
-  const e1 = enginesOf(withCardEntries, character);
-  const j0 = enginesOf(entries, character, false);
-  const j1 = enginesOf(withCardEntries, character, false);
+  const e0 = enginesOf(entries, setting);
+  const e1 = enginesOf(withCardEntries, setting);
+  const j0 = enginesOf(entries, setting, false);
+  const j1 = enginesOf(withCardEntries, setting, false);
   const everyChange = MECHANIC_IDS.map((m) => ({
     mechanic: m,
     label: MECHANICS[m].label,
     delta: e1[m] - e0[m],
     judged: j1[m] - j0[m],
-    sources: suppliersOf(withCardEntries, m, character),
+    sources: suppliersOf(withCardEntries, m, setting),
     payoffs: ranked(withCardEntries, (c) => synergyTags(c).wants[m] ?? 0),
   }));
   // the sum is over every mechanic, so that the parts add up to the change in the deck's synergy exactly; only the list that is
@@ -409,12 +446,12 @@ export interface DeckSynergy {
 export function deckSynergy(
   entries: readonly DeckEntry[],
   actIndex: 0 | 1 | 2,
-  character?: PlayableClass | null,
+  setting?: SettingInput,
 ): DeckSynergy {
-  const supply = supplyOf(entries, character);
+  const supply = supplyOf(entries, setting);
   // what the deck is building is shown as first judged: the index may count little or none of an engine, but a player still wants
   // to see which cards feed which
-  const values = enginesOf(entries, character, false);
+  const values = enginesOf(entries, setting, false);
   const engines: DeckEngine[] = MECHANIC_IDS.filter((m) => values[m] >= 0.5)
     .sort((a, b) => values[b] - values[a])
     .slice(0, 4)
@@ -422,7 +459,7 @@ export function deckSynergy(
       mechanic: m,
       label: MECHANICS[m].label,
       value: values[m],
-      sources: suppliersOf(entries, m, character),
+      sources: suppliersOf(entries, m, setting),
       payoffs: ranked(entries, (c) => synergyTags(c).wants[m] ?? 0),
     }));
   const waiting: WaitingCard[] = [];
@@ -436,10 +473,10 @@ export function deckSynergy(
       .sort((a, b) => b.w * (1 - b.s) - a.w * (1 - a.s))
       .map((n) => ({
         label: MECHANICS[n.m].label,
-        suppliers: suppliersOf(entries, n.m, character),
+        suppliers: suppliersOf(entries, n.m, setting),
       }));
     if (lacking.length > 0) waiting.push({ name: card.name, count, lacking, heldBack: r.heldBack });
   }
   waiting.sort((a, b) => b.heldBack - a.heldBack || (a.name < b.name ? -1 : 1));
-  return { total: synergyOf(entries, actIndex, character), engines, waiting: waiting.slice(0, 5) };
+  return { total: synergyOf(entries, actIndex, setting), engines, waiting: waiting.slice(0, 5) };
 }

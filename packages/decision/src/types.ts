@@ -9,6 +9,7 @@ export const DRAFT_SOURCES = ["regular", "elite", "boss", "shop", "event"] as co
 export const RISK_PREFERENCES = ["safe", "balanced", "aggressive"] as const;
 
 const CardIdSchema = z.string().regex(/^[A-Z0-9_]{1,64}$/, "card id must be UPPER_SNAKE_CASE");
+const RelicIdSchema = z.string().regex(/^[A-Z0-9_]{1,64}$/, "relic id must be UPPER_SNAKE_CASE");
 
 export const DraftRequestSchema = z.strictObject({
   build: BuildIdSchema,
@@ -20,6 +21,12 @@ export const DraftRequestSchema = z.strictObject({
     .min(1, "the deck must contain at least one card (start from the starter deck)")
     .max(120),
   offered: z.array(CardIdSchema).min(1).max(5),
+  /**
+   * The relics the run holds, by catalog id (the starting relic is already counted). A relic that provides a mechanic counts as a
+   * supplier of it, like a card that provides it (ADR-051); SLAY2's reading of what a relic provides is a judgement, not yet tested
+   * in simulation, and what a relic does beyond that is not modelled.
+   */
+  relics: z.array(RelicIdSchema).max(60).optional(),
   source: z.enum(DRAFT_SOURCES),
   riskPreference: z.enum(RISK_PREFERENCES),
   hp: z
@@ -100,6 +107,17 @@ export interface DraftResponse {
   };
   /** What the deck is building and which cards are still waiting for support: SLAY2's judgement of mechanics, not a measurement. */
   readonly deckSynergy: DeckSynergy;
+  /** The relics of the request as the index read them (absent when none were listed). */
+  readonly relics?: {
+    /** Relics whose tags supply a mechanic, with the mechanics they supply (labels). */
+    readonly supplying: readonly {
+      readonly id: string;
+      readonly name: string;
+      readonly mechanics: readonly string[];
+    }[];
+    /** Relics the catalog knows but the table has nothing to say about (the index reads nothing from them). */
+    readonly unread: readonly string[];
+  };
   /** Present when the request named an Act 1 version: what it changed. */
   readonly actContext?: {
     readonly applied: boolean;

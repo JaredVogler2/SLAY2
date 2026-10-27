@@ -19,6 +19,26 @@ function deck(character: "ironclad" | "necrobinder", ...rows: [string, number][]
 }
 
 describe("the synergy panel", () => {
+  it("names the relics it counted and says that their reading is not tested, only when there are some", () => {
+    const synergy = deck("ironclad", ["STRIKE_IRONCLAD", 5]);
+    const { rerender } = render(<SynergyPanel synergy={synergy} />);
+    expect(screen.queryByText(/Counted as suppliers here/)).toBeNull();
+    rerender(
+      <SynergyPanel
+        synergy={synergy}
+        relics={{
+          supplying: [{ id: "VAJRA", name: "Vajra", mechanics: ["Strength"] }],
+          unread: [],
+        }}
+      />,
+    );
+    const note = screen.getByText(/Counted as suppliers here/);
+    expect(note).toHaveTextContent("Vajra (Strength)");
+    expect(note).toHaveTextContent("has not been tested in simulation");
+    rerender(<SynergyPanel synergy={synergy} relics={{ supplying: [], unread: ["Anchor"] }} />);
+    expect(screen.queryByText(/Counted as suppliers here/)).toBeNull();
+  });
+
   it("lists the engines the deck has, who supplies them and who uses them", () => {
     render(
       <SynergyPanel

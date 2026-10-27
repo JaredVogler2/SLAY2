@@ -53,7 +53,7 @@ const MechanicSchema = z.strictObject({
   about: z.string().min(1),
 });
 
-const GivesSchema = z.partialRecord(
+export const GivesSchema = z.partialRecord(
   z.enum(MECHANIC_IDS),
   z
     .number()

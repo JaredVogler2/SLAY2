@@ -540,9 +540,35 @@ def table_synergy_coverage() -> str:
     return "\n".join(head + rows)
 
 
+def table_relic_reading() -> str:
+    """How the two blind readings of the relics (ADR-051) became the relic synergy table: what each reader wrote, where they agreed, and
+    what the reconciliation rule kept and left out. Read from the committed readings and from the table's own record."""
+    a = load(ROOT / "experiments" / "synergy" / "relics" / "reading-a.json")
+    b = load(ROOT / "experiments" / "synergy" / "relics" / "reading-b.json")
+    table = load(ROOT / "packages" / "game-data" / "data" / "relic-synergy.sts2-main-0.107.1.json")
+    st = table["provenance"]["reconciliation"]
+    both = sorted(set(a["tagged"]) & set(b["tagged"]))
+    only_a, only_b = set(a["tagged"]) - set(b["tagged"]), set(b["tagged"]) - set(a["tagged"])
+    same = sum(1 for i in both if a["tagged"][i] == b["tagged"][i])
+    same_g = sum(1 for i in both if set(a["tagged"][i].get("g", {})) == set(b["tagged"][i].get("g", {})))
+    rows = [
+        ("Relics in the catalog", st["relics"]),
+        ("Tagged by reader A / by reader B", f"{len(a['tagged'])} / {len(b['tagged'])}"),
+        ("Tagged by both / by A only / by B only / by neither", f"{len(both)} / {len(only_a)} / {len(only_b)} / {st['relics'] - len(both) - len(only_a) - len(only_b)}"),
+        ("Of those tagged by both: identical in what they provide and depend on", f"{same} of {len(both)}"),
+        ("Of those tagged by both: the same mechanics provided", f"{same_g} of {len(both)}"),
+        ("Marked unsure by A / by B", f"{len(a['unsure'])} / {len(b['unsure'])}"),
+        ("Mechanics both readers wrote, same magnitude / one step apart (the lower is kept)", f"{st['agreed_exactly']} / {st['lower_magnitude_taken']}"),
+        ("Mechanics only one reader wrote, kept / left out (each with its reason)", f"{st['one_reader_kept']} / {st['one_reader_dropped']}"),
+        ("Starting relics and their upgrades (counted by the card table's innate supply)", st["starters_skipped"]),
+        ("**Relics with an entry in the table**", f"**{st['tagged']}**"),
+    ]
+    return "\n".join(["| Reading | Count |", "|---|---|"] + [f"| {k} | {v} |" for k, v in rows])
+
+
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev", "synergy_val", "synergy_val_profile"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev", "synergy_val", "synergy_val_profile", "relic_reading"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
     REPRO: ("batches",),
@@ -565,6 +591,7 @@ BLOCKS = {
     "synergy_dev": table_synergy_dev,
     "synergy_val": table_synergy_val,
     "synergy_val_profile": table_synergy_val_profile,
+    "relic_reading": table_relic_reading,
 }
 
 

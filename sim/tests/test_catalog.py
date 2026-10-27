@@ -88,3 +88,5 @@ def test_the_data_cards_quote_the_hash_of_each_catalog():
     doc = DATA_CARDS.read_text(encoding="utf-8")
     assert load()["sha256"] in doc, "docs/MODEL-AND-DATA-CARDS.md (D2) does not quote the card catalog's hash"
     assert load_relics()["sha256"] in doc, "docs/MODEL-AND-DATA-CARDS.md (D11) does not quote the relic catalog's hash"
+    table = json.loads((RELICS.parent / "relic-synergy.sts2-main-0.107.1.json").read_text(encoding="utf-8"))
+    assert table["sha256"] in doc, "docs/MODEL-AND-DATA-CARDS.md (D12) does not quote the relic synergy table's hash"

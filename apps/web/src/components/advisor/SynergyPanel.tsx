@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PART_WEIGHT, type DeckSynergy } from "@slay2/decision";
+import { PART_WEIGHT, type DeckSynergy, type DraftResponse } from "@slay2/decision";
 
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
@@ -172,9 +172,12 @@ function Evidence({ evidence }: { evidence: SynergyEvidence }) {
  */
 export function SynergyPanel({
   synergy,
+  relics,
   evidence = SYNERGY_EVIDENCE,
 }: {
   synergy: DeckSynergy;
+  /** The relics the ranking counted as suppliers (what the answer says it read from the relics the player listed). */
+  relics?: DraftResponse["relics"];
   evidence?: SynergyEvidence;
 }) {
   const label = evidence.b2 ? LABEL[verdictOf(evidence.b2)] : "Judgement, partly checked";
@@ -187,6 +190,14 @@ export function SynergyPanel({
       aside={<Badge tone="heuristic">{label}</Badge>}
       aria-label="Synergy of your deck"
     >
+      {relics && relics.supplying.length > 0 ? (
+        <p className="mb-4 text-xs text-muted">
+          Counted as suppliers here:{" "}
+          {names(relics.supplying.map((r) => `${r.name} (${r.mechanics.join(", ")})`))}. That
+          reading of relics is a separate judgement and has not been tested in simulation: the test
+          below covers the cards.
+        </p>
+      ) : null}
       {synergy.engines.length === 0 && synergy.waiting.length === 0 ? (
         <p className="text-sm text-muted">
           No engine yet: none of your cards supply something that another card of yours needs. The

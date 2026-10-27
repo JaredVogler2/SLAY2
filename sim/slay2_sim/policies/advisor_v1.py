@@ -10,7 +10,9 @@ Everything else (map, shop, rest, events, combat, elite thresholds) is rules_v3,
 index's parameters differ only in the cards they take. The parameters are ``synergy`` (the advisor's weight for the whole synergy
 term; 0 switches it off) and ``needs`` / ``scalers`` / ``engines`` (how much of each hand-set part the index keeps, see
 ``advisor.Model``; left out, what the page keeps, ``advisor.DEFAULT_MODEL``), ``risk`` ("safe", "balanced", "aggressive"; the page's
-default is balanced) and ``margin`` (the index points a card must add over skipping to be taken; 0 is what the page does).
+default is balanced) and ``margin`` (the index points a card must add over skipping to be taken; 0 is what the page does) and ``relics`` (false: the pilot
+reads the class alone, as every batch before ADR-051 did; true: it also gives the index the relics it holds, which count as
+suppliers of the mechanics they provide, as on the page).
 
 Fair: the policy sees the deck and the offered card ids (a human sees both), the act, and the public catalog; no hidden state.
 It does not use the Act-1 version or boss the page can take as an input, so it is the page without that optional context.
@@ -36,13 +38,14 @@ class AdvisorCards:
         engines: float | None = None,
         risk: str = "balanced",
         margin: float = 0.0,
+        relics: bool = False,
         **params,
     ):
         # a part left out is what the website keeps of it (``advisor.DEFAULT_MODEL``); a study names every part it varies
         needs = advisor.DEFAULT_MODEL.needs if needs is None else needs
         scalers = advisor.DEFAULT_MODEL.scalers if scalers is None else scalers
         engines = advisor.DEFAULT_MODEL.engines if engines is None else engines
-        super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, margin=margin, **params)
+        super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, margin=margin, relics=relics, **params)
         if risk not in advisor.RISK_MULTIPLIERS:
             raise ValueError(f"unknown risk {risk!r}; known: {sorted(advisor.RISK_MULTIPLIERS)}")
         if margin < 0:
@@ -51,6 +54,7 @@ class AdvisorCards:
         self.model = advisor.Model(needs=float(needs), scalers=float(scalers), engines=float(engines))
         self.risk = risk
         self.margin = float(margin)
+        self.relics = bool(relics)
 
     def reset(self, rng_seed: int) -> None:
         super().reset(rng_seed)
@@ -73,7 +77,8 @@ class AdvisorCards:
         act = min(max(int(run["act"]), 0), 2)
         weights = advisor.base_weights(act, self.risk, self.synergy)
         character = str(run.get("character") or "").lower() or None
-        best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model, character)[0]
+        setting = advisor.Setting(character, tuple(str(r) for r in run.get("relics") or ())) if self.relics else character
+        best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model, setting)[0]
         self.offers += 1
         skip = _first(actions, "skip")
         if best == advisor.SKIP or gain < self.margin or sum(deck.values()) >= self.tune["max_deck"]:

@@ -6,6 +6,7 @@ import {
   getAct1Boss,
   getCard,
   getOpeningOption,
+  getRelic,
   starterDeck,
   startingHpAt,
   PLAYABLE_CLASSES,
@@ -28,6 +29,8 @@ export const RUN_STATE_VERSION = 2 as const;
 export const MAX_IMPORT_BYTES = 256 * 1024;
 
 const CardIdSchema = z.string().regex(/^[A-Z0-9_]{1,64}$/);
+const RelicIdSchema = z.string().regex(/^[A-Z0-9_]{1,64}$/);
+export const MAX_RELICS = 60;
 const ActSchema = z.union([z.literal(0), z.literal(1), z.literal(2)]);
 export const PackSourceSchema = z.enum(["regular", "elite", "boss", "shop", "event"]);
 export type PackSource = z.infer<typeof PackSourceSchema>;
@@ -115,6 +118,16 @@ export const RunStateSchema = z
       })
       .nullable(),
     deck: z.array(DeckEntrySchema).max(120).transform(mergeDeckRows),
+    /**
+     * The relics the player holds besides the class's starting relic, by catalog id, each once. The advisor counts the ones that
+     * supply a mechanic like the cards that supply it (ADR-051). Absent in older saves: none.
+     */
+    relics: z
+      .array(RelicIdSchema)
+      .max(MAX_RELICS)
+      .refine((ids) => ids.every((id) => getRelic(id) !== undefined), "unknown relic id")
+      .transform((ids) => [...new Set(ids)])
+      .default([]),
     /** Which Act 1 the run is in (they have different elites and bosses); null until the player says */
     act1: z.enum(ACT1_VARIANTS).nullable().default(null),
     /** The Act 1 boss shown on the map, an id of that version's bosses; null when not known */
@@ -162,6 +175,7 @@ export function newRun(character: PlayableClass | null = null, now = new Date())
     actIndex: 0,
     hp: character ? startingHpAt(character, 0) : null,
     deck: character ? starterDeck(character) : [],
+    relics: [],
     act1: null,
     act1Boss: null,
     opening: { entries: [] },
@@ -250,7 +264,26 @@ export function resetToStart(state: RunState): RunState {
     deck: starterDeck(character, state.ascension),
     hp: startingHpAt(character, state.ascension),
     opening: { entries: [] },
+    relics: [],
   };
+}
+
+/** The player holds one more relic (a catalog id, each at most once, within the limit). */
+export function withRelic(state: RunState, id: string): RunState {
+  if (
+    getRelic(id) === undefined ||
+    state.relics.includes(id) ||
+    state.relics.length >= MAX_RELICS
+  ) {
+    return state;
+  }
+  return { ...state, relics: [...state.relics, id] };
+}
+
+export function withoutRelic(state: RunState, id: string): RunState {
+  return state.relics.includes(id)
+    ? { ...state, relics: state.relics.filter((r) => r !== id) }
+    : state;
 }
 
 export function touch(state: RunState, now = new Date()): RunState {

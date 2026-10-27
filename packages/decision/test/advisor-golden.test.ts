@@ -7,7 +7,9 @@ import {
   CATALOG,
   MECHANIC_IDS,
   PLAYABLE_CLASSES,
+  RELIC_CATALOG,
   getCard,
+  relicTags,
   rewardPool,
   type CardEntry,
 } from "@slay2/game-data";
@@ -23,11 +25,13 @@ import {
   scoreTerms,
   total,
   type DeckEntry,
+  type Setting,
 } from "../src";
 
 /**
  * The deck index is also written in Python (`sim/slay2_sim/advisor.py`), so the simulator can measure it against simulated
- * runs and play card rewards by it. This file is what the TypeScript code (the original) computes for 160 fixed random decks;
+ * runs and play card rewards by it. This file is what the TypeScript code (the original) computes for 160 fixed random decks and,
+ * after them, 40 more that also hold relics (ADR-051);
  * `sim/tests/test_advisor_port.py` fails if the Python port does not reproduce every number in it, and this test fails if the
  * file is not what the code writes today. After a deliberate change to the index:
  *
@@ -35,9 +39,13 @@ import {
  */
 const FILE = join(__dirname, "golden", "advisor-index.json");
 const CASES = 160;
+/** Cases 160 to 199 hold relics too; the first 160 are exactly what they were before relics were an input. */
+const RELIC_CASES = 40;
 
 interface GoldenCase {
   readonly character: string;
+  /** Present on the cases that hold relics: catalog ids, sorted. */
+  readonly relics?: readonly string[];
   readonly actIndex: 0 | 1 | 2;
   readonly risk: "safe" | "balanced" | "aggressive";
   readonly deck: readonly (readonly [string, number])[];
@@ -72,6 +80,23 @@ function pickOne<T>(rnd: () => number, items: readonly T[]): T {
   return item;
 }
 
+/** One to six relics the class could hold (its own pool or the shared one), most of them with tags so the cases exercise them. */
+function pickRelics(rnd: () => number, character: string): string[] {
+  const eligible = RELIC_CATALOG.relics.filter(
+    (r) =>
+      r.rarity !== "starter" &&
+      r.rarity !== "none" &&
+      (r.pools.includes("shared") || r.pools.includes(character as never)),
+  );
+  const tagged = eligible.filter((r) => Object.keys(relicTags(r.id).gives).length > 0);
+  const n = 1 + Math.floor(rnd() * 6);
+  const picked = new Set<string>();
+  while (picked.size < n) {
+    picked.add(pickOne(rnd, rnd() < 0.7 && tagged.length > 0 ? tagged : eligible).id);
+  }
+  return [...picked].sort();
+}
+
 function buildCase(index: number): GoldenCase {
   const rnd = mulberry32(0x51a7 + index * 7919);
   const character = PLAYABLE_CLASSES[index % PLAYABLE_CLASSES.length] ?? "ironclad";
@@ -95,22 +120,26 @@ function buildCase(index: number): GoldenCase {
   while (offered.size < n) offered.add(pickOne(rnd, pool).id);
   const actIndex = Math.floor(rnd() * 3) as 0 | 1 | 2;
   const risk = pickOne(rnd, ["safe", "balanced", "aggressive"] as const);
+  // drawn last, so the cases before it keep the numbers they always had
+  const relics = index >= CASES ? pickRelics(rnd, character) : [];
+  const setting: Setting = { character, relics };
 
   const weights = baseWeights(actIndex, risk);
-  const profile = profileDeck(entries, actIndex, character);
+  const profile = profileDeck(entries, actIndex, setting);
   const terms = scoreTerms(profile, weights);
-  const engines = enginesOf(entries, character);
-  const enginesJudged = enginesOf(entries, character, false);
+  const engines = enginesOf(entries, setting);
+  const enginesJudged = enginesOf(entries, setting, false);
   const ranking = rankWith(
     weights,
     profile,
     entries,
     [...offered].map((id) => must(id)),
     actIndex,
-    character,
+    setting,
   );
   return {
     character,
+    ...(index >= CASES ? { relics } : {}),
     actIndex,
     risk,
     deck,
@@ -151,7 +180,10 @@ function must(id: string): CardEntry {
 }
 
 function build(): { schema: 1; cases: GoldenCase[] } {
-  return { schema: 1, cases: Array.from({ length: CASES }, (_, i) => buildCase(i)) };
+  return {
+    schema: 1,
+    cases: Array.from({ length: CASES + RELIC_CASES }, (_, i) => buildCase(i)),
+  };
 }
 
 /** Deep equality with a tolerance for numbers, naming the first path that differs. */
@@ -218,5 +250,24 @@ describe("the deck index's golden cases (the Python port is tested against them)
     expect(golden.cases.some((c) => c.profile.size > 30)).toBe(true);
     expect(golden.cases.some((c) => c.ranking[0]?.[0] === "skip")).toBe(true);
     expect(golden.cases.some((c) => c.ranking[0]?.[0] !== "skip")).toBe(true);
+  });
+
+  it("hold relics in 40 cases, most of them with tags, and the relics move the index", () => {
+    const golden = build();
+    const withRelics = golden.cases.filter((c) => c.relics !== undefined);
+    expect(withRelics).toHaveLength(RELIC_CASES);
+    expect(golden.cases.slice(0, CASES).every((c) => c.relics === undefined)).toBe(true);
+    expect(
+      withRelics.filter((c) =>
+        (c.relics ?? []).some((id) => Object.keys(relicTags(id).gives).length > 0),
+      ).length,
+    ).toBeGreaterThan(RELIC_CASES / 2);
+    // the same deck without its relics scores differently in at least some cases: the relics are not decoration
+    const moved = withRelics.filter((c) => {
+      const entries: DeckEntry[] = c.deck.map(([id, count]) => ({ card: must(id), count }));
+      const bare = profileDeck(entries, c.actIndex, c.character as never);
+      return Math.abs(bare.synergy - c.profile.synergy) > 1e-9;
+    });
+    expect(moved.length).toBeGreaterThan(0);
   });
 });

@@ -1,0 +1,535 @@
+{
+ "schema": 1,
+ "build": "sts2-main-0.107.1",
+ "provenance": {
+  "kind": "SLAY2's own judgement of what each relic provides to a deck, in the vocabulary of the card table; no relic text, art or numbers are stored (ADR-011, ADR-051)",
+  "reading": "g = what the relic provides to the deck, per mechanic: 1 minor or conditional, 2 standard, 3 major or every turn; a negative number takes the mechanic away. Two blind readings of every relic, reconciled by a written rule (experiments/synergy/relics/); built by sim/slay2_sim/relicreading.py.",
+  "retrieved": "2026-10-27",
+  "notAMeasurement": "The tags are judgements. They have not been tested in simulation (docs/DECISIONS.md, ADR-051).",
+  "reconciliation": {
+   "relics": 296,
+   "starters_skipped": 10,
+   "agreed_exactly": 95,
+   "lower_magnitude_taken": 13,
+   "one_reader_kept": 1,
+   "one_reader_dropped": 13,
+   "tagged": 101
+  }
+ },
+ "relics": {
+  "ANCHOR": {
+   "g": {
+    "block": 1
+   }
+  },
+  "ART_OF_WAR": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "BAG_OF_MARBLES": {
+   "g": {
+    "vulnerable": 1
+   }
+  },
+  "BAG_OF_PREPARATION": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "BEAUTIFUL_BRACELET": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "BELT_BUCKLE": {
+   "g": {
+    "dexterity": 1
+   }
+  },
+  "BIG_HAT": {
+   "g": {
+    "create": 1,
+    "ethereal": 2
+   }
+  },
+  "BIG_MUSHROOM": {
+   "g": {
+    "draw": -1
+   }
+  },
+  "BLESSED_ANTLER": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "BLOOD_SOAKED_ROSE": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "BONE_FLUTE": {
+   "g": {
+    "block": 1
+   }
+  },
+  "BOOMING_CONCH": {
+   "g": {
+    "draw": 1,
+    "energy": 1
+   }
+  },
+  "BREAD": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "BRIMSTONE": {
+   "g": {
+    "strength": 3
+   }
+  },
+  "BURNING_STICKS": {
+   "g": {
+    "create": 1
+   }
+  },
+  "CANDELABRA": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "CAPTAINS_WHEEL": {
+   "g": {
+    "block": 1
+   }
+  },
+  "CENTENNIAL_PUZZLE": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "CHANDELIER": {
+   "g": {
+    "energy": 2
+   }
+  },
+  "CHOICES_PARADOX": {
+   "g": {
+    "create": 1
+   }
+  },
+  "CLOAK_CLASP": {
+   "g": {
+    "block": 1
+   }
+  },
+  "CROSSBOW": {
+   "g": {
+    "create": 3
+   }
+  },
+  "DATA_DISK": {
+   "g": {
+    "focus": 3
+   }
+  },
+  "DAUGHTER_OF_THE_WIND": {
+   "g": {
+    "block": 1
+   }
+  },
+  "ECTOPLASM": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "FAKE_ANCHOR": {
+   "g": {
+    "block": 1
+   }
+  },
+  "FAKE_HAPPY_FLOWER": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "FAKE_VENERABLE_TEA_SET": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "FENCING_MANUAL": {
+   "g": {
+    "forge": 2
+   }
+  },
+  "FIDDLE": {
+   "g": {
+    "draw": 2
+   }
+  },
+  "FUNERARY_MASK": {
+   "g": {
+    "soul": 2
+   }
+  },
+  "GALACTIC_DUST": {
+   "g": {
+    "block": 1
+   }
+  },
+  "GAMBLING_CHIP": {
+   "g": {
+    "discard": 1
+   }
+  },
+  "GAME_PIECE": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "GHOST_SEED": {
+   "g": {
+    "ethereal": 2
+   }
+  },
+  "GIRYA": {
+   "g": {
+    "strength": 2
+   }
+  },
+  "GORGET": {
+   "g": {
+    "block": 1
+   }
+  },
+  "GREMLIN_HORN": {
+   "g": {
+    "draw": 1,
+    "energy": 1
+   }
+  },
+  "HAND_DRILL": {
+   "g": {
+    "vulnerable": 1
+   }
+  },
+  "HAPPY_FLOWER": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "HELICAL_DART": {
+   "g": {
+    "dexterity": 1
+   }
+  },
+  "HORN_CLEAT": {
+   "g": {
+    "block": 1
+   }
+  },
+  "ICE_CREAM": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "INTIMIDATING_HELMET": {
+   "g": {
+    "block": 1
+   }
+  },
+  "IRON_CLUB": {
+   "g": {
+    "draw": 2
+   }
+  },
+  "IVORY_TILE": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "JOSS_PAPER": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "KUNAI": {
+   "g": {
+    "dexterity": 1
+   }
+  },
+  "LANTERN": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "LUNAR_PASTRY": {
+   "g": {
+    "star": 3
+   }
+  },
+  "MINI_REGENT": {
+   "g": {
+    "strength": 2
+   }
+  },
+  "MUSIC_BOX": {
+   "g": {
+    "create": 3,
+    "ethereal": 2
+   }
+  },
+  "NINJA_SCROLL": {
+   "g": {
+    "shiv": 2
+   }
+  },
+  "NUNCHAKU": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "NUTRITIOUS_SOUP": {
+   "g": {
+    "zero_cost": 2
+   }
+  },
+  "ODDLY_SMOOTH_STONE": {
+   "g": {
+    "dexterity": 1
+   }
+  },
+  "ORANGE_DOUGH": {
+   "g": {
+    "create": 1
+   }
+  },
+  "ORNAMENTAL_FAN": {
+   "g": {
+    "block": 1
+   }
+  },
+  "PAELS_BLOOD": {
+   "g": {
+    "draw": 3
+   }
+  },
+  "PAELS_CLAW": {
+   "g": {
+    "exhaust": 2
+   }
+  },
+  "PAELS_FLESH": {
+   "g": {
+    "energy": 2
+   }
+  },
+  "PAELS_LEGION": {
+   "g": {
+    "block": 1
+   }
+  },
+  "PAELS_TEARS": {
+   "g": {
+    "energy": 2
+   }
+  },
+  "PENDULUM": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "PERMAFROST": {
+   "g": {
+    "block": 1
+   }
+  },
+  "PHILOSOPHERS_STONE": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "POCKETWATCH": {
+   "g": {
+    "draw": 2
+   }
+  },
+  "POLLINOUS_CORE": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "PRISMATIC_GEM": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "PUMPKIN_CANDLE": {
+   "g": {
+    "energy": 2
+   }
+  },
+  "RADIANT_PEARL": {
+   "g": {
+    "create": 1,
+    "energy": 1
+   }
+  },
+  "RAINBOW_RING": {
+   "g": {
+    "dexterity": 1,
+    "strength": 1
+   }
+  },
+  "RED_MASK": {
+   "g": {
+    "weak": 1
+   }
+  },
+  "RED_SKULL": {
+   "g": {
+    "strength": 1
+   }
+  },
+  "REGALITE": {
+   "g": {
+    "block": 1
+   }
+  },
+  "ROYAL_POISON": {
+   "g": {
+    "hp_loss": 1
+   }
+  },
+  "SAI": {
+   "g": {
+    "block": 3
+   }
+  },
+  "SEAL_OF_GOLD": {
+   "g": {
+    "energy": 2
+   }
+  },
+  "SELF_FORMING_CLAY": {
+   "g": {
+    "block": 1
+   }
+  },
+  "SHURIKEN": {
+   "g": {
+    "strength": 1
+   }
+  },
+  "SLING_OF_COURAGE": {
+   "g": {
+    "strength": 1
+   }
+  },
+  "SNECKO_EYE": {
+   "g": {
+    "draw": 3
+   }
+  },
+  "SOZU": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "SPARKLING_ROUGE": {
+   "g": {
+    "dexterity": 1,
+    "strength": 1
+   }
+  },
+  "SPIKED_GAUNTLETS": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "SWORD_OF_JADE": {
+   "g": {
+    "strength": 2
+   }
+  },
+  "SYMBIOTIC_VIRUS": {
+   "g": {
+    "orb": 1
+   }
+  },
+  "THE_ABACUS": {
+   "g": {
+    "block": 1
+   }
+  },
+  "TOASTY_MITTENS": {
+   "g": {
+    "exhaust": 2,
+    "strength": 2
+   }
+  },
+  "TOOLBOX": {
+   "g": {
+    "create": 1
+   }
+  },
+  "TOUGH_BANDAGES": {
+   "g": {
+    "block": 1
+   }
+  },
+  "TUNING_FORK": {
+   "g": {
+    "block": 1
+   }
+  },
+  "TWISTED_FUNNEL": {
+   "g": {
+    "poison": 2
+   }
+  },
+  "UNCEASING_TOP": {
+   "g": {
+    "draw": 1
+   }
+  },
+  "VAJRA": {
+   "g": {
+    "strength": 1
+   }
+  },
+  "VAMBRACE": {
+   "g": {
+    "block": 1
+   }
+  },
+  "VELVET_CHOKER": {
+   "g": {
+    "energy": 3
+   }
+  },
+  "VENERABLE_TEA_SET": {
+   "g": {
+    "energy": 1
+   }
+  },
+  "VERY_HOT_COCOA": {
+   "g": {
+    "energy": 2
+   }
+  },
+  "VEXING_PUZZLEBOX": {
+   "g": {
+    "create": 1
+   }
+  },
+  "WHISPERING_EARRING": {
+   "g": {
+    "energy": 3
+   }
+  }
+ },
+ "sha256": "836676b1dafed94ce20891e39832cb35c87d362b52eb77e51bfc28fd83ebe6c1"
+}

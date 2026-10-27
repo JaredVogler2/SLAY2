@@ -17,6 +17,12 @@ async function addOffered(page: Page, name: string): Promise<void> {
   await box.press("Enter");
 }
 
+async function addRelic(page: Page, name: string): Promise<void> {
+  const box = page.getByRole("combobox", { name: "Add a relic you hold" });
+  await box.fill(name);
+  await box.press("Enter");
+}
+
 async function addToDeck(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: "Add a card to your deck" });
   await box.fill(name);
@@ -317,6 +323,51 @@ test.describe("advisor journey", () => {
     await panel.getByRole("link", { name: "Evidence & methods" }).first().click();
     await expect(page).toHaveURL(/\/methods#synergy$/);
     await expect(page.locator("#synergy")).toBeVisible();
+  });
+
+  test("relics: a relic that provides Strength supplies it to the cards that lean on it, is named in the reasons, survives a reload and can be removed", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addOffered(page, "sword boomerang");
+    await addOffered(page, "shrug");
+    const without = await indexChange(await openOption(page, "Sword Boomerang"));
+    await expect(page.getByText("No relics listed")).toBeVisible();
+
+    await addRelic(page, "vajra");
+    const relics = page.getByRole("list", { name: "Your relics" });
+    await expect(relics).toContainText("Vajra");
+    await expect(relics).toContainText("Counted as a supplier of Strength");
+    const held = await openOption(page, "Sword Boomerang");
+    expect(await indexChange(held)).toBeGreaterThan(without);
+    await expect(held).toContainText("Vajra");
+
+    // the run keeps the relic (the offer is for this visit only)
+    await page.reload();
+    await expect(page.getByRole("list", { name: "Your relics" })).toContainText("Vajra");
+    await page.getByRole("button", { name: "Remove Vajra" }).click();
+    await expect(page.getByRole("list", { name: "Your relics" })).toHaveCount(0);
+    await expect(page.getByText("No relics listed")).toBeVisible();
+  });
+
+  test("relics: a relic the table has nothing to say about is listed and read as nothing, and the panel says how far the reading is checked", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addOffered(page, "sword boomerang");
+    await addOffered(page, "shrug");
+    const without = await indexChange(await openOption(page, "Sword Boomerang"));
+    await addRelic(page, "amethyst aubergine");
+    const relics = page.getByRole("list", { name: "Your relics" });
+    await expect(relics).toContainText("Amethyst Aubergine");
+    await expect(relics).toContainText("Provides no mechanic in SLAY2's reading");
+    expect(await indexChange(await openOption(page, "Sword Boomerang"))).toBe(without);
+    await expect(page.getByText(/not been tested in simulation/).first()).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    await expectNoSeriousA11yViolations(page, "advisor with relics");
   });
 
   // Every other class whose held-out test passed gives the same second opinion as Ironclad, from its own values.

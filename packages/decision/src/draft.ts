@@ -2,9 +2,13 @@ import {
   ACT1_BRIEFS,
   CATALOG,
   MECHANICS,
+  RELIC_SYNERGY,
   SYNERGY,
   getAct1Boss,
   getCard,
+  getRelic,
+  relicTags,
+  resolveRelics,
   rewardPool,
   ALL_UNLOCKED,
   type CardEntry,
@@ -26,6 +30,8 @@ import {
   explainAddition,
   type Need,
   type Partner,
+  type Setting,
+  type SettingInput,
   type SynergyExplanation,
 } from "./synergy";
 import {
@@ -332,13 +338,13 @@ export function rankWith(
   entries: readonly DeckEntry[],
   offered: readonly CardEntry[],
   actIndex: 0 | 1 | 2,
-  character: PlayableClass | null = null,
+  setting: SettingInput = null,
 ): { action: DraftAction; delta: number }[] {
   const baseTotal = total(scoreTerms(base, weights));
   const scored: { action: DraftAction; delta: number }[] = offered.map((card) => ({
     action: pickAction(card.id),
     delta:
-      total(scoreTerms(profileDeck(withCard(entries, card), actIndex, character), weights)) -
+      total(scoreTerms(profileDeck(withCard(entries, card), actIndex, setting), weights)) -
       baseTotal,
   }));
   scored.push({ action: SKIP, delta: 0 });
@@ -368,7 +374,37 @@ function normalize(request: DraftRequest): DraftRequest {
   const deck = [...merged.entries()]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([id, count]) => ({ id, count }));
-  return { ...request, deck };
+  const { relics, ...rest } = request;
+  const held = [...new Set(relics ?? [])].sort();
+  return held.length > 0 ? { ...rest, deck, relics: held } : { ...rest, deck };
+}
+
+/** What the index read from each listed relic: the mechanics it supplies, or that the table has nothing to say about it. */
+function describeRelics(ids: readonly string[]): NonNullable<DraftResponse["relics"]> {
+  const supplying: { id: string; name: string; mechanics: string[] }[] = [];
+  const unread: string[] = [];
+  for (const id of ids) {
+    const name = getRelic(id)?.name ?? id;
+    const gives = Object.entries(relicTags(id).gives).filter(([, g]) => g > 0);
+    if (gives.length > 0) {
+      supplying.push({ id, name, mechanics: gives.map(([m]) => MECHANICS[m as MechanicId].label) });
+    } else {
+      unread.push(name);
+    }
+  }
+  return { supplying, unread };
+}
+
+/** The relics of the request that the catalog knows; an id it does not know is an invalid request, like an unknown card. */
+function resolveRelicIds(request: DraftRequest): string[] {
+  const { known, unknown } = resolveRelics(request.relics ?? []);
+  if (unknown.length > 0) {
+    throw new InvalidDraftRequestError(
+      `unknown relic id(s): ${unknown.join(", ")}`,
+      unknown.map((id) => ({ path: "relics", message: `unknown relic id ${id}` })),
+    );
+  }
+  return known;
 }
 
 /**
@@ -400,6 +436,8 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const build = requireSupportedBuild(request.build);
   const entries = resolveDeck(request);
   const offered = resolveOffered(request);
+  const relics = resolveRelicIds(request);
+  const setting: Setting = { character: request.character, relics };
 
   const warnings: string[] = [];
   const pool = new Set(rewardPool(request.character, ALL_UNLOCKED).map((c) => c.id));
@@ -415,7 +453,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     }
   }
 
-  const base = profileDeck(entries, request.actIndex, request.character);
+  const base = profileDeck(entries, request.actIndex, setting);
   const neutral = baseWeights(request.actIndex, request.riskPreference);
   let tilt: ContextTilt | null = null;
   if (request.actContext) {
@@ -437,9 +475,9 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const weights = tilt ? tiltWeights(neutral, tilt) : neutral;
   // The reasons below explain the neutral heuristic; the context is its own line, so the lines add up to the index.
   const baseTerms = scoreTerms(base, neutral);
-  const ranked = rankWith(weights, base, entries, offered, request.actIndex, request.character);
+  const ranked = rankWith(weights, base, entries, offered, request.actIndex, setting);
   const neutralDelta = new Map(
-    rankWith(neutral, base, entries, offered, request.actIndex, request.character).map(
+    rankWith(neutral, base, entries, offered, request.actIndex, setting).map(
       (r) => [actionKey(r.action), r.delta] as const,
     ),
   );
@@ -457,8 +495,8 @@ export function evaluateDraft(input: unknown): DraftResponse {
     } else {
       const card = must(getCard(r.action.cardId), "catalog card");
       const withIt = withCard(entries, card);
-      const after = profileDeck(withIt, request.actIndex, request.character);
-      const explained = explainAddition(entries, card, request.actIndex, withIt, request.character);
+      const after = profileDeck(withIt, request.actIndex, setting);
+      const explained = explainAddition(entries, card, request.actIndex, withIt, setting);
       reasons = describeDelta(
         baseTerms,
         scoreTerms(after, neutral),
@@ -503,7 +541,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     };
     const winner = actionKey(
       (
-        rankWith(perturbed, base, entries, offered, request.actIndex, request.character)[0] as {
+        rankWith(perturbed, base, entries, offered, request.actIndex, setting)[0] as {
           action: DraftAction;
         }
       ).action,
@@ -542,7 +580,9 @@ export function evaluateDraft(input: unknown): DraftResponse {
     );
   }
   missingInputs.push(
-    "Relics, potions, gold and the upcoming map (not used by the v0 draft heuristic).",
+    relics.length > 0
+      ? "Potions, gold and the upcoming map (not used by the draft heuristic)."
+      : "Your relics (list the ones you hold: a relic that supplies a mechanic changes what a card is worth), potions, gold and the upcoming map.",
   );
 
   const legal: DraftAction[] = [...offered.map((c) => pickAction(c.id)), SKIP];
@@ -566,6 +606,11 @@ export function evaluateDraft(input: unknown): DraftResponse {
     assumptions: [
       "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate. It is read as a card's worth when what the card needs is there.",
       `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * PART_WEIGHT.needs * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.${engineAssumption()}`,
+      ...(relics.length > 0
+        ? [
+            `Relics: the ${String(relics.length)} you listed count as suppliers of the mechanics they provide, like a card that provides them (${String(relics.filter((id) => Object.keys(relicTags(id).gives).length > 0).length)} of them provide one in SLAY2's reading, table ${RELIC_SYNERGY.sha256.slice(0, 12)}). That reading is a judgement that has not been tested in simulation (ADR-051).`,
+          ]
+        : []),
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
       ...(tilt
         ? [
@@ -576,7 +621,9 @@ export function evaluateDraft(input: unknown): DraftResponse {
       `Catalog ${CATALOG.sha256.slice(0, 12)} for ${CATALOG.build}; the advisor index is unit-less and only differences matter.`,
     ],
     notModelled: [
-      "Relics, potions, gold, shops, rest sites and the map ahead.",
+      relics.length > 0
+        ? "What a relic does beyond supplying a mechanic of the card table (rewards, gold, healing, potions and the like), potions, gold, shops, rest sites and the map ahead."
+        : "Relics, potions, gold, shops, rest sites and the map ahead.",
       tilt
         ? "Specific enemy matchups beyond the tagged asks of this Act 1's elites and bosses."
         : "Specific enemy matchups, bosses and elites you will face.",
@@ -592,7 +639,8 @@ export function evaluateDraft(input: unknown): DraftResponse {
       roleCounts: { ...base.groups },
       starterShare: base.starterShare,
     },
-    deckSynergy: deckSynergy(entries, request.actIndex, request.character),
+    deckSynergy: deckSynergy(entries, request.actIndex, setting),
+    ...(relics.length > 0 ? { relics: describeRelics(relics) } : {}),
     ...(request.actContext
       ? {
           actContext: {

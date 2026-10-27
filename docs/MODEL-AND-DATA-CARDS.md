@@ -27,6 +27,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D9 | Withdrawn data (`experiments/void/`) | **not evidence** | no | invalid, kept so the failure can be inspected |
 | D10 | Synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement, read against simulated runs (M8) |
 | D11 | Relic catalog | facts | yes: `/codex` | every relic has a model class and a pool in the decompiled build of the same version |
+| D12 | Relic synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement read twice by blind readers and reconciled by a written rule; **not yet tested in simulation** |
 | M1 | Exact calculators | mathematics | yes | 739 golden cases, published tables, brute force, properties |
 | M2 | Draft advisor v1 (the deck index) | heuristic | yes | **uncalibrated**, never a probability; its synergy term is M8 |
 | M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class |
@@ -228,6 +229,30 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Cross-check:** all 296 relic ids have a model class in the decompiled build (two classes more are not relics: the removed-relic placeholder and a card-selector helper); each class's starting relic is a starter in its own pool and matches `characters.sts2-main-0.107.1.json`. Two extractions of the same build agreeing is a consistency check on the extraction, **not** independent proof about the live game.
 * **Rights:** ids, names and tiers are factual identifiers, kept minimal with attribution (`docs/IP-COMPLIANCE.md`); what a relic does is the game's text and is not stored. A takedown request would mean removing the E1-derived parts.
 * **Limits:** one build; the catalog says where the game can offer a relic, not how likely it is; the advisor does not read it yet (the relics of a run are not an input of the draft index, and the index says so).
+
+## D12. Relic synergy tags
+
+* **What:** `packages/game-data/data/relic-synergy.sts2-main-0.107.1.json`, SHA-256 `836676b1dafed94ce20891e39832cb35c87d362b52eb77e51bfc28fd83ebe6c1`: for the relics that provide something to a deck, what they provide (`g`, per mechanic of the card table, 1 minor or conditional, 2 standard, 3 major or every turn, negative when the relic takes the mechanic away). Ids, mechanic names and small whole numbers; no relic text, art or numbers. A separate file from D10, so the card table keeps the hash the registered held-out result (M8) names.
+* **Provenance:** SLAY2's own judgement, made by two blind readings of every relic from the local reference (ADR-011) and a written reconciliation rule (ADR-051): `experiments/synergy/relics/reading-a.json`, `reading-b.json` (tags only), `reconciliation.json` (the rule and one decision with a reason for each mechanic only one reader wrote), built by `sim/slay2_sim/relicreading.py`, which a test runs again. What a relic's value depends on was read too and is kept in the readings, not in the table (the index counts no engines).
+
+<!-- table:relic_reading:begin -->
+| Reading | Count |
+|---|---|
+| Relics in the catalog | 296 |
+| Tagged by reader A / by reader B | 140 / 143 |
+| Tagged by both / by A only / by B only / by neither | 138 / 2 / 5 / 151 |
+| Of those tagged by both: identical in what they provide and depend on | 104 of 138 |
+| Of those tagged by both: the same mechanics provided | 130 of 138 |
+| Marked unsure by A / by B | 27 / 24 |
+| Mechanics both readers wrote, same magnitude / one step apart (the lower is kept) | 95 / 13 |
+| Mechanics only one reader wrote, kept / left out (each with its reason) | 1 / 13 |
+| Starting relics and their upgrades (counted by the card table's innate supply) | 10 |
+| **Relics with an entry in the table** | **101** |
+<!-- table:relic_reading:end -->
+
+* **Intended use:** the advisor counts a relic the player lists as a supplier of the mechanics it provides, like a card that provides them, and names it in the reasons. **Not for:** saying a relic is strong or weak, or anything about what a relic does beyond supplying a mechanic.
+* **Limits:** **not tested in simulation** (the page says so beside the panel): the claim is of the kind the card table's was before its held-out test. A relic that only multiplies a mechanic it cannot make (Strength, Poison) and one that acts only at a rest site or shop are read as nothing; drawbacks (a cap on cards played, a Status shuffled into the draw pile, a cost in gold) are not modelled; the starting relics' upgrades are not an input; a class's starting relic is counted by the card table's `innate`, not here.
+* **Kept true by:** `packages/game-data/test/relic-synergy.test.ts` (the hash, only catalog relics and card-table mechanics, no starting relic, spot facts, what is left out), `sim/tests/test_relicreading.py` (the committed table is what the readings make, the lower magnitude, a decision for every one-reader mechanic), the golden cases of the index with relics (`packages/decision/test/golden/advisor-index.json`, reproduced by the Python port) and the end-to-end tests of the relics panel.
 
 ---
 

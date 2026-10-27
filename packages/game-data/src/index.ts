@@ -6,3 +6,4 @@ export * from "./characters";
 export * from "./ancient";
 export * from "./acts";
 export * from "./synergy";
+export * from "./relic-synergy";

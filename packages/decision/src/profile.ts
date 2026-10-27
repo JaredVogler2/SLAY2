@@ -1,6 +1,6 @@
-import type { CardEntry, PlayableClass } from "@slay2/game-data";
+import type { CardEntry } from "@slay2/game-data";
 
-import { synergyOf } from "./synergy";
+import { synergyOf, type SettingInput } from "./synergy";
 
 export const GROUPS = ["damage", "aoe", "block", "scaling", "draw", "energy", "debuff"] as const;
 export type Group = (typeof GROUPS)[number];
@@ -55,7 +55,7 @@ function energyCost(card: CardEntry): number | null {
 export function profileDeck(
   entries: readonly DeckEntry[],
   actIndex: 0 | 1 | 2 = 0,
-  character: PlayableClass | null = null,
+  setting: SettingInput = null,
 ): DeckProfile {
   let size = 0;
   let priorSum = 0;
@@ -114,6 +114,6 @@ export function profileDeck(
     strengthCards,
     multiHitCards,
     roleCounts,
-    synergy: synergyOf(entries, actIndex, character),
+    synergy: synergyOf(entries, actIndex, setting),
   };
 }
