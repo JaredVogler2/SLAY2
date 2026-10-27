@@ -426,6 +426,64 @@ def table_synergy_dev() -> str:
     return "\n".join(head + rows)
 
 
+def table_synergy_val() -> str:
+    """The one registered held-out test of the synergy term (ADR-050 stage B2-val) and its secondary comparisons, from the pooled files."""
+    base = ROOT / "experiments" / "synergy" / "val"
+    primary = load(base / "pooled-astar-vs-d0star.json")
+    measured = load(base / "pooled-astar-vs-rules_v3.json")
+    head = [
+        "| Comparison (paired by seed, held-out `val` seeds, A0, `veteran`) | Pairs with both games completed | Past the Act-1 boss, other → A* | Only A* / only the other | Exact McNemar | Past the Act-2 boss, other → A* | Wins, other → A* | Mean floors, A* minus other (95 %) |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+
+    def row(label: str, d: dict, other: str) -> str:
+        e, e3, w, f = d["reachedAct2"], d["reachedAct3"], d["wins"], d["floorDifference"]
+        t = e["pairedTable"]
+        return (
+            f"| {label} | {d['bothCompleted']:,} | {100 * e['b']['rate']:.1f} % → {100 * e['a']['rate']:.1f} % | {t['a_only']:,} / {t['b_only']:,} | {fmt_p(t['mcnemar_p'])} | "
+            f"{100 * e3['b']['rate']:.1f} % → {100 * e3['a']['rate']:.1f} % ({fmt_p(e3['pairedTable']['mcnemar_p'])}) | {w['b']} → {w['a']} | "
+            f"{signed(f['meanAMinusB'], 2)} ({signed(f['ci95'][0], 2)} to {signed(f['ci95'][1], 2)}) |"
+        )
+
+    rows = [row(f"**`A*` against `d0*`, the index without the term, five classes pooled (the registered test)**", primary, "d0*")]
+    for m in primary["members"]:
+        t = m["reachedAct2"]["pairedTable"]
+        rows.append(
+            f"| &nbsp;&nbsp;{m['character']} | {m['bothCompleted']:,} | {100 * m['reachedAct2']['b']:.1f} % → {100 * m['reachedAct2']['a']:.1f} % | {t['a_only']:,} / {t['b_only']:,} | {fmt_p(t['mcnemar_p'])} | | {m['b']['wins']} → {m['a']['wins']} | {signed(m['meanFloorDifference'], 2)} |"
+        )
+    rows.append(row("`A*` against `R`, `rules_v3` with the class's measured card values, five classes pooled (secondary)", measured, "R"))
+    return "\n".join(head + rows)
+
+
+def table_synergy_val_profile() -> str:
+    """What each arm of the held-out test skipped and what its decks held at the Act-1 boss (slay2_sim.synergyreport; descriptive)."""
+    pr = load(ROOT / "experiments" / "synergy" / "val" / "arm-profile.json")
+    a, b = pr["arms"]["astar"]["pooled"], pr["arms"]["d0star"]["pooled"]
+    diff = pr["differences"]["astar-vs-d0star"]["pooled"]
+    head = [
+        "| Measure (decks that reached the Act-1 boss) | `A*` | `d0*` | `A*` minus `d0*`, paired by class and seed (95 %) |",
+        "|---|---|---|---|",
+    ]
+    rows = [
+        f"| Card rewards skipped | {a['skipped']:,} of {a['offers']:,} ({100 * a['skip_rate']['value']:.2f} %) | {b['skipped']:,} of {b['offers']:,} ({100 * b['skip_rate']['value']:.2f} %) | |",
+    ]
+    labels = [
+        ("unmet", "Index points held back by unmet needs", 2),
+        ("scaler", "Index points added by Strength, Dexterity and Focus", 2),
+        ("engines", "Index points the engines would add at their first judgement (`A*` does not count them)", 2),
+        ("quality", "Index points from the average card rating", 2),
+        ("deck_size", "Deck size (cards)", 2),
+    ]
+    for key, label, places in labels:
+        m = diff["measures"][key]
+        rows.append(
+            f"| {label} | {minus(a['at_boss'][key]['mean'], places)} | {minus(b['at_boss'][key]['mean'], places)} | "
+            f"{signed(m['mean'], places)} ({signed(m['ci95'][0], places)} to {signed(m['ci95'][1], places)}) |"
+        )
+    rows.append(f"| Decks at the boss | {a['boss_decks']:,} | {b['boss_decks']:,} | {diff['pairs']:,} pairs |")
+    return "\n".join(head + rows)
+
+
 def table_synergy_coverage() -> str:
     cat = load(ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json")["cards"]
     syn = load(ROOT / "packages" / "game-data" / "data" / "synergy.sts2-main-0.107.1.json")
@@ -446,7 +504,7 @@ def table_synergy_coverage() -> str:
 
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev", "synergy_val", "synergy_val_profile"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
 }
@@ -465,6 +523,8 @@ BLOCKS = {
     "synergy_cohorts": table_synergy_cohorts,
     "synergy_mechanics": table_synergy_mechanics,
     "synergy_dev": table_synergy_dev,
+    "synergy_val": table_synergy_val,
+    "synergy_val_profile": table_synergy_val_profile,
 }
 
 

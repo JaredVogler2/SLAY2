@@ -503,5 +503,747 @@
       ]
     }
   },
-  "b2": null
+  "b2": {
+    "tableSha256": "bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a",
+    "alpha": 0.05,
+    "astar": {
+      "arm": "d1",
+      "needs": 1,
+      "scalers": 0.7,
+      "engines": 0,
+      "margin": 0
+    },
+    "selection": {
+      "phase1": {
+        "sha256": "352cb7a0f2737b267285a5431c77e2b86d5d915ca3ce438714f101bc51d2239f",
+        "differences": {
+          "d1": {
+            "difference": 0.07171474358974361,
+            "ci95": [
+              0.05993185007015434,
+              0.08371720408572
+            ],
+            "pairs": 4992,
+            "mcnemarP": 2.3126309309368827e-32
+          },
+          "d2": {
+            "difference": 0.05905905905905906,
+            "ci95": [
+              0.047638110488390714,
+              0.07044261785253696
+            ],
+            "pairs": 4995,
+            "mcnemarP": 6.525839579771748e-24
+          },
+          "d3": {
+            "difference": 0.04485382458950743,
+            "ci95": [
+              0.03304609934083929,
+              0.05673616680032077
+            ],
+            "pairs": 4994,
+            "mcnemarP": 5.356516046284719e-14
+          },
+          "d4": {
+            "difference": 0.018214571657325873,
+            "ci95": [
+              0.006606606606606606,
+              0.029823859087269818
+            ],
+            "pairs": 4996,
+            "mcnemarP": 0.0026361214992943116
+          }
+        }
+      },
+      "phase2": {
+        "sha256": "2235b11af758c12d2644189f34d2f7b613c21b0f12d3057415f64bfa22cdc0dc",
+        "differences": {
+          "m1": {
+            "difference": -0.03144402163028237,
+            "ci95": [
+              -0.042033626901521216,
+              -0.021025125044948842
+            ],
+            "pairs": 4993,
+            "mcnemarP": 6.036138511434269e-9
+          },
+          "m2": {
+            "difference": -0.15608094570226408,
+            "ci95": [
+              -0.1684725104466017,
+              -0.14343029087261785
+            ],
+            "pairs": 4991,
+            "mcnemarP": 4.065530923141048e-124
+          }
+        }
+      }
+    },
+    "primary": {
+      "id": "pooled-astar-vs-d0star",
+      "contentSha256": "bed1bb13667d2c538e9c376b6f60c161a707889290bf5a593b56050ff8db2d05",
+      "pairedSeeds": 10000,
+      "bothCompleted": 9975,
+      "excludedNotCompleted": 25,
+      "notFinished": {
+        "a": 16,
+        "b": 18
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 3288,
+          "rate": 0.32962406015037593,
+          "wilson95": [
+            0.3204663197381117,
+            0.3389129765432729
+          ]
+        },
+        "b": {
+          "games": 2592,
+          "rate": 0.2598496240601504,
+          "wilson95": [
+            0.2513370080789455,
+            0.26854713681193815
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 1273,
+          "b_only": 577,
+          "both": 2015,
+          "mcnemar_p": 3.8093488747381085e-60,
+          "neither": 6110
+        }
+      },
+      "reachedAct3": {
+        "a": {
+          "games": 44,
+          "rate": 0.004411027568922306,
+          "wilson95": [
+            0.003287664147694243,
+            0.005915955250378446
+          ]
+        },
+        "b": {
+          "games": 39,
+          "rate": 0.003909774436090226,
+          "wilson95": [
+            0.0028615178349572336,
+            0.005339981222666456
+          ]
+        },
+        "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+        "pairedTable": {
+          "a_only": 31,
+          "b_only": 26,
+          "both": 13,
+          "mcnemar_p": 0.5966417603730826,
+          "neither": 9905
+        }
+      },
+      "wins": {
+        "a": 2,
+        "b": 0,
+        "pairedTable": {
+          "a_only": 2,
+          "b_only": 0,
+          "both": 0,
+          "mcnemar_p": 0.5,
+          "neither": 9973
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          0.8108270676691729,
+          1.003411027568922
+        ],
+        "meanAMinusB": 0.9079699248120301,
+        "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+      },
+      "clusteredDifference": {
+        "ci95": [
+          0.06135953479045518,
+          0.07813286523901063
+        ],
+        "definition": "pooled difference (A minus B) in the share that got past the Act-1 boss, with a bootstrap interval that resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
+        "meanAMinusB": 0.06977443609022556,
+        "method": "percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "members": [
+        {
+          "character": "ironclad",
+          "a": {
+            "batchId": "advisor_v1-astar-ironclad-a0-veteran-val-n2000",
+            "contentSha256": "57051e5df185915d9cd9e0dbcf16f85a19be93f37808500e15737e653af3a74c",
+            "wins": 2
+          },
+          "b": {
+            "batchId": "advisor_v1-d0star-ironclad-a0-veteran-val-n2000",
+            "contentSha256": "8eba6d4b503cf171ef2644766e574afa4e5f6a1d8c3f1eaa70fcf2e48cc0b3af",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1996,
+          "reachedAct2": {
+            "a": 0.5095190380761523,
+            "b": 0.3842685370741483,
+            "pairedTable": {
+              "a_only": 408,
+              "b_only": 158,
+              "both": 609,
+              "mcnemar_p": 1.8112079360466038e-26,
+              "neither": 821
+            }
+          },
+          "meanFloorDifference": 1.468436873747495
+        },
+        {
+          "character": "silent",
+          "a": {
+            "batchId": "advisor_v1-astar-silent-a0-veteran-val-n2000",
+            "contentSha256": "c46e319bff5a7e6434ad7df250f70e33c2002682c7c97bc295f913ab8e7692e8",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "advisor_v1-d0star-silent-a0-veteran-val-n2000",
+            "contentSha256": "47a8504bbda1baa5307d55ad40f50bf05bae333aac9735e0d49d35ca1f21944b",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 2000,
+          "reachedAct2": {
+            "a": 0.1085,
+            "b": 0.086,
+            "pairedTable": {
+              "a_only": 121,
+              "b_only": 76,
+              "both": 96,
+              "mcnemar_p": 0.0016507386871352436,
+              "neither": 1707
+            }
+          },
+          "meanFloorDifference": 0.3
+        },
+        {
+          "character": "regent",
+          "a": {
+            "batchId": "advisor_v1-astar-regent-a0-veteran-val-n2000",
+            "contentSha256": "eb199bc6d2a336aba75b3754651be3cb71456506d93c9f9ce582f4861ca899ec",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "advisor_v1-d0star-regent-a0-veteran-val-n2000",
+            "contentSha256": "a294345df0cf48f2770cc97ec228b5becdbecef0eddcb42e6da200384f54055c",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1984,
+          "reachedAct2": {
+            "a": 0.2162298387096774,
+            "b": 0.14112903225806453,
+            "pairedTable": {
+              "a_only": 225,
+              "b_only": 76,
+              "both": 204,
+              "mcnemar_p": 2.8570798066841375e-18,
+              "neither": 1479
+            }
+          },
+          "meanFloorDifference": 1.2711693548387097
+        },
+        {
+          "character": "necrobinder",
+          "a": {
+            "batchId": "advisor_v1-astar-necrobinder-a0-veteran-val-n2000",
+            "contentSha256": "af9e8efb162c64c33008a919aa9f6a0eb02cdec1cb1384cf9b605622557e6721",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "advisor_v1-d0star-necrobinder-a0-veteran-val-n2000",
+            "contentSha256": "9d29eae7897cb61794984a089414a09fad8c727c2cad0b832e6f08f270905c88",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1997,
+          "reachedAct2": {
+            "a": 0.40761141712568855,
+            "b": 0.3665498247371057,
+            "pairedTable": {
+              "a_only": 195,
+              "b_only": 113,
+              "both": 619,
+              "mcnemar_p": 0.0000034603602693069365,
+              "neither": 1070
+            }
+          },
+          "meanFloorDifference": 0.5638457686529794
+        },
+        {
+          "character": "defect",
+          "a": {
+            "batchId": "advisor_v1-astar-defect-a0-veteran-val-n2000",
+            "contentSha256": "7145541305bc6f2532519df35be080ded1fb1fdb9ff19a19b0197a15a67c1391",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "advisor_v1-d0star-defect-a0-veteran-val-n2000",
+            "contentSha256": "bb1d5364903ce962566cd487c22232d461a7de23a3e6d4efe6366a1ed85dbc6b",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1998,
+          "reachedAct2": {
+            "a": 0.4059059059059059,
+            "b": 0.3208208208208208,
+            "pairedTable": {
+              "a_only": 324,
+              "b_only": 154,
+              "both": 487,
+              "mcnemar_p": 5.590238706609704e-15,
+              "neither": 1033
+            }
+          },
+          "meanFloorDifference": 0.93993993993994
+        }
+      ]
+    },
+    "verdict": "ahead",
+    "noTermAtZero": null,
+    "measured": {
+      "id": "pooled-astar-vs-rules_v3",
+      "contentSha256": "b36c0e6973c68d39127ce655090dd3fb8bc490d7762f91fe0dd16039efb69d17",
+      "pairedSeeds": 10000,
+      "bothCompleted": 9967,
+      "excludedNotCompleted": 33,
+      "notFinished": {
+        "a": 16,
+        "b": 23
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 3286,
+          "rate": 0.3296879703019966,
+          "wilson95": [
+            0.3205261039432664,
+            0.33898106864379574
+          ]
+        },
+        "b": {
+          "games": 6156,
+          "rate": 0.6176382060800643,
+          "wilson95": [
+            0.6080541349444284,
+            0.6271316324438896
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 424,
+          "b_only": 3294,
+          "both": 2862,
+          "mcnemar_p": 0,
+          "neither": 3387
+        }
+      },
+      "reachedAct3": {
+        "a": {
+          "games": 44,
+          "rate": 0.004414568074646333,
+          "wilson95": [
+            0.0032903042589041897,
+            0.005920699566600094
+          ]
+        },
+        "b": {
+          "games": 290,
+          "rate": 0.029096016855623557,
+          "wilson95": [
+            0.02597342056253099,
+            0.03258146281736664
+          ]
+        },
+        "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+        "pairedTable": {
+          "a_only": 20,
+          "b_only": 266,
+          "both": 24,
+          "mcnemar_p": 4.85292028584652e-56,
+          "neither": 9657
+        }
+      },
+      "wins": {
+        "a": 2,
+        "b": 12,
+        "pairedTable": {
+          "a_only": 2,
+          "b_only": 12,
+          "both": 0,
+          "mcnemar_p": 0.012939453125,
+          "neither": 9953
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          -4.256947928162938,
+          -3.979733119293669
+        ],
+        "meanAMinusB": -4.116283736329889,
+        "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+      },
+      "clusteredDifference": {
+        "ci95": [
+          -0.29854516892591165,
+          -0.27732610659439927
+        ],
+        "definition": "pooled difference (A minus B) in the share that got past the Act-1 boss, with a bootstrap interval that resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
+        "meanAMinusB": -0.2879502357780676,
+        "method": "percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "members": [
+        {
+          "character": "ironclad",
+          "a": {
+            "batchId": "advisor_v1-astar-ironclad-a0-veteran-val-n2000",
+            "contentSha256": "57051e5df185915d9cd9e0dbcf16f85a19be93f37808500e15737e653af3a74c",
+            "wins": 2
+          },
+          "b": {
+            "batchId": "rules_v3-values2-ironclad-a0-veteran-val-n2000",
+            "contentSha256": "92d281e79d7d3bf2b7433bb8ff79d0731f326a13654fa2dd392767a3255bde29",
+            "wins": 2
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1990,
+          "reachedAct2": {
+            "a": 0.5095477386934674,
+            "b": 0.7939698492462312,
+            "pairedTable": {
+              "a_only": 104,
+              "b_only": 670,
+              "both": 910,
+              "mcnemar_p": 4.406374185032723e-102,
+              "neither": 306
+            }
+          },
+          "meanFloorDifference": -4.5246231155778895
+        },
+        {
+          "character": "silent",
+          "a": {
+            "batchId": "advisor_v1-astar-silent-a0-veteran-val-n2000",
+            "contentSha256": "c46e319bff5a7e6434ad7df250f70e33c2002682c7c97bc295f913ab8e7692e8",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "rules_v3-silent-a0-veteran-val-n2000",
+            "contentSha256": "4f36d2eedcb3ccbbbcce60441a2382aaa143dbfb55fa6f2de3e7d4f8c0b57d20",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 2000,
+          "reachedAct2": {
+            "a": 0.1085,
+            "b": 0.2475,
+            "pairedTable": {
+              "a_only": 83,
+              "b_only": 361,
+              "both": 134,
+              "mcnemar_p": 2.1705384517138785e-42,
+              "neither": 1422
+            }
+          },
+          "meanFloorDifference": -2.4005
+        },
+        {
+          "character": "regent",
+          "a": {
+            "batchId": "advisor_v1-astar-regent-a0-veteran-val-n2000",
+            "contentSha256": "eb199bc6d2a336aba75b3754651be3cb71456506d93c9f9ce582f4861ca899ec",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "rules_v3-regent-a0-veteran-val-n2000",
+            "contentSha256": "e5a38e8ec26bc24c368cccea7b0d510dd19a623fd8087b02bd73236621b41acf",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1982,
+          "reachedAct2": {
+            "a": 0.21695257315842584,
+            "b": 0.5544904137235116,
+            "pairedTable": {
+              "a_only": 59,
+              "b_only": 728,
+              "both": 371,
+              "mcnemar_p": 1.510097180652532e-147,
+              "neither": 824
+            }
+          },
+          "meanFloorDifference": -4.13824419778002
+        },
+        {
+          "character": "necrobinder",
+          "a": {
+            "batchId": "advisor_v1-astar-necrobinder-a0-veteran-val-n2000",
+            "contentSha256": "af9e8efb162c64c33008a919aa9f6a0eb02cdec1cb1384cf9b605622557e6721",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "rules_v3-necrobinder-a0-veteran-val-n2000",
+            "contentSha256": "9e3aca7a950ffa0b83b328e5473e68ecaaa5e7833895490af6b752e7767d5921",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1997,
+          "reachedAct2": {
+            "a": 0.40761141712568855,
+            "b": 0.6970455683525288,
+            "pairedTable": {
+              "a_only": 98,
+              "b_only": 676,
+              "both": 716,
+              "mcnemar_p": 5.096580349924047e-107,
+              "neither": 507
+            }
+          },
+          "meanFloorDifference": -3.840260390585879
+        },
+        {
+          "character": "defect",
+          "a": {
+            "batchId": "advisor_v1-astar-defect-a0-veteran-val-n2000",
+            "contentSha256": "7145541305bc6f2532519df35be080ded1fb1fdb9ff19a19b0197a15a67c1391",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "rules_v3-defect-a0-veteran-val-n2000",
+            "contentSha256": "fa969034c3eb8eaf363f46b81b747ddf31a83e698cc22510c8144912255c50b3",
+            "wins": 10
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1998,
+          "reachedAct2": {
+            "a": 0.4059059059059059,
+            "b": 0.7957957957957958,
+            "pairedTable": {
+              "a_only": 80,
+              "b_only": 859,
+              "both": 731,
+              "mcnemar_p": 1.3493217991766534e-165,
+              "neither": 328
+            }
+          },
+          "meanFloorDifference": -5.681181181181181
+        }
+      ]
+    },
+    "profile": {
+      "sha256": "a355a4287fd6c8c6ad901b87c469d551f4c59dadcfd1e40f3b15271e1ea11601",
+      "astar": {
+        "games": 9984,
+        "offers": 89938,
+        "skipped": 158,
+        "skipRate": {
+          "n": 89938,
+          "value": 0.0017567657719762503,
+          "ci95": [
+            0.0013815247385116861,
+            0.002178092028166565
+          ]
+        },
+        "bossDecks": 7129,
+        "atBoss": {
+          "deck_size": {
+            "n": 7129,
+            "mean": 19.532052181231588,
+            "ci95": [
+              19.458787857733988,
+              19.60874266969294
+            ]
+          },
+          "quality": {
+            "n": 7129,
+            "mean": 33.42925975434205,
+            "ci95": [
+              33.361189182117855,
+              33.49197734564302
+            ]
+          },
+          "coverage": {
+            "n": 7129,
+            "mean": 15.840881076799903,
+            "ci95": [
+              15.791477388696874,
+              15.889558999478226
+            ]
+          },
+          "curve": {
+            "n": 7129,
+            "mean": -0.009512361348539831,
+            "ci95": [
+              -0.011829795733817055,
+              -0.007420327656999665
+            ]
+          },
+          "unmet": {
+            "n": 7129,
+            "mean": -0.8804777997923253,
+            "ci95": [
+              -0.9011569034274055,
+              -0.8611054376881927
+            ]
+          },
+          "scaler": {
+            "n": 7129,
+            "mean": 2.1576624225414016,
+            "ci95": [
+              2.103802092426734,
+              2.2110670289635523
+            ]
+          },
+          "engines": {
+            "n": 7129,
+            "mean": 3.776190200619362,
+            "ci95": [
+              3.7324374078921365,
+              3.8203467044283688
+            ]
+          }
+        }
+      },
+      "d0star": {
+        "games": 9982,
+        "offers": 84870,
+        "skipped": 108,
+        "skipRate": {
+          "n": 84870,
+          "value": 0.0012725344644750796,
+          "ci95": [
+            0.000945741691035693,
+            0.0016503479733056745
+          ]
+        },
+        "bossDecks": 6613,
+        "atBoss": {
+          "deck_size": {
+            "n": 6613,
+            "mean": 19.491909874489643,
+            "ci95": [
+              19.41627477514514,
+              19.57139048545979
+            ]
+          },
+          "quality": {
+            "n": 6613,
+            "mean": 34.02188292969184,
+            "ci95": [
+              33.949688251165014,
+              34.09377829596268
+            ]
+          },
+          "coverage": {
+            "n": 6613,
+            "mean": 15.834712819081936,
+            "ci95": [
+              15.781354111155434,
+              15.88792153749304
+            ]
+          },
+          "curve": {
+            "n": 6613,
+            "mean": -0.014917422434378094,
+            "ci95": [
+              -0.01780290240362551,
+              -0.012379565595035655
+            ]
+          },
+          "unmet": {
+            "n": 6613,
+            "mean": -2.4632222608492276,
+            "ci95": [
+              -2.5036387815220924,
+              -2.423668277000992
+            ]
+          },
+          "scaler": {
+            "n": 6613,
+            "mean": 1.615295244945821,
+            "ci95": [
+              1.5690372807447983,
+              1.6639847908499978
+            ]
+          },
+          "engines": {
+            "n": 6613,
+            "mean": 4.578841965034863,
+            "ci95": [
+              4.528801254175253,
+              4.6313354150958475
+            ]
+          }
+        }
+      },
+      "difference": {
+        "pairs": 6145,
+        "measures": {
+          "deck_size": {
+            "n": 6145,
+            "mean": 0.008136696501220505,
+            "ci95": [
+              -0.0036287700723149304,
+              0.01941371544550823
+            ]
+          },
+          "quality": {
+            "n": 6145,
+            "mean": -0.6200973308682929,
+            "ci95": [
+              -0.6453909431767741,
+              -0.59730699088239
+            ]
+          },
+          "coverage": {
+            "n": 6145,
+            "mean": 0.022425064698281184,
+            "ci95": [
+              0.00339413036081734,
+              0.04140862795761194
+            ]
+          },
+          "curve": {
+            "n": 6145,
+            "mean": 0.004706558871216188,
+            "ci95": [
+              0.002364879056773245,
+              0.007106763246451871
+            ]
+          },
+          "unmet": {
+            "n": 6145,
+            "mean": 1.5829756400184176,
+            "ci95": [
+              1.5480048993383304,
+              1.622614765165326
+            ]
+          },
+          "scaler": {
+            "n": 6145,
+            "mean": 0.5241085771747391,
+            "ci95": [
+              0.4960843625965844,
+              0.5516594327064431
+            ]
+          },
+          "engines": {
+            "n": 6145,
+            "mean": -0.8156231838894051,
+            "ci95": [
+              -0.8511934772900388,
+              -0.7780413705216626
+            ]
+          }
+        }
+      }
+    }
+  }
 }

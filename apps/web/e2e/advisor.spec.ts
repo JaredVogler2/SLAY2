@@ -313,7 +313,8 @@ test.describe("advisor journey", () => {
     });
     await expectNoSeriousA11yViolations(page, "advisor with the synergy panel");
     // the study itself, with its figures by class, is one link away
-    await panel.getByRole("link", { name: "Evidence & methods" }).click();
+    // (with a held-out result the panel names the study twice, in the result and in the limits: the same link)
+    await panel.getByRole("link", { name: "Evidence & methods" }).first().click();
     await expect(page).toHaveURL(/\/methods#synergy$/);
     await expect(page.locator("#synergy")).toBeVisible();
   });

@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 import { PART_WEIGHT } from "@slay2/decision";
 
 import { SynergyStudyPanel } from "../src/components/methods/SynergyStudyPanel";
-import { SYNERGY_EVIDENCE, change, num, range } from "../src/lib/synergy-evidence";
+import { SYNERGY_EVIDENCE, change, num, range, verdictOf } from "../src/lib/synergy-evidence";
+
+import { withTest } from "./fixtures/synergy-test";
 
 describe("the /methods synergy section", () => {
   const b1 = SYNERGY_EVIDENCE.b1;
@@ -61,14 +63,32 @@ describe("the /methods synergy section", () => {
     }
   });
 
-  it("says the registered test has not been run, and claims no result of it", () => {
-    render(<SynergyStudyPanel />);
+  it("says the registered test has not been run, and claims no result of it, until a result is exported", () => {
+    render(<SynergyStudyPanel evidence={withTest(null)} />);
     const test = screen.getByRole("heading", { name: "The registered test" }).parentElement;
     expect(test).toHaveTextContent("It has not been run on its held-out seeds");
     expect(test).toHaveTextContent("ADR-050");
     const text = document.getElementById("synergy")?.textContent ?? "";
     expect(text).not.toMatch(/passed its test|improves what the heuristic index picks/);
   });
+
+  it.runIf(SYNERGY_EVIDENCE.b2 !== null)(
+    "states the shipped result of the registered test, from the file's own numbers",
+    () => {
+      const test = SYNERGY_EVIDENCE.b2;
+      if (!test) throw new Error("no B2 result");
+      render(<SynergyStudyPanel />);
+      const section = document.getElementById("synergy");
+      const e = test.primary.reachedAct2;
+      expect(section).toHaveTextContent(`${(e.a.rate * 100).toFixed(1)}%`);
+      expect(section).toHaveTextContent(`${(e.b.rate * 100).toFixed(1)}%`);
+      expect(section).not.toHaveTextContent("It has not been run on its held-out seeds");
+      const word = { ahead: "Ahead.", "not-shown": "Not shown.", behind: "Worse." }[
+        verdictOf(test)
+      ];
+      expect(section).toHaveTextContent(word);
+    },
+  );
 
   it("says what the reading is not: simulated, exploratory, about the first boss, not about winning", () => {
     render(<SynergyStudyPanel />);

@@ -96,7 +96,8 @@ function Evidence({ evidence }: { evidence: SynergyEvidence }) {
   return (
     <>
       <p className="mt-4 text-xs text-muted">
-        SLAY2&rsquo;s judgement of how the cards work, partly checked. In{" "}
+        SLAY2&rsquo;s judgement of how the cards work,{" "}
+        {b2 ? "tested in simulation" : "partly checked"}. In{" "}
         <span className="num">{b1.bossFights.toLocaleString("en-US")}</span> simulated runs that
         brought a random deck to the Act&nbsp;1 boss, decks with fewer unmet needs, and with more
         Strength, Dexterity or Focus behind the cards they lift, got past it more often; the engine

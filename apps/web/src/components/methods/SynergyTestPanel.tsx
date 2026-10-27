@@ -23,6 +23,9 @@ const games = (n: number): string => n.toLocaleString("en-US");
 const WITH = "the pilot with the synergy term";
 const WITHOUT = "the same pilot without it";
 
+/** A phrase that starts a sentence. */
+const cap = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
+
 /** "0.7 of its first judgement" for a part that is kept in part, nothing for one kept whole. */
 export function configurationSentence(c: SynergyConfig): string {
   const part = (name: string, v: number): string =>
@@ -170,7 +173,7 @@ export function SynergyTestPanel({ test }: { test: SynergyTest }) {
         />
       </ul>
       <p>
-        <strong className="font-medium text-parchment">{WITH}</strong> and{" "}
+        <strong className="font-medium text-parchment">{cap(WITH)}</strong> and{" "}
         <strong className="font-medium text-parchment">{WITHOUT}</strong> are one rules pilot whose
         card-reward screen is decided by the deck index; the only difference is whether the index
         has its synergy term. Both skip a card only by the same rule (
@@ -235,7 +238,7 @@ export function SynergyTestPanel({ test }: { test: SynergyTest }) {
       <div className="mt-5 space-y-3">
         <p>
           <strong className="font-medium text-parchment">Got past the Act-2 boss.</strong>{" "}
-          {compare(p.reachedAct3, "Act-2", "with the term", "without it")}. Mean floors reached
+          {cap(compare(p.reachedAct3, "Act-2", "with the term", "without it"))}. Mean floors reached
           differ by{" "}
           <span className="num">
             {signed(p.floorDifference.meanAMinusB)} (95 % {range(p.floorDifference.ci95, 2)})
@@ -249,22 +252,26 @@ export function SynergyTestPanel({ test }: { test: SynergyTest }) {
             </strong>{" "}
             Against the index without the term and without a skip margin (what the page did before
             the term):{" "}
-            {compare(
-              test.noTermAtZero.reachedAct2,
-              "Act-1",
-              "as chosen",
-              "with no term and no margin",
+            {cap(
+              compare(
+                test.noTermAtZero.reachedAct2,
+                "Act-1",
+                "as chosen",
+                "with no term and no margin",
+              ),
             )}
             .
           </p>
         ) : null}
         <p>
           <strong className="font-medium text-parchment">Against measured card values.</strong>{" "}
-          {compare(
-            test.measured.reachedAct2,
-            "Act-1",
-            "the synergy pilot",
-            "the measured-values pilot",
+          {cap(
+            compare(
+              test.measured.reachedAct2,
+              "Act-1",
+              "the synergy pilot",
+              "the measured-values pilot",
+            ),
           )}
           . The hand-set index is not expected to beat what the simulator rewards (ADR-031,
           ADR-034); this reports how far apart they are, and is why the advisor keeps the measured

@@ -33,7 +33,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | M5 | Simulated pilots and searchers | policies | summaries only | paired held-out comparisons |
 | M6 | Combat networks (BC v1, PPO v1, PPO v2) | neural networks | **no** | no improvement over the baseline |
 | M7 | What does not exist | | | co-op, map, shop, rest, combat and Ancient-boon advisors; a live bridge |
-| M8 | The synergy term and its evidence | heuristic, read against simulated runs | yes | stage B1 read; the registered held-out stage B2 is pending (ADR-050) |
+| M8 | The synergy term and its evidence | heuristic, read against simulated runs and tested once on held-out seeds | yes | stage B1 read; the registered held-out stage B2 ran once and the term improves what a rules pilot picks in simulation (33.0 % against 26.0 % past the Act-1 boss, ADR-050) |
 
 ---
 
@@ -89,17 +89,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 3 | 6,000 | 5,985 | 23 | 15 | 0 |
+| Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
 | Defect | development (train, dev) | 9 | 15,000 | 14,989 | 18 | 11 | 0 |
-| Ironclad | held-out (val) | 7 | 12,300 | 12,263 | 28 | 37 | 0 |
+| Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
 | Ironclad | development (train, dev) | 21 | 24,910 | 24,872 | 23 | 28 | 10 |
-| Necrobinder | held-out (val) | 3 | 6,000 | 5,988 | 0 | 12 | 0 |
+| Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
 | Necrobinder | development (train, dev) | 11 | 16,000 | 15,993 | 0 | 5 | 2 |
-| Regent | held-out (val) | 3 | 6,000 | 5,950 | 2 | 8 | 42 |
+| Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
 | Regent | development (train, dev) | 9 | 15,000 | 14,906 | 0 | 2 | 92 |
-| Silent | held-out (val) | 3 | 6,000 | 5,999 | 0 | 1 | 0 |
+| Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
 | Silent | development (train, dev) | 9 | 15,000 | 14,998 | 0 | 2 | 0 |
-| **All classes** | **held-out (val)** | **19** | **36,300** | **36,185** | **53** | **73** | **42** |
+| **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
 | **All classes** | **development (train, dev)** | **59** | **85,910** | **85,758** | **41** | **48** | **104** |
 <!-- table:games:end -->
 
@@ -283,14 +283,28 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v2 | Necrobinder | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
 | rules_v2 | Regent | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
 | rules_v2 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
+| rules_v3 | Defect | 2000 | 1998 | 10 | 0.27 to 0.92 % | 21.86 | 2 · 0 |
 | rules_v3 | Ironclad | 2000 | 1996 | 6 | 0.14 to 0.65 % | 22.46 | 4 · 0 |
 | rules_v3 + Ironclad values v2 | Ironclad | 2000 | 1992 | 2 | 0.03 to 0.37 % | 23.19 | 8 · 0 |
+| rules_v3 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 20.28 | 3 · 0 |
+| rules_v3 | Regent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 18.44 | 0 · 10 |
+| rules_v3 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.01 | 0 · 0 |
 | rules_v2_neow_values | Defect | 2000 | 1990 | 16 | 0.50 to 1.30 % | 22.39 | 10 · 0 |
 | rules_v2_neow_values | Ironclad | 2000 | 1984 | 12 | 0.35 to 1.05 % | 22.69 | 16 · 0 |
 | rules_v2_neow_values | Necrobinder | 2000 | 1992 | 0 | 0.00 to 0.19 % | 20.62 | 8 · 0 |
 | rules_v2_neow_values | Regent | 2000 | 1976 | 1 | 0.01 to 0.29 % | 19.29 | 6 · 18 |
 | rules_v2_neow_values | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.53 | 0 · 0 |
 | search_v3 (every fight) | Ironclad | 300 | 300 | 2 | 0.18 to 2.40 % | 24.45 | 0 · 0 |
+| advisor_v1 | Defect | 2000 | 2000 | 0 | 0.00 to 0.19 % | 16.18 | 0 · 0 |
+| advisor_v1 | Defect | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.23 | 2 · 0 |
+| advisor_v1 | Ironclad | 2000 | 1997 | 2 | 0.03 to 0.36 % | 18.66 | 3 · 0 |
+| advisor_v1 | Ironclad | 2000 | 1998 | 0 | 0.00 to 0.19 % | 17.18 | 2 · 0 |
+| advisor_v1 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 16.44 | 3 · 0 |
+| advisor_v1 | Necrobinder | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.88 | 2 · 0 |
+| advisor_v1 | Regent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 14.31 | 1 · 9 |
+| advisor_v1 | Regent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.04 | 1 · 11 |
+| advisor_v1 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.61 | 0 · 0 |
+| advisor_v1 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.31 | 0 · 0 |
 <!-- table:policies:end -->
 
 **Every comparison that was made** (the held-out ones registered as shown, the development ones labelled; exact McNemar on the shared seeds, mean-floor differences with a seed bootstrap):
@@ -425,8 +439,36 @@ Co-op (declared `unsupported` by the capability endpoint, and no team or ally mo
 <!-- table:synergy_dev:end -->
 
 * **Reading (development):** with the synergy term on and no engine credit the simulated pilot got past the Act-1 boss in 32.6 % of games against 25.4 % without the term (the same 5,000 seeds); each class went the same way (Ironclad 39.0 to 50.3 %, Silent 6.3 to 8.2 %, Regent 11.3 to 19.3 %, Necrobinder 35.3 to 40.0 %, Defect 35.0 to 45.0 %; descriptive, nothing corrected for five readings). Crediting engines lowered that step by step and a skip margin made it worse. So the advisor page keeps unmet needs in full, the lift from Strength, Dexterity and Focus at 0.7 of the first judgement, **no engine credit** and **no skip margin** (`A*`, addendum D); it still names the engines a deck is building and says that the index does not count them. What this does not say: that the term helps on held-out seeds (that is stage B2-val), anything about the live game, or that engines do not matter to a player who builds one on purpose (the pilot does not). Choosing `A*` flipped four of the ordering tests a player could check by hand (a payoff led a deck that fed it by a wide margin only through the engine credit); addendum D lists them.
-* **Stage B2-val (registered before any game, pending):** the pilot with `A*` (needs 1, scalers 0.7, engines 0, margin 0) against the same pilot without the synergy term, on the 2,000 held-out `val` seeds of each class, five classes pooled into one exact test (ADR-050). Its result is not in yet; until it is, the advisor's panel says *Judgement, partly checked*.
-* **Intended use:** to say how far the synergy term is supported by simulated play. **Not for:** claims about the live game, about winning, or about people who build engines on purpose.
+* **Stage B2-val (the one registered held-out test, run on 2026-10-27; ADR-050 Result):** the pilot with `A*` (needs 1, scalers 0.7, engines 0, margin 0) against the same pilot without the synergy term (`d0*`), on the 2,000 held-out `val` seeds of each class, from a clean worktree of `452c5e2` (the commit that carries addendum D), five classes pooled into one exact McNemar test at level 0.05, paired by seed. **`A*` got past the Act-1 boss in 33.0 % of games against 26.0 %** (p = 3.8e-60; every class ahead). By the registered reading rule: **adding the synergy term improves what the heuristic index picks, in simulated play, on held-out seeds.** Every win is re-derived (`audit wins`) and each batch has its 40-game sample audit.
+
+<!-- table:synergy_val:begin -->
+| Comparison (paired by seed, held-out `val` seeds, A0, `veteran`) | Pairs with both games completed | Past the Act-1 boss, other → A* | Only A* / only the other | Exact McNemar | Past the Act-2 boss, other → A* | Wins, other → A* | Mean floors, A* minus other (95 %) |
+|---|---|---|---|---|---|---|---|
+| **`A*` against `d0*`, the index without the term, five classes pooled (the registered test)** | 9,975 | 26.0 % → 33.0 % | 1,273 / 577 | p = 3.8e-60 | 0.4 % → 0.4 % (p = 0.6) | 0 → 2 | +0.91 (+0.81 to +1.00) |
+| &nbsp;&nbsp;Ironclad | 1,996 | 38.4 % → 51.0 % | 408 / 158 | p = 1.8e-26 | | 0 → 2 | +1.47 |
+| &nbsp;&nbsp;Silent | 2,000 | 8.6 % → 10.8 % | 121 / 76 | p = 0.0017 | | 0 → 0 | +0.30 |
+| &nbsp;&nbsp;Regent | 1,984 | 14.1 % → 21.6 % | 225 / 76 | p = 2.9e-18 | | 0 → 0 | +1.27 |
+| &nbsp;&nbsp;Necrobinder | 1,997 | 36.7 % → 40.8 % | 195 / 113 | p = 3.5e-06 | | 0 → 0 | +0.56 |
+| &nbsp;&nbsp;Defect | 1,998 | 32.1 % → 40.6 % | 324 / 154 | p = 5.6e-15 | | 0 → 0 | +0.94 |
+| `A*` against `R`, `rules_v3` with the class's measured card values, five classes pooled (secondary) | 9,967 | 61.8 % → 33.0 % | 424 / 3,294 | p < 1e-300 | 2.9 % → 0.4 % (p = 4.9e-56) | 12 → 2 | −4.12 (−4.26 to −3.98) |
+<!-- table:synergy_val:end -->
+
+* **What each arm's decks held at the Act-1 boss (a profile, descriptive; the parts are read at their first judgement for both arms, `slay2_sim.synergyreport`):**
+
+<!-- table:synergy_val_profile:begin -->
+| Measure (decks that reached the Act-1 boss) | `A*` | `d0*` | `A*` minus `d0*`, paired by class and seed (95 %) |
+|---|---|---|---|
+| Card rewards skipped | 158 of 89,938 (0.18 %) | 108 of 84,870 (0.13 %) | |
+| Index points held back by unmet needs | −0.88 | −2.46 | +1.58 (+1.55 to +1.62) |
+| Index points added by Strength, Dexterity and Focus | 2.16 | 1.62 | +0.52 (+0.50 to +0.55) |
+| Index points the engines would add at their first judgement (`A*` does not count them) | 3.78 | 4.58 | −0.82 (−0.85 to −0.78) |
+| Index points from the average card rating | 33.43 | 34.02 | −0.62 (−0.65 to −0.60) |
+| Deck size (cards) | 19.53 | 19.49 | +0.01 (0.00 to +0.02) |
+| Decks at the boss | 7,129 | 6,613 | 6,145 pairs |
+<!-- table:synergy_val_profile:end -->
+
+* **Reading (held-out):** the term moves the share of simulated runs that get past the first boss by about 7 points (the development seeds had read 7.2), in every class, and the decks it builds hold fewer unmet needs (1.58 index points fewer) and more of the lift from Strength, Dexterity and Focus, for a slightly lower average card rating, with the same deck size and almost no skipping. It does **not** show an effect on getting past the second boss (0.4 % against 0.4 %, 44 against 39 games, p = 0.60: too few games to say), and two wins in 10,000 games say nothing about winning. The pilot that follows the measured card values (`R`) is far ahead of both (61.8 % past the Act-1 boss, 12 wins against 2): the hand-set index, with or without the term, is far from what the simulator rewards, which is why the site keeps the measured values as a separate second opinion. The tags were corrected against training and development runs (addenda A and B), and the strengths were chosen on `dev[4000:5000)`; nothing of the study read these seeds before the one run.
+* **Intended use:** to say how far the synergy term is supported by simulated play: it improves what a rules pilot picks at card rewards, as far as the first boss, in the simulator. **Not for:** claims about the live game, about winning, or about people who build engines on purpose.
 * **Limits:** one pilot, an unverified simulator (G5), Ascension 0, the first boss only, random decks; the tags were audited against the same runs; the engine credit is untestable with them.
 
 ---

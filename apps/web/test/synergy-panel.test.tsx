@@ -5,7 +5,7 @@ import { PART_WEIGHT, deckSynergy, type DeckEntry } from "@slay2/decision";
 import { getCard } from "@slay2/game-data";
 
 import { SynergyPanel } from "../src/components/advisor/SynergyPanel";
-import { SYNERGY_EVIDENCE, kept } from "../src/lib/synergy-evidence";
+import { SYNERGY_EVIDENCE, kept, verdictOf } from "../src/lib/synergy-evidence";
 
 import { fixtureTest, withTest } from "./fixtures/synergy-test";
 
@@ -86,8 +86,10 @@ describe("the synergy panel", () => {
     );
   });
 
-  it("says what it is: a judgement, with the study's own numbers and its limits", () => {
-    render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
+  it("says what it is before any held-out result: a judgement, with the study's own numbers and its limits", () => {
+    render(
+      <SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} evidence={withTest(null)} />,
+    );
     expect(screen.getByText("Judgement, partly checked")).toBeInTheDocument();
     const b1 = SYNERGY_EVIDENCE.b1;
     expect(b1).not.toBeNull();
@@ -110,6 +112,28 @@ describe("the synergy panel", () => {
     expect(
       screen.getAllByText(/\u22120\.0\d{3} \(95 % \u22120\.0\d{3} to \u22120\.0\d{3}\)/),
     ).toHaveLength(2);
+  });
+});
+
+const shipped = SYNERGY_EVIDENCE.b2;
+
+describe.runIf(shipped !== null)("the synergy panel with the shipped held-out result", () => {
+  it("is labelled by what the registered test showed, and quotes its own figures", () => {
+    if (!shipped) throw new Error("no B2 result");
+    render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
+    const label = {
+      ahead: "Judgement, tested in simulation",
+      "not-shown": "Judgement, not shown to help",
+      behind: "Judgement, worse in simulation",
+    }[verdictOf(shipped)];
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.queryByText("Judgement, partly checked")).toBeNull();
+    const e = shipped.primary.reachedAct2;
+    const text = screen.getByText(/The registered test\./).closest("p")?.textContent ?? "";
+    expect(text).toContain(`${(e.a.rate * 100).toFixed(1)}%`);
+    expect(text).toContain(`${(e.b.rate * 100).toFixed(1)}%`);
+    expect(text).toContain("same pilot without the synergy term");
+    expect(screen.queryByText(/its result is not in yet/)).toBeNull();
   });
 });
 
