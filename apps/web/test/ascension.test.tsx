@@ -292,7 +292,7 @@ describe("the note under a finding", () => {
     for (const f of ["synergy", "values"] as const) {
       const silent = ascensionNote(f, 9, true, data, "silent")?.text;
       expect(silent).toContain(
-        "In the games of your own class alone at Ascension 9 the other arm was ahead (120 pairs against 80",
+        "In the games of your own class alone at Ascension 9 the other arm was ahead (120 pairs only with the other arm against 80 only with the first",
       );
       expect(ascensionNote(f, 9, true, data, "ironclad")?.text).not.toContain("your own class");
       expect(ascensionNote(f, 9, true, data)?.text).not.toContain("your own class");

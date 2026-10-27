@@ -251,7 +251,7 @@ function beside(t: AscensionTest): string {
 function classReversal(t: AscensionTest, character: string | undefined): string {
   const c = character ? t.classes[character.toLowerCase()] : undefined;
   if (!c?.behind) return "";
-  return ` In the games of your own class alone at Ascension 9 the other arm was ahead (${String(c.bOnly)} pairs against ${String(c.aOnly)}, ${pText(c.p)}).`;
+  return ` In the games of your own class alone at Ascension 9 the other arm was ahead (${String(c.bOnly)} pairs only with the other arm against ${String(c.aOnly)} only with the first, ${pText(c.p)}).`;
 }
 
 function whereYouAre(level: number): string {
