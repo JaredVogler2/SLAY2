@@ -1,16 +1,19 @@
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { NeowRepeatBlock } from "@/components/methods/NeowRepeatBlock";
 import { Tile } from "@/components/ui/Tile";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier } from "@/lib/cardvalues";
 import { formatP, pct, signed } from "@/lib/methods-data";
 import {
+  NEOW,
   classAlpha,
   classResult,
   neowTest,
   neowValues,
   relicValues,
+  type NeowData,
   type NeowMember,
 } from "@/lib/neow";
 import type { PlayableClass } from "@slay2/game-data";
@@ -44,13 +47,13 @@ function MemberRow({ m }: { m: NeowMember }) {
  * The opening Ancient's relics as simulated runs measured them (ADR-041), and the one held-out test of playing by the values.
  * Every number is read from the exporter's file; the words around the test follow from whether it passed.
  */
-export function NeowValuesPanel() {
-  const values = neowValues();
+export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
+  const values = neowValues(data);
   if (!values) {
     return null;
   }
-  const test = neowTest();
-  const relics = relicValues();
+  const test = neowTest(data);
+  const relics = relicValues(data);
   const flagged = relics.filter((r) => r.exclusionFlag);
   const byPassRate = [...values.classes].sort((a, b) => a.passRate - b.passRate);
   const lowest = byPassRate[0];
@@ -61,7 +64,7 @@ export function NeowValuesPanel() {
   const notAdvised =
     test?.passed === true
       ? test.members
-          .filter((m) => !classResult(m.character)?.helped)
+          .filter((m) => !classResult(m.character, data)?.helped)
           .map((m) => classLabel(m.character))
       : [];
   return (
@@ -84,7 +87,10 @@ export function NeowValuesPanel() {
         cross-validated by seed: log-loss {values.model.cvLogLoss.toFixed(3)} with the relics
         against {values.model.baselineLogLoss.toFixed(3)} with the class alone (AUC{" "}
         {values.model.cvAuc.toFixed(3)}). Intervals resample whole seeds, because the games of one
-        seed share the offer and the relic taken ({values.model.bootstrapDraws} draws).
+        seed share the offer and the relic taken ({values.model.bootstrapDraws} draws).{" "}
+        {values.relicsKept
+          ? "These runs kept the relics they gained, as the game does (the pinned simulator drops them; a harness variant repairs that: gap G14)."
+          : "These runs kept only two relics, the starting one and the opening pick, because the pinned simulator drops every relic a run gains after its first fight (gap G14)."}
       </p>
 
       {test ? (
@@ -198,6 +204,8 @@ export function NeowValuesPanel() {
           which relic to take.
         </p>
       )}
+
+      <NeowRepeatBlock data={data} />
 
       <section className="mt-6" aria-labelledby="neow-values-heading">
         <ScrollRegion label="Measured values of the opening relics">

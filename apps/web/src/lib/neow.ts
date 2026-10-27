@@ -33,6 +33,8 @@ export interface ClassBaseline {
 
 export interface NeowValues {
   readonly file: string;
+  /** whether the runs the values were fitted from kept the relics they gained (the pinned simulator drops them: gap G14, ADR-052) */
+  readonly relicsKept: boolean;
   readonly sha256: string;
   readonly outcome: string;
   readonly ascension: number;
@@ -94,6 +96,8 @@ export interface NeowMember {
 /** The held-out test of a pilot that takes the best-measured relic against one that takes the first helpful relic (ADR-041). */
 export interface NeowTest {
   readonly id: string;
+  /** whether both arms were played with the relics kept (the first study's were not: gap G14, ADR-052) */
+  readonly relicsKept: boolean;
   readonly contentSha256: string;
   readonly valuesSha256: string;
   readonly a: string;
@@ -127,9 +131,54 @@ export interface StartHpGap {
   readonly comparison: string;
 }
 
-export interface NeowData {
+/** The values of one fit of the opening relics and the one held-out test of the rule built on them (each may not exist yet). */
+export interface NeowStudy {
   readonly values: NeowValues | null;
   readonly test: NeowTest | null;
+}
+
+/** A descriptive comparison of the two fits (slay2_sim.neowcompare, ADR-055); not a test. Relics are the simulator's labels. */
+export interface NeowComparison {
+  readonly file: string;
+  readonly relicsInBoth: number;
+  /** Spearman correlation of the two sets of values over those relics */
+  readonly spearman: number | null;
+  /** the k best and k worst relics of one compared with the other's */
+  readonly k: number;
+  readonly bestShared: number;
+  readonly worstShared: number;
+  /** relics whose 95 % intervals do not overlap */
+  readonly disjointIntervals: number;
+  readonly onlyInFirst: readonly string[];
+  readonly onlyInRepeated: readonly string[];
+  /** the relic each fit would take first */
+  readonly bestInFirst: string;
+  readonly bestInRepeated: string;
+  /** two measurements of the same game: the repeated study's games split by the parity of the seed */
+  readonly noise: {
+    readonly relicsInBoth: number;
+    readonly seeds: readonly number[];
+    readonly spearman: number | null;
+    /** the same corrected to the full number of games, 2r / (1 + r) */
+    readonly spearmanBrown: number | null;
+  };
+}
+
+/** The opening-relic study played again with the relics kept (ADR-055): its fit, its one test, the old rule in the new game and how the fits differ. */
+export interface NeowRepeated extends NeowStudy {
+  /** the first study's values played in the game with the relics kept, against the same baseline (no decision depends on it) */
+  readonly secondary: NeowTest | null;
+  readonly comparison: NeowComparison | null;
+}
+
+export interface NeowData {
+  /** the values and the test the advisor reads: the first study's, or the repeated one's once its test has been run */
+  readonly values: NeowValues | null;
+  readonly test: NeowTest | null;
+  /** which study `values` and `test` belong to, "first" or "repeated"; absent in a test's own data (then they are the first's) */
+  readonly study?: string;
+  readonly first?: NeowStudy | null;
+  readonly repeated?: NeowRepeated | null;
   /** by lower-case class id; only a class whose gap was measured has an entry (empty in a test's own data) */
   readonly startHpGaps?: Readonly<Record<string, StartHpGap>>;
 }
@@ -140,6 +189,19 @@ const DATA = NEOW;
 
 export function neowValues(data: NeowData = DATA): NeowValues | null {
   return data.values;
+}
+
+/**
+ * Which study the pages show: the first, or the one repeated with the relics kept (ADR-055) once its one test has been run,
+ * whichever way that came out. Before that the first study stays on the pages and the repetition is only described.
+ */
+export function neowStudy(data: NeowData = DATA): "first" | "repeated" {
+  return data.study === "repeated" ? "repeated" : "first";
+}
+
+/** Whether the shown values were measured in runs that kept the relics they gained, as the game does (gap G14, ADR-052). */
+export function neowRelicsKept(data: NeowData = DATA): boolean {
+  return data.values?.relicsKept === true;
 }
 
 export function neowTest(data: NeowData = DATA): NeowTest | null {
@@ -402,7 +464,7 @@ export function neowCoverage(data: NeowData = DATA): {
   if (!v) {
     return { state: "none", detail: "not measured yet" };
   }
-  const measured = `${String(v.relics.length)} relics measured in ${v.games.toLocaleString("en-US")} simulated games`;
+  const measured = `${String(v.relics.length)} relics measured in ${v.games.toLocaleString("en-US")} simulated games${v.relicsKept ? " that kept the relics a run gains" : ""}`;
   const t = data.test;
   if (!t) {
     return { state: "untested", detail: `${measured}, not tested against play yet` };

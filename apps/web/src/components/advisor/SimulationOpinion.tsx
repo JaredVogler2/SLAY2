@@ -82,10 +82,9 @@ export function SimulationOpinion({
           : "Every simulated run was played in Overgrowth, the Act 1 every profile starts with. The simulator never plays Underdocks."}
       </p>
       <p className="mt-3 text-xs text-dim">
-        In the simulator a run keeps only the relics it has when its first fight starts (gap G14),
-        so these runs held two where yours may hold more. With the relics kept, the same pilot went
-        about three floors further, so read the values below as a ranking of cards in a harsher game
-        than yours.
+        {set?.relicsKept
+          ? "These simulated runs kept the relics they gained, as the game does (the pinned simulator drops them; a harness variant repairs that, gap G14). One rules pilot played them in a simulator that has not been compared with the live game, so read the values below as a ranking of cards in a simulated game, not in yours."
+          : "In the simulator a run keeps only the relics it has when its first fight starts (gap G14), so these runs held two where yours may hold more. With the relics kept, the same pilot went about three floors further, so read the values below as a ranking of cards in a harsher game than yours."}
       </p>
       <StartHpNote
         character={run.character ?? ""}

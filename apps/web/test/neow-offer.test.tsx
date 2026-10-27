@@ -23,6 +23,7 @@ function relic(label: string, kind: string, beta: number, half = 0.1, over = {})
 
 const VALUES: NeowValues = {
   file: "experiments/neow/neow-values-v1.json",
+  relicsKept: false,
   sha256: "a".repeat(64),
   outcome: "the run gets past the Act-1 boss",
   ascension: 0,
@@ -98,6 +99,7 @@ function test(passed: boolean): NeowTest {
   };
   return {
     id: "pooled-neow-values-v2-vs-rules_v2-val",
+    relicsKept: false,
     contentSha256: "b".repeat(64),
     valuesSha256: "a".repeat(64),
     a: "rules_v2_neow_values",

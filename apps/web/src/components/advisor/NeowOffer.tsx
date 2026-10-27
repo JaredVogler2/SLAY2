@@ -18,6 +18,7 @@ import {
   assessOffer,
   averageChance,
   chanceWith,
+  neowStudy,
   offerVerdict,
   type NeowData,
   type OfferLine,
@@ -33,7 +34,15 @@ const games = (n: number): string => n.toLocaleString("en-US");
 const pText = (p: number): string =>
   p === 0 ? "p < 1e-300" : `p = ${p < 1e-4 ? p.toExponential(1) : p.toPrecision(2)}`;
 
-function VerdictText({ verdict, label }: { verdict: OfferVerdict; label: string }) {
+function VerdictText({
+  verdict,
+  label,
+  data,
+}: {
+  verdict: OfferVerdict;
+  label: string;
+  data: NeowData;
+}) {
   switch (verdict.kind) {
     case "empty":
     case "single":
@@ -48,13 +57,18 @@ function VerdictText({ verdict, label }: { verdict: OfferVerdict; label: string 
     case "not-improved": {
       const t = verdict.test;
       const p = t.reachedAct2.pairedTable.mcnemar_p;
+      // the first study (simulated runs that dropped the relics they gained) found the rule helpful; this one, which kept them, did not
+      const earlier = neowStudy(data) === "repeated" ? data.first?.test : null;
       return (
         <p className="rounded-lg border border-copper-deep/70 bg-copper/10 p-3 text-sm text-copper">
           SLAY2 does not say which relic to take. In the held-out test a simulated pilot that took
           the best-measured relic got past the Act-1 boss in {percent(t.reachedAct2.a.rate)} of{" "}
           {games(t.bothCompleted)} games against {percent(t.reachedAct2.b.rate)} for one that took
-          the first helpful relic ({pText(p)}), so it did not improve play. The numbers below are
-          measurements, not advice.
+          the first helpful relic ({pText(p)}), so it did not improve play.
+          {earlier?.passed
+            ? ` An earlier study, in simulated runs that dropped every relic they gained after the first fight, found the opposite (${percent(earlier.reachedAct2.a.rate)} against ${percent(earlier.reachedAct2.b.rate)}, ${pText(earlier.reachedAct2.pairedTable.mcnemar_p)}); this one keeps the relics, as the game does, so it is the one SLAY2 follows.`
+            : ""}{" "}
+          The numbers below are measurements, not advice.
         </p>
       );
     }
@@ -276,7 +290,7 @@ export function NeowOffer({
           </p>
         ) : null}
         <div aria-live="polite" className="space-y-3">
-          <VerdictText verdict={verdict} label={label} />
+          <VerdictText verdict={verdict} label={label} data={data} />
         </div>
         {assessment.lines.length > 0 ? (
           <ul
@@ -312,10 +326,11 @@ export function NeowOffer({
           </li>
           <li>
             One rules pilot played them, the simulator has not been compared with the live game, the
-            Ancients of acts two and three are not simulated, and a simulated run keeps no relic it
-            gains after its first fight (gap G14), so the relic offered here was measured as the
-            only extra one a run holds. Your deck, your plans and what you know of the run matter
-            more than a single number.
+            Ancients of acts two and three are not simulated, and{" "}
+            {data.values.relicsKept
+              ? "the simulated runs kept the relics they gained, as the game does (the pinned simulator drops them; a harness variant repairs that, gap G14), so the relic offered here was measured among the relics a run goes on to gain."
+              : "a simulated run keeps no relic it gains after its first fight (gap G14), so the relic offered here was measured as the only extra one a run holds."}{" "}
+            Your deck, your plans and what you know of the run matter more than a single number.
           </li>
           <li>
             The method, every value and the one held-out test are on{" "}
