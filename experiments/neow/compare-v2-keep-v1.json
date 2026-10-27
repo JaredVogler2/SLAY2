@@ -1,0 +1,43 @@
+{
+  "a": {
+    "file": "experiments/neow/neow-values-v2.json",
+    "games": 14933,
+    "pass_rate": 0.5422,
+    "relics": 27,
+    "sha256": "b1afa02c47c5bc74df31ed2d8d40ae53dc5b514c34a07e4e5399ed474845877c"
+  },
+  "b": {
+    "file": "experiments/neow/neow-values-keep-v1.json",
+    "games": 14611,
+    "pass_rate": 0.6393,
+    "relics": 27,
+    "sha256": "cb9f166754f410558eb33bbb79a35152ff1e69f595dfb3729ad2435c7ef496d8"
+  },
+  "comparison": {
+    "best_in_a": "Silver Crucible",
+    "best_in_b": "Nutritious Oyster",
+    "best_k_in_both": 4,
+    "disjoint_ci95": 3,
+    "k": 5,
+    "relics_in_both": 27,
+    "relics_only_in_a": [],
+    "relics_only_in_b": [],
+    "spearman": 0.8638583638583639,
+    "worst_k_in_both": 3
+  },
+  "kind": "neow-value-comparison",
+  "noise_reference": {
+    "best_k_in_both": 4,
+    "definition": "the second file's games split by the parity of the game seed, each half fitted like the full data, Spearman correlation of the two halves and the same corrected to the full number of games as 2r/(1+r)",
+    "k": 5,
+    "relics_in_both": 27,
+    "seeds": [
+      1506,
+      1490
+    ],
+    "spearman": 0.8968253968253969,
+    "spearman_brown": 0.9456066945606695,
+    "worst_k_in_both": 4
+  },
+  "schema": 1
+}

@@ -11,9 +11,41 @@
       },
       "drift": "compare-ironclad-a0-v1-v2.json"
     },
-    { "file": "silent-a0-v1.json" },
-    { "file": "regent-a0-v1.json" },
-    { "file": "necrobinder-a0-v1.json" },
-    { "file": "defect-a0-v1.json" }
+    {
+      "file": "silent-a0-keep-v1.json",
+      "supersedes": "silent-a0-v1.json",
+      "test": {
+        "comparison": "rules_v3-keepvals-vs-curvals-silent-a0-veteran-keeprelics-val",
+        "against": "current-values"
+      },
+      "drift": "compare-silent-a0-current-vs-keep-v1.json"
+    },
+    {
+      "file": "regent-a0-keep-v1.json",
+      "supersedes": "regent-a0-v1.json",
+      "test": {
+        "comparison": "rules_v3-keepvals-vs-curvals-regent-a0-veteran-keeprelics-val",
+        "against": "current-values"
+      },
+      "drift": "compare-regent-a0-current-vs-keep-v1.json"
+    },
+    {
+      "file": "necrobinder-a0-keep-v1.json",
+      "supersedes": "necrobinder-a0-v1.json",
+      "test": {
+        "comparison": "rules_v3-keepvals-vs-curvals-necrobinder-a0-veteran-keeprelics-val",
+        "against": "current-values"
+      },
+      "drift": "compare-necrobinder-a0-current-vs-keep-v1.json"
+    },
+    {
+      "file": "defect-a0-keep-v1.json",
+      "supersedes": "defect-a0-v1.json",
+      "test": {
+        "comparison": "rules_v3-keepvals-vs-curvals-defect-a0-veteran-keeprelics-val",
+        "against": "current-values"
+      },
+      "drift": "compare-defect-a0-current-vs-keep-v1.json"
+    }
   ]
 }

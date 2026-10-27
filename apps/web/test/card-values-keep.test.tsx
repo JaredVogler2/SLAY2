@@ -59,6 +59,14 @@ describe("the card values measured again with the relics kept, on /methods", () 
     expect(box.textContent).not.toMatch(/New values ahead|New values behind/);
   });
 
+  it("says what leaving out the games that ended in a simulator error does when the relics are kept", () => {
+    const box = block(fixtureKeepValues(700, 540));
+    expect(box).toHaveTextContent(
+      "which with the relics kept come deep into a run, after the Act-1 boss in nearly every case (ADR-053), so leaving them out of the pair reads the share past the boss slightly low in both arms alike",
+    );
+    expect(box.textContent).not.toContain("which says nothing about play");
+  });
+
   it("loss: says the current values did better and that every current set stays", () => {
     const box = block(fixtureKeepValues(540, 700));
     expect(box).toHaveTextContent("new values behind");

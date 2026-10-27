@@ -472,10 +472,12 @@ export function SynergyKeepTestPanel({
         configuration, the same level ({test.alpha}), the same kind of held-out seeds (
         {games(p.pairedSeeds)} pairs, {games(p.bothCompleted)} completed by both;{" "}
         {games(p.notFinished.a)} games of the pilot with the term and {games(p.notFinished.b)} of
-        the one without ended in a simulator error or a timeout, which says nothing about play, and
-        are left out of the pair). Primary endpoint: the share of games that got past the Act-1
-        boss, paired by seed, pooled over the five classes, exact McNemar test, one test.{" "}
-        {pct(e.a.rate, 1)} with the term against {pct(e.b.rate, 1)} without it, a difference of{" "}
+        the one without ended in a simulator error or a timeout, which with the relics kept come
+        deep into a run, after the Act-1 boss in nearly every case (ADR-053), so leaving them out of
+        the pair reads the share past the boss slightly low in both arms alike). Primary endpoint:
+        the share of games that got past the Act-1 boss, paired by seed, pooled over the five
+        classes, exact McNemar test, one test. {pct(e.a.rate, 1)} with the term against{" "}
+        {pct(e.b.rate, 1)} without it, a difference of{" "}
         <span className="num">
           {signed(p.clusteredDifference.meanAMinusB * 100, 1)} points (95 %{" "}
           {signed((p.clusteredDifference.ci95[0] ?? 0) * 100, 1)} to{" "}
