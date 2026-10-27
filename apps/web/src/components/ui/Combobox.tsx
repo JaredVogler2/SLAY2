@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
@@ -38,6 +38,19 @@ export function Combobox<T>({
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const results = useMemo(() => search(query).slice(0, 8), [query, search]);
+  // The list closes a moment after the box loses focus (so that a click on an option registers first). That close belongs to the blur that
+  // set it: coming back to the box before it runs must cancel it, or it shuts the list under someone who has already typed again.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const cancelClose = (): void => {
+    clearTimeout(closeTimer.current);
+    closeTimer.current = undefined;
+  };
+  useEffect(
+    () => () => {
+      clearTimeout(closeTimer.current);
+    },
+    [],
+  );
 
   const choose = (item: T | undefined): void => {
     if (item === undefined) {
@@ -79,11 +92,14 @@ export function Combobox<T>({
           setActive(0);
         }}
         onFocus={() => {
+          cancelClose();
           setOpen(true);
         }}
         onBlur={() => {
           // delay so a click on an option registers first
-          setTimeout(() => {
+          cancelClose();
+          closeTimer.current = setTimeout(() => {
+            closeTimer.current = undefined;
             setOpen(false);
           }, 120);
         }}
