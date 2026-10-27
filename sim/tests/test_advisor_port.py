@@ -45,10 +45,15 @@ def test_every_golden_case_is_reproduced(index):
         assert close(terms.coverage[group], value), (group, terms.coverage[group], value)
     assert close(advisor.total(terms), wt["total"])
 
+    # the engines the index counts (the page keeps none of them, ADR-050 addendum D) and, beside them, the engine formula as first judged
     engines = advisor.engines_of(deck, character=character)
     assert {m: v for m, v in engines.items() if v != 0}.keys() == case["engines"].keys()
     for mechanic, value in case["engines"].items():
         assert close(engines[mechanic], value), (mechanic, engines[mechanic], value)
+    judged = advisor.engines_of(deck, advisor.Model(), character)
+    assert {m: v for m, v in judged.items() if v != 0}.keys() == case["enginesJudged"].keys()
+    for mechanic, value in case["enginesJudged"].items():
+        assert close(judged[mechanic], value), (mechanic, judged[mechanic], value)
 
     ranking = advisor.rank_options(deck, case["offered"], act, case["risk"], character=character)
     assert [r[0] for r in ranking] == [r[0] for r in case["ranking"]]
@@ -62,6 +67,7 @@ def test_the_golden_file_covers_what_the_port_must_get_right():
     assert {c["actIndex"] for c in data} == {0, 1, 2}
     assert any(c["terms"]["synergy"] < 0 for c in data) and any(c["terms"]["synergy"] > 0 for c in data)
     assert any(c["profile"]["size"] > 30 for c in data)
+    assert any(c["enginesJudged"] for c in data)
 
 
 def test_the_vocabulary_is_the_tag_files_own():

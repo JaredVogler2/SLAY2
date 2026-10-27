@@ -14,6 +14,7 @@ import {
 
 import {
   GROUPS,
+  PART_WEIGHT,
   baseWeights,
   enginesOf,
   mulberry32,
@@ -58,7 +59,10 @@ interface GoldenCase {
     readonly synergy: number;
     readonly total: number;
   };
+  /** the engines the index counts: `PART_WEIGHT.engines` of `enginesJudged`, which is nothing at the strengths the page keeps */
   readonly engines: Readonly<Record<string, number>>;
+  /** the engines as first judged, before the part weight: what the port's engine formula must reproduce whatever the index counts */
+  readonly enginesJudged: Readonly<Record<string, number>>;
   readonly ranking: readonly (readonly [string, number])[];
 }
 
@@ -96,6 +100,7 @@ function buildCase(index: number): GoldenCase {
   const profile = profileDeck(entries, actIndex, character);
   const terms = scoreTerms(profile, weights);
   const engines = enginesOf(entries, character);
+  const enginesJudged = enginesOf(entries, character, false);
   const ranking = rankWith(
     weights,
     profile,
@@ -129,6 +134,11 @@ function buildCase(index: number): GoldenCase {
     },
     engines: Object.fromEntries(
       MECHANIC_IDS.flatMap((m) => (engines[m] === 0 ? [] : ([[m, engines[m]]] as const))),
+    ),
+    enginesJudged: Object.fromEntries(
+      MECHANIC_IDS.flatMap((m) =>
+        enginesJudged[m] === 0 ? [] : ([[m, enginesJudged[m]]] as const),
+      ),
     ),
     ranking: ranking.map((r) => [r.action.kind === "skip" ? "skip" : r.action.cardId, r.delta]),
   };
@@ -193,7 +203,16 @@ describe("the deck index's golden cases (the Python port is tested against them)
     const golden = build();
     expect(new Set(golden.cases.map((c) => c.character)).size).toBe(PLAYABLE_CLASSES.length);
     expect(new Set(golden.cases.map((c) => c.actIndex))).toEqual(new Set([0, 1, 2]));
-    expect(golden.cases.some((c) => Object.keys(c.engines).length > 0)).toBe(true);
+    // the engines are checked as first judged: the index counts none of them at the strengths the page keeps (ADR-050 addendum C)
+    expect(golden.cases.some((c) => Object.keys(c.enginesJudged).length > 0)).toBe(true);
+    for (const c of golden.cases) {
+      expect(Object.keys(c.engines).length).toBeLessThanOrEqual(
+        Object.keys(c.enginesJudged).length,
+      );
+      for (const [m, v] of Object.entries(c.enginesJudged)) {
+        expect(c.engines[m] ?? 0).toBeCloseTo(PART_WEIGHT.engines * v, 12);
+      }
+    }
     expect(golden.cases.some((c) => c.terms.synergy < 0)).toBe(true);
     expect(golden.cases.some((c) => c.terms.synergy > 0)).toBe(true);
     expect(golden.cases.some((c) => c.profile.size > 30)).toBe(true);

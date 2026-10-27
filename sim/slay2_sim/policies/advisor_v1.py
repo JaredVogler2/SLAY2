@@ -9,8 +9,8 @@ skipping ranks first. A deck at the size cap (``max_deck``, as in rules_v2) skip
 Everything else (map, shop, rest, events, combat, elite thresholds) is rules_v3, so two advisor_v1 arms that differ only in the
 index's parameters differ only in the cards they take. The parameters are ``synergy`` (the advisor's weight for the whole synergy
 term; 0 switches it off) and ``needs`` / ``scalers`` / ``engines`` (how much of each hand-set part the index keeps, see
-``advisor.Model``), ``risk`` ("safe", "balanced", "aggressive"; the page's default is balanced) and ``margin`` (the index points a
-card must add over skipping to be taken; 0 is what the page does, and it almost never recommends skipping).
+``advisor.Model``; left out, what the page keeps, ``advisor.DEFAULT_MODEL``), ``risk`` ("safe", "balanced", "aggressive"; the page's
+default is balanced) and ``margin`` (the index points a card must add over skipping to be taken; 0 is what the page does).
 
 Fair: the policy sees the deck and the offered card ids (a human sees both), the act, and the public catalog; no hidden state.
 It does not use the Act-1 version or boss the page can take as an input, so it is the page without that optional context.
@@ -29,8 +29,19 @@ class AdvisorCards:
     """The card-reward screen, decided by the deck index; any other screen (relics, potions) is rules_v1's."""
 
     def __init__(
-        self, synergy: float = 1.0, needs: float = 1.0, scalers: float = 1.0, engines: float = 1.0, risk: str = "balanced", margin: float = 0.0, **params
+        self,
+        synergy: float = 1.0,
+        needs: float | None = None,
+        scalers: float | None = None,
+        engines: float | None = None,
+        risk: str = "balanced",
+        margin: float = 0.0,
+        **params,
     ):
+        # a part left out is what the website keeps of it (``advisor.DEFAULT_MODEL``); a study names every part it varies
+        needs = advisor.DEFAULT_MODEL.needs if needs is None else needs
+        scalers = advisor.DEFAULT_MODEL.scalers if scalers is None else scalers
+        engines = advisor.DEFAULT_MODEL.engines if engines is None else engines
         super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, margin=margin, **params)
         if risk not in advisor.RISK_MULTIPLIERS:
             raise ValueError(f"unknown risk {risk!r}; known: {sorted(advisor.RISK_MULTIPLIERS)}")

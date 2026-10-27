@@ -1,11 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { deckSynergy, type DeckEntry } from "@slay2/decision";
+import { PART_WEIGHT, deckSynergy, type DeckEntry } from "@slay2/decision";
 import { getCard } from "@slay2/game-data";
 
 import { SynergyPanel } from "../src/components/advisor/SynergyPanel";
-import { SYNERGY_EVIDENCE } from "../src/lib/synergy-evidence";
+import { SYNERGY_EVIDENCE, kept } from "../src/lib/synergy-evidence";
 
 import { fixtureTest, withTest } from "./fixtures/synergy-test";
 
@@ -37,6 +37,34 @@ describe("the synergy panel", () => {
     expect(engines).toHaveTextContent("Burning Pact");
     expect(engines).toHaveTextContent("used by Feel No Pain");
     expect(screen.queryByRole("list", { name: "Cards waiting for support" })).toBeNull();
+  });
+
+  it("names the engines but says that the ranking does not count them (the page keeps none of an engine's strength, ADR-050 addendum D)", () => {
+    expect(PART_WEIGHT.engines).toBe(0);
+    render(
+      <SynergyPanel
+        synergy={deck(
+          "ironclad",
+          ["STRIKE_IRONCLAD", 5],
+          ["BURNING_PACT", 2],
+          ["TRUE_GRIT", 1],
+          ["FEEL_NO_PAIN", 1],
+        )}
+      />,
+    );
+    expect(screen.getByRole("list", { name: "Engines in your deck" })).toHaveTextContent(
+      "used by Feel No Pain",
+    );
+    expect(screen.getByText(/the ranking above does not count engines/)).toBeInTheDocument();
+  });
+
+  it("says what the index keeps of each part, in words", () => {
+    render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
+    expect(
+      screen.getByText(
+        /The index counts unmet needs in full, the lift from Strength, Dexterity and Focus at 0\.70 of its first judgement and engines not at all/,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("lists a payoff that nothing feeds as waiting, with how much of its rating is held back", () => {
@@ -82,6 +110,16 @@ describe("the synergy panel", () => {
     expect(
       screen.getAllByText(/\u22120\.0\d{3} \(95 % \u22120\.0\d{3} to \u22120\.0\d{3}\)/),
     ).toHaveLength(2);
+  });
+});
+
+describe("what the index keeps, in words", () => {
+  it("says in full, not at all, or how much of the first judgement", () => {
+    expect(kept(1)).toBe("in full");
+    expect(kept(1.2)).toBe("in full");
+    expect(kept(0)).toBe("not at all");
+    expect(kept(0.7)).toBe("at 0.70 of its first judgement");
+    expect(kept(0.25)).toBe("at 0.25 of its first judgement");
   });
 });
 

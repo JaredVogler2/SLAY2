@@ -235,6 +235,8 @@ test.describe("advisor journey", () => {
     await addToDeck(page, "true grit");
     const supported = await openOption(page, "Feel No Pain");
     await expect(supported).toContainText("Builds your Exhaust engine");
+    // the index does not count engines (ADR-050 addendum D): the reason is there, with no points, and says so
+    await expect(supported).toContainText("The index does not count engines");
     await expect(supported).toContainText("Burning Pact");
     await expect(supported).not.toContainText("nothing in your deck yet");
     expect(await indexChange(supported)).toBeGreaterThan(heldBack + 0.5);
@@ -246,6 +248,7 @@ test.describe("advisor journey", () => {
     await expect(engines).toContainText("Burning Pact");
     await expect(engines).toContainText("True Grit");
     await expect(engines).toContainText("used by Feel No Pain");
+    await expect(panel).toContainText("the ranking above does not count engines");
   });
 
   test("synergy: a payoff the deck cannot feed is listed as waiting for support, a payoff it can feed is not", async ({
@@ -303,6 +306,11 @@ test.describe("advisor journey", () => {
         : "registered before any of its games",
     );
     await expectNoHorizontalOverflow(page);
+    // opening the disclosure scrolls the page, and the sticky header can then cover the top of a button further up the page for a
+    // moment (axe reports that as a target too small to hit); the scan is of the page, so it is taken from the top
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
     await expectNoSeriousA11yViolations(page, "advisor with the synergy panel");
     // the study itself, with its figures by class, is one link away
     await panel.getByRole("link", { name: "Evidence & methods" }).click();

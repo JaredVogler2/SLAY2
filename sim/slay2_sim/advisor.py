@@ -140,15 +140,19 @@ Deck = Mapping[str, int]  # card id -> copies
 
 @dataclass(frozen=True)
 class Model:
-    """How much of each hand-set part of the synergy term the index keeps (1 is the first judgement; the website's constants are
-    ``DEFAULT_MODEL``). Studies vary these to ask which parts the simulated runs support (``slay2_sim.synergystudy``)."""
+    """How much of each hand-set part of the synergy term the index keeps (1 is the first judgement, which is what ``Model()`` is;
+    the website's constants are ``DEFAULT_MODEL``). Studies vary these to ask which parts the simulated runs support
+    (``slay2_sim.synergystudy``)."""
 
     needs: float = 1.0     # multiplies how much of a card's rating an unmet need holds back
     scalers: float = 1.0   # multiplies what Strength, Dexterity and Focus add to the cards they lift
     engines: float = 1.0   # multiplies what sources and payoffs together add
 
 
-DEFAULT_MODEL = Model()
+# What the website's index keeps of each part: the strengths of the pilot with the synergy term that the development stage chose
+# (ADR-050 addendum D). `packages/decision/src/synergy.ts` `PART_WEIGHT` holds the same three numbers; a test and the held-out
+# test's preflight compare them.
+DEFAULT_MODEL = Model(needs=1.0, scalers=0.7, engines=0.0)
 
 
 def saturation(mechanic: str, supply: float) -> float:

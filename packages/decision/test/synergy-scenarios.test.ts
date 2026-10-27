@@ -58,7 +58,11 @@ interface Twin {
   readonly card: string;
   readonly supported: Extras;
   readonly bare: Extras;
-  /** The smallest number of index points of synergy the supported deck must be ahead by (default 0.5). */
+  /**
+   * The smallest number of index points of synergy the supported deck must be ahead by (default 0.5). Where it is lower, the
+   * margin is what the strengths the page keeps (ADR-050 addendum D: engines 0, scalers 0.7) give, rounded down to a tenth; the
+   * first judgement gave more (addendum C, rule 2).
+   */
   readonly margin?: number;
   readonly act?: 0 | 1 | 2;
 }
@@ -71,6 +75,8 @@ interface Order {
   readonly first: string;
   /** Cards that must score below skipping. */
   readonly belowSkip?: string[];
+  /** Cards that must score above skipping. */
+  readonly aboveSkip?: string[];
   readonly act?: 0 | 1 | 2;
 }
 
@@ -124,6 +130,7 @@ const TWINS: Twin[] = [
     card: "BLOODLETTING",
     supported: { RUPTURE: 1, INFERNO: 1 },
     bare: {},
+    margin: 0.3,
   },
   {
     name: "Perfected Strike is worth more with more Strike cards",
@@ -146,7 +153,7 @@ const TWINS: Twin[] = [
     card: "STOMP",
     supported: { TWIN_STRIKE: 1, SWORD_BOOMERANG: 1, POMMEL_STRIKE: 1, HEADBUTT: 1 },
     bare: { SHRUG_IT_OFF: 1, TRUE_GRIT: 1, FLAME_BARRIER: 1, IRON_WAVE: 1 },
-    margin: 0.3,
+    margin: 0.2,
   },
   // ---- Silent
   {
@@ -176,6 +183,7 @@ const TWINS: Twin[] = [
     card: "FLECHETTES",
     supported: { BACKFLIP: 1, BLUR: 1, DEFLECT: 1, LEG_SWEEP: 1 },
     bare: { DAGGER_SPRAY: 1, SLICE: 1, SUCKER_PUNCH: 1, DASH: 1 },
+    margin: 0.3,
   },
   {
     name: "Afterimage is worth more with many cheap cards",
@@ -183,7 +191,7 @@ const TWINS: Twin[] = [
     card: "AFTERIMAGE",
     supported: { SLICE: 2, DEFLECT: 2, PREPARED: 1 },
     bare: { HAZE: 1, REFLEX: 1, PINPOINT: 1 },
-    margin: 0.3,
+    margin: 0.2,
   },
   {
     name: "Noxious Fumes is worth more with Poison payoffs",
@@ -227,6 +235,7 @@ const TWINS: Twin[] = [
     card: "BLACK_HOLE",
     supported: { GENESIS: 1, GLOW: 1, GATHER_LIGHT: 1 },
     bare: {},
+    margin: 0.4,
   },
   {
     name: "Pillar of Creation is worth more with card creation",
@@ -250,6 +259,7 @@ const TWINS: Twin[] = [
     card: "LUNAR_BLAST",
     supported: { GATHER_LIGHT: 1, GLITTERSTREAM: 1, HIDDEN_CACHE: 1, REFINE_BLADE: 1 },
     bare: { SOLAR_STRIKE: 1, GUIDING_STAR: 1, PHOTON_CUT: 1, ASTRAL_PULSE: 1 },
+    margin: 0.4,
   },
   {
     name: "Furnace is worth more with Sovereign Blade payoffs",
@@ -372,34 +382,11 @@ const ORDERS: Order[] = [
     first: "DARK_EMBRACE",
   },
   {
-    name: "a poison deck takes Outbreak over a plain draw card",
-    cls: "silent",
-    extras: { NOXIOUS_FUMES: 1, DEADLY_POISON: 1 },
-    offered: ["OUTBREAK", "BACKFLIP", "ACCURACY"],
-    first: "OUTBREAK",
-    belowSkip: ["ACCURACY"],
-  },
-  {
-    name: "a shiv deck takes Accuracy and leaves Outbreak",
-    cls: "silent",
-    extras: { BLADE_DANCE: 2, CLOAK_AND_DAGGER: 1 },
-    offered: ["ACCURACY", "BACKFLIP", "OUTBREAK"],
-    first: "ACCURACY",
-    belowSkip: ["OUTBREAK"],
-  },
-  {
     name: "a starting Silent does not take an unsupported Shiv payoff",
     cls: "silent",
     extras: {},
     offered: ["PHANTOM_BLADES", "BACKFLIP"],
     first: "BACKFLIP",
-  },
-  {
-    name: "an orb deck takes Loop over Skim",
-    cls: "defect",
-    extras: { GLACIER: 1, BALL_LIGHTNING: 1, COLD_SNAP: 1, COOLHEADED: 1 },
-    offered: ["LOOP", "SKIM", "SUBROUTINE"],
-    first: "LOOP",
   },
   {
     name: "a starting Defect prefers Skim to a Power that needs Powers",
@@ -416,18 +403,56 @@ const ORDERS: Order[] = [
     first: "REAVE",
   },
   {
-    name: "a Doom deck takes the payoff",
-    cls: "necrobinder",
-    extras: { COUNTDOWN: 1, DEATHBRINGER: 1, BLIGHT_STRIKE: 1 },
-    offered: ["TIMES_UP", "REAVE", "DEFY"],
-    first: "TIMES_UP",
-  },
-  {
     name: "a Forge deck takes Parry",
     cls: "regent",
     extras: { FURNACE: 1, REFINE_BLADE: 1, SPOILS_OF_BATTLE: 1 },
     offered: ["PARRY", "CLOAK_OF_STARS", "COSMIC_INDIFFERENCE"],
     first: "PARRY",
+  },
+];
+
+/**
+ * Four orders that held at the first judgement of the engine credit and flip at the strengths the page keeps (ADR-050
+ * addendum C, rule 2; addendum D lists them). A payoff's lead over a plain card in a deck that feeds it came partly from the
+ * engine credit, which the page no longer counts, so a plain draw or skill card now ranks first. Each test asserts the order
+ * the page's index gives and that the payoff is still worth taking over skipping (or, for the card the deck cannot use, still
+ * not). They replace "a poison deck takes Outbreak over a plain draw card", "a shiv deck takes Accuracy and leaves Outbreak", "an
+ * orb deck takes Loop over Skim" and "a Doom deck takes the payoff"; none was removed without them.
+ */
+const ORDERS_AT_ASTAR: Order[] = [
+  {
+    name: "a poison deck ranks Backflip above Outbreak, which still beats skipping (addendum C: flipped)",
+    cls: "silent",
+    extras: { NOXIOUS_FUMES: 1, DEADLY_POISON: 1 },
+    offered: ["OUTBREAK", "BACKFLIP", "ACCURACY"],
+    first: "BACKFLIP",
+    aboveSkip: ["OUTBREAK"],
+    belowSkip: ["ACCURACY"],
+  },
+  {
+    name: "a shiv deck ranks Backflip above Accuracy, which still beats skipping, and leaves Outbreak (addendum C: flipped)",
+    cls: "silent",
+    extras: { BLADE_DANCE: 2, CLOAK_AND_DAGGER: 1 },
+    offered: ["ACCURACY", "BACKFLIP", "OUTBREAK"],
+    first: "BACKFLIP",
+    aboveSkip: ["ACCURACY"],
+    belowSkip: ["OUTBREAK"],
+  },
+  {
+    name: "an orb deck ranks Skim above Loop, which still beats skipping (addendum C: flipped)",
+    cls: "defect",
+    extras: { GLACIER: 1, BALL_LIGHTNING: 1, COLD_SNAP: 1, COOLHEADED: 1 },
+    offered: ["LOOP", "SKIM", "SUBROUTINE"],
+    first: "SKIM",
+    aboveSkip: ["LOOP"],
+  },
+  {
+    name: "a Doom deck ranks Reave above Times Up, which still beats skipping (addendum C: flipped)",
+    cls: "necrobinder",
+    extras: { COUNTDOWN: 1, DEATHBRINGER: 1, BLIGHT_STRIKE: 1 },
+    offered: ["TIMES_UP", "REAVE", "DEFY"],
+    first: "REAVE",
+    aboveSkip: ["TIMES_UP"],
   },
 ];
 
@@ -445,13 +470,14 @@ describe("synergy: the same card is worth more where its partners are", () => {
 });
 
 describe("synergy: what an experienced player would pick", () => {
-  for (const o of ORDERS) {
+  for (const o of [...ORDERS, ...ORDERS_AT_ASTAR]) {
     it(o.name, () => {
       const r = rank(o.cls, o.extras, o.offered, o.act ?? 0);
       expect(
         r.order[0],
         JSON.stringify([...r.score.entries()].map(([k, v]) => [k, Number(v.toFixed(2))])),
       ).toBe(o.first);
+      for (const id of o.aboveSkip ?? []) expect(r.score.get(id) ?? 0, id).toBeGreaterThan(0);
       for (const id of o.belowSkip ?? []) expect(r.score.get(id) ?? 0, id).toBeLessThan(0);
     });
   }
@@ -470,12 +496,14 @@ describe("synergy: how the advisor says it", () => {
     expect(text).toMatch(/needs Exhaust \(nothing in your deck yet\)/);
   });
 
-  it("credits a source for the engine it completes, naming both sides", () => {
+  it("names the engine a source completes, both sides of it, and says that the index does not count it (addendum C, rule 3)", () => {
     const r = rank("silent", { OUTBREAK: 1 }, ["NOXIOUS_FUMES"]);
     const reasons = r.response.ranking[0]?.reasons.filter((x) => x.kind === "synergy") ?? [];
-    expect(reasons.map((x) => x.text).join(" ")).toMatch(
-      /Poison engine \(Noxious Fumes supplies it; Outbreak uses it\)/,
+    const engine = reasons.find((x) => x.text.includes("engine"));
+    expect(engine?.text).toMatch(
+      /Builds your Poison engine \(Noxious Fumes supplies it; Outbreak uses it\)\. The index does not count engines, so this does not move the ranking\./,
     );
+    expect(engine?.delta).toBeCloseTo(0, 12);
   });
 
   it("credits Strength with the attacks it makes hit harder", () => {

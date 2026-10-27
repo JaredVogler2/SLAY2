@@ -396,29 +396,33 @@ DEV_KEEPS = {
     "d2": "needs 1, scalers 0.7, engines 0.25",
     "d3": "needs 1, scalers 0.7, engines 0.5",
     "d4": "every part at its first judgement (1, 1, 1)",
-    "m1": "the chosen configuration, a card must add 1.5 index points",
-    "m2": "the chosen configuration, a card must add 3 index points",
+    "m1": "the chosen configuration, a card has to add 1.5 index points",
+    "m2": "the chosen configuration, a card has to add 3 index points",
 }
 
 
 def table_synergy_dev() -> str:
-    """The development stage's two selection files (ADR-050 item 3): tuning numbers, not evidence."""
-    d1 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase1.json")
-    d2 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase2.json")
+    """The development stage's two selection files (ADR-050 item 3 and addendum D): tuning numbers on development seeds, not evidence."""
+    first = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase1.json")
+    second = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase2.json")
     head = [
-        "| Arm | What it keeps | Against | Past the Act-1 boss, against → arm | Difference (95 %, whole seeds resampled) | Exact McNemar | Pairs |",
+        "| Phase | Arm | What it keeps | Past the Act-1 boss, against → arm | Difference in points (95 %, whole seeds resampled) | Exact McNemar | Pairs |",
         "|---|---|---|---|---|---|---|",
     ]
     rows = []
-    for phase, against, chosen in ((d1, "d0, no synergy term", d1["chosen"]), (d2, f"{d2['baseline']}, margin 0", None)):
+    for number, phase, against, chosen in (
+        (1, first, "`d0`, no synergy term", first["chosen"]),
+        (2, second, f"`{second['baseline']}` at margin 0", None),
+    ):
         for arm, r in phase["differences"].items():
             mark = " (chosen)" if arm == chosen else ""
             ci = r["ci95"]
             rows.append(
-                f"| {arm}{mark} | {DEV_KEEPS[arm]} | {against} | {100 * r['b_rate']:.1f} % → {100 * r['a_rate']:.1f} % | "
-                f"{signed(100 * r['difference'], 2)} points ({signed(100 * ci[0], 2)} to {signed(100 * ci[1], 2)}) | {fmt_p(r['mcnemar_p'])} | {r['pairs']:,} |"
+                f"| {number} | `{arm}`{mark} | {DEV_KEEPS[arm]} | {against}: {100 * r['b_rate']:.1f} % → {100 * r['a_rate']:.1f} % | "
+                f"{signed(100 * r['difference'], 1)} ({signed(100 * ci[0], 1)} to {signed(100 * ci[1], 1)}) | {fmt_p(r['mcnemar_p'])} | {r['pairs']:,} |"
             )
-    rows.append(f"| margin chosen | | | | {d2['chosen_margin']} | | |")
+    rows.append(f"| 2 | margin 0 (chosen) | no skip margin: a card is skipped only when no card raises the index | | | | |" if second["chosen_margin"] == 0 else
+                f"| 2 | margin {second['chosen_margin']:g} (chosen) | | | | | |")
     return "\n".join(head + rows)
 
 
@@ -442,7 +446,7 @@ def table_synergy_coverage() -> str:
 
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
 }
@@ -460,6 +464,7 @@ BLOCKS = {
     "synergy_b1": table_synergy_b1,
     "synergy_cohorts": table_synergy_cohorts,
     "synergy_mechanics": table_synergy_mechanics,
+    "synergy_dev": table_synergy_dev,
 }
 
 

@@ -230,6 +230,13 @@ export function range(ci: readonly number[], digits: number): string {
   return `${num(ci[0] ?? 0, digits)} to ${num(ci[1] ?? 0, digits)}`;
 }
 
+/** What the index keeps of a part of the synergy term, in words ("in full" is the first judgement). */
+export function kept(weight: number): string {
+  if (weight >= 1) return "in full";
+  if (weight <= 0) return "not at all";
+  return `at ${num(weight, 2)} of its first judgement`;
+}
+
 /** "0.96 (95 % 0.78 to 1.15)": what a point of a part is worth relative to a point of average card rating. */
 export function part(r: PartRatio): string {
   return `${num(r.toQuality, 2)} (95 % ${range(r.ci95, 2)})`;

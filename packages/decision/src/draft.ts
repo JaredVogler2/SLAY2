@@ -200,9 +200,9 @@ function synergyReasons(card: CardEntry, ex: SynergyExplanation, weight: number)
           : `Takes away what cards in your deck rely on (${groups.join("; ")}).`,
     });
   }
+  // the engines a card would build or weaken are named by their first-judged strength; the points are what the index counts of it
   for (const change of ex.engines.changes.slice(0, 2)) {
-    const delta = change.delta * weight;
-    if (Math.abs(delta) < 0.1) continue;
+    if (Math.abs(change.judged * weight) < 0.1) continue;
     const sources = change.sources.slice(0, 3);
     const payoffs = change.payoffs.slice(0, 3);
     const say = (names: string[], one: string, many: string): string =>
@@ -212,14 +212,30 @@ function synergyReasons(card: CardEntry, ex: SynergyExplanation, weight: number)
       .join("; ");
     reasons.push({
       kind: "synergy",
-      delta,
-      text:
-        delta > 0
-          ? `Builds your ${change.label} engine${detail ? ` (${detail})` : ""}.`
-          : `Weakens your ${change.label} engine${detail ? ` (${detail})` : ""}.`,
+      delta: change.delta * weight,
+      text: `${change.judged > 0 ? "Builds" : "Weakens"} your ${change.label} engine${detail ? ` (${detail})` : ""}.${engineCreditNote()}`,
     });
   }
   return reasons;
+}
+
+/** A sentence that says how much of an engine's strength the index counts, when it is not all of it (ADR-050 addendum C). */
+function engineCreditNote(): string {
+  const kept = PART_WEIGHT.engines;
+  if (kept >= 1) return "";
+  return kept <= 0
+    ? " The index does not count engines, so this does not move the ranking."
+    : ` The index counts ${String(Math.round(kept * 100))} % of an engine's strength.`;
+}
+
+/** The assumption about engines: a mechanic the deck both supplies and uses is named in the explanations, and counted as far as the index keeps it. */
+function engineAssumption(): string {
+  const kept = PART_WEIGHT.engines;
+  const what = "An engine is a mechanic the deck both supplies and uses";
+  if (kept >= 1) return ` ${what}; its strength is credited on top.`;
+  return kept <= 0
+    ? ` ${what}: it is named in the explanations but not counted in the index (ADR-050).`
+    : ` ${what}; the index counts ${String(Math.round(kept * 100))} % of its first-judged strength (ADR-050).`;
 }
 
 function describeDelta(
@@ -549,7 +565,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     warnings,
     assumptions: [
       "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate. It is read as a card's worth when what the card needs is there.",
-      `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * PART_WEIGHT.needs * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.`,
+      `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * PART_WEIGHT.needs * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.${engineAssumption()}`,
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
       ...(tilt
         ? [

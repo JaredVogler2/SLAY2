@@ -1,6 +1,8 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { PART_WEIGHT } from "@slay2/decision";
+
 import { SynergyStudyPanel } from "../src/components/methods/SynergyStudyPanel";
 import { SYNERGY_EVIDENCE, change, num, range } from "../src/lib/synergy-evidence";
 
@@ -30,6 +32,16 @@ describe("the /methods synergy section", () => {
     expect(section).toHaveTextContent(`${b1.bossFights.toLocaleString("en-US")} simulated runs`);
     expect(section).toHaveTextContent(SYNERGY_EVIDENCE.table.sha256.slice(0, 12));
     expect(section).toHaveTextContent(b1.sha256.slice(0, 12));
+  });
+
+  it("says what the page's index keeps of each part, from the constants the page uses", () => {
+    render(<SynergyStudyPanel />);
+    const text = document.getElementById("synergy")?.textContent ?? "";
+    expect(PART_WEIGHT).toEqual({ needs: 1, scalers: 0.7, engines: 0 });
+    expect(text).toContain(
+      "keeps unmet needs in full, the lifts at 0.70 of its first judgement and engines not at all",
+    );
+    expect(text).toContain("ADR-050 addendum D");
   });
 
   it("reads each class and seed set by its own interval: a gain is clear only when the interval is below zero", () => {

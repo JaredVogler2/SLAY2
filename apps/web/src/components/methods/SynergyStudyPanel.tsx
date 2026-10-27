@@ -1,3 +1,5 @@
+import { PART_WEIGHT } from "@slay2/decision";
+
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
@@ -9,6 +11,7 @@ import { pct } from "@/lib/methods-data";
 import {
   SYNERGY_EVIDENCE,
   change,
+  kept,
   num,
   range,
   type MechanicReading,
@@ -192,7 +195,10 @@ export function SynergyStudyPanel({
         at about {num(b1.calibratedWeights.scaler, 1)} of it, and give an engine credit no more than
         weak support (its interval includes 0). Random decks rarely hold a whole engine and the
         pilot does not build around one, so little for engines here is not evidence about players
-        who build them on purpose.
+        who build them on purpose. The index the advisor page uses keeps unmet needs{" "}
+        {kept(PART_WEIGHT.needs)}, the lifts {kept(PART_WEIGHT.scalers)} and engines{" "}
+        {kept(PART_WEIGHT.engines)}: the strengths a development stage chose between on separate
+        simulated seeds (ADR-050 addendum D).
       </p>
 
       <ScrollRegion label="Synergy reading by class and seed set">

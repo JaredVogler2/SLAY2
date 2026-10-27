@@ -9,6 +9,7 @@ import { formatP, pct } from "@/lib/stat-format";
 import {
   SYNERGY_EVIDENCE,
   change,
+  kept,
   num,
   part,
   verdictOf,
@@ -20,10 +21,6 @@ import {
 function names(list: readonly string[]): string {
   if (list.length <= 1) return list[0] ?? "";
   return `${list.slice(0, -1).join(", ")} and ${list[list.length - 1] ?? ""}`;
-}
-
-function kept(weight: number): string {
-  return weight >= 1 ? "at its first judgement" : `at ${num(weight, 2)} of its first judgement`;
 }
 
 /** What the page's label says the synergy term has been through, by how the registered test came out (none yet: partly checked). */
@@ -124,13 +121,10 @@ function Evidence({ evidence }: { evidence: SynergyEvidence }) {
             <span className="num">{part(b1.ratios.needs)}</span>; Strength, Dexterity and Focus
             lifting the cards they help <span className="num">{part(b1.ratios.scalers)}</span>;
             engines <span className="num">{part(b1.ratios.engines)}</span>, which the data cannot
-            tell from nothing. The index counts the first two{" "}
-            <span className="num">
-              {PART_WEIGHT.needs >= 1 && PART_WEIGHT.scalers >= 1
-                ? "at their first judgement"
-                : `at ${num(PART_WEIGHT.needs, 2)} and ${num(PART_WEIGHT.scalers, 2)} of it`}
-            </span>{" "}
-            and the engine credit {kept(PART_WEIGHT.engines)}, a judgement.
+            tell from nothing. The index counts unmet needs {kept(PART_WEIGHT.needs)}, the lift from
+            Strength, Dexterity and Focus {kept(PART_WEIGHT.scalers)} and engines{" "}
+            {kept(PART_WEIGHT.engines)}. Those strengths were first set by judgement; a development
+            stage on separate simulated seeds then chose between settings of them (ADR-050).
           </p>
           <p>
             <strong className="text-parchment">Beyond knowing the cards.</strong> A model that
@@ -196,12 +190,19 @@ export function SynergyPanel({
         <p className="text-sm text-muted">
           No engine yet: none of your cards supply something that another card of yours needs. The
           ranking above rates each offered card by its own rating, by the roles your deck lacks and
-          by what it would start to build with the cards you have.
+          by how it works with the cards you have.
         </p>
       ) : null}
       {synergy.engines.length > 0 ? (
         <div>
           <p className="text-sm font-medium text-parchment">Engines</p>
+          {PART_WEIGHT.engines < 1 ? (
+            <p className="mt-1 text-xs text-muted">
+              {PART_WEIGHT.engines <= 0
+                ? "Named so you can see what your deck is building; the ranking above does not count engines."
+                : `Named so you can see what your deck is building; the ranking above counts ${Math.round(PART_WEIGHT.engines * 100).toString()} % of an engine's strength.`}
+            </p>
+          ) : null}
           <ul className="mt-2 space-y-3" aria-label="Engines in your deck">
             {synergy.engines.map((e) => (
               <li key={e.mechanic} className="text-sm">

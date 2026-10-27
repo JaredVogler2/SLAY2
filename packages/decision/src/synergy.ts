@@ -44,12 +44,15 @@ export type Supply = Readonly<Record<MechanicId, number>>;
 /**
  * How much of each hand-set part of the synergy term the index keeps: 1 is the first judgement, less means the simulated runs
  * valued the part less than the judgement did (ADR-050: stage B1 read the parts against simulated runs, stage B2 tests the index
- * with a pilot that plays by it). The strengths below are the judgement; these are what was kept of it.
+ * with a pilot that plays by it). The strengths below are the judgement; these are what was kept of it. They are the strengths of
+ * the pilot that the development stage chose on development seeds (addendum D): unmet needs in full, the lift from scalers at 0.7
+ * of the judgement, and no engine credit. Engines are still found and named (`deckSynergy`, the explanations); the index does not
+ * count them.
  */
 export const PART_WEIGHT: Readonly<{ needs: number; scalers: number; engines: number }> = {
   needs: 1,
-  scalers: 1,
-  engines: 1,
+  scalers: 0.7,
+  engines: 0,
 };
 
 /** The share of a card's rating that one unit of need weight puts at stake; a core need (weight 3) hits the cap. */
@@ -261,7 +264,10 @@ export interface Need {
 export interface EngineChange {
   readonly mechanic: MechanicId;
   readonly label: string;
+  /** The change in index points that the index counts (`PART_WEIGHT.engines` of `judged`). */
   readonly delta: number;
+  /** The change as first judged, before the part weight: what the engine is worth whatever the index counts of it. */
+  readonly judged: number;
   /** Cards (of the deck with the new one) that supply the mechanic, and cards that depend on it, best first. */
   readonly sources: readonly string[];
   readonly payoffs: readonly string[];
@@ -344,18 +350,22 @@ export function explainAddition(
   }));
   const e0 = enginesOf(entries, character);
   const e1 = enginesOf(withCardEntries, character);
+  const j0 = enginesOf(entries, character, false);
+  const j1 = enginesOf(withCardEntries, character, false);
   const everyChange = MECHANIC_IDS.map((m) => ({
     mechanic: m,
     label: MECHANICS[m].label,
     delta: e1[m] - e0[m],
+    judged: j1[m] - j0[m],
     sources: suppliersOf(withCardEntries, m, character),
     payoffs: ranked(withCardEntries, (c) => synergyTags(c).wants[m] ?? 0),
   }));
   // the sum is over every mechanic, so that the parts add up to the change in the deck's synergy exactly; only the list that is
-  // shown leaves out the changes too small to mention
+  // shown leaves out the changes too small to mention, and it goes by the engine as first judged: the engines a card would build
+  // or weaken are named whatever the index counts of them
   const changes: EngineChange[] = everyChange
-    .filter((c) => Math.abs(c.delta) >= 0.01)
-    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+    .filter((c) => Math.abs(c.judged) >= 0.01)
+    .sort((a, b) => Math.abs(b.judged) - Math.abs(a.judged));
   return {
     own: {
       delta: (own.value - own.prior) / SYNERGY_CARDS,
