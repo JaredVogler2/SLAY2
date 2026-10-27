@@ -133,7 +133,7 @@ What these numbers are not: field data (nobody visited); a Lighthouse score (Lig
 | `/odds` | 959.8 (273.1) | 930.3 (265.0) | 285 |
 | `/routes` | 931.4 (265.2) | 903.7 (257.6) | 278 |
 
-`apps/web/test/bundle-weight.test.ts` is the fast guard for the app's own imports (the layout, the error boundary, the landing page, the About page and the methods page may not import the catalog, the schema library, the run's schema or the run store) and checks the `sideEffects` declarations. The Web Vitals tables above were measured before this change and have not been repeated: the machine was busy with the held-out games of ADR-055. What remains heavy is `/methods` itself, a 944 KB document of which the serialized page is 560 KB.
+The "After" column is the commit of pull request #13; the data of the opening-relic result (pull request #14: both studies' values and tests are now in the page data) adds about 2 KB gzipped to `/advisor` and `/codex` (323.8 and 265.3 KB, still within their budgets). `apps/web/test/bundle-weight.test.ts` is the fast guard for the app's own imports (the layout, the error boundary, the landing page, the About page and the methods page may not import the catalog, the schema library, the run's schema or the run store) and checks the `sideEffects` declarations. The Web Vitals tables above were measured before this change and have not been repeated: the machine was busy with the held-out games of ADR-055. What remains heavy is `/methods` itself, a 944 KB document of which the serialized page is 560 KB.
 
 ## Smoke test after a READY deployment exists
 
