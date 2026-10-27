@@ -462,9 +462,9 @@ export function CardValuesPanel({
         among the offered cards and “skip”. Chance rather than taste decided which cards reached the
         Act-1 boss, so a regression of “got past the boss” on the deck, the HP, the potions and the
         relics gives each card a marginal value: the change in log-odds from one more copy. The
-        protocol and the way each value is judged (a held-out test of whether playing by the values
-        beats playing by the hand-written ratings, written down before the held-out games were
-        played) are the same for every class.
+        protocol is the same for every class. Each set is judged by a held-out test written down
+        before its games were played; what that test compares (the hand-written ratings, the earlier
+        values, or the one pooled test of the five classes with its rule) is said under each set.
       </p>
       {keepTest ? <KeepValuesTestBlock test={keepTest} /> : <KeepValuesRegistered />}
       {sets.map((set) => (

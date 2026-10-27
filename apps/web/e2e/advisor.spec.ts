@@ -214,7 +214,7 @@ test.describe("advisor journey", () => {
       `${ironclad.bossFights.toLocaleString("en-US")} simulated Ironclad runs that reached the Act-1 boss`,
     );
     await expect(panel).toContainText(
-      `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(1)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} held-out seeds`,
+      `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(1)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} paired held-out games`,
     );
   });
 
@@ -430,7 +430,7 @@ test.describe("advisor journey", () => {
         );
       } else {
         await expect(panel).toContainText(
-          `${signed} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} held-out seeds`,
+          `${signed} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} paired held-out games`,
         );
       }
     });
@@ -459,7 +459,7 @@ test.describe("advisor journey", () => {
       ? "No simulated runs of this class have been measured yet"
       : set.validation === null
         ? `The ${label} values have not been tested against play yet`
-        : `The ${label} values did not beat the hand-written ratings`;
+        : `The ${label} values did not beat`; // the hand-written ratings, or the earlier values: the set says which
     test(`${label}: says plainly why the simulated runs give no opinion`, async ({ page }) => {
       await startClass(page, label);
       await addOffered(page, card);

@@ -35,6 +35,8 @@ jobs:
       - run: pnpm build
       - name: build output is where vercel.json publishes it (apps/web/.next)
         run: test -f apps/web/.next/routes-manifest.json && test -f apps/web/.next/required-server-files.json
+      - name: what the browser is sent as script stays within each page's budget (ADR-056)
+        run: pnpm --filter @slay2/web bytes:check
       - run: pnpm audit --audit-level high
 
   e2e:

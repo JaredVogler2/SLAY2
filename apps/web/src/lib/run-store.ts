@@ -28,22 +28,28 @@ class RunStore {
   private listeners = new Set<Listener>();
   private storageOk = true;
   private version = 0;
+  /** why the run saved in this browser was not read (a text the advisor refuses), or null: nothing saved, or it was read */
+  private unreadable: string | null = null;
 
-  subscribe = (fn: Listener): (() => void) => {
-    this.listeners.add(fn);
+  constructor() {
+    // The run is shared with the other tabs of this browser, so this tab hears about their changes for as long as the page is open,
+    // not only while a component is looking at the run (the header's chip used to be what kept this attached; it no longer reads
+    // the run through this store).
     if (typeof window !== "undefined") {
       window.addEventListener("storage", this.onStorage);
     }
+  }
+
+  subscribe = (fn: Listener): (() => void) => {
+    this.listeners.add(fn);
     return () => {
       this.listeners.delete(fn);
-      if (this.listeners.size === 0 && typeof window !== "undefined") {
-        window.removeEventListener("storage", this.onStorage);
-      }
     };
   };
 
   private onStorage = (e: StorageEvent): void => {
-    if (e.key === KEY) {
+    // a null key is the whole storage cleared
+    if (e.key === KEY || e.key === null) {
       this.loaded = false;
       this.emit();
     }
@@ -68,10 +74,23 @@ class RunStore {
       if (text) {
         const parsed = parseRunState(text);
         this.state = parsed.ok ? parsed.state : null;
+        this.unreadable = parsed.ok ? null : parsed.error;
+      } else {
+        // nothing is saved: a run cleared in another tab is gone here too
+        this.state = null;
+        this.unreadable = null;
       }
     } catch {
       this.storageOk = false;
     }
+  }
+
+  /** Why the run saved in this browser is not shown (a file the advisor cannot read), or null. */
+  get unreadableRun(): string | null {
+    if (typeof window !== "undefined") {
+      this.load();
+    }
+    return this.unreadable;
   }
 
   getSnapshot = (): RunState | null => {
@@ -89,6 +108,8 @@ class RunStore {
   }
 
   private persist(): void {
+    // whatever was saved before is replaced (or removed) by what is written now
+    this.unreadable = null;
     try {
       if (this.state) {
         window.localStorage.setItem(KEY, serializeRunState(this.state));

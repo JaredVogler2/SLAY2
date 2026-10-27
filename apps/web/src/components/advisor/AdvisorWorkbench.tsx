@@ -58,6 +58,9 @@ export function AdvisorWorkbench() {
   };
 
   const character = run?.character ?? null;
+  // a run saved in this browser that the advisor refuses (a card the catalog does not know, a file from another version): said, and
+  // not shown as an empty page, because the header offers "Resume" for it
+  const unreadable = hydrated && !run ? runStore.unreadableRun : null;
   const outcome = useMemo(() => {
     if (!run?.character || offered.length === 0) {
       return null;
@@ -242,6 +245,16 @@ export function AdvisorWorkbench() {
           . No account, no upload.
         </p>
       </div>
+
+      {unreadable ? (
+        <p
+          role="status"
+          className="rounded-xl border border-copper-deep/70 bg-copper/10 px-4 py-3 text-sm text-copper"
+        >
+          A run saved in this browser could not be read, so it is not shown (
+          {unreadable.replace(/\.$/u, "")}). Choosing a character starts a new run and replaces it.
+        </p>
+      ) : null}
 
       {message ? (
         <p

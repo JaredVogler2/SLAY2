@@ -156,7 +156,7 @@ export function SimulationOpinion({
                   : adoptedByPooledTest(set)
                     ? `The rule shown follows values that replaced ${set.supersedes ?? "the earlier ones"} under a rule registered before the test (ADR-053): the pooled test of the five classes favoured them over ${againstText(test)}, and in the ${test.pairedGames.toLocaleString("en-US")} held-out games of ${label} alone the pilot that follows them got past the Act-1 boss in ${(test.passRate * 100).toFixed(1)}% against ${(test.passRateBase * 100).toFixed(1)}% (${pointsText(test.passRate, test.passRateBase)} percentage points, the same seeds for both), which does not show the earlier values ahead (see `
                     : test.passed
-                      ? `The rule shown is the one a simulated pilot followed when it was tested against ${againstText(test)} (${pointsText(test.passRate, test.passRateBase)} percentage points past the Act-1 boss on ${test.pairedGames.toLocaleString("en-US")} held-out seeds, the same seeds for both; see `
+                      ? `The rule shown is the one a simulated pilot followed when it was tested against ${againstText(test)} (${pointsText(test.passRate, test.passRateBase)} percentage points past the Act-1 boss on ${test.pairedGames.toLocaleString("en-US")} paired held-out games, the same seeds for both; see `
                       : `The ${label} values did not beat ${againstText(test)} in the held-out test (${(test.passRate * 100).toFixed(1)}% against ${(test.passRateBase * 100).toFixed(1)}% past the Act-1 boss), so no rule is offered (see `}
                 <Link
                   className="text-teal underline decoration-dotted underline-offset-4"

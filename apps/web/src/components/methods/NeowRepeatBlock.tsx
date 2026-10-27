@@ -171,7 +171,7 @@ export function NeowRepeatBlock({ data = NEOW }: { data?: NeowData }) {
           <Badge tone={test.passed ? "exact" : "unverified"}>
             {test.passed
               ? "rule ahead with the relics kept"
-              : "rule not ahead with the relics kept"}
+              : "rule not shown ahead with the relics kept"}
           </Badge>
         ) : (
           <Badge tone="unverified">fitted, test not run yet</Badge>
@@ -199,7 +199,7 @@ export function NeowRepeatBlock({ data = NEOW }: { data?: NeowData }) {
           <p className="mt-1">
             {first.test.passed
               ? "Its one test had the rule ahead"
-              : "Its one test did not have the rule ahead"}
+              : "Its one test did not show the rule ahead"}
             : {pct(first.test.reachedAct2.a.rate, 1)} against{" "}
             {pct(first.test.reachedAct2.b.rate, 1)} past the Act-1 boss (
             {formatP(first.test.reachedAct2.pairedTable.mcnemar_p)}). That result stays in the

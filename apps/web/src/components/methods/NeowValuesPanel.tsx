@@ -47,6 +47,13 @@ function MemberRow({ m }: { m: NeowMember }) {
  * The opening Ancient's relics as simulated runs measured them (ADR-041), and the one held-out test of playing by the values.
  * Every number is read from the exporter's file; the words around the test follow from whether it passed.
  */
+/** "Silent", "Silent and Regent", "Silent, Regent and Necrobinder". */
+function naturalList(names: readonly string[]): string {
+  return names.length < 2
+    ? names.join("")
+    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1] ?? ""}`;
+}
+
 export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
   const values = neowValues(data);
   if (!values) {
@@ -78,11 +85,11 @@ export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
       <p className="max-w-3xl text-muted">
         Every run opens at Neow, who offers three relics. In simulated runs the relic was taken at
         random among the three offered, so chance rather than taste decided which relic a run began
-        with. {games(values.games)} games ({games(values.model.seeds)} seeds, each played by every
-        one of the {values.classes.length} classes, Ascension 0, the veteran profile, the first Act
-        1, Overgrowth) were fitted with one value per relic and one starting point per class: a
-        value is the change in the log-odds of getting past the Act-1 boss from taking that relic
-        instead of the average one, shrunk toward zero so that the largest of {relics.length}{" "}
+        with. {games(values.games)} games on {games(values.model.seeds)} seeds (every one of the{" "}
+        {values.classes.length} classes played the same seeds, Ascension 0, the veteran profile, the
+        first Act 1, Overgrowth) were fitted with one value per relic and one starting point per
+        class: a value is the change in the log-odds of getting past the Act-1 boss from taking that
+        relic instead of the average one, shrunk toward zero so that the largest of {relics.length}{" "}
         estimates is not simply the luckiest. How much the relic tells beyond the class,
         cross-validated by seed: log-loss {values.model.cvLogLoss.toFixed(3)} with the relics
         against {values.model.baselineLogLoss.toFixed(3)} with the class alone (AUC{" "}
@@ -152,7 +159,7 @@ export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
             {formatP(test.reachedAct2.pairedTable.mcnemar_p)}).{" "}
             {test.passed
               ? "On the strength of that test, and only that, the advisor can say which of three offered relics a simulated pilot would take."
-              : "So the values are reported as measurements that did not improve play, and the advisor does not say which relic to take."}
+              : "So the values are reported as measurements: the test does not show that acting on them improves play, and the advisor does not say which relic to take."}
           </p>
           <ScrollRegion label="Opening-relic test by class">
             <table className="mt-4 w-full min-w-[34rem] text-left text-sm">
@@ -195,7 +202,7 @@ export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
               the test&rsquo;s level split over the classes): a rule written down before the games
               were played, which can remove advice and never add it.{" "}
               {notAdvised.length > 0
-                ? `For ${notAdvised.join(" and ")} it did not, so the advisor gives no advice there.`
+                ? `For ${naturalList(notAdvised)} it did not, so the advisor gives no advice there.`
                 : "In every class it did."}
             </p>
           ) : null}
@@ -302,7 +309,7 @@ export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
               <code className="font-mono text-xs text-parchment">
                 experiments/neow/{test.id}.json
               </code>{" "}
-              (sha {test.contentSha256.slice(0, 12)}…)
+              (content hash {test.contentSha256.slice(0, 12)}…)
             </>
           ) : null}
           .

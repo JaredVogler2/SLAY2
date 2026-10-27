@@ -407,6 +407,8 @@ export type OfferVerdict =
   | { readonly kind: "unmeasured"; readonly best: OfferLine }
   | {
       readonly kind: "take";
+      /** how many relics were on the table: two when the player entered two, three when Neow's offer is complete */
+      readonly offered: number;
       readonly best: OfferLine;
       readonly runnerUp: OfferLine;
       readonly separation: "clear" | "close";
@@ -441,6 +443,7 @@ export function offerVerdict(
   }
   return {
     kind: "take",
+    offered: a.lines.length,
     best: a.best,
     runnerUp: a.runnerUp,
     separation: a.separation,
@@ -479,8 +482,8 @@ export function neowCoverage(data: NeowData = DATA): {
   const behind = t.members.filter((m) => !classResult(m.character, data)?.helped);
   const classes =
     behind.length === 0
-      ? `ahead in all ${String(t.members.length)} classes`
-      : `ahead in ${String(t.members.length - behind.length)} of ${String(t.members.length)} classes, not in ${behind.map((m) => m.character.charAt(0).toUpperCase() + m.character.slice(1)).join(", ")}`;
+      ? `ahead at the class level (exact McNemar p below ${String(classAlpha(t))}) in all ${String(t.members.length)} classes`
+      : `ahead at the class level (exact McNemar p below ${String(classAlpha(t))}) in ${String(t.members.length - behind.length)} of ${String(t.members.length)} classes, not in ${behind.map((m) => m.character.charAt(0).toUpperCase() + m.character.slice(1)).join(", ")}`;
   return {
     state: "validated",
     detail: `${measured}; taking the best-measured relic: ${result}; ${classes}`,
