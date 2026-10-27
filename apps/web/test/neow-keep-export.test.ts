@@ -241,10 +241,12 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
   // the first study's values and exploration manifests are the repository's own (the secondary arm plays those values)
   cpSync(real("neow-values-v2.json"), path("experiments", "neow", "neow-values-v2.json"));
   for (const cls of CLASSES) {
-    cpSync(
-      real(exploreDir(cls, false), "manifest.json"),
-      path("experiments", "neow", exploreDir(cls, false), "manifest.json"),
-    );
+    for (const file of ["manifest.json", "episodes.jsonl.gz"]) {
+      cpSync(
+        real(exploreDir(cls, false), file),
+        path("experiments", "neow", exploreDir(cls, false), file),
+      );
+    }
   }
   const oldSha = createHash("sha256")
     .update(readFileSync(path("experiments", "neow", "neow-values-v2.json")))
@@ -276,6 +278,11 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
       m.content_sha256 = hex(exploreId(cls, true));
       m.config.keep_relics = true;
       write(path("experiments", "neow", exploreDir(cls, true), "manifest.json"), m);
+      // the repetition's games are the first study's, renamed: the fit's seeds are counted from them
+      cpSync(
+        real(exploreDir(cls, false), "episodes.jsonl.gz"),
+        path("experiments", "neow", exploreDir(cls, true), "episodes.jsonl.gz"),
+      );
     }
     const names = (arm: Arm, sha: string) => {
       for (const cls of CLASSES) {
@@ -412,6 +419,17 @@ describe("the exporter reads the opening-relic study repeated with the relics ke
     const r = run(w.root);
     expect(r.status).not.toBe(0);
     expect(r.stderr).toContain("it was not played with the relics kept (ADR-055)");
+  });
+
+  it("refuses a fit whose seed count is not what its batches give", () => {
+    const w = buildWorld({ fit: true });
+    edit(w.path("experiments", "neow", "neow-values-keep-v1.json"), (v) => {
+      (v.model as Json).seeds = 2999;
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("fitted on 2999 seeds");
+    expect(r.stderr).toContain("the batches it names have 3000 seeds");
   });
 
   it("refuses held-out batches that were not played with the relics kept, or without a sample audit", () => {

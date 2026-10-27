@@ -13,6 +13,8 @@ export interface MeasuredSetInfo {
   /** the held-out test of acting on the class's values, when it has been run */
   readonly validation: {
     readonly passed: boolean;
+    /** what licenses the set: the class's own comparison, or the pooled test of the five classes and its rule (ADR-053) */
+    readonly basis?: "own" | "pooled";
     readonly passRate: number;
     readonly passRateBase: number;
     readonly pairedGames: number;

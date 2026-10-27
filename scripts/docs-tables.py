@@ -166,7 +166,8 @@ def table_cardvalues() -> str:
         test = s.get("test", {}).get("comparison") or f"rules_v2-vs-rules_v1-{cls.lower()}-a0-veteran-val"
         t = load(ROOT / "experiments" / "comparisons" / f"{test}.json")
         r1 = t["reachedAct2"]
-        against = "first values" if "values2" in test else "rules_v1"
+        kind = s.get("test", {}).get("against")
+        against = {"first-values": "first values", "current-values": "the earlier values"}.get(kind, "rules_v1")
         rows.append(
             f"| `{s['file']}` | {cls} | {d['games']} | {100 * d['pass_rate']:.1f} % | {len(d['cards'])} | "
             f"{best['auc']:.3f} · {best['log_loss']:.3f} ({cv['baseline_log_loss']:.3f}) | {d['spearman_with_static_rating']:.2f} | "

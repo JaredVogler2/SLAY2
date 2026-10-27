@@ -280,9 +280,13 @@ const ALPHA = {
 // Whether a batch was played with the relics kept (gap G14), from its own manifest: exploration batches live beside the value files,
 // the rest under experiments/batches. A batch that is not on disk is read as not kept.
 function batchKeptRelics(batchId) {
-  for (const where of [join(root, "experiments", "cardvalue"), join(root, "experiments", "batches")]) {
+  for (const where of [
+    join(root, "experiments", "cardvalue"),
+    join(root, "experiments", "batches"),
+  ]) {
     const file = join(where, batchId, "manifest.json");
-    if (existsSync(file)) return JSON.parse(readFileSync(file, "utf8")).config?.keep_relics === true;
+    if (existsSync(file))
+      return JSON.parse(readFileSync(file, "utf8")).config?.keep_relics === true;
   }
   return false;
 }
@@ -372,8 +376,9 @@ function parseCardValues(comparisons) {
         throw new Error(`${name}: ${entry.drift} compares another version of ${entry.supersedes}`);
       // the pilot that played each set's exploration games: a set that replaces another measured by a different pilot moved for that reason too
       const pilotOf = (file) =>
-        [...new Set((file.batches ?? []).map((b) => b.policy?.name).filter(Boolean))].sort().join(" + ") ||
-        "unknown";
+        [...new Set((file.batches ?? []).map((b) => b.policy?.name).filter(Boolean))]
+          .sort()
+          .join(" + ") || "unknown";
       drift = {
         previous: entry.supersedes.replace(/\.json$/, ""),
         previousSha256: d.a.sha256,
@@ -491,6 +496,31 @@ const NEOW_SECONDARY = {
   adr: "ADR-055",
 };
 
+/** The distinct seeds that have at least one game that finished cleanly (a win or a death) and logged a Neow offer, in the named exploration batches (as the fit reads them). */
+function neowFitSeeds(batchIds) {
+  const seeds = new Set();
+  for (const id of batchIds) {
+    const dir = join(root, "experiments", "neow", id.replace(/^neow-explore-/, "explore-"));
+    const gz = join(dir, "episodes.jsonl.gz");
+    const plain = join(dir, "episodes.jsonl");
+    const text = existsSync(gz)
+      ? gunzipSync(readFileSync(gz)).toString("utf8")
+      : existsSync(plain)
+        ? readFileSync(plain, "utf8")
+        : null;
+    if (text === null)
+      throw new Error(
+        `experiments/neow/${dir.split("/").pop()}: no episodes file to count the fit's seeds from`,
+      );
+    for (const line of text.split("\n")) {
+      if (!line.trim()) continue;
+      const e = JSON.parse(line);
+      if ((e.outcome === "death" || e.outcome === "win") && e.extra?.neow) seeds.add(e.seed);
+    }
+  }
+  return seeds.size;
+}
+
 function parseNeow(reports, spec = NEOW_FIRST) {
   const dir = join(root, "experiments", "neow");
   const valuesFile = join(dir, spec.valuesFile);
@@ -502,10 +532,6 @@ function parseNeow(reports, spec = NEOW_FIRST) {
     throw new Error(`${here}: not a neow-values file of schema 1`);
   if (!String(v.model?.resampling_unit ?? "").startsWith("seed"))
     throw new Error(`${here}: the fit must resample and cross-validate by seed (ADR-049)`);
-  if (v.model.seeds !== NEOW_EXPLORE_SEEDS)
-    throw new Error(
-      `${here}: fitted on ${v.model.seeds} seeds, the registration says ${NEOW_EXPLORE_SEEDS}`,
-    );
   const sha256 = createHash("sha256").update(raw).digest("hex");
   const cv = v.model.cross_validation;
   const best = Object.entries(cv.l2).find(([k]) => Number(k) === cv.best_l2)?.[1];
@@ -556,15 +582,23 @@ function parseNeow(reports, spec = NEOW_FIRST) {
             ? spec.exploreKeepRelics
               ? `it was not played with the relics kept (${spec.adr})`
               : `it was played with the relics kept (${spec.adr} was not)`
-          : m.class_start_verified !== true
-            ? "its games were not checked against the class they were played as"
-            : m.config.ascension !== v.ascension || m.config.profile !== v.profile
-              ? "its ascension or profile differ from the values'"
-              : null;
+            : m.class_start_verified !== true
+              ? "its games were not checked against the class they were played as"
+              : m.config.ascension !== v.ascension || m.config.profile !== v.profile
+                ? "its ascension or profile differ from the values'"
+                : null;
     if (bad) throw new Error(`${here}: exploration batch ${b.batch_id}: ${bad}`);
   }
   if (fitted.size !== CLASSES.length)
     throw new Error(`${here}: its exploration batches must be one per class`);
+  // The fit counts the seeds that have a game that finished cleanly and logged an offer. Those are the registered seeds less the ones whose
+  // games all end in a simulator error (with the relics kept, a few seeds end in the same error in every class), so the count is recomputed
+  // from the batches the file names instead of being compared with the registered number.
+  const fitSeeds = neowFitSeeds(v.batches.map((b) => b.batch_id));
+  if (v.model.seeds > NEOW_EXPLORE_SEEDS || v.model.seeds !== fitSeeds)
+    throw new Error(
+      `${here}: fitted on ${v.model.seeds} seeds, the registration says at most ${NEOW_EXPLORE_SEEDS} and the batches it names have ${fitSeeds} seeds with a game that finished cleanly and logged an offer`,
+    );
   const seen = new Set();
   const relics = v.relics.map((r) => {
     if (seen.has(r.label)) throw new Error(`${here}: ${r.label} is measured twice`);
@@ -771,17 +805,21 @@ function neowComparison(c) {
     return v;
   };
   const rho = (v, what) => {
-    if (v !== null && !(typeof v === "number" && v >= -1 && v <= 1)) throw new Error(`${file}: ${what} is not a correlation`);
+    if (v !== null && !(typeof v === "number" && v >= -1 && v <= 1))
+      throw new Error(`${file}: ${what} is not a correlation`);
     return v;
   };
   const labels = (v, what) => {
-    if (!Array.isArray(v) || !v.every((x) => typeof x === "string")) throw new Error(`${file}: ${what} is not a list of relics`);
+    if (!Array.isArray(v) || !v.every((x) => typeof x === "string"))
+      throw new Error(`${file}: ${what} is not a list of relics`);
     return v;
   };
   const x = c.comparison ?? {};
   const n = c.noise_reference ?? {};
-  if (typeof x.best_in_a !== "string" || typeof x.best_in_b !== "string") throw new Error(`${file}: the best relic of each file is missing`);
-  if (!Array.isArray(n.seeds) || n.seeds.length !== 2) throw new Error(`${file}: the noise reference has no two halves`);
+  if (typeof x.best_in_a !== "string" || typeof x.best_in_b !== "string")
+    throw new Error(`${file}: the best relic of each file is missing`);
+  if (!Array.isArray(n.seeds) || n.seeds.length !== 2)
+    throw new Error(`${file}: the noise reference has no two halves`);
   return {
     file,
     relicsInBoth: count(x.relics_in_both, "relics_in_both"),
@@ -814,7 +852,11 @@ function parseNeowStudies(reports) {
       // the secondary arm is read against the same baseline batches as the primary test, or it would compare something else
       for (const [i, m] of repeated.test.members.entries()) {
         const other = secondary.members[i];
-        if (!other || other.b.batchId !== m.b.batchId || other.b.contentSha256 !== m.b.contentSha256)
+        if (
+          !other ||
+          other.b.batchId !== m.b.batchId ||
+          other.b.contentSha256 !== m.b.contentSha256
+        )
           throw new Error(
             `experiments/neow/${NEOW_SECONDARY.testFile}: the secondary arm has to be read against the baseline batches of the primary test (${m.b.batchId})`,
           );
@@ -1148,7 +1190,8 @@ function parseSynergySelection() {
 function commonBatchProblem(current, cls, { seeds, keepRelics, adr, classStartExempt = false }) {
   if (current.character !== EXACT[cls])
     return `it was played as "${current.character}", not as ${EXACT[cls]}`;
-  if (current.partition !== "val" || current.seeds !== seeds) return `it is not the ${seeds} val seeds`;
+  if (current.partition !== "val" || current.seeds !== seeds)
+    return `it is not the ${seeds} val seeds`;
   if (current.ascension !== 0 || current.profile !== "veteran")
     return "it is not Ascension 0 with the veteran profile";
   if (current.keepRelics !== keepRelics)
@@ -1167,126 +1210,132 @@ function commonBatchProblem(current, cls, { seeds, keepRelics, adr, classStartEx
 // (the registration's own conditions) and carries a passing sample audit, the pooled counts are the sums of the classes', every table adds
 // up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts.
 function readPooledHeldOut({ where, path, names: [a, b], seeds, byId, check }) {
-    const t = JSON.parse(readFileSync(path, "utf8"));
-    if (t.kind !== "pooled-paired-comparison" || t.schema !== 1)
-      throw new Error(`${where}: not a pooled paired comparison of schema 1`);
-    if (t.cohort?.partition !== "val" || t.role !== "held-out")
-      throw new Error(`${where}: not a held-out comparison`);
-    if (t.cohort.ascension !== 0 || t.cohort.profile !== "veteran")
-      throw new Error(`${where}: not played at Ascension 0 with the veteran profile`);
-    const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
-    const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
-    const everyClassOnce = (list) =>
-      list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
-    if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed))
-      throw new Error(`${where}: it must pool all five classes, once each`);
-    const sums = {
-      a_only: 0,
-      b_only: 0,
-      both: 0,
-      neither: 0,
-      pairedSeeds: 0,
-      bothCompleted: 0,
-      winsA: 0,
-      winsB: 0,
-    };
-    for (const m of t.members) {
-      const cls = String(m.character).toLowerCase();
-      for (const [side, name] of [
-        [m.a, a],
-        [m.b, b],
-      ]) {
-        const current = byId.get(side.batchId);
-        if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
-        if (current.contentSha256 !== side.contentSha256)
-          throw new Error(
-            `${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`,
-          );
-        const bad = check(current, name, cls);
-        if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}, ${name}): ${bad}`);
-        const audit = current.sampleAudit;
-        if (!audit || !audit.ledgerOk || audit.verified !== audit.drawn || audit.drawn < 40)
-          throw new Error(
-            `${where}: ${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`,
-          );
-      }
-      if (m.pairedSeeds !== seeds)
-        throw new Error(
-          `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${seeds}`,
-        );
-      const tab = m.reachedAct2.pairedTable;
-      for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
-      sums.pairedSeeds += m.pairedSeeds;
-      sums.bothCompleted += m.bothCompleted;
-      sums.winsA += m.a.wins;
-      sums.winsB += m.b.wins;
-    }
-    const r1 = t.reachedAct2;
-    for (const k of ["a_only", "b_only", "both", "neither"]) {
-      if (r1.pairedTable[k] !== sums[k])
-        throw new Error(
-          `${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`,
-        );
-    }
-    if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted)
-      throw new Error(`${where}: its totals are not the sum of the classes'`);
-    if (t.wins.a !== sums.winsA || t.wins.b !== sums.winsB)
-      throw new Error(`${where}: its wins are not the sum of the classes'`);
-    // every table adds up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts
-    if (t.bothCompleted + t.excludedNotCompleted !== t.pairedSeeds)
-      throw new Error(`${where}: completed and excluded pairs do not add up to the paired seeds`);
-    const table = (label, tab, total) => {
-      const n = tab.a_only + tab.b_only + tab.both + tab.neither;
-      if (n !== total)
-        throw new Error(`${where}: the ${label} table adds up to ${n}, not the ${total} pairs both arms completed`);
-      const exact = mcnemarExact(tab.a_only, tab.b_only);
-      if (!closeP(exact, tab.mcnemar_p))
-        throw new Error(
-          `${where}: the ${label} p-value (${tab.mcnemar_p}) is not the exact McNemar p-value of its counts (${exact})`,
-        );
-    };
-    for (const [label, e] of [
-      ["Act-1", r1],
-      ["Act-2", t.reachedAct3],
+  const t = JSON.parse(readFileSync(path, "utf8"));
+  if (t.kind !== "pooled-paired-comparison" || t.schema !== 1)
+    throw new Error(`${where}: not a pooled paired comparison of schema 1`);
+  if (t.cohort?.partition !== "val" || t.role !== "held-out")
+    throw new Error(`${where}: not a held-out comparison`);
+  if (t.cohort.ascension !== 0 || t.cohort.profile !== "veteran")
+    throw new Error(`${where}: not played at Ascension 0 with the veteran profile`);
+  const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
+  const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
+  const everyClassOnce = (list) =>
+    list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+  if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed))
+    throw new Error(`${where}: it must pool all five classes, once each`);
+  const sums = {
+    a_only: 0,
+    b_only: 0,
+    both: 0,
+    neither: 0,
+    pairedSeeds: 0,
+    bothCompleted: 0,
+    winsA: 0,
+    winsB: 0,
+  };
+  for (const m of t.members) {
+    const cls = String(m.character).toLowerCase();
+    for (const [side, name] of [
+      [m.a, a],
+      [m.b, b],
     ]) {
-      table(label, e.pairedTable, t.bothCompleted);
-      if (
-        e.a.games !== e.pairedTable.a_only + e.pairedTable.both ||
-        e.b.games !== e.pairedTable.b_only + e.pairedTable.both ||
-        Math.abs(e.a.rate - e.a.games / t.bothCompleted) > 1e-9 ||
-        Math.abs(e.b.rate - e.b.games / t.bothCompleted) > 1e-9
-      )
-        throw new Error(`${where}: the ${label} rates are not the counts of its table`);
+      const current = byId.get(side.batchId);
+      if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
+      if (current.contentSha256 !== side.contentSha256)
+        throw new Error(
+          `${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`,
+        );
+      const bad = check(current, name, cls);
+      if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}, ${name}): ${bad}`);
+      const audit = current.sampleAudit;
+      if (!audit || !audit.ledgerOk || audit.verified !== audit.drawn || audit.drawn < 40)
+        throw new Error(
+          `${where}: ${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`,
+        );
     }
-    table("wins", t.wins.pairedTable, t.bothCompleted);
-    for (const m of t.members) table(`${m.character} Act-1`, m.reachedAct2.pairedTable, m.bothCompleted);
-    return {
-      id: where.split("/").pop().replace(/\.json$/, ""),
-      contentSha256: t.contentSha256,
-      pairedSeeds: t.pairedSeeds,
-      bothCompleted: t.bothCompleted,
-      excludedNotCompleted: t.excludedNotCompleted,
-      // games of each arm that ended in a simulator error or a timeout (never counted as losses); the pairs they were in are left out
-      notFinished: {
-        a: t.members.reduce((n, m) => n + seeds - byId.get(m.a.batchId).completed, 0),
-        b: t.members.reduce((n, m) => n + seeds - byId.get(m.b.batchId).completed, 0),
-      },
-      reachedAct2: r1,
-      reachedAct3: t.reachedAct3,
-      wins: t.wins,
-      floorDifference: t.floorDifference,
-      clusteredDifference: t.clusteredDifference,
-      members: t.members.map((m) => ({
-        character: String(m.character).toLowerCase(),
-        a: m.a,
-        b: m.b,
-        pairedSeeds: m.pairedSeeds,
-        bothCompleted: m.bothCompleted,
-        reachedAct2: m.reachedAct2,
-        meanFloorDifference: m.meanFloorDifference,
-      })),
-    };
+    if (m.pairedSeeds !== seeds)
+      throw new Error(
+        `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${seeds}`,
+      );
+    const tab = m.reachedAct2.pairedTable;
+    for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
+    sums.pairedSeeds += m.pairedSeeds;
+    sums.bothCompleted += m.bothCompleted;
+    sums.winsA += m.a.wins;
+    sums.winsB += m.b.wins;
   }
+  const r1 = t.reachedAct2;
+  for (const k of ["a_only", "b_only", "both", "neither"]) {
+    if (r1.pairedTable[k] !== sums[k])
+      throw new Error(
+        `${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`,
+      );
+  }
+  if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted)
+    throw new Error(`${where}: its totals are not the sum of the classes'`);
+  if (t.wins.a !== sums.winsA || t.wins.b !== sums.winsB)
+    throw new Error(`${where}: its wins are not the sum of the classes'`);
+  // every table adds up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts
+  if (t.bothCompleted + t.excludedNotCompleted !== t.pairedSeeds)
+    throw new Error(`${where}: completed and excluded pairs do not add up to the paired seeds`);
+  const table = (label, tab, total) => {
+    const n = tab.a_only + tab.b_only + tab.both + tab.neither;
+    if (n !== total)
+      throw new Error(
+        `${where}: the ${label} table adds up to ${n}, not the ${total} pairs both arms completed`,
+      );
+    const exact = mcnemarExact(tab.a_only, tab.b_only);
+    if (!closeP(exact, tab.mcnemar_p))
+      throw new Error(
+        `${where}: the ${label} p-value (${tab.mcnemar_p}) is not the exact McNemar p-value of its counts (${exact})`,
+      );
+  };
+  for (const [label, e] of [
+    ["Act-1", r1],
+    ["Act-2", t.reachedAct3],
+  ]) {
+    table(label, e.pairedTable, t.bothCompleted);
+    if (
+      e.a.games !== e.pairedTable.a_only + e.pairedTable.both ||
+      e.b.games !== e.pairedTable.b_only + e.pairedTable.both ||
+      Math.abs(e.a.rate - e.a.games / t.bothCompleted) > 1e-9 ||
+      Math.abs(e.b.rate - e.b.games / t.bothCompleted) > 1e-9
+    )
+      throw new Error(`${where}: the ${label} rates are not the counts of its table`);
+  }
+  table("wins", t.wins.pairedTable, t.bothCompleted);
+  for (const m of t.members)
+    table(`${m.character} Act-1`, m.reachedAct2.pairedTable, m.bothCompleted);
+  return {
+    id: where
+      .split("/")
+      .pop()
+      .replace(/\.json$/, ""),
+    contentSha256: t.contentSha256,
+    pairedSeeds: t.pairedSeeds,
+    bothCompleted: t.bothCompleted,
+    excludedNotCompleted: t.excludedNotCompleted,
+    // games of each arm that ended in a simulator error or a timeout (never counted as losses); the pairs they were in are left out
+    notFinished: {
+      a: t.members.reduce((n, m) => n + seeds - byId.get(m.a.batchId).completed, 0),
+      b: t.members.reduce((n, m) => n + seeds - byId.get(m.b.batchId).completed, 0),
+    },
+    reachedAct2: r1,
+    reachedAct3: t.reachedAct3,
+    wins: t.wins,
+    floorDifference: t.floorDifference,
+    clusteredDifference: t.clusteredDifference,
+    members: t.members.map((m) => ({
+      character: String(m.character).toLowerCase(),
+      a: m.a,
+      b: m.b,
+      pairedSeeds: m.pairedSeeds,
+      bothCompleted: m.bothCompleted,
+      reachedAct2: m.reachedAct2,
+      meanFloorDifference: m.meanFloorDifference,
+    })),
+  };
+}
 
 // The sets the site shows with the test of ADR-053. A set adopted under that test is licensed by the rule registered before it (the pooled
 // gain, and the class's own games not showing the current values significantly ahead), not by its own class's significance: its `passed`
@@ -1312,16 +1361,21 @@ function parseCardValueSets(comparisons, reports) {
 // applies it to the numbers and refuses a site-sets.json that disagrees: the decision is the rule's, not the author's.
 const KEEP_VALUES_ALPHA = 0.05;
 const KEEP_VALUES_SEEDS = 2000;
-const currentValuesFile = (cls) => (cls === "ironclad" ? "ironclad-a0-v2.json" : `${cls}-a0-v1.json`);
+const currentValuesFile = (cls) =>
+  cls === "ironclad" ? "ironclad-a0-v2.json" : `${cls}-a0-v1.json`;
 const keepValuesFile = (cls) => `${cls}-a0-keep-v1.json`;
-const keepValuesComparison = (cls) => `rules_v3-keepvals-vs-curvals-${cls}-a0-veteran-keeprelics-val`;
+const keepValuesComparison = (cls) =>
+  `rules_v3-keepvals-vs-curvals-${cls}-a0-veteran-keeprelics-val`;
 
 function parseKeepValuesTest(reports) {
   const dir = join(root, "experiments", "cardvalue");
   const primaryFile = join(dir, "pooled-keepvals-vs-curvals-val.json");
   if (!existsSync(primaryFile)) return null;
   const byId = new Map(reports.map((r) => [r.id, r]));
-  const sha256 = (file) => createHash("sha256").update(readFileSync(join(dir, file))).digest("hex");
+  const sha256 = (file) =>
+    createHash("sha256")
+      .update(readFileSync(join(dir, file)))
+      .digest("hex");
   // the new files are the ones ADR-053 recorded before any held-out game: their hashes are in the decision log
   const decisions = readFileSync(join(root, "docs", "DECISIONS.md"), "utf8");
   for (const cls of CLASSES) {
@@ -1338,8 +1392,9 @@ function parseKeepValuesTest(reports) {
     if (current.policyParams?.values !== want || current.policyParams?.threshold !== 0)
       return `it does not follow ${want} at threshold 0`;
     const env =
-      JSON.parse(readFileSync(join(root, "experiments", "batches", current.id, "manifest.json"), "utf8"))
-        .environment?.slay2 ?? {};
+      JSON.parse(
+        readFileSync(join(root, "experiments", "batches", current.id, "manifest.json"), "utf8"),
+      ).environment?.slay2 ?? {};
     heads.add(env.head);
     return env.dirty === false
       ? null
@@ -1365,7 +1420,8 @@ function parseKeepValuesTest(reports) {
 
   // the reading rule (ADR-053 item 5), from the numbers alone
   const t = primary.reachedAct2.pairedTable;
-  const verdict = t.mcnemar_p < KEEP_VALUES_ALPHA ? (t.a_only > t.b_only ? "gain" : "loss") : "none";
+  const verdict =
+    t.mcnemar_p < KEEP_VALUES_ALPHA ? (t.a_only > t.b_only ? "gain" : "loss") : "none";
   const classes = {};
   for (const m of primary.members) {
     const own = m.reachedAct2.pairedTable;
@@ -1380,7 +1436,10 @@ function parseKeepValuesTest(reports) {
         bossFights: newFit(m.character).boss_fights,
         passRate: newFit(m.character).pass_rate,
       },
-      current: { file: `experiments/cardvalue/${currentValuesFile(m.character)}`, sha256: sha256(currentValuesFile(m.character)) },
+      current: {
+        file: `experiments/cardvalue/${currentValuesFile(m.character)}`,
+        sha256: sha256(currentValuesFile(m.character)),
+      },
       own: { aOnly: own.a_only, bOnly: own.b_only, p: own.mcnemar_p },
       currentSignificantlyAhead: currentAhead,
       adopted: verdict === "gain" && !currentAhead,

@@ -133,20 +133,30 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 <!-- table:batches:begin -->
 | Batch id | Policy | Class | Partition · n | Completed | Wins | Content sha256 | Tree | Audits | Class check |
 |---|---|---|---|---|---|---|---|---|---|
+| `advisor_v1-astar-defect-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Defect | val · 2000 | 1983 | 0 | `308707bef7f7…` | clean | sample | yes |
 | `advisor_v1-astar-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 2000 | 0 | `7145541305bc…` | clean | sample,rederivation | yes |
+| `advisor_v1-astar-ironclad-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1959 | 13 | `e57e46b7f4ed…` | clean | wins,sample | yes |
 | `advisor_v1-astar-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1997 | 2 | `57051e5df185…` | clean | wins,sample,rederivation | yes |
+| `advisor_v1-astar-necrobinder-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1978 | 0 | `50ffcd6ef4a8…` | clean | sample | yes |
 | `advisor_v1-astar-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1997 | 0 | `af9e8efb162c…` | clean | sample,rederivation | yes |
+| `advisor_v1-astar-regent-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Regent | val · 2000 | 1982 | 0 | `653160649e8d…` | clean | sample | yes |
 | `advisor_v1-astar-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1990 | 0 | `eb199bc6d2a3…` | clean | sample,rederivation | yes |
+| `advisor_v1-astar-silent-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Silent | val · 2000 | 1994 | 0 | `95ac0e0bc767…` | clean | sample | yes |
 | `advisor_v1-astar-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `c46e319bff5a…` | clean | sample,rederivation | yes |
 | `advisor_v1-d0-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `5f28f56c474d…` | clean | – | yes |
 | `advisor_v1-d0-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 999 | 0 | `1e80771827ca…` | clean | – | yes |
 | `advisor_v1-d0-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `5723808d69b9…` | clean | – | yes |
 | `advisor_v1-d0-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 998 | 0 | `3a98dbe91d01…` | clean | – | yes |
 | `advisor_v1-d0-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `165d8631ec0d…` | clean | – | yes |
+| `advisor_v1-d0star-defect-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Defect | val · 2000 | 1986 | 0 | `214a9e3ffa05…` | clean | sample | yes |
 | `advisor_v1-d0star-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 1998 | 0 | `bb1d5364903c…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-ironclad-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1969 | 12 | `3f435096ba5a…` | clean | wins,sample | yes |
 | `advisor_v1-d0star-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1998 | 0 | `8eba6d4b503c…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-necrobinder-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1983 | 1 | `744b02ae27e2…` | clean | wins,sample | yes |
 | `advisor_v1-d0star-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1998 | 0 | `9d29eae7897c…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-regent-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Regent | val · 2000 | 1988 | 0 | `7ee3393139c4…` | clean | sample | yes |
 | `advisor_v1-d0star-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1988 | 0 | `a294345df0cf…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-silent-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Silent | val · 2000 | 1995 | 0 | `631825f4af5a…` | clean | sample | yes |
 | `advisor_v1-d0star-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `47a8504bbda1…` | clean | sample,rederivation | yes |
 | `advisor_v1-d1-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `c8bd5abc57f7…` | clean | – | yes |
 | `advisor_v1-d1-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `913967cb9d65…` | clean | – | yes |
@@ -204,10 +214,15 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `ladder-random_legal-ironclad-a0-first_run-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `570dd90b3617…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `77b084b95fbf…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n2000` | random_legal | Ironclad | train · 2000 | 1999 | 0 | `3ab5c4052170…` | dirty | – | predates |
+| `neow-explore-defect-a0-keeprelics-train-n3000` | rules_v2_neow | Defect | train · 3000 | 2913 | 106 | `ee3e02278d4d…` | clean | wins,sample | yes |
 | `neow-explore-defect-a0-train-n3000` | rules_v2_neow | Defect | train · 3000 | 2991 | 18 | `38518f7ff41b…` | clean | wins,sample | yes |
+| `neow-explore-ironclad-a0-keeprelics-train-n3000` | rules_v2_neow | Ironclad | train · 3000 | 2879 | 173 | `b68f67487356…` | clean | wins,sample | yes |
 | `neow-explore-ironclad-a0-train-n3000` | rules_v2_neow | Ironclad | train · 3000 | 2984 | 13 | `212359e9bd5f…` | clean | wins,sample | yes |
+| `neow-explore-necrobinder-a0-keeprelics-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2931 | 0 | `933b49fb8296…` | clean | sample | yes |
 | `neow-explore-necrobinder-a0-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2995 | 0 | `71bcd527e5ec…` | clean | sample | yes |
+| `neow-explore-regent-a0-keeprelics-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2907 | 10 | `2d1000bac89a…` | clean | wins,sample | yes |
 | `neow-explore-regent-a0-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2964 | 0 | `c5d25c54549d…` | clean | sample | yes |
+| `neow-explore-silent-a0-keeprelics-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2981 | 0 | `80dc39cb3013…` | clean | sample | yes |
 | `neow-explore-silent-a0-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2999 | 0 | `4367f6c6b434…` | clean | sample | yes |
 | `r4dev-defect-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Defect | dev · 500 | 495 | 0 | `60fa2da8fc3c…` | clean | sample | yes |
 | `r4dev-defect-relics-keeprelics-dev-o500-n500` | advisor_v1 | Defect | dev · 500 | 495 | 0 | `d0cc2525c1eb…` | clean | sample | yes |
@@ -239,8 +254,18 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `rules_v2_neow_values-necrobinder-a0-veteran-val-n2000` | rules_v2_neow_values | Necrobinder | val · 2000 | 1992 | 0 | `e6686cfac179…` | clean | sample | yes |
 | `rules_v2_neow_values-regent-a0-veteran-val-n2000` | rules_v2_neow_values | Regent | val · 2000 | 1976 | 1 | `d7107d820e90…` | clean | wins,sample | yes |
 | `rules_v2_neow_values-silent-a0-veteran-val-n2000` | rules_v2_neow_values | Silent | val · 2000 | 2000 | 0 | `f96a3564038c…` | clean | sample | yes |
+| `rules_v3-curvals-defect-a0-veteran-keeprelics-val-n2000` | rules_v3 | Defect | val · 2000 | 1945 | 46 | `eca59a07eb88…` | clean | wins,sample | yes |
+| `rules_v3-curvals-ironclad-a0-veteran-keeprelics-val-n2000` | rules_v3 | Ironclad | val · 2000 | 1928 | 40 | `a598271c547c…` | clean | wins,sample | yes |
+| `rules_v3-curvals-necrobinder-a0-veteran-keeprelics-val-n2000` | rules_v3 | Necrobinder | val · 2000 | 1962 | 1 | `6871bb6a91d6…` | clean | wins,sample | yes |
+| `rules_v3-curvals-regent-a0-veteran-keeprelics-val-n2000` | rules_v3 | Regent | val · 2000 | 1964 | 3 | `5ba62231d1c1…` | clean | wins,sample | yes |
+| `rules_v3-curvals-silent-a0-veteran-keeprelics-val-n2000` | rules_v3 | Silent | val · 2000 | 1991 | 0 | `84b3d153b037…` | clean | sample | yes |
 | `rules_v3-defect-a0-veteran-val-n2000` | rules_v3 | Defect | val · 2000 | 1998 | 10 | `fa969034c3eb…` | clean | wins,sample | yes |
 | `rules_v3-ironclad-a0-veteran-val-n2000` | rules_v3 | Ironclad | val · 2000 | 1996 | 6 | `6afa85d50be6…` | clean | wins,sample | predates |
+| `rules_v3-keepvals-defect-a0-veteran-keeprelics-val-n2000` | rules_v3 | Defect | val · 2000 | 1935 | 46 | `f8f3ab5120cd…` | clean | wins,sample | yes |
+| `rules_v3-keepvals-ironclad-a0-veteran-keeprelics-val-n2000` | rules_v3 | Ironclad | val · 2000 | 1930 | 37 | `0c90943b1e9d…` | clean | wins,sample | yes |
+| `rules_v3-keepvals-necrobinder-a0-veteran-keeprelics-val-n2000` | rules_v3 | Necrobinder | val · 2000 | 1962 | 0 | `132c4e7ea50f…` | clean | sample | yes |
+| `rules_v3-keepvals-regent-a0-veteran-keeprelics-val-n2000` | rules_v3 | Regent | val · 2000 | 1954 | 6 | `341c9b98b72a…` | clean | wins,sample | yes |
+| `rules_v3-keepvals-silent-a0-veteran-keeprelics-val-n2000` | rules_v3 | Silent | val · 2000 | 1990 | 0 | `91e667fc8584…` | clean | sample | yes |
 | `rules_v3-necrobinder-a0-veteran-val-n2000` | rules_v3 | Necrobinder | val · 2000 | 1997 | 0 | `9e3aca7a950f…` | clean | sample | yes |
 | `rules_v3-regent-a0-veteran-val-n2000` | rules_v3 | Regent | val · 2000 | 1990 | 0 | `e5a38e8ec26b…` | clean | sample | yes |
 | `rules_v3-silent-a0-veteran-val-n2000` | rules_v3 | Silent | val · 2000 | 2000 | 0 | `4f36d2eedcb3…` | clean | sample | yes |

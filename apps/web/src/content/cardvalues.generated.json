@@ -3,47 +3,64 @@
   "generatedFrom": "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
   "sets": [
     {
-      "id": "defect-a0-v1",
+      "id": "defect-a0-keep-v1",
       "character": "defect",
       "validation": {
-        "comparison": "rules_v2-vs-rules_v1-defect-a0-veteran-val",
+        "comparison": "rules_v3-keepvals-vs-curvals-defect-a0-veteran-keeprelics-val",
         "alpha": 0.0125,
-        "pairedGames": 1996,
-        "passRate": 0.7615230460921844,
-        "passRateBase": 0.34519038076152303,
-        "p": 7.211901524218e-167,
-        "against": "ratings",
-        "basis": "own",
+        "pairedGames": 1919,
+        "passRate": 0.8551328817092235,
+        "passRateBase": 0.8431474726420011,
+        "p": 0.1475989121085985,
+        "against": "current-values",
+        "basis": "pooled",
         "passed": true
       },
-      "supersedes": null,
-      "drift": null,
-      "relicsKept": false,
-      "file": "experiments/cardvalue/defect-a0-v1.json",
-      "sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58",
-      "outcome": "the run gets past the Act-1 boss",
-      "games": 3212,
-      "bossFights": 3212,
-      "passRate": 0.4026,
-      "model": {
-        "l2": 3,
-        "folds": 5,
-        "features": 118,
-        "bootstrapDraws": 200,
-        "cvLogLoss": 0.3845884855435202,
-        "cvAuc": 0.9027053517416707,
-        "baselineLogLoss": 0.491519229576379
+      "supersedes": "defect-a0-v1",
+      "drift": {
+        "previous": "defect-a0-v1",
+        "previousSha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58",
+        "previousPilot": "rules_explore",
+        "pilot": "rules_explore_v3",
+        "previousBossFights": 3212,
+        "previousPassRate": 0.4026,
+        "cardsInBoth": 91,
+        "spearman": 0.7060519190953973,
+        "k": 10,
+        "bestShared": 7,
+        "worstShared": 2,
+        "disjointIntervals": 6,
+        "noiseCards": 69,
+        "noiseSpearman": 0.7300694190719766,
+        "noiseSpearmanBrown": 0.8439770231458017
       },
-      "spearmanWithStaticRating": 0.2668,
+      "relicsKept": true,
+      "file": "experiments/cardvalue/defect-a0-keep-v1.json",
+      "sha256": "bf653d43aaa4840fe9ada645103732da3b804634f7ef367478879e2392646772",
+      "outcome": "the run gets past the Act-1 boss",
+      "games": 3850,
+      "bossFights": 3850,
+      "passRate": 0.7151,
+      "model": {
+        "l2": 10,
+        "folds": 5,
+        "features": 149,
+        "bootstrapDraws": 200,
+        "cvLogLoss": 0.35355096181994733,
+        "cvAuc": 0.8993271945645771,
+        "baselineLogLoss": 0.4362545505785234
+      },
+      "spearmanWithStaticRating": 0.2615,
       "batches": [
         {
-          "id": "explore-defect-a0-train-rep0",
-          "contentSha256": "90714d2eacf50f2dc948a8e0bc1c19341e30c66f261eef2f9269627506054826",
+          "id": "explore4-defect-a0-keeprelics-dev-o5000-n5000",
+          "contentSha256": "cd8a8780bcc534d6380eb110536ad9ce3083260380efc8f2ea5b9803503ec4a4",
           "policy": {
             "effective": {
               "params": {
                 "explore": 0.6,
                 "replicate": 0,
+                "threshold": 0,
                 "tune": {
                   "boss_heal_below": 0.9,
                   "card_slope": 0.09,
@@ -52,9 +69,9 @@
                   "elite_bad_value": -2.5,
                   "elite_mid_hp": 0.65,
                   "elite_mid_value": 0.2,
-                  "elite_ok_floor": 4,
-                  "elite_ok_hp": 0.8,
-                  "elite_value": 2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
                   "heal_below": 0.7,
                   "max_deck": 32,
                   "monster_hp_penalty": 0.5,
@@ -72,14 +89,17 @@
                   "shop_rich_gold": 150,
                   "treasure_value": 1.8,
                   "unknown_value": 0.8
-                }
+                },
+                "values": "experiments/cardvalue/defect-a0-v1.json",
+                "values_sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
               },
               "version": "1"
             },
-            "name": "rules_explore",
+            "name": "rules_explore_v3",
             "params": {
               "explore": 0.6,
-              "replicate": 0
+              "replicate": 0,
+              "values": "experiments/cardvalue/defect-a0-v1.json"
             }
           },
           "simulator": "sts2-rl-agent"
@@ -89,1014 +109,1069 @@
         {
           "id": "CLAW",
           "simId": "CLAW",
-          "beta": 1.8633,
+          "beta": 1.3859,
           "ci95": [
-            1.6107,
-            2.1712
+            1.2401,
+            1.5726
           ],
-          "gamesWithCard": 429,
+          "gamesWithCard": 1430,
           "staticRating": 2.65
-        },
-        {
-          "id": "ADAPTIVE_STRIKE",
-          "simId": "ADAPTIVE_STRIKE",
-          "beta": 1.5202,
-          "ci95": [
-            1.0436,
-            2.1097
-          ],
-          "gamesWithCard": 91,
-          "staticRating": 6.15
         },
         {
           "id": "BULK_UP",
           "simId": "BULK_UP",
-          "beta": 1.4696,
+          "beta": 1.0866,
           "ci95": [
-            1.2622,
-            1.7453
+            0.8884,
+            1.3282
           ],
-          "gamesWithCard": 564,
+          "gamesWithCard": 570,
           "staticRating": 9.85
         },
         {
           "id": "BALL_LIGHTNING",
           "simId": "BALL_LIGHTNING",
-          "beta": 1.4588,
+          "beta": 0.8411,
           "ci95": [
-            1.2723,
-            1.6987
+            0.721,
+            1.0562
           ],
-          "gamesWithCard": 722,
+          "gamesWithCard": 1377,
           "staticRating": 3.85
-        },
-        {
-          "id": "ROCKET_PUNCH",
-          "simId": "ROCKET_PUNCH",
-          "beta": 0.8401,
-          "ci95": [
-            0.5771,
-            1.1439
-          ],
-          "gamesWithCard": 415,
-          "staticRating": 5.275
-        },
-        {
-          "id": "LIGHTNING_ROD",
-          "simId": "LIGHTNING_ROD",
-          "beta": 0.7936,
-          "ci95": [
-            0.5704,
-            1.0824
-          ],
-          "gamesWithCard": 391,
-          "staticRating": 2
-        },
-        {
-          "id": "SPINNER",
-          "simId": "SPINNER_CARD",
-          "beta": 0.7754,
-          "ci95": [
-            0.2966,
-            1.2961
-          ],
-          "gamesWithCard": 46,
-          "staticRating": 3.7
-        },
-        {
-          "id": "SHADOW_SHIELD",
-          "simId": "SHADOW_SHIELD",
-          "beta": 0.7699,
-          "ci95": [
-            0.3754,
-            1.1729
-          ],
-          "gamesWithCard": 159,
-          "staticRating": 3.35
         },
         {
           "id": "COLD_SNAP",
           "simId": "COLD_SNAP",
-          "beta": 0.7144,
+          "beta": 0.7496,
           "ci95": [
-            0.4803,
-            0.9746
+            0.6086,
+            0.9697
           ],
-          "gamesWithCard": 445,
+          "gamesWithCard": 1203,
           "staticRating": 3.3
+        },
+        {
+          "id": "LIGHTNING_ROD",
+          "simId": "LIGHTNING_ROD",
+          "beta": 0.5733,
+          "ci95": [
+            0.4045,
+            0.7486
+          ],
+          "gamesWithCard": 1292,
+          "staticRating": 2
+        },
+        {
+          "id": "ADAPTIVE_STRIKE",
+          "simId": "ADAPTIVE_STRIKE",
+          "beta": 0.5099,
+          "ci95": [
+            0.2135,
+            0.7773
+          ],
+          "gamesWithCard": 125,
+          "staticRating": 6.15
         },
         {
           "id": "NULL",
           "simId": "NULL_CARD",
-          "beta": 0.6897,
+          "beta": 0.5009,
           "ci95": [
-            0.4355,
-            0.9554
+            0.2929,
+            0.7298
           ],
-          "gamesWithCard": 372,
+          "gamesWithCard": 474,
           "staticRating": 4.75
+        },
+        {
+          "id": "FTL",
+          "simId": "FTL",
+          "beta": 0.4532,
+          "ci95": [
+            0.246,
+            0.7485
+          ],
+          "gamesWithCard": 503,
+          "staticRating": 6.55
+        },
+        {
+          "id": "GO_FOR_THE_EYES",
+          "simId": "GO_FOR_THE_EYES",
+          "beta": 0.3598,
+          "ci95": [
+            0.2101,
+            0.5271
+          ],
+          "gamesWithCard": 1132,
+          "staticRating": 4.05
+        },
+        {
+          "id": "BEAM_CELL",
+          "simId": "BEAM_CELL",
+          "beta": 0.3381,
+          "ci95": [
+            0.1912,
+            0.5164
+          ],
+          "gamesWithCard": 1058,
+          "staticRating": 4.25
+        },
+        {
+          "id": "CHARGE_BATTERY",
+          "simId": "CHARGE_BATTERY",
+          "beta": 0.3176,
+          "ci95": [
+            0.1734,
+            0.4919
+          ],
+          "gamesWithCard": 1085,
+          "staticRating": 6.5
+        },
+        {
+          "id": "SUPERCRITICAL",
+          "simId": "SUPERCRITICAL",
+          "beta": 0.3091,
+          "ci95": [
+            -0.0054,
+            0.583
+          ],
+          "gamesWithCard": 76,
+          "staticRating": 10.2
+        },
+        {
+          "id": "SPINNER",
+          "simId": "SPINNER_CARD",
+          "beta": 0.306,
+          "ci95": [
+            0.0216,
+            0.5879
+          ],
+          "gamesWithCard": 92,
+          "staticRating": 3.7
+        },
+        {
+          "id": "MACHINE_LEARNING",
+          "simId": "MACHINE_LEARNING_CARD",
+          "beta": 0.2983,
+          "ci95": [
+            -0.0557,
+            0.6015
+          ],
+          "gamesWithCard": 113,
+          "staticRating": 5.9
         },
         {
           "id": "ULTIMATE_STRIKE",
           "simId": "ULTIMATE_STRIKE",
-          "beta": 0.6513,
+          "beta": 0.2975,
           "ci95": [
-            0.1736,
-            1.1998
+            0.07,
+            0.5134
           ],
-          "gamesWithCard": 30,
+          "gamesWithCard": 51,
           "staticRating": 8.3
         },
         {
           "id": "GLASSWORK",
           "simId": "GLASSWORK",
-          "beta": 0.6492,
+          "beta": 0.2949,
           "ci95": [
-            0.2658,
-            1.0533
+            0.0509,
+            0.5432
           ],
-          "gamesWithCard": 144,
+          "gamesWithCard": 477,
           "staticRating": 3.1
         },
         {
-          "id": "GO_FOR_THE_EYES",
-          "simId": "GO_FOR_THE_EYES",
-          "beta": 0.5747,
+          "id": "OMNISLICE",
+          "simId": "OMNISLICE",
+          "beta": 0.2887,
           "ci95": [
-            0.4128,
-            0.7897
+            0.1124,
+            0.4416
           ],
-          "gamesWithCard": 768,
-          "staticRating": 4.05
-        },
-        {
-          "id": "MOMENTUM_STRIKE",
-          "simId": "MOMENTUM_STRIKE",
-          "beta": 0.5134,
-          "ci95": [
-            0.3579,
-            0.6979
-          ],
-          "gamesWithCard": 1050,
-          "staticRating": 5.5
-        },
-        {
-          "id": "FTL",
-          "simId": "FTL",
-          "beta": 0.4899,
-          "ci95": [
-            0.2119,
-            0.7213
-          ],
-          "gamesWithCard": 501,
-          "staticRating": 6.55
-        },
-        {
-          "id": "BEAM_CELL",
-          "simId": "BEAM_CELL",
-          "beta": 0.475,
-          "ci95": [
-            0.2762,
-            0.6695
-          ],
-          "gamesWithCard": 809,
-          "staticRating": 4.25
+          "gamesWithCard": 34,
+          "staticRating": 6
         },
         {
           "id": "COOLHEADED",
           "simId": "COOLHEADED",
-          "beta": 0.4734,
+          "beta": 0.28,
           "ci95": [
-            0.1996,
-            0.7775
+            0.1242,
+            0.4484
           ],
-          "gamesWithCard": 335,
+          "gamesWithCard": 881,
           "staticRating": 2.2
         },
         {
-          "id": "LOOP",
-          "simId": "LOOP_CARD",
-          "beta": 0.4022,
+          "id": "ROCKET_PUNCH",
+          "simId": "ROCKET_PUNCH",
+          "beta": 0.2679,
           "ci95": [
-            0.0141,
-            0.7842
+            0.092,
+            0.4819
           ],
-          "gamesWithCard": 115,
-          "staticRating": 3.1
+          "gamesWithCard": 580,
+          "staticRating": 5.275
         },
         {
           "id": "GLACIER",
           "simId": "GLACIER",
-          "beta": 0.3886,
+          "beta": 0.2666,
           "ci95": [
-            -0.0377,
-            0.8111
+            -0.0148,
+            0.5385
           ],
-          "gamesWithCard": 123,
+          "gamesWithCard": 333,
           "staticRating": 2.1
         },
         {
-          "id": "CHARGE_BATTERY",
-          "simId": "CHARGE_BATTERY",
-          "beta": 0.3719,
+          "id": "MOMENTUM_STRIKE",
+          "simId": "MOMENTUM_STRIKE",
+          "beta": 0.2524,
           "ci95": [
-            0.222,
-            0.5321
+            0.1058,
+            0.4027
           ],
-          "gamesWithCard": 1160,
-          "staticRating": 6.5
+          "gamesWithCard": 1204,
+          "staticRating": 5.5
         },
         {
-          "id": "COMPACT",
-          "simId": "COMPACT",
-          "beta": 0.3656,
+          "id": "HAILSTORM",
+          "simId": "HAILSTORM",
+          "beta": 0.2243,
           "ci95": [
-            -0.0121,
-            0.7192
+            -0.04,
+            0.521
           ],
-          "gamesWithCard": 181,
-          "staticRating": 3.6
-        },
-        {
-          "id": "MACHINE_LEARNING",
-          "simId": "MACHINE_LEARNING_CARD",
-          "beta": 0.3536,
-          "ci95": [
-            -0.0489,
-            0.7759
-          ],
-          "gamesWithCard": 103,
-          "staticRating": 5.9
-        },
-        {
-          "id": "TRASH_TO_TREASURE",
-          "simId": "TRASH_TO_TREASURE",
-          "beta": 0.3038,
-          "ci95": [
-            -0.1905,
-            0.6891
-          ],
-          "gamesWithCard": 41,
-          "staticRating": 3.7
-        },
-        {
-          "id": "ITERATION",
-          "simId": "ITERATION_CARD",
-          "beta": 0.2667,
-          "ci95": [
-            -0.167,
-            0.7071
-          ],
-          "gamesWithCard": 122,
+          "gamesWithCard": 135,
           "staticRating": 3.1
         },
         {
-          "id": "HELIX_DRILL",
-          "simId": "HELIX_DRILL",
-          "beta": 0.2578,
+          "id": "SHADOW_SHIELD",
+          "simId": "SHADOW_SHIELD",
+          "beta": 0.2231,
           "ci95": [
-            -0.2934,
-            0.8127
+            0.016,
+            0.4267
           ],
-          "gamesWithCard": 52,
+          "gamesWithCard": 465,
+          "staticRating": 3.35
+        },
+        {
+          "id": "TESLA_COIL",
+          "simId": "TESLA_COIL",
+          "beta": 0.2094,
+          "ci95": [
+            -0.0415,
+            0.4864
+          ],
+          "gamesWithCard": 245,
+          "staticRating": 3.25
+        },
+        {
+          "id": "COMPILE_DRIVER",
+          "simId": "COMPILE_DRIVER",
+          "beta": 0.194,
+          "ci95": [
+            0.0041,
+            0.3838
+          ],
+          "gamesWithCard": 654,
           "staticRating": 3.85
         },
         {
           "id": "ICE_LANCE",
           "simId": "ICE_LANCE",
-          "beta": 0.2515,
+          "beta": 0.1818,
           "ci95": [
-            -0.184,
-            0.7481
+            -0.0113,
+            0.402
           ],
-          "gamesWithCard": 78,
+          "gamesWithCard": 81,
           "staticRating": 4.683
-        },
-        {
-          "id": "FOCUSED_STRIKE",
-          "simId": "FOCUSED_STRIKE_CARD",
-          "beta": 0.2114,
-          "ci95": [
-            0.0363,
-            0.3771
-          ],
-          "gamesWithCard": 942,
-          "staticRating": 4.95
-        },
-        {
-          "id": "LEAP",
-          "simId": "LEAP",
-          "beta": 0.2108,
-          "ci95": [
-            0.0128,
-            0.3838
-          ],
-          "gamesWithCard": 908,
-          "staticRating": 4.5
-        },
-        {
-          "id": "OMNISLICE",
-          "simId": "OMNISLICE",
-          "beta": 0.1995,
-          "ci95": [
-            -0.3173,
-            0.6373
-          ],
-          "gamesWithCard": 42,
-          "staticRating": 6
-        },
-        {
-          "id": "STRIKE_DEFECT",
-          "simId": "STRIKE_DEFECT",
-          "beta": 0.1917,
-          "ci95": [
-            -0.3464,
-            0.7417
-          ],
-          "gamesWithCard": 3212,
-          "staticRating": 3.3
-        },
-        {
-          "id": "VOLTAIC",
-          "simId": "VOLTAIC",
-          "beta": 0.1811,
-          "ci95": [
-            -0.3118,
-            0.6518
-          ],
-          "gamesWithCard": 36,
-          "staticRating": 0.867
-        },
-        {
-          "id": "SCRAPE",
-          "simId": "SCRAPE",
-          "beta": 0.1636,
-          "ci95": [
-            -0.033,
-            0.3996
-          ],
-          "gamesWithCard": 551,
-          "staticRating": 11.05
-        },
-        {
-          "id": "BOOST_AWAY",
-          "simId": "BOOST_AWAY",
-          "beta": 0.1414,
-          "ci95": [
-            -0.0764,
-            0.3396
-          ],
-          "gamesWithCard": 705,
-          "staticRating": 4
-        },
-        {
-          "id": "COMPILE_DRIVER",
-          "simId": "COMPILE_DRIVER",
-          "beta": 0.115,
-          "ci95": [
-            -0.108,
-            0.3158
-          ],
-          "gamesWithCard": 636,
-          "staticRating": 3.85
-        },
-        {
-          "id": "RESTLESSNESS",
-          "simId": "RESTLESSNESS",
-          "beta": 0.1142,
-          "ci95": [
-            -0.5997,
-            0.6721
-          ],
-          "gamesWithCard": 46,
-          "staticRating": 12
-        },
-        {
-          "id": "PANIC_BUTTON",
-          "simId": "PANIC_BUTTON",
-          "beta": 0.0965,
-          "ci95": [
-            -0.4414,
-            0.5085
-          ],
-          "gamesWithCard": 46,
-          "staticRating": 12
-        },
-        {
-          "id": "SYNCHRONIZE",
-          "simId": "SYNCHRONIZE",
-          "beta": 0.091,
-          "ci95": [
-            -0.4879,
-            0.6431
-          ],
-          "gamesWithCard": 57,
-          "staticRating": -0.4
-        },
-        {
-          "id": "SYNTHESIS",
-          "simId": "SYNTHESIS",
-          "beta": 0.0868,
-          "ci95": [
-            -0.2183,
-            0.3644
-          ],
-          "gamesWithCard": 313,
-          "staticRating": 4.45
-        },
-        {
-          "id": "CONSUMING_SHADOW",
-          "simId": "CONSUMING_SHADOW",
-          "beta": 0.0857,
-          "ci95": [
-            -0.4046,
-            0.6967
-          ],
-          "gamesWithCard": 36,
-          "staticRating": 2.45
-        },
-        {
-          "id": "STORM",
-          "simId": "STORM_CARD",
-          "beta": 0.0815,
-          "ci95": [
-            -0.4245,
-            0.5375
-          ],
-          "gamesWithCard": 114,
-          "staticRating": 3.1
-        },
-        {
-          "id": "TESLA_COIL",
-          "simId": "TESLA_COIL",
-          "beta": 0.0795,
-          "ci95": [
-            -0.2106,
-            0.4633
-          ],
-          "gamesWithCard": 163,
-          "staticRating": 3.25
-        },
-        {
-          "id": "SUPERCRITICAL",
-          "simId": "SUPERCRITICAL",
-          "beta": 0.0733,
-          "ci95": [
-            -0.4028,
-            0.5562
-          ],
-          "gamesWithCard": 106,
-          "staticRating": 10.2
-        },
-        {
-          "id": "COOLANT",
-          "simId": "COOLANT",
-          "beta": 0.0679,
-          "ci95": [
-            -0.3992,
-            0.6543
-          ],
-          "gamesWithCard": 43,
-          "staticRating": 3.7
-        },
-        {
-          "id": "SIGNAL_BOOST",
-          "simId": "SIGNAL_BOOST",
-          "beta": 0.0365,
-          "ci95": [
-            -0.5522,
-            0.5087
-          ],
-          "gamesWithCard": 30,
-          "staticRating": 0.2
-        },
-        {
-          "id": "REFRACT",
-          "simId": "REFRACT",
-          "beta": 0.0337,
-          "ci95": [
-            -0.4042,
-            0.5161
-          ],
-          "gamesWithCard": 133,
-          "staticRating": 2.25
-        },
-        {
-          "id": "MODDED",
-          "simId": "MODDED",
-          "beta": 0.0318,
-          "ci95": [
-            -0.5315,
-            0.4832
-          ],
-          "gamesWithCard": 64,
-          "staticRating": 4.4
-        },
-        {
-          "id": "SWEEPING_BEAM",
-          "simId": "SWEEPING_BEAM",
-          "beta": 0.0113,
-          "ci95": [
-            -0.1662,
-            0.1716
-          ],
-          "gamesWithCard": 1252,
-          "staticRating": 7.6
-        },
-        {
-          "id": "HOLOGRAM",
-          "simId": "HOLOGRAM",
-          "beta": 0.0041,
-          "ci95": [
-            -0.2994,
-            0.2841
-          ],
-          "gamesWithCard": 338,
-          "staticRating": 0.5
-        },
-        {
-          "id": "NEOWS_FURY",
-          "simId": "NEOWS_FURY",
-          "beta": 0,
-          "ci95": [
-            0,
-            0
-          ],
-          "gamesWithCard": 213,
-          "staticRating": 8.9
-        },
-        {
-          "id": "GUNK_UP",
-          "simId": "GUNK_UP",
-          "beta": -0.0017,
-          "ci95": [
-            -0.2855,
-            0.2589
-          ],
-          "gamesWithCard": 371,
-          "staticRating": 2.2
-        },
-        {
-          "id": "HAILSTORM",
-          "simId": "HAILSTORM",
-          "beta": -0.0042,
-          "ci95": [
-            -0.3722,
-            0.4276
-          ],
-          "gamesWithCard": 118,
-          "staticRating": 3.1
-        },
-        {
-          "id": "BOOT_SEQUENCE",
-          "simId": "BOOT_SEQUENCE",
-          "beta": -0.0085,
-          "ci95": [
-            -0.3122,
-            0.2869
-          ],
-          "gamesWithCard": 356,
-          "staticRating": 5.6
-        },
-        {
-          "id": "SUNDER",
-          "simId": "SUNDER",
-          "beta": -0.0298,
-          "ci95": [
-            -0.2597,
-            0.1823
-          ],
-          "gamesWithCard": 527,
-          "staticRating": 8
-        },
-        {
-          "id": "BARRAGE",
-          "simId": "BARRAGE",
-          "beta": -0.0391,
-          "ci95": [
-            -0.2999,
-            0.2795
-          ],
-          "gamesWithCard": 377,
-          "staticRating": 2.75
-        },
-        {
-          "id": "SMOKESTACK",
-          "simId": "SMOKESTACK",
-          "beta": -0.0397,
-          "ci95": [
-            -0.5388,
-            0.4517
-          ],
-          "gamesWithCard": 122,
-          "staticRating": 3.1
-        },
-        {
-          "id": "TEMPEST",
-          "simId": "TEMPEST",
-          "beta": -0.0574,
-          "ci95": [
-            -0.4912,
-            0.3455
-          ],
-          "gamesWithCard": 114,
-          "staticRating": 1.6
-        },
-        {
-          "id": "SEEKER_STRIKE",
-          "simId": "SEEKER_STRIKE",
-          "beta": -0.0655,
-          "ci95": [
-            -0.6067,
-            0.3586
-          ],
-          "gamesWithCard": 48,
-          "staticRating": 12
         },
         {
           "id": "PROWESS",
           "simId": "PROWESS",
-          "beta": -0.0796,
+          "beta": 0.1557,
           "ci95": [
-            -0.5659,
-            0.3443
+            -0.1445,
+            0.3863
           ],
-          "gamesWithCard": 42,
+          "gamesWithCard": 52,
           "staticRating": 11.1
-        },
-        {
-          "id": "SKIM",
-          "simId": "SKIM",
-          "beta": -0.089,
-          "ci95": [
-            -0.3835,
-            0.2136
-          ],
-          "gamesWithCard": 384,
-          "staticRating": 7.2
-        },
-        {
-          "id": "AUTOMATION",
-          "simId": "AUTOMATION",
-          "beta": -0.091,
-          "ci95": [
-            -0.5989,
-            0.3258
-          ],
-          "gamesWithCard": 30,
-          "staticRating": 6.1
-        },
-        {
-          "id": "ZAP",
-          "simId": "ZAP",
-          "beta": -0.1034,
-          "ci95": [
-            -0.3291,
-            0.1075
-          ],
-          "gamesWithCard": 1283,
-          "staticRating": 0
-        },
-        {
-          "id": "DUALCAST",
-          "simId": "DUALCAST",
-          "beta": -0.1358,
-          "ci95": [
-            -0.6063,
-            0.3278
-          ],
-          "gamesWithCard": 3093,
-          "staticRating": 0
-        },
-        {
-          "id": "FERAL",
-          "simId": "FERAL",
-          "beta": -0.1418,
-          "ci95": [
-            -0.6949,
-            0.2843
-          ],
-          "gamesWithCard": 103,
-          "staticRating": 1.85
-        },
-        {
-          "id": "REBOOT",
-          "simId": "REBOOT",
-          "beta": -0.1556,
-          "ci95": [
-            -0.6919,
-            0.344
-          ],
-          "gamesWithCard": 81,
-          "staticRating": 7.8
-        },
-        {
-          "id": "CLUMSY",
-          "simId": "CLUMSY",
-          "beta": -0.1721,
-          "ci95": [
-            -0.6015,
-            0.3698
-          ],
-          "gamesWithCard": 66,
-          "staticRating": -6
-        },
-        {
-          "id": "METEOR_STRIKE",
-          "simId": "METEOR_STRIKE",
-          "beta": -0.1803,
-          "ci95": [
-            -0.7974,
-            0.4214
-          ],
-          "gamesWithCard": 42,
-          "staticRating": 3.84
-        },
-        {
-          "id": "ALL_FOR_ONE",
-          "simId": "ALL_FOR_ONE",
-          "beta": -0.2078,
-          "ci95": [
-            -0.5733,
-            0.1037
-          ],
-          "gamesWithCard": 41,
-          "staticRating": 3.95
-        },
-        {
-          "id": "HYPERBEAM",
-          "simId": "HYPERBEAM",
-          "beta": -0.2168,
-          "ci95": [
-            -0.7792,
-            0.1626
-          ],
-          "gamesWithCard": 127,
-          "staticRating": 12
-        },
-        {
-          "id": "DRAMATIC_ENTRANCE",
-          "simId": "DRAMATIC_ENTRANCE",
-          "beta": -0.2227,
-          "ci95": [
-            -0.6811,
-            0.3985
-          ],
-          "gamesWithCard": 47,
-          "staticRating": 10.5
-        },
-        {
-          "id": "CHILL",
-          "simId": "CHILL",
-          "beta": -0.2686,
-          "ci95": [
-            -0.6901,
-            0.194
-          ],
-          "gamesWithCard": 108,
-          "staticRating": 0.6
-        },
-        {
-          "id": "SCAVENGE",
-          "simId": "SCAVENGE",
-          "beta": -0.2771,
-          "ci95": [
-            -0.5643,
-            -0.0032
-          ],
-          "gamesWithCard": 332,
-          "staticRating": 6.6
-        },
-        {
-          "id": "TURBO",
-          "simId": "TURBO",
-          "beta": -0.2787,
-          "ci95": [
-            -0.4919,
-            -0.113
-          ],
-          "gamesWithCard": 1094,
-          "staticRating": 7
         },
         {
           "id": "SUBROUTINE",
           "simId": "SUBROUTINE",
-          "beta": -0.3059,
+          "beta": 0.1485,
           "ci95": [
-            -0.7228,
-            0.1614
+            -0.1697,
+            0.4275
           ],
-          "gamesWithCard": 113,
+          "gamesWithCard": 142,
           "staticRating": 3.1
         },
         {
-          "id": "UPROAR",
-          "simId": "UPROAR",
-          "beta": -0.3179,
+          "id": "SWEEPING_BEAM",
+          "simId": "SWEEPING_BEAM",
+          "beta": 0.1391,
           "ci95": [
-            -0.6236,
-            -0.0425
+            -0.0269,
+            0.3262
           ],
-          "gamesWithCard": 365,
-          "staticRating": 1.65
+          "gamesWithCard": 795,
+          "staticRating": 7.6
         },
         {
-          "id": "CREATIVE_AI",
-          "simId": "CREATIVE_AI_CARD",
-          "beta": -0.3331,
+          "id": "DRAMATIC_ENTRANCE",
+          "simId": "DRAMATIC_ENTRANCE",
+          "beta": 0.1352,
           "ci95": [
-            -0.7685,
-            0.1917
+            -0.0402,
+            0.2942
           ],
-          "gamesWithCard": 31,
-          "staticRating": 2.033
+          "gamesWithCard": 38,
+          "staticRating": 10.5
         },
         {
-          "id": "DEFEND_DEFECT",
-          "simId": "DEFEND_DEFECT",
-          "beta": -0.3348,
+          "id": "SYNTHESIS",
+          "simId": "SYNTHESIS",
+          "beta": 0.1324,
           "ci95": [
-            -0.8772,
-            0.1364
+            -0.0856,
+            0.358
           ],
-          "gamesWithCard": 3212,
-          "staticRating": 2.5
+          "gamesWithCard": 278,
+          "staticRating": 4.45
         },
         {
-          "id": "WHITE_NOISE",
-          "simId": "WHITE_NOISE",
-          "beta": -0.3519,
+          "id": "STORM",
+          "simId": "STORM_CARD",
+          "beta": 0.12,
           "ci95": [
-            -0.9539,
-            0.0943
+            -0.1765,
+            0.4381
           ],
-          "gamesWithCard": 72,
-          "staticRating": -0.4
-        },
-        {
-          "id": "SPOILS_MAP",
-          "simId": "SPOILS_MAP",
-          "beta": -0.3542,
-          "ci95": [
-            -0.7885,
-            0.0782
-          ],
-          "gamesWithCard": 146,
-          "staticRating": -6
-        },
-        {
-          "id": "THUNDER",
-          "simId": "THUNDER_CARD",
-          "beta": -0.3812,
-          "ci95": [
-            -0.8539,
-            0.023
-          ],
-          "gamesWithCard": 105,
+          "gamesWithCard": 245,
           "staticRating": 3.1
         },
         {
-          "id": "CHAOS",
-          "simId": "CHAOS",
-          "beta": -0.3971,
+          "id": "SEEKER_STRIKE",
+          "simId": "SEEKER_STRIKE",
+          "beta": 0.1142,
           "ci95": [
-            -0.8485,
-            0.0528
+            -0.0932,
+            0.3162
           ],
-          "gamesWithCard": 113,
-          "staticRating": 0.6
+          "gamesWithCard": 40,
+          "staticRating": 12
         },
         {
-          "id": "MULTI_CAST",
-          "simId": "MULTI_CAST",
-          "beta": -0.4199,
+          "id": "PRODUCTION",
+          "simId": "PRODUCTION",
+          "beta": 0.1123,
           "ci95": [
-            -0.9842,
-            0.0599
+            -0.1811,
+            0.3972
           ],
-          "gamesWithCard": 37,
-          "staticRating": 2.2
+          "gamesWithCard": 36,
+          "staticRating": 6.6
         },
         {
-          "id": "POOR_SLEEP",
-          "simId": "POOR_SLEEP",
-          "beta": -0.4238,
+          "id": "FERAL",
+          "simId": "FERAL",
+          "beta": 0.1112,
           "ci95": [
-            -0.8857,
-            -0.0019
+            -0.1943,
+            0.4281
           ],
-          "gamesWithCard": 117,
-          "staticRating": -6
-        },
-        {
-          "id": "GENETIC_ALGORITHM",
-          "simId": "GENETIC_ALGORITHM",
-          "beta": -0.4974,
-          "ci95": [
-            -0.9477,
-            -0.0136
-          ],
-          "gamesWithCard": 42,
-          "staticRating": 1.2
-        },
-        {
-          "id": "DARKNESS",
-          "simId": "DARKNESS_CARD",
-          "beta": -0.5246,
-          "ci95": [
-            -0.9211,
-            -0.0552
-          ],
-          "gamesWithCard": 112,
-          "staticRating": 0.6
-        },
-        {
-          "id": "OVERCLOCK",
-          "simId": "OVERCLOCK",
-          "beta": -0.525,
-          "ci95": [
-            -0.8121,
-            -0.2536
-          ],
-          "gamesWithCard": 345,
-          "staticRating": 6
-        },
-        {
-          "id": "FIGHT_THROUGH",
-          "simId": "FIGHT_THROUGH",
-          "beta": -0.5256,
-          "ci95": [
-            -0.7976,
-            -0.2341
-          ],
-          "gamesWithCard": 457,
-          "staticRating": 7.1
-        },
-        {
-          "id": "HOTFIX",
-          "simId": "HOTFIX",
-          "beta": -0.5446,
-          "ci95": [
-            -0.8855,
-            -0.2672
-          ],
-          "gamesWithCard": 328,
-          "staticRating": 0
-        },
-        {
-          "id": "FUSION",
-          "simId": "FUSION",
-          "beta": -0.5507,
-          "ci95": [
-            -1.1046,
-            0.0033
-          ],
-          "gamesWithCard": 65,
-          "staticRating": -0.4
+          "gamesWithCard": 147,
+          "staticRating": 1.85
         },
         {
           "id": "DEFRAGMENT",
           "simId": "DEFRAGMENT",
-          "beta": -0.5993,
+          "beta": 0.1099,
           "ci95": [
-            -1.0765,
-            -0.1491
+            -0.0989,
+            0.3017
           ],
-          "gamesWithCard": 51,
+          "gamesWithCard": 31,
           "staticRating": 3.7
         },
         {
-          "id": "SHATTER",
-          "simId": "SHATTER",
-          "beta": -0.6346,
+          "id": "BOOST_AWAY",
+          "simId": "BOOST_AWAY",
+          "beta": 0.0944,
           "ci95": [
-            -1.1222,
-            -0.17
+            -0.1041,
+            0.3093
           ],
-          "gamesWithCard": 96,
-          "staticRating": 7.5
+          "gamesWithCard": 764,
+          "staticRating": 4
         },
         {
-          "id": "CAPACITOR",
-          "simId": "CAPACITOR",
-          "beta": -0.6608,
+          "id": "GENETIC_ALGORITHM",
+          "simId": "GENETIC_ALGORITHM",
+          "beta": 0.0906,
           "ci95": [
-            -1.0568,
-            -0.22
+            -0.2787,
+            0.4007
           ],
-          "gamesWithCard": 117,
-          "staticRating": 3.1
+          "gamesWithCard": 43,
+          "staticRating": 1.2
+        },
+        {
+          "id": "LEAP",
+          "simId": "LEAP",
+          "beta": 0.0738,
+          "ci95": [
+            -0.1124,
+            0.2594
+          ],
+          "gamesWithCard": 886,
+          "staticRating": 4.5
+        },
+        {
+          "id": "COOLANT",
+          "simId": "COOLANT",
+          "beta": 0.0702,
+          "ci95": [
+            -0.2708,
+            0.3743
+          ],
+          "gamesWithCard": 57,
+          "staticRating": 3.7
+        },
+        {
+          "id": "HELIX_DRILL",
+          "simId": "HELIX_DRILL",
+          "beta": 0.0651,
+          "ci95": [
+            -0.194,
+            0.3539
+          ],
+          "gamesWithCard": 68,
+          "staticRating": 3.85
+        },
+        {
+          "id": "STRIKE_DEFECT",
+          "simId": "STRIKE_DEFECT",
+          "beta": 0.0432,
+          "ci95": [
+            -0.2337,
+            0.3967
+          ],
+          "gamesWithCard": 3850,
+          "staticRating": 3.3
+        },
+        {
+          "id": "DEFEND_DEFECT",
+          "simId": "DEFEND_DEFECT",
+          "beta": 0.0273,
+          "ci95": [
+            -0.1698,
+            0.2529
+          ],
+          "gamesWithCard": 3850,
+          "staticRating": 2.5
+        },
+        {
+          "id": "GUNK_UP",
+          "simId": "GUNK_UP",
+          "beta": 0.0164,
+          "ci95": [
+            -0.2634,
+            0.2571
+          ],
+          "gamesWithCard": 423,
+          "staticRating": 2.2
+        },
+        {
+          "id": "BARRAGE",
+          "simId": "BARRAGE",
+          "beta": 0.0147,
+          "ci95": [
+            -0.2521,
+            0.2286
+          ],
+          "gamesWithCard": 455,
+          "staticRating": 2.75
         },
         {
           "id": "DOUBLE_ENERGY",
           "simId": "DOUBLE_ENERGY",
-          "beta": -0.8791,
+          "beta": 0.0083,
           "ci95": [
-            -1.3795,
-            -0.331
+            -0.2571,
+            0.2656
           ],
-          "gamesWithCard": 70,
+          "gamesWithCard": 86,
           "staticRating": -0.4
+        },
+        {
+          "id": "TRASH_TO_TREASURE",
+          "simId": "TRASH_TO_TREASURE",
+          "beta": 0.006,
+          "ci95": [
+            -0.3036,
+            0.2573
+          ],
+          "gamesWithCard": 69,
+          "staticRating": 3.7
+        },
+        {
+          "id": "COMPACT",
+          "simId": "COMPACT",
+          "beta": 0.0028,
+          "ci95": [
+            -0.1996,
+            0.2548
+          ],
+          "gamesWithCard": 330,
+          "staticRating": 3.6
+        },
+        {
+          "id": "REBOOT",
+          "simId": "REBOOT",
+          "beta": -0.0134,
+          "ci95": [
+            -0.2557,
+            0.2539
+          ],
+          "gamesWithCard": 47,
+          "staticRating": 7.8
+        },
+        {
+          "id": "CREATIVE_AI",
+          "simId": "CREATIVE_AI_CARD",
+          "beta": -0.0191,
+          "ci95": [
+            -0.3618,
+            0.2421
+          ],
+          "gamesWithCard": 38,
+          "staticRating": 2.033
+        },
+        {
+          "id": "BOOT_SEQUENCE",
+          "simId": "BOOT_SEQUENCE",
+          "beta": -0.024,
+          "ci95": [
+            -0.2981,
+            0.2312
+          ],
+          "gamesWithCard": 213,
+          "staticRating": 5.6
+        },
+        {
+          "id": "NEOWS_FURY",
+          "simId": "NEOWS_FURY",
+          "beta": -0.0271,
+          "ci95": [
+            -0.0878,
+            0
+          ],
+          "gamesWithCard": 266,
+          "staticRating": 8.9
+        },
+        {
+          "id": "MODDED",
+          "simId": "MODDED",
+          "beta": -0.029,
+          "ci95": [
+            -0.3337,
+            0.2276
+          ],
+          "gamesWithCard": 49,
+          "staticRating": 4.4
+        },
+        {
+          "id": "CLUMSY",
+          "simId": "CLUMSY",
+          "beta": -0.0349,
+          "ci95": [
+            -0.3738,
+            0.2863
+          ],
+          "gamesWithCard": 42,
+          "staticRating": -6
+        },
+        {
+          "id": "ECHO_FORM",
+          "simId": "ECHO_FORM_CARD",
+          "beta": -0.061,
+          "ci95": [
+            -0.3044,
+            0.1497
+          ],
+          "gamesWithCard": 49,
+          "staticRating": 2.033
+        },
+        {
+          "id": "RAINBOW",
+          "simId": "RAINBOW",
+          "beta": -0.0625,
+          "ci95": [
+            -0.255,
+            0.1604
+          ],
+          "gamesWithCard": 37,
+          "staticRating": 0.7
+        },
+        {
+          "id": "THRUMMING_HATCHET",
+          "simId": "THRUMMING_HATCHET",
+          "beta": -0.0648,
+          "ci95": [
+            -0.3115,
+            0.1857
+          ],
+          "gamesWithCard": 31,
+          "staticRating": 6.65
+        },
+        {
+          "id": "REFRACT",
+          "simId": "REFRACT",
+          "beta": -0.0673,
+          "ci95": [
+            -0.3612,
+            0.2545
+          ],
+          "gamesWithCard": 195,
+          "staticRating": 2.25
+        },
+        {
+          "id": "PANIC_BUTTON",
+          "simId": "PANIC_BUTTON",
+          "beta": -0.069,
+          "ci95": [
+            -0.3874,
+            0.2023
+          ],
+          "gamesWithCard": 51,
+          "staticRating": 12
+        },
+        {
+          "id": "SCRAPE",
+          "simId": "SCRAPE",
+          "beta": -0.0796,
+          "ci95": [
+            -0.2778,
+            0.217
+          ],
+          "gamesWithCard": 422,
+          "staticRating": 11.05
+        },
+        {
+          "id": "LOOP",
+          "simId": "LOOP_CARD",
+          "beta": -0.0801,
+          "ci95": [
+            -0.3316,
+            0.199
+          ],
+          "gamesWithCard": 327,
+          "staticRating": 3.1
+        },
+        {
+          "id": "FOCUSED_STRIKE",
+          "simId": "FOCUSED_STRIKE_CARD",
+          "beta": -0.0851,
+          "ci95": [
+            -0.2608,
+            0.0782
+          ],
+          "gamesWithCard": 946,
+          "staticRating": 4.95
+        },
+        {
+          "id": "THUNDER",
+          "simId": "THUNDER_CARD",
+          "beta": -0.0854,
+          "ci95": [
+            -0.3893,
+            0.1791
+          ],
+          "gamesWithCard": 160,
+          "staticRating": 3.1
+        },
+        {
+          "id": "HOLOGRAM",
+          "simId": "HOLOGRAM",
+          "beta": -0.1069,
+          "ci95": [
+            -0.3248,
+            0.1056
+          ],
+          "gamesWithCard": 541,
+          "staticRating": 0.5
+        },
+        {
+          "id": "METEOR_STRIKE",
+          "simId": "METEOR_STRIKE",
+          "beta": -0.1138,
+          "ci95": [
+            -0.3705,
+            0.1723
+          ],
+          "gamesWithCard": 37,
+          "staticRating": 3.84
+        },
+        {
+          "id": "SKIM",
+          "simId": "SKIM",
+          "beta": -0.1258,
+          "ci95": [
+            -0.4452,
+            0.1438
+          ],
+          "gamesWithCard": 205,
+          "staticRating": 7.2
+        },
+        {
+          "id": "SMOKESTACK",
+          "simId": "SMOKESTACK",
+          "beta": -0.1264,
+          "ci95": [
+            -0.4047,
+            0.2236
+          ],
+          "gamesWithCard": 145,
+          "staticRating": 3.1
+        },
+        {
+          "id": "SIGNAL_BOOST",
+          "simId": "SIGNAL_BOOST",
+          "beta": -0.1414,
+          "ci95": [
+            -0.4079,
+            0.1626
+          ],
+          "gamesWithCard": 55,
+          "staticRating": 0.2
+        },
+        {
+          "id": "FUSION",
+          "simId": "FUSION",
+          "beta": -0.1683,
+          "ci95": [
+            -0.4285,
+            0.1082
+          ],
+          "gamesWithCard": 93,
+          "staticRating": -0.4
+        },
+        {
+          "id": "ITERATION",
+          "simId": "ITERATION_CARD",
+          "beta": -0.1753,
+          "ci95": [
+            -0.435,
+            0.088
+          ],
+          "gamesWithCard": 315,
+          "staticRating": 3.1
+        },
+        {
+          "id": "ZAP",
+          "simId": "ZAP",
+          "beta": -0.1791,
+          "ci95": [
+            -0.3976,
+            0.0006
+          ],
+          "gamesWithCard": 1567,
+          "staticRating": 0
+        },
+        {
+          "id": "MULTI_CAST",
+          "simId": "MULTI_CAST",
+          "beta": -0.1821,
+          "ci95": [
+            -0.3644,
+            0.0056
+          ],
+          "gamesWithCard": 31,
+          "staticRating": 2.2
+        },
+        {
+          "id": "WHITE_NOISE",
+          "simId": "WHITE_NOISE",
+          "beta": -0.1823,
+          "ci95": [
+            -0.4896,
+            0.0251
+          ],
+          "gamesWithCard": 89,
+          "staticRating": -0.4
+        },
+        {
+          "id": "SUNDER",
+          "simId": "SUNDER",
+          "beta": -0.1867,
+          "ci95": [
+            -0.4466,
+            0.0204
+          ],
+          "gamesWithCard": 324,
+          "staticRating": 8
+        },
+        {
+          "id": "CHILL",
+          "simId": "CHILL",
+          "beta": -0.1979,
+          "ci95": [
+            -0.4619,
+            0.1001
+          ],
+          "gamesWithCard": 137,
+          "staticRating": 0.6
+        },
+        {
+          "id": "RESTLESSNESS",
+          "simId": "RESTLESSNESS",
+          "beta": -0.2261,
+          "ci95": [
+            -0.4987,
+            0.0722
+          ],
+          "gamesWithCard": 56,
+          "staticRating": 12
+        },
+        {
+          "id": "ALL_FOR_ONE",
+          "simId": "ALL_FOR_ONE",
+          "beta": -0.2269,
+          "ci95": [
+            -0.5031,
+            0.0675
+          ],
+          "gamesWithCard": 31,
+          "staticRating": 3.95
+        },
+        {
+          "id": "BUFFER",
+          "simId": "BUFFER_CARD",
+          "beta": -0.232,
+          "ci95": [
+            -0.5219,
+            0.0909
+          ],
+          "gamesWithCard": 39,
+          "staticRating": 2.45
+        },
+        {
+          "id": "VOLTAIC",
+          "simId": "VOLTAIC",
+          "beta": -0.2323,
+          "ci95": [
+            -0.4956,
+            0.1456
+          ],
+          "gamesWithCard": 59,
+          "staticRating": 0.867
+        },
+        {
+          "id": "PURITY",
+          "simId": "PURITY",
+          "beta": -0.2418,
+          "ci95": [
+            -0.513,
+            0.0704
+          ],
+          "gamesWithCard": 33,
+          "staticRating": 7.2
+        },
+        {
+          "id": "DARKNESS",
+          "simId": "DARKNESS_CARD",
+          "beta": -0.2422,
+          "ci95": [
+            -0.5451,
+            0.0431
+          ],
+          "gamesWithCard": 138,
+          "staticRating": 0.6
+        },
+        {
+          "id": "SYNCHRONIZE",
+          "simId": "SYNCHRONIZE",
+          "beta": -0.2565,
+          "ci95": [
+            -0.4832,
+            0.0091
+          ],
+          "gamesWithCard": 114,
+          "staticRating": -0.4
+        },
+        {
+          "id": "POOR_SLEEP",
+          "simId": "POOR_SLEEP",
+          "beta": -0.283,
+          "ci95": [
+            -0.5437,
+            -0.0013
+          ],
+          "gamesWithCard": 125,
+          "staticRating": -6
+        },
+        {
+          "id": "UPROAR",
+          "simId": "UPROAR",
+          "beta": -0.2876,
+          "ci95": [
+            -0.5184,
+            -0.0355
+          ],
+          "gamesWithCard": 434,
+          "staticRating": 1.65
+        },
+        {
+          "id": "CAPACITOR",
+          "simId": "CAPACITOR",
+          "beta": -0.2962,
+          "ci95": [
+            -0.5628,
+            -0.0278
+          ],
+          "gamesWithCard": 150,
+          "staticRating": 3.1
+        },
+        {
+          "id": "FIGHT_THROUGH",
+          "simId": "FIGHT_THROUGH",
+          "beta": -0.2997,
+          "ci95": [
+            -0.5708,
+            -0.0451
+          ],
+          "gamesWithCard": 217,
+          "staticRating": 7.1
+        },
+        {
+          "id": "SHATTER",
+          "simId": "SHATTER",
+          "beta": -0.3007,
+          "ci95": [
+            -0.5662,
+            0.0211
+          ],
+          "gamesWithCard": 43,
+          "staticRating": 7.5
+        },
+        {
+          "id": "TEMPEST",
+          "simId": "TEMPEST",
+          "beta": -0.3118,
+          "ci95": [
+            -0.6193,
+            0.0193
+          ],
+          "gamesWithCard": 141,
+          "staticRating": 1.6
+        },
+        {
+          "id": "DUALCAST",
+          "simId": "DUALCAST",
+          "beta": -0.3482,
+          "ci95": [
+            -0.6195,
+            -0.0666
+          ],
+          "gamesWithCard": 3752,
+          "staticRating": 0
+        },
+        {
+          "id": "TURBO",
+          "simId": "TURBO",
+          "beta": -0.3662,
+          "ci95": [
+            -0.5805,
+            -0.1893
+          ],
+          "gamesWithCard": 621,
+          "staticRating": 7
+        },
+        {
+          "id": "CONSUMING_SHADOW",
+          "simId": "CONSUMING_SHADOW",
+          "beta": -0.3813,
+          "ci95": [
+            -0.6594,
+            -0.0959
+          ],
+          "gamesWithCard": 49,
+          "staticRating": 2.45
+        },
+        {
+          "id": "CHAOS",
+          "simId": "CHAOS",
+          "beta": -0.3933,
+          "ci95": [
+            -0.6667,
+            -0.1419
+          ],
+          "gamesWithCard": 149,
+          "staticRating": 0.6
+        },
+        {
+          "id": "HYPERBEAM",
+          "simId": "HYPERBEAM",
+          "beta": -0.3953,
+          "ci95": [
+            -0.7171,
+            -0.1135
+          ],
+          "gamesWithCard": 60,
+          "staticRating": 12
+        },
+        {
+          "id": "SCAVENGE",
+          "simId": "SCAVENGE",
+          "beta": -0.4079,
+          "ci95": [
+            -0.7364,
+            -0.1573
+          ],
+          "gamesWithCard": 208,
+          "staticRating": 6.6
+        },
+        {
+          "id": "SPOILS_MAP",
+          "simId": "SPOILS_MAP",
+          "beta": -0.475,
+          "ci95": [
+            -0.7521,
+            -0.2067
+          ],
+          "gamesWithCard": 201,
+          "staticRating": -6
+        },
+        {
+          "id": "OVERCLOCK",
+          "simId": "OVERCLOCK",
+          "beta": -0.5483,
+          "ci95": [
+            -0.8717,
+            -0.231
+          ],
+          "gamesWithCard": 184,
+          "staticRating": 6
+        },
+        {
+          "id": "HOTFIX",
+          "simId": "HOTFIX",
+          "beta": -0.5538,
+          "ci95": [
+            -0.7952,
+            -0.3702
+          ],
+          "gamesWithCard": 412,
+          "staticRating": 0
         }
       ]
     },
@@ -2251,47 +2326,64 @@
       ]
     },
     {
-      "id": "necrobinder-a0-v1",
+      "id": "necrobinder-a0-keep-v1",
       "character": "necrobinder",
       "validation": {
-        "comparison": "rules_v2-vs-rules_v1-necrobinder-a0-veteran-val",
+        "comparison": "rules_v3-keepvals-vs-curvals-necrobinder-a0-veteran-keeprelics-val",
         "alpha": 0.0125,
-        "pairedGames": 1997,
-        "passRate": 0.6209313970956435,
-        "passRateBase": 0.47771657486229346,
-        "p": 5.903884191711282e-30,
-        "against": "ratings",
-        "basis": "own",
+        "pairedGames": 1945,
+        "passRate": 0.7892030848329049,
+        "passRateBase": 0.7506426735218509,
+        "p": 0.00018877839971331295,
+        "against": "current-values",
+        "basis": "pooled",
         "passed": true
       },
-      "supersedes": null,
-      "drift": null,
-      "relicsKept": false,
-      "file": "experiments/cardvalue/necrobinder-a0-v1.json",
-      "sha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97",
-      "outcome": "the run gets past the Act-1 boss",
-      "games": 3389,
-      "bossFights": 3389,
-      "passRate": 0.44,
-      "model": {
-        "l2": 3,
-        "folds": 5,
-        "features": 117,
-        "bootstrapDraws": 200,
-        "cvLogLoss": 0.3670396053326101,
-        "cvAuc": 0.9146593646883054,
-        "baselineLogLoss": 0.4055624469002962
+      "supersedes": "necrobinder-a0-v1",
+      "drift": {
+        "previous": "necrobinder-a0-v1",
+        "previousSha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97",
+        "previousPilot": "rules_explore",
+        "pilot": "rules_explore_v3",
+        "previousBossFights": 3389,
+        "previousPassRate": 0.44,
+        "cardsInBoth": 90,
+        "spearman": 0.7288224883730502,
+        "k": 10,
+        "bestShared": 7,
+        "worstShared": 6,
+        "disjointIntervals": 2,
+        "noiseCards": 68,
+        "noiseSpearman": 0.7619193037370692,
+        "noiseSpearmanBrown": 0.8648742335940378
       },
-      "spearmanWithStaticRating": 0.4293,
+      "relicsKept": true,
+      "file": "experiments/cardvalue/necrobinder-a0-keep-v1.json",
+      "sha256": "a24d80f77baf2881501ee6f0ba71359f717162c3e1e53feaf17799c06c621607",
+      "outcome": "the run gets past the Act-1 boss",
+      "games": 3829,
+      "bossFights": 3829,
+      "passRate": 0.6226,
+      "model": {
+        "l2": 10,
+        "folds": 5,
+        "features": 147,
+        "bootstrapDraws": 200,
+        "cvLogLoss": 0.3946581134822829,
+        "cvAuc": 0.8930833584914424,
+        "baselineLogLoss": 0.4497324211856339
+      },
+      "spearmanWithStaticRating": 0.4121,
       "batches": [
         {
-          "id": "explore-necrobinder-a0-train-rep0",
-          "contentSha256": "46f1a3fc302f393a77ae0f8b7b68f19f02c257e588b0953f359dbf760c4f7376",
+          "id": "explore4-necrobinder-a0-keeprelics-dev-o5000-n5000",
+          "contentSha256": "71a19ccf1ac9c02f546fecc5c5fc42065228505836e6e96b61b995d29fac6b35",
           "policy": {
             "effective": {
               "params": {
                 "explore": 0.6,
                 "replicate": 0,
+                "threshold": 0,
                 "tune": {
                   "boss_heal_below": 0.9,
                   "card_slope": 0.09,
@@ -2300,9 +2392,9 @@
                   "elite_bad_value": -2.5,
                   "elite_mid_hp": 0.65,
                   "elite_mid_value": 0.2,
-                  "elite_ok_floor": 4,
-                  "elite_ok_hp": 0.8,
-                  "elite_value": 2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
                   "heal_below": 0.7,
                   "max_deck": 32,
                   "monster_hp_penalty": 0.5,
@@ -2320,14 +2412,17 @@
                   "shop_rich_gold": 150,
                   "treasure_value": 1.8,
                   "unknown_value": 0.8
-                }
+                },
+                "values": "experiments/cardvalue/necrobinder-a0-v1.json",
+                "values_sha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97"
               },
               "version": "1"
             },
-            "name": "rules_explore",
+            "name": "rules_explore_v3",
             "params": {
               "explore": 0.6,
-              "replicate": 0
+              "replicate": 0,
+              "values": "experiments/cardvalue/necrobinder-a0-v1.json"
             }
           },
           "simulator": "sts2-rl-agent"
@@ -2337,1048 +2432,1109 @@
         {
           "id": "MELANCHOLY",
           "simId": "MELANCHOLY",
-          "beta": 1.3018,
+          "beta": 0.9969,
           "ci95": [
-            1.0533,
-            1.6843
+            0.8052,
+            1.2668
           ],
-          "gamesWithCard": 337,
+          "gamesWithCard": 622,
           "staticRating": 5.933
-        },
-        {
-          "id": "HANG",
-          "simId": "HANG",
-          "beta": 1.0583,
-          "ci95": [
-            0.5637,
-            1.527
-          ],
-          "gamesWithCard": 81,
-          "staticRating": 6.7
         },
         {
           "id": "UNDEATH",
           "simId": "UNDEATH",
-          "beta": 0.9055,
+          "beta": 0.6829,
           "ci95": [
-            0.3084,
-            1.5202
+            0.3558,
+            1.0286
           ],
-          "gamesWithCard": 86,
+          "gamesWithCard": 135,
           "staticRating": 5.7
         },
         {
           "id": "FETCH",
           "simId": "FETCH",
-          "beta": 0.8112,
+          "beta": 0.6356,
           "ci95": [
-            0.5373,
-            1.1518
+            0.48,
+            0.8534
           ],
-          "gamesWithCard": 322,
+          "gamesWithCard": 545,
           "staticRating": 5.45
         },
         {
-          "id": "DELAY",
-          "simId": "DELAY",
-          "beta": 0.7895,
+          "id": "HANG",
+          "simId": "HANG",
+          "beta": 0.6058,
           "ci95": [
-            0.5535,
-            1.0725
+            0.3251,
+            0.9029
           ],
-          "gamesWithCard": 493,
-          "staticRating": 7.6
-        },
-        {
-          "id": "FLASH_OF_STEEL",
-          "simId": "FLASH_OF_STEEL",
-          "beta": 0.7055,
-          "ci95": [
-            0.2423,
-            1.1991
-          ],
-          "gamesWithCard": 30,
-          "staticRating": 6.55
-        },
-        {
-          "id": "PROWESS",
-          "simId": "PROWESS",
-          "beta": 0.6595,
-          "ci95": [
-            0.106,
-            1.1261
-          ],
-          "gamesWithCard": 47,
-          "staticRating": 11.1
+          "gamesWithCard": 125,
+          "staticRating": 6.7
         },
         {
           "id": "BONE_SHARDS",
           "simId": "BONE_SHARDS",
-          "beta": 0.5846,
+          "beta": 0.5978,
           "ci95": [
-            0.3654,
-            0.8822
+            0.4401,
+            0.7986
           ],
-          "gamesWithCard": 591,
+          "gamesWithCard": 704,
           "staticRating": 12
-        },
-        {
-          "id": "DRAIN_POWER",
-          "simId": "DRAIN_POWER",
-          "beta": 0.5802,
-          "ci95": [
-            0.3862,
-            0.8089
-          ],
-          "gamesWithCard": 1486,
-          "staticRating": 9.9
         },
         {
           "id": "VEILPIERCER",
           "simId": "VEILPIERCER",
-          "beta": 0.4627,
+          "beta": 0.509,
           "ci95": [
-            0.1635,
-            0.7364
+            0.3141,
+            0.7229
           ],
-          "gamesWithCard": 385,
+          "gamesWithCard": 556,
           "staticRating": 6.1
-        },
-        {
-          "id": "SNAP",
-          "simId": "SNAP",
-          "beta": 0.4448,
-          "ci95": [
-            0.2469,
-            0.7086
-          ],
-          "gamesWithCard": 508,
-          "staticRating": 3.85
-        },
-        {
-          "id": "SCULPTING_STRIKE",
-          "simId": "SCULPTING_STRIKE",
-          "beta": 0.4228,
-          "ci95": [
-            0.2154,
-            0.6669
-          ],
-          "gamesWithCard": 705,
-          "staticRating": 4.95
-        },
-        {
-          "id": "GRAVE_WARDEN",
-          "simId": "GRAVE_WARDEN",
-          "beta": 0.4213,
-          "ci95": [
-            0.2455,
-            0.6013
-          ],
-          "gamesWithCard": 973,
-          "staticRating": 6.2
-        },
-        {
-          "id": "BANSHEES_CRY",
-          "simId": "BANSHEES_CRY",
-          "beta": 0.3782,
-          "ci95": [
-            -0.2063,
-            0.9068
-          ],
-          "gamesWithCard": 60,
-          "staticRating": 5.167
-        },
-        {
-          "id": "POKE",
-          "simId": "POKE",
-          "beta": 0.3767,
-          "ci95": [
-            0.1863,
-            0.6276
-          ],
-          "gamesWithCard": 655,
-          "staticRating": 4.3
-        },
-        {
-          "id": "HIGH_FIVE",
-          "simId": "HIGH_FIVE",
-          "beta": 0.356,
-          "ci95": [
-            0.1109,
-            0.5896
-          ],
-          "gamesWithCard": 501,
-          "staticRating": 7.15
-        },
-        {
-          "id": "NEGATIVE_PULSE",
-          "simId": "NEGATIVE_PULSE",
-          "beta": 0.3323,
-          "ci95": [
-            0.0506,
-            0.5992
-          ],
-          "gamesWithCard": 392,
-          "staticRating": 2.5
-        },
-        {
-          "id": "THRUMMING_HATCHET",
-          "simId": "THRUMMING_HATCHET",
-          "beta": 0.3186,
-          "ci95": [
-            -0.1246,
-            0.655
-          ],
-          "gamesWithCard": 32,
-          "staticRating": 6.65
-        },
-        {
-          "id": "SEVERANCE",
-          "simId": "SEVERANCE",
-          "beta": 0.3079,
-          "ci95": [
-            -0.0239,
-            0.6257
-          ],
-          "gamesWithCard": 209,
-          "staticRating": 4.175
-        },
-        {
-          "id": "DEATHBRINGER",
-          "simId": "DEATHBRINGER",
-          "beta": 0.2777,
-          "ci95": [
-            -0.1066,
-            0.5773
-          ],
-          "gamesWithCard": 146,
-          "staticRating": 1.3
-        },
-        {
-          "id": "SPUR",
-          "simId": "SPUR",
-          "beta": 0.2733,
-          "ci95": [
-            -0.1251,
-            0.6743
-          ],
-          "gamesWithCard": 129,
-          "staticRating": 0.6
-        },
-        {
-          "id": "INVOKE",
-          "simId": "INVOKE",
-          "beta": 0.2612,
-          "ci95": [
-            0.0764,
-            0.4414
-          ],
-          "gamesWithCard": 884,
-          "staticRating": 6
-        },
-        {
-          "id": "DRAMATIC_ENTRANCE",
-          "simId": "DRAMATIC_ENTRANCE",
-          "beta": 0.2573,
-          "ci95": [
-            -0.2501,
-            0.6908
-          ],
-          "gamesWithCard": 34,
-          "staticRating": 10.5
-        },
-        {
-          "id": "MISERY",
-          "simId": "MISERY",
-          "beta": 0.2331,
-          "ci95": [
-            -0.2683,
-            0.6476
-          ],
-          "gamesWithCard": 76,
-          "staticRating": 6.05
-        },
-        {
-          "id": "LETHALITY",
-          "simId": "LETHALITY_CARD",
-          "beta": 0.2265,
-          "ci95": [
-            -0.2395,
-            0.6538
-          ],
-          "gamesWithCard": 123,
-          "staticRating": 3.1
         },
         {
           "id": "DEFILE",
           "simId": "DEFILE",
-          "beta": 0.2207,
+          "beta": 0.5036,
           "ci95": [
-            0.0839,
-            0.3889
+            0.3734,
+            0.6907
           ],
-          "gamesWithCard": 1119,
+          "gamesWithCard": 1069,
           "staticRating": 7.15
         },
         {
-          "id": "FLATTEN",
-          "simId": "FLATTEN",
-          "beta": 0.2141,
+          "id": "POKE",
+          "simId": "POKE",
+          "beta": 0.4794,
           "ci95": [
-            -0.1241,
-            0.4649
+            0.3485,
+            0.6487
           ],
-          "gamesWithCard": 413,
-          "staticRating": 3.3
+          "gamesWithCard": 1185,
+          "staticRating": 4.3
         },
         {
-          "id": "ULTIMATE_STRIKE",
-          "simId": "ULTIMATE_STRIKE",
-          "beta": 0.2119,
+          "id": "DRAIN_POWER",
+          "simId": "DRAIN_POWER",
+          "beta": 0.4619,
           "ci95": [
-            -0.3887,
-            0.7074
+            0.3097,
+            0.6575
           ],
-          "gamesWithCard": 31,
-          "staticRating": 8.3
+          "gamesWithCard": 1551,
+          "staticRating": 9.9
         },
         {
-          "id": "FRIENDSHIP",
-          "simId": "FRIENDSHIP",
-          "beta": 0.1956,
+          "id": "THRUMMING_HATCHET",
+          "simId": "THRUMMING_HATCHET",
+          "beta": 0.4399,
           "ci95": [
-            -0.0475,
-            0.4991
+            0.1967,
+            0.6779
           ],
-          "gamesWithCard": 565,
-          "staticRating": 12
+          "gamesWithCard": 36,
+          "staticRating": 6.65
         },
         {
-          "id": "FEAR",
-          "simId": "FEAR",
-          "beta": 0.1901,
+          "id": "GRAVE_WARDEN",
+          "simId": "GRAVE_WARDEN",
+          "beta": 0.4305,
           "ci95": [
-            -0.0092,
-            0.3676
+            0.2823,
+            0.6
           ],
-          "gamesWithCard": 831,
-          "staticRating": 5.45
+          "gamesWithCard": 1212,
+          "staticRating": 6.2
         },
         {
-          "id": "PAGESTORM",
-          "simId": "PAGESTORM",
-          "beta": 0.1886,
+          "id": "MISERY",
+          "simId": "MISERY",
+          "beta": 0.4123,
           "ci95": [
-            -0.1069,
-            0.4923
+            0.129,
+            0.6779
           ],
-          "gamesWithCard": 266,
-          "staticRating": 5.3
+          "gamesWithCard": 102,
+          "staticRating": 6.05
         },
         {
-          "id": "BURY",
-          "simId": "BURY",
-          "beta": 0.1794,
+          "id": "HIGH_FIVE",
+          "simId": "HIGH_FIVE",
+          "beta": 0.4115,
           "ci95": [
-            -0.0515,
-            0.401
+            0.1892,
+            0.5788
           ],
-          "gamesWithCard": 459,
-          "staticRating": 7.75
-        },
-        {
-          "id": "REAVE",
-          "simId": "REAVE",
-          "beta": 0.1789,
-          "ci95": [
-            -0.0038,
-            0.3413
-          ],
-          "gamesWithCard": 1160,
+          "gamesWithCard": 490,
           "staticRating": 7.15
         },
         {
           "id": "DEFY",
           "simId": "DEFY",
-          "beta": 0.1702,
+          "beta": 0.4081,
           "ci95": [
-            -0.0347,
-            0.4511
+            0.2219,
+            0.5971
           ],
-          "gamesWithCard": 631,
+          "gamesWithCard": 787,
           "staticRating": 4.4
         },
         {
-          "id": "ERADICATE",
-          "simId": "ERADICATE",
-          "beta": 0.1676,
+          "id": "SCULPTING_STRIKE",
+          "simId": "SCULPTING_STRIKE",
+          "beta": 0.3667,
           "ci95": [
-            -0.2907,
-            0.5829
+            0.2272,
+            0.5178
           ],
-          "gamesWithCard": 46,
-          "staticRating": 5.225
-        },
-        {
-          "id": "COUNTDOWN",
-          "simId": "COUNTDOWN_CARD",
-          "beta": 0.1357,
-          "ci95": [
-            -0.4272,
-            0.6189
-          ],
-          "gamesWithCard": 123,
-          "staticRating": 3.1
-        },
-        {
-          "id": "CALL_OF_THE_VOID",
-          "simId": "CALL_OF_THE_VOID",
-          "beta": 0.0538,
-          "ci95": [
-            -0.5471,
-            0.5126
-          ],
-          "gamesWithCard": 101,
-          "staticRating": 5.9
-        },
-        {
-          "id": "RATTLE",
-          "simId": "RATTLE",
-          "beta": 0.0434,
-          "ci95": [
-            -0.349,
-            0.3816
-          ],
-          "gamesWithCard": 250,
-          "staticRating": 4.45
-        },
-        {
-          "id": "DEBILITATE",
-          "simId": "DEBILITATE_CARD",
-          "beta": 0.0419,
-          "ci95": [
-            -0.2252,
-            0.3096
-          ],
-          "gamesWithCard": 406,
-          "staticRating": 6.1
-        },
-        {
-          "id": "REAP",
-          "simId": "REAP",
-          "beta": 0.0406,
-          "ci95": [
-            -0.138,
-            0.2365
-          ],
-          "gamesWithCard": 739,
+          "gamesWithCard": 1302,
           "staticRating": 4.95
         },
         {
-          "id": "CAPTURE_SPIRIT",
-          "simId": "CAPTURE_SPIRIT",
-          "beta": 0.0332,
+          "id": "FEAR",
+          "simId": "FEAR",
+          "beta": 0.3164,
           "ci95": [
-            -0.2685,
-            0.3148
+            0.1785,
+            0.4904
           ],
-          "gamesWithCard": 409,
-          "staticRating": 7.2
+          "gamesWithCard": 864,
+          "staticRating": 5.45
         },
         {
-          "id": "THE_SCYTHE",
-          "simId": "THE_SCYTHE",
-          "beta": 0.0255,
+          "id": "SNAP",
+          "simId": "SNAP",
+          "beta": 0.3149,
           "ci95": [
-            -0.4197,
-            0.5214
+            0.153,
+            0.4845
           ],
-          "gamesWithCard": 47,
-          "staticRating": 4.275
+          "gamesWithCard": 1251,
+          "staticRating": 3.85
         },
         {
-          "id": "SCOURGE",
-          "simId": "SCOURGE",
-          "beta": 0.013,
+          "id": "INVOKE",
+          "simId": "INVOKE",
+          "beta": 0.2785,
           "ci95": [
-            -0.3048,
-            0.2962
+            0.1347,
+            0.4649
           ],
-          "gamesWithCard": 350,
-          "staticRating": 2.2
+          "gamesWithCard": 1111,
+          "staticRating": 6
         },
         {
-          "id": "NEOWS_FURY",
-          "simId": "NEOWS_FURY",
-          "beta": 0,
+          "id": "DELAY",
+          "simId": "DELAY",
+          "beta": 0.277,
           "ci95": [
-            0,
-            0
+            0.0959,
+            0.461
           ],
-          "gamesWithCard": 228,
-          "staticRating": 8.9
-        },
-        {
-          "id": "PULL_FROM_BELOW",
-          "simId": "PULL_FROM_BELOW",
-          "beta": -0.0154,
-          "ci95": [
-            -0.3985,
-            0.3555
-          ],
-          "gamesWithCard": 140,
-          "staticRating": 3.35
-        },
-        {
-          "id": "RIGHT_HAND_HAND",
-          "simId": "RIGHT_HAND_HAND",
-          "beta": -0.0177,
-          "ci95": [
-            -0.2486,
-            0.2095
-          ],
-          "gamesWithCard": 532,
-          "staticRating": 9.8
-        },
-        {
-          "id": "WISP",
-          "simId": "WISP",
-          "beta": -0.0177,
-          "ci95": [
-            -0.3297,
-            0.404
-          ],
-          "gamesWithCard": 353,
-          "staticRating": 3
-        },
-        {
-          "id": "SOUL_STORM",
-          "simId": "SOUL_STORM",
-          "beta": -0.0191,
-          "ci95": [
-            -0.5114,
-            0.481
-          ],
-          "gamesWithCard": 64,
-          "staticRating": 6.15
-        },
-        {
-          "id": "DEMESNE",
-          "simId": "DEMESNE",
-          "beta": -0.0351,
-          "ci95": [
-            -0.5709,
-            0.5343
-          ],
-          "gamesWithCard": 42,
-          "staticRating": 3.767
-        },
-        {
-          "id": "SACRIFICE",
-          "simId": "SACRIFICE",
-          "beta": -0.0422,
-          "ci95": [
-            -0.4802,
-            0.4057
-          ],
-          "gamesWithCard": 35,
-          "staticRating": 1.2
-        },
-        {
-          "id": "NO_ESCAPE",
-          "simId": "NO_ESCAPE",
-          "beta": -0.0712,
-          "ci95": [
-            -0.4142,
-            0.2458
-          ],
-          "gamesWithCard": 306,
-          "staticRating": 6.1
-        },
-        {
-          "id": "BLIGHT_STRIKE",
-          "simId": "BLIGHT_STRIKE",
-          "beta": -0.0727,
-          "ci95": [
-            -0.2918,
-            0.1267
-          ],
-          "gamesWithCard": 685,
-          "staticRating": 4.4
-        },
-        {
-          "id": "DEATH_MARCH",
-          "simId": "DEATH_MARCH",
-          "beta": -0.0733,
-          "ci95": [
-            -0.3798,
-            0.283
-          ],
-          "gamesWithCard": 264,
-          "staticRating": 5
-        },
-        {
-          "id": "SOW",
-          "simId": "SOW",
-          "beta": -0.0772,
-          "ci95": [
-            -0.2647,
-            0.0643
-          ],
-          "gamesWithCard": 1212,
-          "staticRating": 7.2
-        },
-        {
-          "id": "EIDOLON",
-          "simId": "EIDOLON",
-          "beta": -0.0916,
-          "ci95": [
-            -0.6053,
-            0.4707
-          ],
-          "gamesWithCard": 37,
-          "staticRating": 1.2
-        },
-        {
-          "id": "SQUEEZE",
-          "simId": "SQUEEZE",
-          "beta": -0.1129,
-          "ci95": [
-            -0.7024,
-            0.286
-          ],
-          "gamesWithCard": 75,
-          "staticRating": 5.783
-        },
-        {
-          "id": "BORROWED_TIME",
-          "simId": "BORROWED_TIME",
-          "beta": -0.113,
-          "ci95": [
-            -0.3798,
-            0.1831
-          ],
-          "gamesWithCard": 444,
-          "staticRating": 9.6
-        },
-        {
-          "id": "RESTLESSNESS",
-          "simId": "RESTLESSNESS",
-          "beta": -0.1298,
-          "ci95": [
-            -0.6212,
-            0.377
-          ],
-          "gamesWithCard": 49,
-          "staticRating": 12
-        },
-        {
-          "id": "AFTERLIFE",
-          "simId": "AFTERLIFE",
-          "beta": -0.1299,
-          "ci95": [
-            -0.6047,
-            0.2417
-          ],
-          "gamesWithCard": 196,
-          "staticRating": -1
-        },
-        {
-          "id": "CALCIFY",
-          "simId": "CALCIFY_CARD",
-          "beta": -0.1354,
-          "ci95": [
-            -0.5577,
-            0.2512
-          ],
-          "gamesWithCard": 132,
-          "staticRating": 3.1
-        },
-        {
-          "id": "SEEKER_STRIKE",
-          "simId": "SEEKER_STRIKE",
-          "beta": -0.141,
-          "ci95": [
-            -0.596,
-            0.2826
-          ],
-          "gamesWithCard": 45,
-          "staticRating": 12
+          "gamesWithCard": 571,
+          "staticRating": 7.6
         },
         {
           "id": "ENFEEBLING_TOUCH",
           "simId": "ENFEEBLING_TOUCH",
-          "beta": -0.1817,
+          "beta": 0.26,
           "ci95": [
-            -0.6073,
-            0.166
+            0.0281,
+            0.5385
           ],
-          "gamesWithCard": 127,
+          "gamesWithCard": 151,
           "staticRating": 0.6
         },
         {
-          "id": "POOR_SLEEP",
-          "simId": "POOR_SLEEP",
-          "beta": -0.2,
+          "id": "COUNTDOWN",
+          "simId": "COUNTDOWN_CARD",
+          "beta": 0.2426,
           "ci95": [
-            -0.6045,
-            0.1608
+            -0.0294,
+            0.4551
           ],
-          "gamesWithCard": 119,
-          "staticRating": -6
+          "gamesWithCard": 236,
+          "staticRating": 3.1
         },
         {
-          "id": "DANSE_MACABRE",
-          "simId": "DANSE_MACABRE",
-          "beta": -0.2111,
+          "id": "SEVERANCE",
+          "simId": "SEVERANCE",
+          "beta": 0.2274,
           "ci95": [
-            -0.4785,
-            0.0483
+            -0.0063,
+            0.468
           ],
-          "gamesWithCard": 448,
-          "staticRating": 9.1
+          "gamesWithCard": 356,
+          "staticRating": 4.175
         },
         {
-          "id": "STRIKE_NECROBINDER",
-          "simId": "STRIKE_NECROBINDER",
-          "beta": -0.2156,
+          "id": "NO_ESCAPE",
+          "simId": "NO_ESCAPE",
+          "beta": 0.2195,
           "ci95": [
-            -0.8477,
-            0.4209
+            -0.0451,
+            0.506
           ],
-          "gamesWithCard": 3389,
-          "staticRating": 3.3
+          "gamesWithCard": 172,
+          "staticRating": 6.1
         },
         {
-          "id": "REAPER_FORM",
-          "simId": "REAPER_FORM",
-          "beta": -0.2228,
+          "id": "ERADICATE",
+          "simId": "ERADICATE",
+          "beta": 0.2088,
           "ci95": [
-            -0.8523,
-            0.3248
+            -0.1304,
+            0.501
           ],
-          "gamesWithCard": 32,
-          "staticRating": 2.033
+          "gamesWithCard": 57,
+          "staticRating": 5.225
         },
         {
-          "id": "SHROUD",
-          "simId": "SHROUD",
-          "beta": -0.2231,
+          "id": "PROWESS",
+          "simId": "PROWESS",
+          "beta": 0.2022,
           "ci95": [
-            -0.6078,
-            0.0761
+            -0.1183,
+            0.4331
           ],
-          "gamesWithCard": 246,
-          "staticRating": 5.1
+          "gamesWithCard": 50,
+          "staticRating": 11.1
         },
         {
-          "id": "PANIC_BUTTON",
-          "simId": "PANIC_BUTTON",
-          "beta": -0.2597,
+          "id": "DEBILITATE",
+          "simId": "DEBILITATE_CARD",
+          "beta": 0.1993,
           "ci95": [
-            -0.8929,
-            0.3347
+            -0.0271,
+            0.4102
           ],
-          "gamesWithCard": 39,
+          "gamesWithCard": 309,
+          "staticRating": 6.1
+        },
+        {
+          "id": "RIGHT_HAND_HAND",
+          "simId": "RIGHT_HAND_HAND",
+          "beta": 0.1809,
+          "ci95": [
+            -0.0724,
+            0.4506
+          ],
+          "gamesWithCard": 296,
+          "staticRating": 9.8
+        },
+        {
+          "id": "SQUEEZE",
+          "simId": "SQUEEZE",
+          "beta": 0.1683,
+          "ci95": [
+            -0.1001,
+            0.4505
+          ],
+          "gamesWithCard": 53,
+          "staticRating": 5.783
+        },
+        {
+          "id": "REAVE",
+          "simId": "REAVE",
+          "beta": 0.1598,
+          "ci95": [
+            0.0317,
+            0.3304
+          ],
+          "gamesWithCard": 958,
+          "staticRating": 7.15
+        },
+        {
+          "id": "FRIENDSHIP",
+          "simId": "FRIENDSHIP",
+          "beta": 0.1597,
+          "ci95": [
+            -0.0158,
+            0.3642
+          ],
+          "gamesWithCard": 399,
           "staticRating": 12
         },
         {
-          "id": "DEFEND_NECROBINDER",
-          "simId": "DEFEND_NECROBINDER",
-          "beta": -0.2724,
+          "id": "SOW",
+          "simId": "SOW",
+          "beta": 0.1597,
           "ci95": [
-            -0.7814,
-            0.2468
+            -0.0204,
+            0.3423
           ],
-          "gamesWithCard": 3389,
-          "staticRating": 2.5
-        },
-        {
-          "id": "NECRO_MASTERY",
-          "simId": "NECRO_MASTERY_CARD",
-          "beta": -0.2867,
-          "ci95": [
-            -0.8521,
-            0.24
-          ],
-          "gamesWithCard": 47,
-          "staticRating": 2.45
-        },
-        {
-          "id": "PULL_AGGRO",
-          "simId": "PULL_AGGRO",
-          "beta": -0.2972,
-          "ci95": [
-            -0.6442,
-            -0.0003
-          ],
-          "gamesWithCard": 373,
-          "staticRating": 1.75
-        },
-        {
-          "id": "HAUNT",
-          "simId": "HAUNT",
-          "beta": -0.2987,
-          "ci95": [
-            -0.8693,
-            0.1655
-          ],
-          "gamesWithCard": 94,
-          "staticRating": -1.1
-        },
-        {
-          "id": "SLEIGHT_OF_FLESH",
-          "simId": "SLEIGHT_OF_FLESH",
-          "beta": -0.3116,
-          "ci95": [
-            -0.7819,
-            0.2268
-          ],
-          "gamesWithCard": 125,
-          "staticRating": 1.85
-        },
-        {
-          "id": "SIC_EM",
-          "simId": "SIC_EM",
-          "beta": -0.3164,
-          "ci95": [
-            -0.7545,
-            0.14
-          ],
-          "gamesWithCard": 134,
-          "staticRating": 3.35
-        },
-        {
-          "id": "PARSE",
-          "simId": "PARSE",
-          "beta": -0.3205,
-          "ci95": [
-            -0.6082,
-            -0.0253
-          ],
-          "gamesWithCard": 392,
+          "gamesWithCard": 648,
           "staticRating": 7.2
         },
         {
-          "id": "UNLEASH",
-          "simId": "UNLEASH",
-          "beta": -0.3259,
+          "id": "DRAMATIC_ENTRANCE",
+          "simId": "DRAMATIC_ENTRANCE",
+          "beta": 0.1506,
           "ci95": [
-            -0.8692,
-            0.2437
+            -0.0578,
+            0.3629
           ],
-          "gamesWithCard": 3378,
+          "gamesWithCard": 40,
+          "staticRating": 10.5
+        },
+        {
+          "id": "FLATTEN",
+          "simId": "FLATTEN",
+          "beta": 0.1386,
+          "ci95": [
+            -0.0207,
+            0.2977
+          ],
+          "gamesWithCard": 863,
           "staticRating": 3.3
         },
         {
-          "id": "SENTRY_MODE",
-          "simId": "SENTRY_MODE",
-          "beta": -0.3346,
+          "id": "BURY",
+          "simId": "BURY",
+          "beta": 0.1224,
           "ci95": [
-            -0.7883,
-            0.2235
+            -0.1285,
+            0.3725
           ],
-          "gamesWithCard": 30,
-          "staticRating": 2.45
+          "gamesWithCard": 364,
+          "staticRating": 7.75
+        },
+        {
+          "id": "BLIGHT_STRIKE",
+          "simId": "BLIGHT_STRIKE",
+          "beta": 0.1167,
+          "ci95": [
+            -0.0677,
+            0.3167
+          ],
+          "gamesWithCard": 505,
+          "staticRating": 4.4
         },
         {
           "id": "DEATHS_DOOR",
           "simId": "DEATHS_DOOR",
-          "beta": -0.335,
+          "beta": 0.1047,
           "ci95": [
-            -0.6673,
-            0.032
+            -0.186,
+            0.3589
           ],
-          "gamesWithCard": 367,
+          "gamesWithCard": 203,
           "staticRating": 6.6
+        },
+        {
+          "id": "DEATH_MARCH",
+          "simId": "DEATH_MARCH",
+          "beta": 0.1045,
+          "ci95": [
+            -0.1831,
+            0.368
+          ],
+          "gamesWithCard": 191,
+          "staticRating": 5
+        },
+        {
+          "id": "BANSHEES_CRY",
+          "simId": "BANSHEES_CRY",
+          "beta": 0.0929,
+          "ci95": [
+            -0.245,
+            0.4328
+          ],
+          "gamesWithCard": 102,
+          "staticRating": 5.167
+        },
+        {
+          "id": "SENTRY_MODE",
+          "simId": "SENTRY_MODE",
+          "beta": 0.0751,
+          "ci95": [
+            -0.1744,
+            0.3102
+          ],
+          "gamesWithCard": 37,
+          "staticRating": 2.45
+        },
+        {
+          "id": "SOUL_STORM",
+          "simId": "SOUL_STORM",
+          "beta": 0.0677,
+          "ci95": [
+            -0.2249,
+            0.3672
+          ],
+          "gamesWithCard": 47,
+          "staticRating": 6.15
+        },
+        {
+          "id": "ULTIMATE_STRIKE",
+          "simId": "ULTIMATE_STRIKE",
+          "beta": 0.0655,
+          "ci95": [
+            -0.1732,
+            0.2895
+          ],
+          "gamesWithCard": 46,
+          "staticRating": 8.3
+        },
+        {
+          "id": "RATTLE",
+          "simId": "RATTLE",
+          "beta": 0.0409,
+          "ci95": [
+            -0.1993,
+            0.3021
+          ],
+          "gamesWithCard": 242,
+          "staticRating": 4.45
+        },
+        {
+          "id": "SPIRIT_OF_ASH",
+          "simId": "SPIRIT_OF_ASH",
+          "beta": 0.0285,
+          "ci95": [
+            -0.2632,
+            0.3643
+          ],
+          "gamesWithCard": 40,
+          "staticRating": 3.7
+        },
+        {
+          "id": "SHROUD",
+          "simId": "SHROUD",
+          "beta": 0.0253,
+          "ci95": [
+            -0.2564,
+            0.414
+          ],
+          "gamesWithCard": 180,
+          "staticRating": 5.1
+        },
+        {
+          "id": "NEOWS_FURY",
+          "simId": "NEOWS_FURY",
+          "beta": 0.0187,
+          "ci95": [
+            -0.1654,
+            0.1775
+          ],
+          "gamesWithCard": 251,
+          "staticRating": 8.9
+        },
+        {
+          "id": "LETHALITY",
+          "simId": "LETHALITY_CARD",
+          "beta": 0.0166,
+          "ci95": [
+            -0.2943,
+            0.2717
+          ],
+          "gamesWithCard": 356,
+          "staticRating": 3.1
+        },
+        {
+          "id": "REAPER_FORM",
+          "simId": "REAPER_FORM",
+          "beta": 0.0042,
+          "ci95": [
+            -0.2039,
+            0.2501
+          ],
+          "gamesWithCard": 40,
+          "staticRating": 2.033
+        },
+        {
+          "id": "PULL_FROM_BELOW",
+          "simId": "PULL_FROM_BELOW",
+          "beta": -0.0082,
+          "ci95": [
+            -0.3131,
+            0.2826
+          ],
+          "gamesWithCard": 153,
+          "staticRating": 3.35
+        },
+        {
+          "id": "CAPTURE_SPIRIT",
+          "simId": "CAPTURE_SPIRIT",
+          "beta": -0.0127,
+          "ci95": [
+            -0.1931,
+            0.2553
+          ],
+          "gamesWithCard": 256,
+          "staticRating": 7.2
+        },
+        {
+          "id": "HAUNT",
+          "simId": "HAUNT",
+          "beta": -0.0223,
+          "ci95": [
+            -0.2532,
+            0.2503
+          ],
+          "gamesWithCard": 76,
+          "staticRating": -1.1
+        },
+        {
+          "id": "SACRIFICE",
+          "simId": "SACRIFICE",
+          "beta": -0.0298,
+          "ci95": [
+            -0.2723,
+            0.2094
+          ],
+          "gamesWithCard": 41,
+          "staticRating": 1.2
+        },
+        {
+          "id": "NEGATIVE_PULSE",
+          "simId": "NEGATIVE_PULSE",
+          "beta": -0.0316,
+          "ci95": [
+            -0.1977,
+            0.119
+          ],
+          "gamesWithCard": 964,
+          "staticRating": 2.5
+        },
+        {
+          "id": "SEANCE",
+          "simId": "SEANCE",
+          "beta": -0.0334,
+          "ci95": [
+            -0.2999,
+            0.182
+          ],
+          "gamesWithCard": 38,
+          "staticRating": 3.4
+        },
+        {
+          "id": "WISP",
+          "simId": "WISP",
+          "beta": -0.0372,
+          "ci95": [
+            -0.2242,
+            0.1678
+          ],
+          "gamesWithCard": 463,
+          "staticRating": 3
+        },
+        {
+          "id": "DANSE_MACABRE",
+          "simId": "DANSE_MACABRE",
+          "beta": -0.0404,
+          "ci95": [
+            -0.3401,
+            0.1948
+          ],
+          "gamesWithCard": 240,
+          "staticRating": 9.1
         },
         {
           "id": "CLUMSY",
           "simId": "CLUMSY",
-          "beta": -0.3535,
+          "beta": -0.0533,
           "ci95": [
-            -0.8702,
-            0.2076
+            -0.3417,
+            0.2296
           ],
-          "gamesWithCard": 48,
+          "gamesWithCard": 45,
           "staticRating": -6
         },
         {
           "id": "DEVOUR_LIFE",
           "simId": "DEVOUR_LIFE_CARD",
-          "beta": -0.3622,
+          "beta": -0.057,
           "ci95": [
-            -0.8008,
-            0.1685
+            -0.3068,
+            0.1842
           ],
-          "gamesWithCard": 31,
+          "gamesWithCard": 34,
           "staticRating": 3.7
+        },
+        {
+          "id": "PULL_AGGRO",
+          "simId": "PULL_AGGRO",
+          "beta": -0.0599,
+          "ci95": [
+            -0.2767,
+            0.157
+          ],
+          "gamesWithCard": 432,
+          "staticRating": 1.75
+        },
+        {
+          "id": "REAP",
+          "simId": "REAP",
+          "beta": -0.0633,
+          "ci95": [
+            -0.2478,
+            0.1062
+          ],
+          "gamesWithCard": 727,
+          "staticRating": 4.95
+        },
+        {
+          "id": "POOR_SLEEP",
+          "simId": "POOR_SLEEP",
+          "beta": -0.0786,
+          "ci95": [
+            -0.3809,
+            0.2605
+          ],
+          "gamesWithCard": 109,
+          "staticRating": -6
+        },
+        {
+          "id": "NECRO_MASTERY",
+          "simId": "NECRO_MASTERY_CARD",
+          "beta": -0.0792,
+          "ci95": [
+            -0.3368,
+            0.2087
+          ],
+          "gamesWithCard": 40,
+          "staticRating": 2.45
+        },
+        {
+          "id": "SHARED_FATE",
+          "simId": "SHARED_FATE",
+          "beta": -0.1021,
+          "ci95": [
+            -0.3534,
+            0.1736
+          ],
+          "gamesWithCard": 44,
+          "staticRating": 1.2
+        },
+        {
+          "id": "CALCIFY",
+          "simId": "CALCIFY_CARD",
+          "beta": -0.1182,
+          "ci95": [
+            -0.4238,
+            0.1219
+          ],
+          "gamesWithCard": 150,
+          "staticRating": 3.1
+        },
+        {
+          "id": "SLEIGHT_OF_FLESH",
+          "simId": "SLEIGHT_OF_FLESH",
+          "beta": -0.1189,
+          "ci95": [
+            -0.4137,
+            0.1709
+          ],
+          "gamesWithCard": 143,
+          "staticRating": 1.85
         },
         {
           "id": "CLEANSE",
           "simId": "CLEANSE",
-          "beta": -0.3644,
+          "beta": -0.1227,
           "ci95": [
-            -0.8749,
-            0.1553
+            -0.4405,
+            0.175
           ],
-          "gamesWithCard": 117,
+          "gamesWithCard": 159,
           "staticRating": 0.6
         },
         {
-          "id": "DIRGE",
-          "simId": "DIRGE",
-          "beta": -0.3812,
+          "id": "CALL_OF_THE_VOID",
+          "simId": "CALL_OF_THE_VOID",
+          "beta": -0.1276,
           "ci95": [
-            -0.8726,
-            0.119
+            -0.4058,
+            0.195
           ],
-          "gamesWithCard": 114,
-          "staticRating": 1.1
-        },
-        {
-          "id": "GRAVEBLAST",
-          "simId": "GRAVEBLAST",
-          "beta": -0.3853,
-          "ci95": [
-            -0.7158,
-            -0.118
-          ],
-          "gamesWithCard": 323,
-          "staticRating": 1.2
-        },
-        {
-          "id": "DREDGE",
-          "simId": "DREDGE",
-          "beta": -0.4044,
-          "ci95": [
-            -0.7637,
-            -0.1407
-          ],
-          "gamesWithCard": 325,
-          "staticRating": 6.2
-        },
-        {
-          "id": "SPOILS_MAP",
-          "simId": "SPOILS_MAP",
-          "beta": -0.4351,
-          "ci95": [
-            -0.8505,
-            -0.0482
-          ],
-          "gamesWithCard": 170,
-          "staticRating": -6
-        },
-        {
-          "id": "REANIMATE",
-          "simId": "REANIMATE",
-          "beta": -0.4701,
-          "ci95": [
-            -1.0539,
-            -0.0378
-          ],
-          "gamesWithCard": 41,
-          "staticRating": 0.867
-        },
-        {
-          "id": "BODYGUARD",
-          "simId": "BODYGUARD",
-          "beta": -0.4843,
-          "ci95": [
-            -0.7282,
-            -0.2555
-          ],
-          "gamesWithCard": 1478,
-          "staticRating": 0
-        },
-        {
-          "id": "PUTREFY",
-          "simId": "PUTREFY",
-          "beta": -0.5814,
-          "ci95": [
-            -1.1484,
-            -0.0805
-          ],
-          "gamesWithCard": 74,
-          "staticRating": -0.4
-        },
-        {
-          "id": "TIMES_UP",
-          "simId": "TIMES_UP",
-          "beta": -0.582,
-          "ci95": [
-            -1.1326,
-            -0.0494
-          ],
-          "gamesWithCard": 36,
-          "staticRating": 0.7
+          "gamesWithCard": 89,
+          "staticRating": 5.9
         },
         {
           "id": "END_OF_DAYS",
           "simId": "END_OF_DAYS",
-          "beta": -0.7464,
+          "beta": -0.1307,
           "ci95": [
-            -1.1805,
-            -0.2476
+            -0.3998,
+            0.1408
           ],
-          "gamesWithCard": 33,
+          "gamesWithCard": 36,
           "staticRating": 1.2
+        },
+        {
+          "id": "UNLEASH",
+          "simId": "UNLEASH",
+          "beta": -0.134,
+          "ci95": [
+            -0.2819,
+            -0.0094
+          ],
+          "gamesWithCard": 3820,
+          "staticRating": 3.3
+        },
+        {
+          "id": "SCOURGE",
+          "simId": "SCOURGE",
+          "beta": -0.1402,
+          "ci95": [
+            -0.3147,
+            0.0692
+          ],
+          "gamesWithCard": 591,
+          "staticRating": 2.2
+        },
+        {
+          "id": "STRIKE_NECROBINDER",
+          "simId": "STRIKE_NECROBINDER",
+          "beta": -0.1411,
+          "ci95": [
+            -0.3729,
+            0.0904
+          ],
+          "gamesWithCard": 3829,
+          "staticRating": 3.3
+        },
+        {
+          "id": "SIC_EM",
+          "simId": "SIC_EM",
+          "beta": -0.1472,
+          "ci95": [
+            -0.5031,
+            0.1698
+          ],
+          "gamesWithCard": 134,
+          "staticRating": 3.35
+        },
+        {
+          "id": "DIRGE",
+          "simId": "DIRGE",
+          "beta": -0.1606,
+          "ci95": [
+            -0.4166,
+            0.1347
+          ],
+          "gamesWithCard": 153,
+          "staticRating": 1.1
+        },
+        {
+          "id": "DEATHBRINGER",
+          "simId": "DEATHBRINGER",
+          "beta": -0.1715,
+          "ci95": [
+            -0.4296,
+            0.0578
+          ],
+          "gamesWithCard": 316,
+          "staticRating": 1.3
+        },
+        {
+          "id": "SEEKER_STRIKE",
+          "simId": "SEEKER_STRIKE",
+          "beta": -0.1829,
+          "ci95": [
+            -0.4278,
+            0.0865
+          ],
+          "gamesWithCard": 46,
+          "staticRating": 12
+        },
+        {
+          "id": "TRANSFIGURE",
+          "simId": "TRANSFIGURE",
+          "beta": -0.183,
+          "ci95": [
+            -0.4164,
+            0.1207
+          ],
+          "gamesWithCard": 37,
+          "staticRating": 3.2
+        },
+        {
+          "id": "EIDOLON",
+          "simId": "EIDOLON",
+          "beta": -0.2005,
+          "ci95": [
+            -0.3967,
+            0.0748
+          ],
+          "gamesWithCard": 36,
+          "staticRating": 1.2
+        },
+        {
+          "id": "PANIC_BUTTON",
+          "simId": "PANIC_BUTTON",
+          "beta": -0.208,
+          "ci95": [
+            -0.4856,
+            0.1318
+          ],
+          "gamesWithCard": 40,
+          "staticRating": 12
+        },
+        {
+          "id": "REANIMATE",
+          "simId": "REANIMATE",
+          "beta": -0.21,
+          "ci95": [
+            -0.4614,
+            0.0307
+          ],
+          "gamesWithCard": 36,
+          "staticRating": 0.867
+        },
+        {
+          "id": "THE_SCYTHE",
+          "simId": "THE_SCYTHE",
+          "beta": -0.2127,
+          "ci95": [
+            -0.5065,
+            0.0854
+          ],
+          "gamesWithCard": 47,
+          "staticRating": 4.275
+        },
+        {
+          "id": "DEMESNE",
+          "simId": "DEMESNE",
+          "beta": -0.229,
+          "ci95": [
+            -0.4678,
+            0.0333
+          ],
+          "gamesWithCard": 35,
+          "staticRating": 3.767
+        },
+        {
+          "id": "PARSE",
+          "simId": "PARSE",
+          "beta": -0.2914,
+          "ci95": [
+            -0.5178,
+            -0.0083
+          ],
+          "gamesWithCard": 202,
+          "staticRating": 7.2
+        },
+        {
+          "id": "PUTREFY",
+          "simId": "PUTREFY",
+          "beta": -0.2948,
+          "ci95": [
+            -0.6556,
+            0.0329
+          ],
+          "gamesWithCard": 95,
+          "staticRating": -0.4
+        },
+        {
+          "id": "OBLIVION",
+          "simId": "OBLIVION",
+          "beta": -0.3121,
+          "ci95": [
+            -0.5957,
+            0.0106
+          ],
+          "gamesWithCard": 37,
+          "staticRating": 2.2
+        },
+        {
+          "id": "DEFEND_NECROBINDER",
+          "simId": "DEFEND_NECROBINDER",
+          "beta": -0.3191,
+          "ci95": [
+            -0.5891,
+            -0.0308
+          ],
+          "gamesWithCard": 3829,
+          "staticRating": 2.5
+        },
+        {
+          "id": "PAGESTORM",
+          "simId": "PAGESTORM",
+          "beta": -0.3262,
+          "ci95": [
+            -0.5488,
+            -0.0941
+          ],
+          "gamesWithCard": 335,
+          "staticRating": 5.3
+        },
+        {
+          "id": "GRAVEBLAST",
+          "simId": "GRAVEBLAST",
+          "beta": -0.3334,
+          "ci95": [
+            -0.5464,
+            -0.0901
+          ],
+          "gamesWithCard": 422,
+          "staticRating": 1.2
+        },
+        {
+          "id": "TIMES_UP",
+          "simId": "TIMES_UP",
+          "beta": -0.3763,
+          "ci95": [
+            -0.6486,
+            -0.0921
+          ],
+          "gamesWithCard": 43,
+          "staticRating": 0.7
+        },
+        {
+          "id": "RESTLESSNESS",
+          "simId": "RESTLESSNESS",
+          "beta": -0.3938,
+          "ci95": [
+            -0.7076,
+            -0.0858
+          ],
+          "gamesWithCard": 44,
+          "staticRating": 12
+        },
+        {
+          "id": "AFTERLIFE",
+          "simId": "AFTERLIFE",
+          "beta": -0.4132,
+          "ci95": [
+            -0.7169,
+            -0.1173
+          ],
+          "gamesWithCard": 247,
+          "staticRating": -1
+        },
+        {
+          "id": "BORROWED_TIME",
+          "simId": "BORROWED_TIME",
+          "beta": -0.4135,
+          "ci95": [
+            -0.6606,
+            -0.1929
+          ],
+          "gamesWithCard": 237,
+          "staticRating": 9.6
+        },
+        {
+          "id": "SPUR",
+          "simId": "SPUR",
+          "beta": -0.4171,
+          "ci95": [
+            -0.665,
+            -0.2149
+          ],
+          "gamesWithCard": 343,
+          "staticRating": 0.6
+        },
+        {
+          "id": "DREDGE",
+          "simId": "DREDGE",
+          "beta": -0.4373,
+          "ci95": [
+            -0.6509,
+            -0.189
+          ],
+          "gamesWithCard": 173,
+          "staticRating": 6.2
+        },
+        {
+          "id": "BODYGUARD",
+          "simId": "BODYGUARD",
+          "beta": -0.4756,
+          "ci95": [
+            -0.6791,
+            -0.2946
+          ],
+          "gamesWithCard": 1567,
+          "staticRating": 0
+        },
+        {
+          "id": "SPOILS_MAP",
+          "simId": "SPOILS_MAP",
+          "beta": -0.502,
+          "ci95": [
+            -0.771,
+            -0.1823
+          ],
+          "gamesWithCard": 180,
+          "staticRating": -6
         },
         {
           "id": "NEUROSURGE",
           "simId": "NEUROSURGE",
-          "beta": -0.9173,
+          "beta": -0.9491,
           "ci95": [
-            -1.3182,
-            -0.5633
+            -1.2867,
+            -0.6311
           ],
-          "gamesWithCard": 172,
+          "gamesWithCard": 126,
           "staticRating": 12
         }
       ]
     },
     {
-      "id": "regent-a0-v1",
+      "id": "regent-a0-keep-v1",
       "character": "regent",
       "validation": {
-        "comparison": "rules_v2-vs-rules_v1-regent-a0-veteran-val",
+        "comparison": "rules_v3-keepvals-vs-curvals-regent-a0-veteran-keeprelics-val",
         "alpha": 0.0125,
-        "pairedGames": 1978,
-        "passRate": 0.4969666329625885,
-        "passRateBase": 0.14004044489383216,
-        "p": 3.941974057182335e-154,
-        "against": "ratings",
-        "basis": "own",
+        "pairedGames": 1937,
+        "passRate": 0.6628807434176561,
+        "passRateBase": 0.6236448115642746,
+        "p": 0.00024375941991483331,
+        "against": "current-values",
+        "basis": "pooled",
         "passed": true
       },
-      "supersedes": null,
-      "drift": null,
-      "relicsKept": false,
-      "file": "experiments/cardvalue/regent-a0-v1.json",
-      "sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db",
-      "outcome": "the run gets past the Act-1 boss",
-      "games": 2703,
-      "bossFights": 2703,
-      "passRate": 0.2238,
-      "model": {
-        "l2": 3,
-        "folds": 5,
-        "features": 114,
-        "bootstrapDraws": 200,
-        "cvLogLoss": 0.3231894160726256,
-        "cvAuc": 0.8976278076720056,
-        "baselineLogLoss": 0.3976861938244809
+      "supersedes": "regent-a0-v1",
+      "drift": {
+        "previous": "regent-a0-v1",
+        "previousSha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db",
+        "previousPilot": "rules_explore",
+        "pilot": "rules_explore_v3",
+        "previousBossFights": 2703,
+        "previousPassRate": 0.2238,
+        "cardsInBoth": 85,
+        "spearman": 0.6656830173930037,
+        "k": 10,
+        "bestShared": 7,
+        "worstShared": 3,
+        "disjointIntervals": 2,
+        "noiseCards": 76,
+        "noiseSpearman": 0.5269172932330827,
+        "noiseSpearmanBrown": 0.6901713610399841
       },
-      "spearmanWithStaticRating": 0.0701,
+      "relicsKept": true,
+      "file": "experiments/cardvalue/regent-a0-keep-v1.json",
+      "sha256": "70bc58ef9dddb33ddf6a07ece9ae79363f4210b18bb1dd5043d1f6e552417097",
+      "outcome": "the run gets past the Act-1 boss",
+      "games": 3543,
+      "bossFights": 3543,
+      "passRate": 0.4894,
+      "model": {
+        "l2": 10,
+        "folds": 5,
+        "features": 141,
+        "bootstrapDraws": 200,
+        "cvLogLoss": 0.4144790152236079,
+        "cvAuc": 0.8901908501832756,
+        "baselineLogLoss": 0.5036663332111677
+      },
+      "spearmanWithStaticRating": 0.1844,
       "batches": [
         {
-          "id": "explore-regent-a0-train-rep0",
-          "contentSha256": "6da7f793a28c2165b57522903ecde77a504d63f1c985aa5af8fc062e6ab2f06f",
+          "id": "explore4-regent-a0-keeprelics-dev-o5000-n5000",
+          "contentSha256": "31df060a23156e37126168a9e371d14fe1c3247f0b3bd334b75ad122946303d7",
           "policy": {
             "effective": {
               "params": {
                 "explore": 0.6,
                 "replicate": 0,
+                "threshold": 0,
                 "tune": {
                   "boss_heal_below": 0.9,
                   "card_slope": 0.09,
@@ -3387,9 +3543,9 @@
                   "elite_bad_value": -2.5,
                   "elite_mid_hp": 0.65,
                   "elite_mid_value": 0.2,
-                  "elite_ok_floor": 4,
-                  "elite_ok_hp": 0.8,
-                  "elite_value": 2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
                   "heal_below": 0.7,
                   "max_deck": 32,
                   "monster_hp_penalty": 0.5,
@@ -3407,14 +3563,17 @@
                   "shop_rich_gold": 150,
                   "treasure_value": 1.8,
                   "unknown_value": 0.8
-                }
+                },
+                "values": "experiments/cardvalue/regent-a0-v1.json",
+                "values_sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db"
               },
               "version": "1"
             },
-            "name": "rules_explore",
+            "name": "rules_explore_v3",
             "params": {
               "explore": 0.6,
-              "replicate": 0
+              "replicate": 0,
+              "values": "experiments/cardvalue/regent-a0-v1.json"
             }
           },
           "simulator": "sts2-rl-agent"
@@ -3424,1015 +3583,1043 @@
         {
           "id": "KINGLY_PUNCH",
           "simId": "KINGLY_PUNCH",
-          "beta": 2.2463,
+          "beta": 1.789,
           "ci95": [
-            2.0503,
-            2.6546
+            1.5878,
+            2.0479
           ],
-          "gamesWithCard": 334,
-          "staticRating": 5
-        },
-        {
-          "id": "SHINING_STRIKE",
-          "simId": "SHINING_STRIKE",
-          "beta": 1.7926,
-          "ci95": [
-            1.5651,
-            2.2589
-          ],
-          "gamesWithCard": 325,
+          "gamesWithCard": 632,
           "staticRating": 5
         },
         {
           "id": "KINGLY_KICK",
           "simId": "KINGLY_KICK",
-          "beta": 1.5549,
+          "beta": 1.386,
           "ci95": [
-            1.2602,
-            1.961
+            1.1979,
+            1.6465
           ],
-          "gamesWithCard": 277,
+          "gamesWithCard": 551,
           "staticRating": 4.312
+        },
+        {
+          "id": "SHINING_STRIKE",
+          "simId": "SHINING_STRIKE",
+          "beta": 1.0945,
+          "ci95": [
+            0.8964,
+            1.3445
+          ],
+          "gamesWithCard": 520,
+          "staticRating": 5
         },
         {
           "id": "BULWARK",
           "simId": "BULWARK",
-          "beta": 0.651,
+          "beta": 0.6174,
           "ci95": [
-            0.2577,
-            1.0461
+            0.4303,
+            0.8314
           ],
-          "gamesWithCard": 150,
+          "gamesWithCard": 506,
           "staticRating": 3.6
         },
         {
           "id": "HEGEMONY",
           "simId": "HEGEMONY",
-          "beta": 0.5928,
+          "beta": 0.5684,
           "ci95": [
-            0.3431,
-            0.8746
+            0.426,
+            0.7657
           ],
-          "gamesWithCard": 479,
+          "gamesWithCard": 594,
           "staticRating": 7.725
+        },
+        {
+          "id": "BIG_BANG",
+          "simId": "BIG_BANG",
+          "beta": 0.4482,
+          "ci95": [
+            0.1162,
+            0.7064
+          ],
+          "gamesWithCard": 105,
+          "staticRating": 6.4
         },
         {
           "id": "GATHER_LIGHT",
           "simId": "GATHER_LIGHT",
-          "beta": 0.589,
+          "beta": 0.4094,
           "ci95": [
-            0.3273,
-            0.9161
+            0.2915,
+            0.569
           ],
-          "gamesWithCard": 500,
+          "gamesWithCard": 1221,
+          "staticRating": 4
+        },
+        {
+          "id": "BEAT_INTO_SHAPE",
+          "simId": "BEAT_INTO_SHAPE",
+          "beta": 0.3646,
+          "ci95": [
+            0.072,
+            0.6558
+          ],
+          "gamesWithCard": 98,
+          "staticRating": 3.95
+        },
+        {
+          "id": "WROUGHT_IN_WAR",
+          "simId": "WROUGHT_IN_WAR",
+          "beta": 0.3552,
+          "ci95": [
+            0.2173,
+            0.507
+          ],
+          "gamesWithCard": 1198,
+          "staticRating": 3.85
+        },
+        {
+          "id": "COLLISION_COURSE",
+          "simId": "COLLISION_COURSE",
+          "beta": 0.332,
+          "ci95": [
+            0.178,
+            0.4454
+          ],
+          "gamesWithCard": 1219,
+          "staticRating": 7.05
+        },
+        {
+          "id": "SOLAR_STRIKE",
+          "simId": "SOLAR_STRIKE",
+          "beta": 0.3109,
+          "ci95": [
+            0.1838,
+            0.4434
+          ],
+          "gamesWithCard": 1344,
+          "staticRating": 4.95
+        },
+        {
+          "id": "BLACK_HOLE",
+          "simId": "BLACK_HOLE",
+          "beta": 0.3055,
+          "ci95": [
+            0.0359,
+            0.5409
+          ],
+          "gamesWithCard": 156,
+          "staticRating": 3.1
+        },
+        {
+          "id": "CONVERGENCE",
+          "simId": "CONVERGENCE",
+          "beta": 0.2875,
+          "ci95": [
+            0.0911,
+            0.5182
+          ],
+          "gamesWithCard": 337,
+          "staticRating": 3.6
+        },
+        {
+          "id": "REFINE_BLADE",
+          "simId": "REFINE_BLADE",
+          "beta": 0.2665,
+          "ci95": [
+            0.1527,
+            0.4016
+          ],
+          "gamesWithCard": 1065,
+          "staticRating": 3
+        },
+        {
+          "id": "COMET",
+          "simId": "COMET",
+          "beta": 0.2527,
+          "ci95": [
+            -0.0356,
+            0.5261
+          ],
+          "gamesWithCard": 75,
+          "staticRating": 12
+        },
+        {
+          "id": "PHOTON_CUT",
+          "simId": "PHOTON_CUT",
+          "beta": 0.2158,
+          "ci95": [
+            0.0847,
+            0.3662
+          ],
+          "gamesWithCard": 1046,
+          "staticRating": 7.7
+        },
+        {
+          "id": "SEEKER_STRIKE",
+          "simId": "SEEKER_STRIKE",
+          "beta": 0.2102,
+          "ci95": [
+            -0.0194,
+            0.4356
+          ],
+          "gamesWithCard": 48,
+          "staticRating": 12
+        },
+        {
+          "id": "REFLECT",
+          "simId": "REFLECT_CARD",
+          "beta": 0.1934,
+          "ci95": [
+            -0.1033,
+            0.4541
+          ],
+          "gamesWithCard": 214,
+          "staticRating": 12
+        },
+        {
+          "id": "ORBIT",
+          "simId": "ORBIT",
+          "beta": 0.191,
+          "ci95": [
+            -0.1366,
+            0.4671
+          ],
+          "gamesWithCard": 125,
+          "staticRating": 3.35
+        },
+        {
+          "id": "FURNACE",
+          "simId": "FURNACE",
+          "beta": 0.1737,
+          "ci95": [
+            -0.1093,
+            0.4494
+          ],
+          "gamesWithCard": 282,
+          "staticRating": 3.1
+        },
+        {
+          "id": "BOMBARDMENT",
+          "simId": "BOMBARDMENT",
+          "beta": 0.1684,
+          "ci95": [
+            -0.0803,
+            0.4683
+          ],
+          "gamesWithCard": 83,
+          "staticRating": 4.167
+        },
+        {
+          "id": "PROWESS",
+          "simId": "PROWESS",
+          "beta": 0.1641,
+          "ci95": [
+            -0.1338,
+            0.4962
+          ],
+          "gamesWithCard": 48,
+          "staticRating": 11.1
+        },
+        {
+          "id": "GAMMA_BLAST",
+          "simId": "GAMMA_BLAST",
+          "beta": 0.1471,
+          "ci95": [
+            -0.1573,
+            0.3795
+          ],
+          "gamesWithCard": 259,
+          "staticRating": 12
+        },
+        {
+          "id": "MONARCHS_GAZE",
+          "simId": "MONARCHS_GAZE_CARD",
+          "beta": 0.1338,
+          "ci95": [
+            -0.1517,
+            0.4271
+          ],
+          "gamesWithCard": 41,
+          "staticRating": 2.45
+        },
+        {
+          "id": "KNOCKOUT_BLOW",
+          "simId": "KNOCKOUT_BLOW",
+          "beta": 0.133,
+          "ci95": [
+            -0.0998,
+            0.3737
+          ],
+          "gamesWithCard": 445,
+          "staticRating": 6.1
+        },
+        {
+          "id": "PATTER",
+          "simId": "PATTER",
+          "beta": 0.1282,
+          "ci95": [
+            -0.0166,
+            0.2954
+          ],
+          "gamesWithCard": 845,
           "staticRating": 4
         },
         {
           "id": "GENESIS",
           "simId": "GENESIS",
-          "beta": 0.581,
+          "beta": 0.124,
           "ci95": [
-            0.0234,
-            1.1683
+            -0.1759,
+            0.4206
           ],
-          "gamesWithCard": 30,
+          "gamesWithCard": 88,
           "staticRating": 2.45
-        },
-        {
-          "id": "BIG_BANG",
-          "simId": "BIG_BANG",
-          "beta": 0.5439,
-          "ci95": [
-            0.0279,
-            0.9922
-          ],
-          "gamesWithCard": 85,
-          "staticRating": 6.4
-        },
-        {
-          "id": "DRAMATIC_ENTRANCE",
-          "simId": "DRAMATIC_ENTRANCE",
-          "beta": 0.4997,
-          "ci95": [
-            -0.0747,
-            1.0254
-          ],
-          "gamesWithCard": 37,
-          "staticRating": 10.5
-        },
-        {
-          "id": "ULTIMATE_STRIKE",
-          "simId": "ULTIMATE_STRIKE",
-          "beta": 0.4983,
-          "ci95": [
-            0.0122,
-            0.9848
-          ],
-          "gamesWithCard": 32,
-          "staticRating": 8.3
-        },
-        {
-          "id": "SOLAR_STRIKE",
-          "simId": "SOLAR_STRIKE",
-          "beta": 0.434,
-          "ci95": [
-            0.2269,
-            0.6562
-          ],
-          "gamesWithCard": 765,
-          "staticRating": 4.95
-        },
-        {
-          "id": "WROUGHT_IN_WAR",
-          "simId": "WROUGHT_IN_WAR",
-          "beta": 0.3883,
-          "ci95": [
-            0.1385,
-            0.6505
-          ],
-          "gamesWithCard": 494,
-          "staticRating": 3.85
-        },
-        {
-          "id": "BOMBARDMENT",
-          "simId": "BOMBARDMENT",
-          "beta": 0.3801,
-          "ci95": [
-            -0.0877,
-            0.8333
-          ],
-          "gamesWithCard": 34,
-          "staticRating": 4.167
-        },
-        {
-          "id": "MANIFEST_AUTHORITY",
-          "simId": "MANIFEST_AUTHORITY",
-          "beta": 0.369,
-          "ci95": [
-            -0.056,
-            0.8025
-          ],
-          "gamesWithCard": 173,
-          "staticRating": 4.1
-        },
-        {
-          "id": "REFINE_BLADE",
-          "simId": "REFINE_BLADE",
-          "beta": 0.3244,
-          "ci95": [
-            -0.0054,
-            0.6218
-          ],
-          "gamesWithCard": 351,
-          "staticRating": 3
-        },
-        {
-          "id": "BEAT_INTO_SHAPE",
-          "simId": "BEAT_INTO_SHAPE",
-          "beta": 0.3229,
-          "ci95": [
-            -0.2582,
-            0.7617
-          ],
-          "gamesWithCard": 46,
-          "staticRating": 3.95
-        },
-        {
-          "id": "SEVEN_STARS",
-          "simId": "SEVEN_STARS",
-          "beta": 0.3122,
-          "ci95": [
-            -0.204,
-            0.7568
-          ],
-          "gamesWithCard": 34,
-          "staticRating": 4.35
-        },
-        {
-          "id": "SEEKER_STRIKE",
-          "simId": "SEEKER_STRIKE",
-          "beta": 0.2806,
-          "ci95": [
-            -0.3265,
-            0.8002
-          ],
-          "gamesWithCard": 36,
-          "staticRating": 12
-        },
-        {
-          "id": "OMNISLICE",
-          "simId": "OMNISLICE",
-          "beta": 0.2365,
-          "ci95": [
-            -0.3276,
-            0.8066
-          ],
-          "gamesWithCard": 32,
-          "staticRating": 6
-        },
-        {
-          "id": "MAKE_IT_SO",
-          "simId": "MAKE_IT_SO",
-          "beta": 0.2301,
-          "ci95": [
-            -0.1932,
-            0.6313
-          ],
-          "gamesWithCard": 109,
-          "staticRating": 12
-        },
-        {
-          "id": "COLLISION_COURSE",
-          "simId": "COLLISION_COURSE",
-          "beta": 0.1968,
-          "ci95": [
-            0.0095,
-            0.3799
-          ],
-          "gamesWithCard": 1088,
-          "staticRating": 7.05
-        },
-        {
-          "id": "KNOCKOUT_BLOW",
-          "simId": "KNOCKOUT_BLOW",
-          "beta": 0.1937,
-          "ci95": [
-            -0.1107,
-            0.5721
-          ],
-          "gamesWithCard": 348,
-          "staticRating": 6.1
-        },
-        {
-          "id": "CONVERGENCE",
-          "simId": "CONVERGENCE",
-          "beta": 0.1861,
-          "ci95": [
-            -0.3383,
-            0.6598
-          ],
-          "gamesWithCard": 126,
-          "staticRating": 3.6
-        },
-        {
-          "id": "DYING_STAR",
-          "simId": "DYING_STAR",
-          "beta": 0.1832,
-          "ci95": [
-            -0.2805,
-            0.6592
-          ],
-          "gamesWithCard": 85,
-          "staticRating": 9.3
-        },
-        {
-          "id": "STRIKE_REGENT",
-          "simId": "STRIKE_REGENT",
-          "beta": 0.165,
-          "ci95": [
-            -0.3758,
-            0.6576
-          ],
-          "gamesWithCard": 2703,
-          "staticRating": 3.3
-        },
-        {
-          "id": "PROWESS",
-          "simId": "PROWESS",
-          "beta": 0.1557,
-          "ci95": [
-            -0.4134,
-            0.7873
-          ],
-          "gamesWithCard": 30,
-          "staticRating": 11.1
-        },
-        {
-          "id": "COSMIC_INDIFFERENCE",
-          "simId": "COSMIC_INDIFFERENCE",
-          "beta": 0.1524,
-          "ci95": [
-            -0.2301,
-            0.4209
-          ],
-          "gamesWithCard": 304,
-          "staticRating": 3
-        },
-        {
-          "id": "HEIRLOOM_HAMMER",
-          "simId": "HEIRLOOM_HAMMER",
-          "beta": 0.1457,
-          "ci95": [
-            -0.4845,
-            0.5587
-          ],
-          "gamesWithCard": 80,
-          "staticRating": 6.7
-        },
-        {
-          "id": "COMET",
-          "simId": "COMET",
-          "beta": 0.141,
-          "ci95": [
-            -0.3432,
-            0.6133
-          ],
-          "gamesWithCard": 84,
-          "staticRating": 12
-        },
-        {
-          "id": "NEUTRON_AEGIS",
-          "simId": "NEUTRON_AEGIS",
-          "beta": 0.1246,
-          "ci95": [
-            -0.3872,
-            0.6178
-          ],
-          "gamesWithCard": 32,
-          "staticRating": 3.7
-        },
-        {
-          "id": "PHOTON_CUT",
-          "simId": "PHOTON_CUT",
-          "beta": 0.1103,
-          "ci95": [
-            -0.0712,
-            0.3121
-          ],
-          "gamesWithCard": 1040,
-          "staticRating": 7.7
-        },
-        {
-          "id": "HEAVENLY_DRILL",
-          "simId": "HEAVENLY_DRILL",
-          "beta": 0.1046,
-          "ci95": [
-            -0.4307,
-            0.5876
-          ],
-          "gamesWithCard": 86,
-          "staticRating": 8.9
-        },
-        {
-          "id": "DEFEND_REGENT",
-          "simId": "DEFEND_REGENT",
-          "beta": 0.0935,
-          "ci95": [
-            -0.4236,
-            0.5511
-          ],
-          "gamesWithCard": 2703,
-          "staticRating": 2.5
-        },
-        {
-          "id": "RESTLESSNESS",
-          "simId": "RESTLESSNESS",
-          "beta": 0.0509,
-          "ci95": [
-            -0.4457,
-            0.52
-          ],
-          "gamesWithCard": 46,
-          "staticRating": 12
-        },
-        {
-          "id": "FURNACE",
-          "simId": "FURNACE",
-          "beta": 0.0439,
-          "ci95": [
-            -0.5828,
-            0.6413
-          ],
-          "gamesWithCard": 102,
-          "staticRating": 3.1
-        },
-        {
-          "id": "GLOW",
-          "simId": "GLOW",
-          "beta": 0.0362,
-          "ci95": [
-            -0.3131,
-            0.3985
-          ],
-          "gamesWithCard": 291,
-          "staticRating": 2.2
-        },
-        {
-          "id": "CHILD_OF_THE_STARS",
-          "simId": "CHILD_OF_THE_STARS",
-          "beta": 0.0296,
-          "ci95": [
-            -0.4891,
-            0.469
-          ],
-          "gamesWithCard": 106,
-          "staticRating": 3.1
         },
         {
           "id": "ARSENAL",
           "simId": "ARSENAL",
-          "beta": 0.027,
+          "beta": 0.1173,
           "ci95": [
-            -0.5083,
-            0.6134
+            -0.1756,
+            0.4357
           ],
-          "gamesWithCard": 35,
+          "gamesWithCard": 82,
           "staticRating": 3.7
         },
         {
-          "id": "PATTER",
-          "simId": "PATTER",
-          "beta": 0.0252,
+          "id": "RESTLESSNESS",
+          "simId": "RESTLESSNESS",
+          "beta": 0.1052,
           "ci95": [
-            -0.228,
-            0.2901
+            -0.0953,
+            0.3131
           ],
-          "gamesWithCard": 540,
-          "staticRating": 4
-        },
-        {
-          "id": "CLUMSY",
-          "simId": "CLUMSY",
-          "beta": 0.0106,
-          "ci95": [
-            -0.5955,
-            0.507
-          ],
-          "gamesWithCard": 56,
-          "staticRating": -6
-        },
-        {
-          "id": "NEOWS_FURY",
-          "simId": "NEOWS_FURY",
-          "beta": 0.0077,
-          "ci95": [
-            0,
-            0.0329
-          ],
-          "gamesWithCard": 191,
-          "staticRating": 8.9
-        },
-        {
-          "id": "PARRY",
-          "simId": "PARRY_CARD",
-          "beta": 0.001,
-          "ci95": [
-            -0.5595,
-            0.5273
-          ],
-          "gamesWithCard": 96,
-          "staticRating": 3.1
-        },
-        {
-          "id": "LUNAR_BLAST",
-          "simId": "LUNAR_BLAST",
-          "beta": -0.0034,
-          "ci95": [
-            -0.494,
-            0.4103
-          ],
-          "gamesWithCard": 139,
-          "staticRating": 3.8
-        },
-        {
-          "id": "CRUSH_UNDER",
-          "simId": "CRUSH_UNDER",
-          "beta": -0.0059,
-          "ci95": [
-            -0.294,
-            0.1848
-          ],
-          "gamesWithCard": 899,
-          "staticRating": 6.3
-        },
-        {
-          "id": "KNOW_THY_PLACE",
-          "simId": "KNOW_THY_PLACE",
-          "beta": -0.0061,
-          "ci95": [
-            -0.3431,
-            0.256
-          ],
-          "gamesWithCard": 337,
-          "staticRating": 3
+          "gamesWithCard": 42,
+          "staticRating": 12
         },
         {
           "id": "I_AM_INVINCIBLE",
           "simId": "I_AM_INVINCIBLE",
-          "beta": -0.0111,
+          "beta": 0.1031,
           "ci95": [
-            -0.5034,
-            0.3532
+            -0.2137,
+            0.4357
           ],
-          "gamesWithCard": 96,
+          "gamesWithCard": 67,
           "staticRating": 11.2
         },
         {
-          "id": "ORBIT",
-          "simId": "ORBIT",
-          "beta": -0.0327,
+          "id": "ULTIMATE_STRIKE",
+          "simId": "ULTIMATE_STRIKE",
+          "beta": 0.0944,
           "ci95": [
-            -0.6282,
-            0.3894
+            -0.1518,
+            0.3379
           ],
-          "gamesWithCard": 112,
-          "staticRating": 3.35
+          "gamesWithCard": 42,
+          "staticRating": 8.3
         },
         {
-          "id": "SPOILS_OF_BATTLE",
-          "simId": "SPOILS_OF_BATTLE",
-          "beta": -0.0441,
+          "id": "SEEKING_EDGE",
+          "simId": "SEEKING_EDGE",
+          "beta": 0.0833,
           "ci95": [
-            -0.2927,
-            0.1786
-          ],
-          "gamesWithCard": 567,
-          "staticRating": 4.4
-        },
-        {
-          "id": "FOREGONE_CONCLUSION",
-          "simId": "FOREGONE_CONCLUSION",
-          "beta": -0.0612,
-          "ci95": [
-            -0.6067,
-            0.447
-          ],
-          "gamesWithCard": 54,
-          "staticRating": 5.6
-        },
-        {
-          "id": "GLITTERSTREAM",
-          "simId": "GLITTERSTREAM",
-          "beta": -0.0884,
-          "ci95": [
-            -0.3005,
-            0.0985
-          ],
-          "gamesWithCard": 702,
-          "staticRating": 5.5
-        },
-        {
-          "id": "VOID_FORM",
-          "simId": "VOID_FORM",
-          "beta": -0.0976,
-          "ci95": [
-            -0.7049,
-            0.5571
+            -0.1807,
+            0.3381
           ],
           "gamesWithCard": 33,
-          "staticRating": 2.033
+          "staticRating": 3.7
         },
         {
-          "id": "SUMMON_FORTH",
-          "simId": "SUMMON_FORTH",
-          "beta": -0.1121,
+          "id": "GLOW",
+          "simId": "GLOW",
+          "beta": 0.0774,
           "ci95": [
-            -0.6434,
-            0.3563
+            -0.0956,
+            0.2579
           ],
-          "gamesWithCard": 97,
-          "staticRating": 0.6
+          "gamesWithCard": 712,
+          "staticRating": 2.2
         },
         {
-          "id": "BLACK_HOLE",
-          "simId": "BLACK_HOLE",
-          "beta": -0.1225,
+          "id": "KNOW_THY_PLACE",
+          "simId": "KNOW_THY_PLACE",
+          "beta": 0.0765,
           "ci95": [
-            -0.5653,
-            0.2798
+            -0.1152,
+            0.2934
           ],
-          "gamesWithCard": 103,
-          "staticRating": 3.1
+          "gamesWithCard": 396,
+          "staticRating": 3
         },
         {
-          "id": "PROPHESIZE",
-          "simId": "PROPHESIZE",
-          "beta": -0.1333,
+          "id": "DRAMATIC_ENTRANCE",
+          "simId": "DRAMATIC_ENTRANCE",
+          "beta": 0.0592,
           "ci95": [
-            -0.575,
-            0.287
+            -0.1753,
+            0.3448
           ],
-          "gamesWithCard": 115,
-          "staticRating": 3.9
+          "gamesWithCard": 40,
+          "staticRating": 10.5
         },
         {
-          "id": "SUPERMASSIVE",
-          "simId": "SUPERMASSIVE",
-          "beta": -0.1447,
+          "id": "THE_SMITH",
+          "simId": "THE_SMITH",
+          "beta": 0.0516,
           "ci95": [
-            -0.622,
-            0.3201
+            -0.2129,
+            0.3434
           ],
-          "gamesWithCard": 124,
-          "staticRating": 3.35
+          "gamesWithCard": 40,
+          "staticRating": 1.2
         },
         {
-          "id": "QUASAR",
-          "simId": "QUASAR",
-          "beta": -0.1466,
+          "id": "SPECTRUM_SHIFT",
+          "simId": "SPECTRUM_SHIFT",
+          "beta": 0.0503,
           "ci95": [
-            -0.631,
-            0.3342
+            -0.2038,
+            0.3036
           ],
-          "gamesWithCard": 95,
-          "staticRating": 1.6
+          "gamesWithCard": 139,
+          "staticRating": 2.95
         },
         {
-          "id": "FALLING_STAR",
-          "simId": "FALLING_STAR",
-          "beta": -0.1476,
+          "id": "NEOWS_FURY",
+          "simId": "NEOWS_FURY",
+          "beta": 0.0371,
           "ci95": [
-            -0.5832,
-            0.1792
+            -0.0112,
+            0.1231
           ],
-          "gamesWithCard": 2460,
-          "staticRating": 8.4
+          "gamesWithCard": 250,
+          "staticRating": 8.9
+        },
+        {
+          "id": "CRUSH_UNDER",
+          "simId": "CRUSH_UNDER",
+          "beta": 0.0369,
+          "ci95": [
+            -0.1866,
+            0.2193
+          ],
+          "gamesWithCard": 601,
+          "staticRating": 6.3
+        },
+        {
+          "id": "STRIKE_REGENT",
+          "simId": "STRIKE_REGENT",
+          "beta": 0.0192,
+          "ci95": [
+            -0.1962,
+            0.2504
+          ],
+          "gamesWithCard": 3543,
+          "staticRating": 3.3
         },
         {
           "id": "DECISIONS_DECISIONS",
           "simId": "DECISIONS_DECISIONS",
-          "beta": -0.1563,
+          "beta": -0.0075,
           "ci95": [
-            -0.7013,
-            0.3524
+            -0.3528,
+            0.2837
           ],
-          "gamesWithCard": 77,
+          "gamesWithCard": 45,
           "staticRating": 7.8
         },
         {
-          "id": "HIDDEN_CACHE",
-          "simId": "HIDDEN_CACHE",
-          "beta": -0.1693,
+          "id": "SPOILS_OF_BATTLE",
+          "simId": "SPOILS_OF_BATTLE",
+          "beta": -0.0153,
           "ci95": [
-            -0.4751,
-            0.1674
-          ],
-          "gamesWithCard": 280,
-          "staticRating": 0
-        },
-        {
-          "id": "GAMMA_BLAST",
-          "simId": "GAMMA_BLAST",
-          "beta": -0.1753,
-          "ci95": [
-            -0.4623,
-            0.085
+            -0.2396,
+            0.2092
           ],
           "gamesWithCard": 464,
+          "staticRating": 4.4
+        },
+        {
+          "id": "GLITTERSTREAM",
+          "simId": "GLITTERSTREAM",
+          "beta": -0.0172,
+          "ci95": [
+            -0.2218,
+            0.1994
+          ],
+          "gamesWithCard": 510,
+          "staticRating": 5.5
+        },
+        {
+          "id": "CELESTIAL_MIGHT",
+          "simId": "CELESTIAL_MIGHT",
+          "beta": -0.0191,
+          "ci95": [
+            -0.2514,
+            0.2005
+          ],
+          "gamesWithCard": 389,
+          "staticRating": 1.65
+        },
+        {
+          "id": "DEVASTATE",
+          "simId": "DEVASTATE",
+          "beta": -0.0204,
+          "ci95": [
+            -0.3003,
+            0.2283
+          ],
+          "gamesWithCard": 282,
           "staticRating": 12
+        },
+        {
+          "id": "SEVEN_STARS",
+          "simId": "SEVEN_STARS",
+          "beta": -0.0264,
+          "ci95": [
+            -0.3041,
+            0.254
+          ],
+          "gamesWithCard": 100,
+          "staticRating": 4.35
+        },
+        {
+          "id": "CLUMSY",
+          "simId": "CLUMSY",
+          "beta": -0.0286,
+          "ci95": [
+            -0.2419,
+            0.2151
+          ],
+          "gamesWithCard": 44,
+          "staticRating": -6
         },
         {
           "id": "STARDUST",
           "simId": "STARDUST",
-          "beta": -0.1904,
+          "beta": -0.0363,
           "ci95": [
-            -0.5502,
-            0.1701
+            -0.3337,
+            0.2579
           ],
-          "gamesWithCard": 173,
+          "gamesWithCard": 153,
           "staticRating": 4.35
         },
         {
-          "id": "TERRAFORMING",
-          "simId": "TERRAFORMING",
-          "beta": -0.1936,
+          "id": "COSMIC_INDIFFERENCE",
+          "simId": "COSMIC_INDIFFERENCE",
+          "beta": -0.0404,
           "ci95": [
-            -0.7308,
-            0.3114
+            -0.207,
+            0.1009
           ],
-          "gamesWithCard": 92,
-          "staticRating": 0.6
+          "gamesWithCard": 875,
+          "staticRating": 3
         },
         {
-          "id": "POOR_SLEEP",
-          "simId": "POOR_SLEEP",
-          "beta": -0.21,
+          "id": "CHILD_OF_THE_STARS",
+          "simId": "CHILD_OF_THE_STARS",
+          "beta": -0.0619,
           "ci95": [
-            -0.7665,
-            0.1851
+            -0.2899,
+            0.1724
           ],
-          "gamesWithCard": 98,
-          "staticRating": -6
-        },
-        {
-          "id": "PILLAR_OF_CREATION",
-          "simId": "PILLAR_OF_CREATION",
-          "beta": -0.2127,
-          "ci95": [
-            -0.5895,
-            0.1111
-          ],
-          "gamesWithCard": 269,
-          "staticRating": 6.1
-        },
-        {
-          "id": "CONQUEROR",
-          "simId": "CONQUEROR",
-          "beta": -0.2256,
-          "ci95": [
-            -0.8074,
-            0.2467
-          ],
-          "gamesWithCard": 81,
-          "staticRating": 0.6
+          "gamesWithCard": 257,
+          "staticRating": 3.1
         },
         {
           "id": "CRASH_LANDING",
           "simId": "CRASH_LANDING",
-          "beta": -0.233,
+          "beta": -0.0656,
           "ci95": [
-            -0.6908,
-            0.1516
+            -0.3969,
+            0.2181
           ],
-          "gamesWithCard": 130,
+          "gamesWithCard": 61,
+          "staticRating": 12
+        },
+        {
+          "id": "PARRY",
+          "simId": "PARRY_CARD",
+          "beta": -0.0675,
+          "ci95": [
+            -0.3223,
+            0.2087
+          ],
+          "gamesWithCard": 266,
+          "staticRating": 3.1
+        },
+        {
+          "id": "FALLING_STAR",
+          "simId": "FALLING_STAR",
+          "beta": -0.0739,
+          "ci95": [
+            -0.2139,
+            0.0778
+          ],
+          "gamesWithCard": 3249,
+          "staticRating": 8.4
+        },
+        {
+          "id": "CONQUEROR",
+          "simId": "CONQUEROR",
+          "beta": -0.0788,
+          "ci95": [
+            -0.3677,
+            0.2142
+          ],
+          "gamesWithCard": 150,
+          "staticRating": 0.6
+        },
+        {
+          "id": "PILLAR_OF_CREATION",
+          "simId": "PILLAR_OF_CREATION",
+          "beta": -0.085,
+          "ci95": [
+            -0.3776,
+            0.2408
+          ],
+          "gamesWithCard": 187,
+          "staticRating": 6.1
+        },
+        {
+          "id": "MAKE_IT_SO",
+          "simId": "MAKE_IT_SO",
+          "beta": -0.0897,
+          "ci95": [
+            -0.3516,
+            0.1948
+          ],
+          "gamesWithCard": 106,
           "staticRating": 12
         },
         {
           "id": "ROYAL_GAMBLE",
           "simId": "ROYAL_GAMBLE",
-          "beta": -0.2449,
+          "beta": -0.0913,
           "ci95": [
-            -0.9221,
-            0.3607
+            -0.3632,
+            0.1776
           ],
-          "gamesWithCard": 92,
+          "gamesWithCard": 136,
           "staticRating": 0.6
         },
         {
-          "id": "CHARGE",
-          "simId": "CHARGE",
-          "beta": -0.2563,
+          "id": "MANIFEST_AUTHORITY",
+          "simId": "MANIFEST_AUTHORITY",
+          "beta": -0.101,
           "ci95": [
-            -0.6671,
-            0.0995
+            -0.4014,
+            0.1058
           ],
-          "gamesWithCard": 252,
-          "staticRating": 5
+          "gamesWithCard": 383,
+          "staticRating": 4.1
         },
         {
-          "id": "GLIMMER",
-          "simId": "GLIMMER",
-          "beta": -0.2812,
+          "id": "LUNAR_BLAST",
+          "simId": "LUNAR_BLAST",
+          "beta": -0.1033,
           "ci95": [
-            -0.6998,
-            0.075
+            -0.3981,
+            0.1865
           ],
-          "gamesWithCard": 287,
-          "staticRating": 7.2
-        },
-        {
-          "id": "ASTRAL_PULSE",
-          "simId": "ASTRAL_PULSE",
-          "beta": -0.2887,
-          "ci95": [
-            -0.5179,
-            -0.1233
-          ],
-          "gamesWithCard": 835,
-          "staticRating": 6.4
-        },
-        {
-          "id": "GUIDING_STAR",
-          "simId": "GUIDING_STAR",
-          "beta": -0.3035,
-          "ci95": [
-            -0.5554,
-            -0.0725
-          ],
-          "gamesWithCard": 930,
-          "staticRating": 11
-        },
-        {
-          "id": "CRESCENT_SPEAR",
-          "simId": "CRESCENT_SPEAR",
-          "beta": -0.305,
-          "ci95": [
-            -0.6032,
-            0.0138
-          ],
-          "gamesWithCard": 563,
-          "staticRating": 4.4
-        },
-        {
-          "id": "BEGONE",
-          "simId": "BEGONE",
-          "beta": -0.3084,
-          "ci95": [
-            -0.5934,
-            -0.0689
-          ],
-          "gamesWithCard": 340,
-          "staticRating": 2.2
+          "gamesWithCard": 155,
+          "staticRating": 3.8
         },
         {
           "id": "VENERATE",
           "simId": "VENERATE",
-          "beta": -0.3302,
+          "beta": -0.1065,
           "ci95": [
-            -0.6526,
-            -0.0989
+            -0.2897,
+            0.0802
           ],
-          "gamesWithCard": 911,
+          "gamesWithCard": 1187,
           "staticRating": 0
+        },
+        {
+          "id": "HIDDEN_CACHE",
+          "simId": "HIDDEN_CACHE",
+          "beta": -0.1144,
+          "ci95": [
+            -0.3409,
+            0.1089
+          ],
+          "gamesWithCard": 362,
+          "staticRating": 0
+        },
+        {
+          "id": "SUPERMASSIVE",
+          "simId": "SUPERMASSIVE",
+          "beta": -0.1148,
+          "ci95": [
+            -0.3516,
+            0.1376
+          ],
+          "gamesWithCard": 137,
+          "staticRating": 3.35
+        },
+        {
+          "id": "HEIRLOOM_HAMMER",
+          "simId": "HEIRLOOM_HAMMER",
+          "beta": -0.1353,
+          "ci95": [
+            -0.4358,
+            0.234
+          ],
+          "gamesWithCard": 94,
+          "staticRating": 6.7
+        },
+        {
+          "id": "BEGONE",
+          "simId": "BEGONE",
+          "beta": -0.149,
+          "ci95": [
+            -0.3937,
+            0.0643
+          ],
+          "gamesWithCard": 410,
+          "staticRating": 2.2
+        },
+        {
+          "id": "VOID_FORM",
+          "simId": "VOID_FORM",
+          "beta": -0.1519,
+          "ci95": [
+            -0.3963,
+            0.1401
+          ],
+          "gamesWithCard": 40,
+          "staticRating": 2.033
         },
         {
           "id": "CLOAK_OF_STARS",
           "simId": "CLOAK_OF_STARS",
-          "beta": -0.3372,
+          "beta": -0.1612,
           "ci95": [
-            -0.5965,
-            -0.123
+            -0.3689,
+            0.0666
           ],
-          "gamesWithCard": 576,
+          "gamesWithCard": 458,
           "staticRating": 4.5
         },
         {
-          "id": "MONOLOGUE",
-          "simId": "MONOLOGUE_CARD",
-          "beta": -0.3466,
+          "id": "CHARGE",
+          "simId": "CHARGE",
+          "beta": -0.1732,
           "ci95": [
-            -0.8389,
-            0.0345
+            -0.4432,
+            0.0891
           ],
-          "gamesWithCard": 100,
+          "gamesWithCard": 171,
+          "staticRating": 5
+        },
+        {
+          "id": "QUASAR",
+          "simId": "QUASAR",
+          "beta": -0.1753,
+          "ci95": [
+            -0.4636,
+            0.0715
+          ],
+          "gamesWithCard": 138,
           "staticRating": 1.6
-        },
-        {
-          "id": "PANIC_BUTTON",
-          "simId": "PANIC_BUTTON",
-          "beta": -0.3532,
-          "ci95": [
-            -0.9765,
-            0.1698
-          ],
-          "gamesWithCard": 33,
-          "staticRating": 12
-        },
-        {
-          "id": "SPECTRUM_SHIFT",
-          "simId": "SPECTRUM_SHIFT",
-          "beta": -0.363,
-          "ci95": [
-            -0.8318,
-            0.1299
-          ],
-          "gamesWithCard": 105,
-          "staticRating": 2.95
-        },
-        {
-          "id": "PARTICLE_WALL",
-          "simId": "PARTICLE_WALL",
-          "beta": -0.3637,
-          "ci95": [
-            -0.717,
-            -0.054
-          ],
-          "gamesWithCard": 316,
-          "staticRating": 10.6
-        },
-        {
-          "id": "PALE_BLUE_DOT",
-          "simId": "PALE_BLUE_DOT",
-          "beta": -0.3656,
-          "ci95": [
-            -0.7549,
-            0.0319
-          ],
-          "gamesWithCard": 264,
-          "staticRating": 5.3
-        },
-        {
-          "id": "DEVASTATE",
-          "simId": "DEVASTATE",
-          "beta": -0.3697,
-          "ci95": [
-            -0.711,
-            -0.0739
-          ],
-          "gamesWithCard": 435,
-          "staticRating": 12
         },
         {
           "id": "RESONANCE",
           "simId": "RESONANCE",
-          "beta": -0.3901,
+          "beta": -0.1861,
           "ci95": [
-            -0.7913,
-            -0.0122
+            -0.4247,
+            0.0765
           ],
-          "gamesWithCard": 214,
+          "gamesWithCard": 136,
           "staticRating": 5.1
+        },
+        {
+          "id": "GUARDS",
+          "simId": "GUARDS",
+          "beta": -0.2055,
+          "ci95": [
+            -0.3847,
+            0.0442
+          ],
+          "gamesWithCard": 43,
+          "staticRating": 0.7
         },
         {
           "id": "BUNDLE_OF_JOY",
           "simId": "BUNDLE_OF_JOY",
-          "beta": -0.416,
+          "beta": -0.21,
           "ci95": [
-            -0.945,
-            -0.0024
+            -0.5092,
+            0.1994
           ],
-          "gamesWithCard": 61,
+          "gamesWithCard": 36,
           "staticRating": 6.8
+        },
+        {
+          "id": "DYING_STAR",
+          "simId": "DYING_STAR",
+          "beta": -0.2161,
+          "ci95": [
+            -0.5211,
+            0.0551
+          ],
+          "gamesWithCard": 99,
+          "staticRating": 9.3
+        },
+        {
+          "id": "HEAVENLY_DRILL",
+          "simId": "HEAVENLY_DRILL",
+          "beta": -0.2166,
+          "ci95": [
+            -0.5027,
+            0.1216
+          ],
+          "gamesWithCard": 81,
+          "staticRating": 8.9
+        },
+        {
+          "id": "CRESCENT_SPEAR",
+          "simId": "CRESCENT_SPEAR",
+          "beta": -0.2172,
+          "ci95": [
+            -0.4208,
+            0.0113
+          ],
+          "gamesWithCard": 507,
+          "staticRating": 4.4
+        },
+        {
+          "id": "SUMMON_FORTH",
+          "simId": "SUMMON_FORTH",
+          "beta": -0.2214,
+          "ci95": [
+            -0.4998,
+            0.1051
+          ],
+          "gamesWithCard": 132,
+          "staticRating": 0.6
         },
         {
           "id": "RADIATE",
           "simId": "RADIATE",
-          "beta": -0.4325,
+          "beta": -0.2403,
           "ci95": [
-            -0.9271,
-            -0.0352
+            -0.5206,
+            -0.0023
           ],
-          "gamesWithCard": 180,
+          "gamesWithCard": 166,
           "staticRating": 4.3
-        },
-        {
-          "id": "REFLECT",
-          "simId": "REFLECT_CARD",
-          "beta": -0.4703,
-          "ci95": [
-            -0.8554,
-            -0.0566
-          ],
-          "gamesWithCard": 372,
-          "staticRating": 12
         },
         {
           "id": "ALIGNMENT",
           "simId": "ALIGNMENT",
-          "beta": -0.478,
+          "beta": -0.2485,
           "ci95": [
-            -0.7895,
-            -0.183
+            -0.5443,
+            0.0069
           ],
-          "gamesWithCard": 270,
+          "gamesWithCard": 191,
           "staticRating": 7.6
         },
         {
-          "id": "CELESTIAL_MIGHT",
-          "simId": "CELESTIAL_MIGHT",
-          "beta": -0.5166,
+          "id": "GLIMMER",
+          "simId": "GLIMMER",
+          "beta": -0.2655,
           "ci95": [
-            -0.9266,
-            -0.1968
+            -0.5926,
+            0.0385
           ],
-          "gamesWithCard": 273,
-          "staticRating": 1.65
+          "gamesWithCard": 184,
+          "staticRating": 7.2
+        },
+        {
+          "id": "POOR_SLEEP",
+          "simId": "POOR_SLEEP",
+          "beta": -0.2877,
+          "ci95": [
+            -0.5468,
+            0.0252
+          ],
+          "gamesWithCard": 94,
+          "staticRating": -6
+        },
+        {
+          "id": "GUIDING_STAR",
+          "simId": "GUIDING_STAR",
+          "beta": -0.2886,
+          "ci95": [
+            -0.5022,
+            -0.0796
+          ],
+          "gamesWithCard": 537,
+          "staticRating": 11
+        },
+        {
+          "id": "NEUTRON_AEGIS",
+          "simId": "NEUTRON_AEGIS",
+          "beta": -0.2949,
+          "ci95": [
+            -0.6252,
+            0.0214
+          ],
+          "gamesWithCard": 80,
+          "staticRating": 3.7
+        },
+        {
+          "id": "PARTICLE_WALL",
+          "simId": "PARTICLE_WALL",
+          "beta": -0.3038,
+          "ci95": [
+            -0.5596,
+            -0.0585
+          ],
+          "gamesWithCard": 206,
+          "staticRating": 10.6
+        },
+        {
+          "id": "DEFEND_REGENT",
+          "simId": "DEFEND_REGENT",
+          "beta": -0.3477,
+          "ci95": [
+            -0.603,
+            -0.0215
+          ],
+          "gamesWithCard": 3543,
+          "staticRating": 2.5
+        },
+        {
+          "id": "PALE_BLUE_DOT",
+          "simId": "PALE_BLUE_DOT",
+          "beta": -0.3481,
+          "ci95": [
+            -0.6307,
+            -0.0598
+          ],
+          "gamesWithCard": 167,
+          "staticRating": 5.3
+        },
+        {
+          "id": "MONOLOGUE",
+          "simId": "MONOLOGUE_CARD",
+          "beta": -0.3489,
+          "ci95": [
+            -0.603,
+            -0.0474
+          ],
+          "gamesWithCard": 130,
+          "staticRating": 1.6
+        },
+        {
+          "id": "ASTRAL_PULSE",
+          "simId": "ASTRAL_PULSE",
+          "beta": -0.3551,
+          "ci95": [
+            -0.5397,
+            -0.1737
+          ],
+          "gamesWithCard": 560,
+          "staticRating": 6.4
         },
         {
           "id": "SPOILS_MAP",
           "simId": "SPOILS_MAP",
-          "beta": -0.6489,
+          "beta": -0.3818,
           "ci95": [
-            -1.0781,
-            -0.2011
+            -0.6808,
+            -0.0952
           ],
-          "gamesWithCard": 131,
+          "gamesWithCard": 171,
           "staticRating": -6
+        },
+        {
+          "id": "TERRAFORMING",
+          "simId": "TERRAFORMING",
+          "beta": -0.383,
+          "ci95": [
+            -0.6968,
+            -0.1218
+          ],
+          "gamesWithCard": 127,
+          "staticRating": 0.6
+        },
+        {
+          "id": "PROPHESIZE",
+          "simId": "PROPHESIZE",
+          "beta": -0.3865,
+          "ci95": [
+            -0.6921,
+            -0.11
+          ],
+          "gamesWithCard": 117,
+          "staticRating": 3.9
         }
       ]
     },
     {
-      "id": "silent-a0-v1",
+      "id": "silent-a0-keep-v1",
       "character": "silent",
       "validation": {
-        "comparison": "rules_v2-vs-rules_v1-silent-a0-veteran-val",
+        "comparison": "rules_v3-keepvals-vs-curvals-silent-a0-veteran-keeprelics-val",
         "alpha": 0.0125,
-        "pairedGames": 1999,
-        "passRate": 0.18459229614807404,
-        "passRateBase": 0.11455727863931967,
-        "p": 8.453497426555093e-13,
-        "against": "ratings",
-        "basis": "own",
+        "pairedGames": 1985,
+        "passRate": 0.36675062972292194,
+        "passRateBase": 0.35113350125944587,
+        "p": 0.1774702535388741,
+        "against": "current-values",
+        "basis": "pooled",
         "passed": true
       },
-      "supersedes": null,
-      "drift": null,
-      "relicsKept": false,
-      "file": "experiments/cardvalue/silent-a0-v1.json",
-      "sha256": "fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859",
-      "outcome": "the run gets past the Act-1 boss",
-      "games": 2332,
-      "bossFights": 2332,
-      "passRate": 0.1068,
-      "model": {
-        "l2": 3,
-        "folds": 5,
-        "features": 101,
-        "bootstrapDraws": 200,
-        "cvLogLoss": 0.24136741751737428,
-        "cvAuc": 0.8784730858142122,
-        "baselineLogLoss": 0.2634700030607099
+      "supersedes": "silent-a0-v1",
+      "drift": {
+        "previous": "silent-a0-v1",
+        "previousSha256": "fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859",
+        "previousPilot": "rules_explore",
+        "pilot": "rules_explore_v3",
+        "previousBossFights": 2332,
+        "previousPassRate": 0.1068,
+        "cardsInBoth": 75,
+        "spearman": 0.5607965860597439,
+        "k": 10,
+        "bestShared": 7,
+        "worstShared": 4,
+        "disjointIntervals": 4,
+        "noiseCards": 66,
+        "noiseSpearman": 0.5499425947187141,
+        "noiseSpearmanBrown": 0.7096296296296296
       },
-      "spearmanWithStaticRating": 0.4344,
+      "relicsKept": true,
+      "file": "experiments/cardvalue/silent-a0-keep-v1.json",
+      "sha256": "a8d7b3519d0284538fe8f92c68c62579b7727a4c27781399d57f9955bbc75fe0",
+      "outcome": "the run gets past the Act-1 boss",
+      "games": 3025,
+      "bossFights": 3025,
+      "passRate": 0.3021,
+      "model": {
+        "l2": 10,
+        "folds": 5,
+        "features": 131,
+        "bootstrapDraws": 200,
+        "cvLogLoss": 0.4170740737567504,
+        "cvAuc": 0.8606517698789399,
+        "baselineLogLoss": 0.4649139580349646
+      },
+      "spearmanWithStaticRating": 0.3883,
       "batches": [
         {
-          "id": "explore-silent-a0-train-rep0",
-          "contentSha256": "41a417aab74a12c6ada1de1ab19d42c90853c6fe556bee79133971694efcfa1b",
+          "id": "explore4-silent-a0-keeprelics-dev-o5000-n5000",
+          "contentSha256": "2f4d0763173e235b301e1918395e10a055c51bc1547ec4ecb0053389c30da504",
           "policy": {
             "effective": {
               "params": {
                 "explore": 0.6,
                 "replicate": 0,
+                "threshold": 0,
                 "tune": {
                   "boss_heal_below": 0.9,
                   "card_slope": 0.09,
@@ -4441,9 +4628,9 @@
                   "elite_bad_value": -2.5,
                   "elite_mid_hp": 0.65,
                   "elite_mid_value": 0.2,
-                  "elite_ok_floor": 4,
-                  "elite_ok_hp": 0.8,
-                  "elite_value": 2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
                   "heal_below": 0.7,
                   "max_deck": 32,
                   "monster_hp_penalty": 0.5,
@@ -4461,14 +4648,17 @@
                   "shop_rich_gold": 150,
                   "treasure_value": 1.8,
                   "unknown_value": 0.8
-                }
+                },
+                "values": "experiments/cardvalue/silent-a0-v1.json",
+                "values_sha256": "fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859"
               },
               "version": "1"
             },
-            "name": "rules_explore",
+            "name": "rules_explore_v3",
             "params": {
               "explore": 0.6,
-              "replicate": 0
+              "replicate": 0,
+              "values": "experiments/cardvalue/silent-a0-v1.json"
             }
           },
           "simulator": "sts2-rl-agent"
@@ -4476,832 +4666,1227 @@
       ],
       "cards": [
         {
-          "id": "DRAMATIC_ENTRANCE",
-          "simId": "DRAMATIC_ENTRANCE",
-          "beta": 1.0744,
-          "ci95": [
-            0.4288,
-            1.6514
-          ],
-          "gamesWithCard": 41,
-          "staticRating": 10.5
-        },
-        {
           "id": "NOXIOUS_FUMES",
           "simId": "NOXIOUS_FUMES_CARD",
-          "beta": 0.8617,
+          "beta": 0.8003,
           "ci95": [
-            0.2401,
-            1.3177
+            0.5869,
+            1.052
           ],
-          "gamesWithCard": 109,
+          "gamesWithCard": 427,
           "staticRating": 3.1
-        },
-        {
-          "id": "FOOTWORK",
-          "simId": "FOOTWORK",
-          "beta": 0.8138,
-          "ci95": [
-            0.5353,
-            1.0977
-          ],
-          "gamesWithCard": 430,
-          "staticRating": 10.1
-        },
-        {
-          "id": "FLASH_OF_STEEL",
-          "simId": "FLASH_OF_STEEL",
-          "beta": 0.7511,
-          "ci95": [
-            0.0109,
-            1.3816
-          ],
-          "gamesWithCard": 31,
-          "staticRating": 6.55
-        },
-        {
-          "id": "LEADING_STRIKE",
-          "simId": "LEADING_STRIKE",
-          "beta": 0.7004,
-          "ci95": [
-            0.3288,
-            1.0859
-          ],
-          "gamesWithCard": 204,
-          "staticRating": 1.65
-        },
-        {
-          "id": "ECHOING_SLASH",
-          "simId": "ECHOING_SLASH",
-          "beta": 0.5884,
-          "ci95": [
-            0.0382,
-            1.1467
-          ],
-          "gamesWithCard": 127,
-          "staticRating": 10.2
-        },
-        {
-          "id": "SLICE",
-          "simId": "SLICE",
-          "beta": 0.5267,
-          "ci95": [
-            0.2911,
-            0.8561
-          ],
-          "gamesWithCard": 637,
-          "staticRating": 4.3
-        },
-        {
-          "id": "SUCKER_PUNCH",
-          "simId": "SUCKER_PUNCH",
-          "beta": 0.5191,
-          "ci95": [
-            0.325,
-            0.8229
-          ],
-          "gamesWithCard": 881,
-          "staticRating": 5.8
-        },
-        {
-          "id": "DASH",
-          "simId": "DASH",
-          "beta": 0.5061,
-          "ci95": [
-            0.1836,
-            0.8373
-          ],
-          "gamesWithCard": 358,
-          "staticRating": 5.85
         },
         {
           "id": "UP_MY_SLEEVE",
           "simId": "UP_MY_SLEEVE",
-          "beta": 0.4668,
+          "beta": 0.742,
           "ci95": [
-            0.0941,
-            0.9795
+            0.5175,
+            1.0104
           ],
-          "gamesWithCard": 176,
+          "gamesWithCard": 389,
           "staticRating": 3.9
         },
         {
-          "id": "SHADOW_STEP",
-          "simId": "SHADOW_STEP",
-          "beta": 0.4605,
+          "id": "FOOTWORK",
+          "simId": "FOOTWORK",
+          "beta": 0.7221,
           "ci95": [
-            -0.014,
-            0.9208
+            0.5407,
+            0.9091
           ],
-          "gamesWithCard": 63,
-          "staticRating": 7.8
+          "gamesWithCard": 516,
+          "staticRating": 10.1
         },
         {
-          "id": "GRAND_FINALE",
-          "simId": "GRAND_FINALE",
-          "beta": 0.3799,
+          "id": "DASH",
+          "simId": "DASH",
+          "beta": 0.6035,
           "ci95": [
-            -0.3186,
-            1.024
+            0.4227,
+            0.8016
           ],
-          "gamesWithCard": 70,
-          "staticRating": 12
-        },
-        {
-          "id": "POISONED_STAB",
-          "simId": "POISONED_STAB",
-          "beta": 0.3766,
-          "ci95": [
-            -0.0124,
-            0.8665
-          ],
-          "gamesWithCard": 292,
-          "staticRating": 3.3
-        },
-        {
-          "id": "CLOAK_AND_DAGGER",
-          "simId": "CLOAK_AND_DAGGER",
-          "beta": 0.3326,
-          "ci95": [
-            0.0754,
-            0.5698
-          ],
-          "gamesWithCard": 724,
-          "staticRating": 5.2
-        },
-        {
-          "id": "DODGE_AND_ROLL",
-          "simId": "DODGE_AND_ROLL",
-          "beta": 0.3152,
-          "ci95": [
-            -0.2302,
-            0.9687
-          ],
-          "gamesWithCard": 172,
-          "staticRating": 2
-        },
-        {
-          "id": "PREDATOR",
-          "simId": "PREDATOR",
-          "beta": 0.3101,
-          "ci95": [
-            0.0247,
-            0.6149
-          ],
-          "gamesWithCard": 533,
-          "staticRating": 4.125
+          "gamesWithCard": 447,
+          "staticRating": 5.85
         },
         {
           "id": "INFINITE_BLADES",
           "simId": "INFINITE_BLADES_CARD",
-          "beta": 0.3074,
+          "beta": 0.5003,
           "ci95": [
-            -0.2995,
-            0.7521
+            0.2764,
+            0.768
           ],
-          "gamesWithCard": 112,
+          "gamesWithCard": 267,
           "staticRating": 3.1
         },
         {
-          "id": "FLECHETTES",
-          "simId": "FLECHETTES",
-          "beta": 0.2923,
+          "id": "POISONED_STAB",
+          "simId": "POISONED_STAB",
+          "beta": 0.4963,
           "ci95": [
-            -0.2344,
-            0.8518
+            0.3473,
+            0.6637
           ],
-          "gamesWithCard": 71,
-          "staticRating": 3.35
+          "gamesWithCard": 939,
+          "staticRating": 3.3
         },
         {
-          "id": "PINPOINT",
-          "simId": "PINPOINT",
-          "beta": 0.291,
+          "id": "SUCKER_PUNCH",
+          "simId": "SUCKER_PUNCH",
+          "beta": 0.4645,
           "ci95": [
-            -0.4011,
-            0.9243
+            0.3487,
+            0.6574
           ],
-          "gamesWithCard": 97,
-          "staticRating": 3.35
+          "gamesWithCard": 1121,
+          "staticRating": 5.8
         },
         {
-          "id": "STRANGLE",
-          "simId": "STRANGLE",
-          "beta": 0.2887,
+          "id": "CLOAK_AND_DAGGER",
+          "simId": "CLOAK_AND_DAGGER",
+          "beta": 0.4043,
           "ci95": [
-            -0.2171,
-            0.6521
+            0.2437,
+            0.5877
           ],
-          "gamesWithCard": 277,
-          "staticRating": 5
+          "gamesWithCard": 940,
+          "staticRating": 5.2
         },
         {
-          "id": "DAGGER_THROW",
-          "simId": "DAGGER_THROW",
-          "beta": 0.2767,
+          "id": "DRAMATIC_ENTRANCE",
+          "simId": "DRAMATIC_ENTRANCE",
+          "beta": 0.3806,
           "ci95": [
-            0.0225,
-            0.5378
+            0.1215,
+            0.6399
           ],
-          "gamesWithCard": 652,
-          "staticRating": 4.95
+          "gamesWithCard": 43,
+          "staticRating": 10.5
         },
         {
-          "id": "ADRENALINE",
-          "simId": "ADRENALINE",
-          "beta": 0.2386,
+          "id": "FLASH_OF_STEEL",
+          "simId": "FLASH_OF_STEEL",
+          "beta": 0.3759,
           "ci95": [
-            -0.3009,
-            0.7403
+            0.0507,
+            0.6181
           ],
-          "gamesWithCard": 106,
-          "staticRating": 8.6
+          "gamesWithCard": 39,
+          "staticRating": 6.55
         },
         {
-          "id": "BLADE_DANCE",
-          "simId": "BLADE_DANCE",
-          "beta": 0.2235,
+          "id": "SLICE",
+          "simId": "SLICE",
+          "beta": 0.3526,
           "ci95": [
-            0.0015,
-            0.4755
+            0.2379,
+            0.5148
           ],
-          "gamesWithCard": 767,
-          "staticRating": 5.6
-        },
-        {
-          "id": "LEG_SWEEP",
-          "simId": "LEG_SWEEP",
-          "beta": 0.2088,
-          "ci95": [
-            -0.212,
-            0.6268
-          ],
-          "gamesWithCard": 229,
-          "staticRating": 4.75
+          "gamesWithCard": 1153,
+          "staticRating": 4.3
         },
         {
           "id": "ASSASSINATE",
           "simId": "ASSASSINATE",
-          "beta": 0.1897,
+          "beta": 0.3372,
           "ci95": [
-            -0.4523,
-            0.7081
+            0.04,
+            0.5983
           ],
-          "gamesWithCard": 93,
+          "gamesWithCard": 84,
           "staticRating": 8.3
         },
         {
-          "id": "HIDDEN_DAGGERS",
-          "simId": "HIDDEN_DAGGERS",
-          "beta": 0.162,
+          "id": "ECHOING_SLASH",
+          "simId": "ECHOING_SLASH",
+          "beta": 0.3078,
           "ci95": [
-            -0.2082,
-            0.5257
+            0.0348,
+            0.5569
           ],
-          "gamesWithCard": 273,
-          "staticRating": 6
+          "gamesWithCard": 140,
+          "staticRating": 10.2
+        },
+        {
+          "id": "THRUMMING_HATCHET",
+          "simId": "THRUMMING_HATCHET",
+          "beta": 0.2651,
+          "ci95": [
+            0.0082,
+            0.5864
+          ],
+          "gamesWithCard": 32,
+          "staticRating": 6.65
+        },
+        {
+          "id": "BLUR",
+          "simId": "BLUR_CARD",
+          "beta": 0.2577,
+          "ci95": [
+            -0.0893,
+            0.5681
+          ],
+          "gamesWithCard": 100,
+          "staticRating": 3.1
+        },
+        {
+          "id": "PROWESS",
+          "simId": "PROWESS",
+          "beta": 0.2541,
+          "ci95": [
+            -0.0429,
+            0.5582
+          ],
+          "gamesWithCard": 53,
+          "staticRating": 11.1
+        },
+        {
+          "id": "STRIKE_SILENT",
+          "simId": "STRIKE_SILENT",
+          "beta": 0.2478,
+          "ci95": [
+            -0.0355,
+            0.5194
+          ],
+          "gamesWithCard": 3025,
+          "staticRating": 3.3
+        },
+        {
+          "id": "CLUMSY",
+          "simId": "CLUMSY",
+          "beta": 0.2421,
+          "ci95": [
+            -0.1262,
+            0.5639
+          ],
+          "gamesWithCard": 48,
+          "staticRating": -6
+        },
+        {
+          "id": "PRECISE_CUT",
+          "simId": "PRECISE_CUT",
+          "beta": 0.2388,
+          "ci95": [
+            -0.0307,
+            0.4333
+          ],
+          "gamesWithCard": 293,
+          "staticRating": 8.75
+        },
+        {
+          "id": "PREDATOR",
+          "simId": "PREDATOR",
+          "beta": 0.2161,
+          "ci95": [
+            0.06,
+            0.4014
+          ],
+          "gamesWithCard": 833,
+          "staticRating": 4.125
+        },
+        {
+          "id": "ADRENALINE",
+          "simId": "ADRENALINE",
+          "beta": 0.2045,
+          "ci95": [
+            -0.0814,
+            0.5063
+          ],
+          "gamesWithCard": 97,
+          "staticRating": 8.6
         },
         {
           "id": "DAGGER_SPRAY",
           "simId": "DAGGER_SPRAY",
-          "beta": 0.15,
+          "beta": 0.2025,
           "ci95": [
-            -0.1952,
-            0.5354
+            0.0058,
+            0.4134
           ],
-          "gamesWithCard": 383,
+          "gamesWithCard": 644,
           "staticRating": 3.6
         },
         {
-          "id": "BACKFLIP",
-          "simId": "BACKFLIP",
-          "beta": 0.1303,
+          "id": "ULTIMATE_STRIKE",
+          "simId": "ULTIMATE_STRIKE",
+          "beta": 0.163,
           "ci95": [
-            -0.1122,
-            0.3937
+            -0.1916,
+            0.5168
           ],
-          "gamesWithCard": 779,
-          "staticRating": 6.9
+          "gamesWithCard": 44,
+          "staticRating": 8.3
         },
         {
-          "id": "PANIC_BUTTON",
-          "simId": "PANIC_BUTTON",
-          "beta": 0.0995,
+          "id": "WELL_LAID_PLANS",
+          "simId": "WELL_LAID_PLANS",
+          "beta": 0.1475,
           "ci95": [
-            -0.4273,
-            0.6437
+            -0.1994,
+            0.444
           ],
-          "gamesWithCard": 34,
+          "gamesWithCard": 107,
+          "staticRating": 3.1
+        },
+        {
+          "id": "SEEKER_STRIKE",
+          "simId": "SEEKER_STRIKE",
+          "beta": 0.1463,
+          "ci95": [
+            -0.2263,
+            0.4313
+          ],
+          "gamesWithCard": 48,
           "staticRating": 12
         },
         {
-          "id": "HAND_TRICK",
-          "simId": "HAND_TRICK",
-          "beta": 0.092,
+          "id": "ESCAPE_PLAN",
+          "simId": "ESCAPE_PLAN",
+          "beta": 0.1227,
           "ci95": [
-            -0.2941,
-            0.5111
+            -0.1279,
+            0.4304
           ],
-          "gamesWithCard": 172,
-          "staticRating": 4.1
+          "gamesWithCard": 120,
+          "staticRating": 3.1
+        },
+        {
+          "id": "AFTERIMAGE",
+          "simId": "AFTERIMAGE_CARD",
+          "beta": 0.1226,
+          "ci95": [
+            -0.17,
+            0.4398
+          ],
+          "gamesWithCard": 35,
+          "staticRating": 3.7
+        },
+        {
+          "id": "BLADE_DANCE",
+          "simId": "BLADE_DANCE",
+          "beta": 0.1156,
+          "ci95": [
+            -0.0559,
+            0.2914
+          ],
+          "gamesWithCard": 829,
+          "staticRating": 5.6
+        },
+        {
+          "id": "HIDDEN_DAGGERS",
+          "simId": "HIDDEN_DAGGERS",
+          "beta": 0.1137,
+          "ci95": [
+            -0.119,
+            0.3717
+          ],
+          "gamesWithCard": 271,
+          "staticRating": 6
+        },
+        {
+          "id": "DAGGER_THROW",
+          "simId": "DAGGER_THROW",
+          "beta": 0.1116,
+          "ci95": [
+            -0.0675,
+            0.281
+          ],
+          "gamesWithCard": 796,
+          "staticRating": 4.95
+        },
+        {
+          "id": "FINISHER",
+          "simId": "FINISHER",
+          "beta": 0.1097,
+          "ci95": [
+            -0.1821,
+            0.4571
+          ],
+          "gamesWithCard": 120,
+          "staticRating": 3.9
+        },
+        {
+          "id": "LEG_SWEEP",
+          "simId": "LEG_SWEEP",
+          "beta": 0.103,
+          "ci95": [
+            -0.1172,
+            0.4214
+          ],
+          "gamesWithCard": 246,
+          "staticRating": 4.75
+        },
+        {
+          "id": "ABRASIVE",
+          "simId": "ABRASIVE",
+          "beta": 0.0995,
+          "ci95": [
+            -0.1307,
+            0.3448
+          ],
+          "gamesWithCard": 34,
+          "staticRating": 3.2
         },
         {
           "id": "OUTBREAK",
           "simId": "OUTBREAK_CARD",
-          "beta": 0.091,
+          "beta": 0.078,
           "ci95": [
-            -0.4109,
-            0.6148
+            -0.2011,
+            0.3112
           ],
-          "gamesWithCard": 82,
-          "staticRating": 3.1
-        },
-        {
-          "id": "FLICK_FLACK",
-          "simId": "FLICK_FLACK",
-          "beta": 0.0897,
-          "ci95": [
-            -0.2006,
-            0.3656
-          ],
-          "gamesWithCard": 820,
-          "staticRating": 5.4
-        },
-        {
-          "id": "MEMENTO_MORI",
-          "simId": "MEMENTO_MORI",
-          "beta": 0.0825,
-          "ci95": [
-            -0.2757,
-            0.4671
-          ],
-          "gamesWithCard": 300,
-          "staticRating": 5.55
-        },
-        {
-          "id": "NEUTRALIZE",
-          "simId": "NEUTRALIZE",
-          "beta": 0.0729,
-          "ci95": [
-            0,
-            0.2047
-          ],
-          "gamesWithCard": 2167,
-          "staticRating": 4.05
-        },
-        {
-          "id": "DEFLECT",
-          "simId": "DEFLECT",
-          "beta": 0.0694,
-          "ci95": [
-            -0.3751,
-            0.4259
-          ],
-          "gamesWithCard": 289,
-          "staticRating": 3
-        },
-        {
-          "id": "PHANTOM_BLADES",
-          "simId": "PHANTOM_BLADES_CARD",
-          "beta": 0.0624,
-          "ci95": [
-            -0.4943,
-            0.5828
-          ],
-          "gamesWithCard": 89,
+          "gamesWithCard": 182,
           "staticRating": 3.1
         },
         {
           "id": "POUNCE",
           "simId": "POUNCE",
-          "beta": 0.054,
+          "beta": 0.0567,
           "ci95": [
-            -0.3363,
-            0.485
+            -0.1716,
+            0.3272
           ],
-          "gamesWithCard": 240,
+          "gamesWithCard": 207,
           "staticRating": 4.45
         },
         {
-          "id": "ULTIMATE_STRIKE",
-          "simId": "ULTIMATE_STRIKE",
-          "beta": 0.0271,
+          "id": "GRAND_FINALE",
+          "simId": "GRAND_FINALE",
+          "beta": 0.0456,
           "ci95": [
-            -0.5535,
-            0.6614
+            -0.2787,
+            0.4047
           ],
-          "gamesWithCard": 34,
-          "staticRating": 8.3
+          "gamesWithCard": 97,
+          "staticRating": 12
         },
         {
           "id": "SURVIVOR",
           "simId": "SURVIVOR",
-          "beta": 0.0198,
+          "beta": 0.0372,
           "ci95": [
-            0,
-            0.0702
+            -0.1315,
+            0.1794
           ],
-          "gamesWithCard": 2330,
+          "gamesWithCard": 3018,
           "staticRating": 4
-        },
-        {
-          "id": "PRECISE_CUT",
-          "simId": "PRECISE_CUT",
-          "beta": 0.0167,
-          "ci95": [
-            -0.3483,
-            0.4079
-          ],
-          "gamesWithCard": 375,
-          "staticRating": 8.75
-        },
-        {
-          "id": "NEOWS_FURY",
-          "simId": "NEOWS_FURY",
-          "beta": 0,
-          "ci95": [
-            0,
-            0
-          ],
-          "gamesWithCard": 177,
-          "staticRating": 8.9
-        },
-        {
-          "id": "BOUNCING_FLASK",
-          "simId": "BOUNCING_FLASK",
-          "beta": -0.0302,
-          "ci95": [
-            -0.648,
-            0.5978
-          ],
-          "gamesWithCard": 42,
-          "staticRating": 0.6
-        },
-        {
-          "id": "ACCURACY",
-          "simId": "ACCURACY_CARD",
-          "beta": -0.0367,
-          "ci95": [
-            -0.5611,
-            0.5075
-          ],
-          "gamesWithCard": 67,
-          "staticRating": 3.1
-        },
-        {
-          "id": "BACKSTAB",
-          "simId": "BACKSTAB",
-          "beta": -0.0415,
-          "ci95": [
-            -0.4192,
-            0.3351
-          ],
-          "gamesWithCard": 375,
-          "staticRating": 6.65
-        },
-        {
-          "id": "UNTOUCHABLE",
-          "simId": "UNTOUCHABLE",
-          "beta": -0.0474,
-          "ci95": [
-            -0.4945,
-            0.2864
-          ],
-          "gamesWithCard": 151,
-          "staticRating": 1.5
         },
         {
           "id": "HAZE",
           "simId": "HAZE",
-          "beta": -0.0518,
+          "beta": 0.0223,
           "ci95": [
-            -0.6401,
-            0.5489
+            -0.2348,
+            0.365
           ],
-          "gamesWithCard": 49,
+          "gamesWithCard": 82,
           "staticRating": 0.6
         },
         {
-          "id": "BLUR",
-          "simId": "BLUR_CARD",
-          "beta": -0.0576,
+          "id": "RICOCHET",
+          "simId": "RICOCHET",
+          "beta": 0.0132,
           "ci95": [
-            -0.5055,
-            0.4364
+            -0.3142,
+            0.2641
           ],
-          "gamesWithCard": 102,
-          "staticRating": 3.1
+          "gamesWithCard": 216,
+          "staticRating": 0.825
+        },
+        {
+          "id": "NEOWS_FURY",
+          "simId": "NEOWS_FURY",
+          "beta": 0.0029,
+          "ci95": [
+            0,
+            0.0103
+          ],
+          "gamesWithCard": 211,
+          "staticRating": 8.9
+        },
+        {
+          "id": "DEFEND_SILENT",
+          "simId": "DEFEND_SILENT",
+          "beta": -0.0175,
+          "ci95": [
+            -0.246,
+            0.2135
+          ],
+          "gamesWithCard": 3025,
+          "staticRating": 2.5
+        },
+        {
+          "id": "BACKFLIP",
+          "simId": "BACKFLIP",
+          "beta": -0.0176,
+          "ci95": [
+            -0.1896,
+            0.1689
+          ],
+          "gamesWithCard": 695,
+          "staticRating": 6.9
+        },
+        {
+          "id": "DEFLECT",
+          "simId": "DEFLECT",
+          "beta": -0.0289,
+          "ci95": [
+            -0.2361,
+            0.1784
+          ],
+          "gamesWithCard": 550,
+          "staticRating": 3
+        },
+        {
+          "id": "BACKSTAB",
+          "simId": "BACKSTAB",
+          "beta": -0.03,
+          "ci95": [
+            -0.2605,
+            0.2452
+          ],
+          "gamesWithCard": 219,
+          "staticRating": 6.65
         },
         {
           "id": "TACTICIAN",
           "simId": "TACTICIAN",
-          "beta": -0.0583,
+          "beta": -0.0505,
           "ci95": [
-            -0.6018,
-            0.5168
+            -0.3943,
+            0.2547
           ],
-          "gamesWithCard": 53,
+          "gamesWithCard": 89,
           "staticRating": 1.6
         },
         {
-          "id": "SKEWER",
-          "simId": "SKEWER",
-          "beta": -0.0801,
+          "id": "PANIC_BUTTON",
+          "simId": "PANIC_BUTTON",
+          "beta": -0.0567,
           "ci95": [
-            -0.4487,
-            0.3568
+            -0.3014,
+            0.2118
           ],
-          "gamesWithCard": 149,
-          "staticRating": 3.8
+          "gamesWithCard": 40,
+          "staticRating": 12
         },
         {
-          "id": "CLUMSY",
-          "simId": "CLUMSY",
-          "beta": -0.0925,
+          "id": "SPEEDSTER",
+          "simId": "SPEEDSTER_CARD",
+          "beta": -0.0576,
           "ci95": [
-            -0.4214,
-            0.4155
+            -0.3116,
+            0.2712
           ],
-          "gamesWithCard": 48,
-          "staticRating": -6
+          "gamesWithCard": 94,
+          "staticRating": 1.85
+        },
+        {
+          "id": "STRANGLE",
+          "simId": "STRANGLE",
+          "beta": -0.0614,
+          "ci95": [
+            -0.3274,
+            0.1822
+          ],
+          "gamesWithCard": 313,
+          "staticRating": 5
+        },
+        {
+          "id": "ACROBATICS",
+          "simId": "ACROBATICS",
+          "beta": -0.0697,
+          "ci95": [
+            -0.3093,
+            0.1644
+          ],
+          "gamesWithCard": 140,
+          "staticRating": 7.2
+        },
+        {
+          "id": "MEMENTO_MORI",
+          "simId": "MEMENTO_MORI",
+          "beta": -0.074,
+          "ci95": [
+            -0.3087,
+            0.1944
+          ],
+          "gamesWithCard": 295,
+          "staticRating": 5.55
+        },
+        {
+          "id": "PINPOINT",
+          "simId": "PINPOINT",
+          "beta": -0.0881,
+          "ci95": [
+            -0.3535,
+            0.1375
+          ],
+          "gamesWithCard": 269,
+          "staticRating": 3.35
         },
         {
           "id": "SCARE",
           "simId": "SCARE",
-          "beta": -0.145,
+          "beta": -0.0892,
           "ci95": [
-            -0.7321,
-            0.3409
+            -0.3624,
+            0.2188
           ],
-          "gamesWithCard": 64,
+          "gamesWithCard": 104,
           "staticRating": 2
         },
         {
-          "id": "SNAKEBITE",
-          "simId": "SNAKEBITE",
-          "beta": -0.1882,
+          "id": "LEADING_STRIKE",
+          "simId": "LEADING_STRIKE",
+          "beta": -0.0924,
           "ci95": [
-            -0.6689,
-            0.4317
+            -0.2793,
+            0.0931
           ],
-          "gamesWithCard": 160,
-          "staticRating": 0
+          "gamesWithCard": 847,
+          "staticRating": 1.65
+        },
+        {
+          "id": "SKEWER",
+          "simId": "SKEWER",
+          "beta": -0.1018,
+          "ci95": [
+            -0.3892,
+            0.2628
+          ],
+          "gamesWithCard": 119,
+          "staticRating": 3.8
+        },
+        {
+          "id": "ACCURACY",
+          "simId": "ACCURACY_CARD",
+          "beta": -0.1177,
+          "ci95": [
+            -0.3931,
+            0.2012
+          ],
+          "gamesWithCard": 127,
+          "staticRating": 3.1
+        },
+        {
+          "id": "HAND_TRICK",
+          "simId": "HAND_TRICK",
+          "beta": -0.1184,
+          "ci95": [
+            -0.4086,
+            0.1722
+          ],
+          "gamesWithCard": 217,
+          "staticRating": 4.1
+        },
+        {
+          "id": "NEUTRALIZE",
+          "simId": "NEUTRALIZE",
+          "beta": -0.1227,
+          "ci95": [
+            -0.3167,
+            0.0137
+          ],
+          "gamesWithCard": 2823,
+          "staticRating": 4.05
+        },
+        {
+          "id": "CALCULATED_GAMBLE",
+          "simId": "CALCULATED_GAMBLE",
+          "beta": -0.1299,
+          "ci95": [
+            -0.3804,
+            0.1124
+          ],
+          "gamesWithCard": 65,
+          "staticRating": 0.6
+        },
+        {
+          "id": "REFLEX",
+          "simId": "REFLEX",
+          "beta": -0.136,
+          "ci95": [
+            -0.443,
+            0.1684
+          ],
+          "gamesWithCard": 100,
+          "staticRating": 2.067
+        },
+        {
+          "id": "FLICK_FLACK",
+          "simId": "FLICK_FLACK",
+          "beta": -0.1372,
+          "ci95": [
+            -0.3115,
+            0.0436
+          ],
+          "gamesWithCard": 710,
+          "staticRating": 5.4
         },
         {
           "id": "BLADE_OF_INK",
           "simId": "BLADE_OF_INK",
-          "beta": -0.2078,
+          "beta": -0.149,
           "ci95": [
-            -0.5776,
-            0.2778
+            -0.3936,
+            0.136
           ],
-          "gamesWithCard": 48,
+          "gamesWithCard": 40,
           "staticRating": 5.6
+        },
+        {
+          "id": "SNAKEBITE",
+          "simId": "SNAKEBITE",
+          "beta": -0.1522,
+          "ci95": [
+            -0.4286,
+            0.0966
+          ],
+          "gamesWithCard": 207,
+          "staticRating": 0
         },
         {
           "id": "RESTLESSNESS",
           "simId": "RESTLESSNESS",
-          "beta": -0.2528,
+          "beta": -0.1585,
           "ci95": [
-            -0.5734,
-            0.0777
+            -0.4311,
+            0.0681
           ],
-          "gamesWithCard": 46,
+          "gamesWithCard": 47,
           "staticRating": 12
         },
         {
-          "id": "SEEKER_STRIKE",
-          "simId": "SEEKER_STRIKE",
-          "beta": -0.2971,
+          "id": "DODGE_AND_ROLL",
+          "simId": "DODGE_AND_ROLL",
+          "beta": -0.1922,
           "ci95": [
-            -0.6401,
-            0.1018
+            -0.3836,
+            -0.0044
           ],
-          "gamesWithCard": 39,
-          "staticRating": 12
+          "gamesWithCard": 615,
+          "staticRating": 2
+        },
+        {
+          "id": "UNTOUCHABLE",
+          "simId": "UNTOUCHABLE",
+          "beta": -0.1991,
+          "ci95": [
+            -0.4745,
+            0.0916
+          ],
+          "gamesWithCard": 250,
+          "staticRating": 1.5
+        },
+        {
+          "id": "BUBBLE_BUBBLE",
+          "simId": "BUBBLE_BUBBLE",
+          "beta": -0.2175,
+          "ci95": [
+            -0.484,
+            0.0711
+          ],
+          "gamesWithCard": 70,
+          "staticRating": 0.6
+        },
+        {
+          "id": "PREPARED",
+          "simId": "PREPARED",
+          "beta": -0.2233,
+          "ci95": [
+            -0.5097,
+            0.0282
+          ],
+          "gamesWithCard": 315,
+          "staticRating": 3.2
+        },
+        {
+          "id": "POOR_SLEEP",
+          "simId": "POOR_SLEEP",
+          "beta": -0.2346,
+          "ci95": [
+            -0.6077,
+            0.0909
+          ],
+          "gamesWithCard": 101,
+          "staticRating": -6
+        },
+        {
+          "id": "SHADOW_STEP",
+          "simId": "SHADOW_STEP",
+          "beta": -0.2387,
+          "ci95": [
+            -0.5595,
+            0.0673
+          ],
+          "gamesWithCard": 74,
+          "staticRating": 7.8
+        },
+        {
+          "id": "BOUNCING_FLASK",
+          "simId": "BOUNCING_FLASK",
+          "beta": -0.2542,
+          "ci95": [
+            -0.5508,
+            0.0277
+          ],
+          "gamesWithCard": 66,
+          "staticRating": 0.6
+        },
+        {
+          "id": "TOOLS_OF_THE_TRADE",
+          "simId": "TOOLS_OF_THE_TRADE",
+          "beta": -0.2576,
+          "ci95": [
+            -0.4429,
+            -0.0661
+          ],
+          "gamesWithCard": 30,
+          "staticRating": 3.7
+        },
+        {
+          "id": "FLECHETTES",
+          "simId": "FLECHETTES",
+          "beta": -0.2841,
+          "ci95": [
+            -0.5499,
+            -0.0455
+          ],
+          "gamesWithCard": 262,
+          "staticRating": 3.35
+        },
+        {
+          "id": "PHANTOM_BLADES",
+          "simId": "PHANTOM_BLADES_CARD",
+          "beta": -0.2878,
+          "ci95": [
+            -0.5543,
+            0.0123
+          ],
+          "gamesWithCard": 147,
+          "staticRating": 3.1
         },
         {
           "id": "DEADLY_POISON",
           "simId": "DEADLY_POISON",
-          "beta": -0.332,
+          "beta": -0.294,
           "ci95": [
-            -0.8686,
-            0.1577
+            -0.589,
+            0.0145
           ],
-          "gamesWithCard": 122,
+          "gamesWithCard": 203,
           "staticRating": 0
         },
         {
           "id": "MIRAGE",
           "simId": "MIRAGE",
-          "beta": -0.3349,
+          "beta": -0.3027,
           "ci95": [
-            -0.6495,
-            0.0201
-          ],
-          "gamesWithCard": 42,
-          "staticRating": -0.4
-        },
-        {
-          "id": "PREPARED",
-          "simId": "PREPARED",
-          "beta": -0.3354,
-          "ci95": [
-            -0.8412,
-            0.1862
-          ],
-          "gamesWithCard": 229,
-          "staticRating": 3.2
-        },
-        {
-          "id": "ESCAPE_PLAN",
-          "simId": "ESCAPE_PLAN",
-          "beta": -0.3485,
-          "ci95": [
-            -0.7778,
-            0.0645
-          ],
-          "gamesWithCard": 86,
-          "staticRating": 3.1
-        },
-        {
-          "id": "STRIKE_SILENT",
-          "simId": "STRIKE_SILENT",
-          "beta": -0.353,
-          "ci95": [
-            -1.0085,
-            0.3302
-          ],
-          "gamesWithCard": 2332,
-          "staticRating": 3.3
-        },
-        {
-          "id": "DEFEND_SILENT",
-          "simId": "DEFEND_SILENT",
-          "beta": -0.3643,
-          "ci95": [
-            -0.7158,
-            -0.0584
-          ],
-          "gamesWithCard": 2332,
-          "staticRating": 2.5
-        },
-        {
-          "id": "POOR_SLEEP",
-          "simId": "POOR_SLEEP",
-          "beta": -0.4,
-          "ci95": [
-            -0.8284,
-            0.0434
-          ],
-          "gamesWithCard": 98,
-          "staticRating": -6
-        },
-        {
-          "id": "PIERCING_WAIL",
-          "simId": "PIERCING_WAIL",
-          "beta": -0.413,
-          "ci95": [
-            -0.8239,
-            0.0294
-          ],
-          "gamesWithCard": 150,
-          "staticRating": -1
-        },
-        {
-          "id": "FINISHER",
-          "simId": "FINISHER",
-          "beta": -0.4373,
-          "ci95": [
-            -0.9067,
-            0.118
-          ],
-          "gamesWithCard": 142,
-          "staticRating": 3.9
-        },
-        {
-          "id": "WELL_LAID_PLANS",
-          "simId": "WELL_LAID_PLANS",
-          "beta": -0.4461,
-          "ci95": [
-            -0.9617,
+            -0.5906,
             0.0475
           ],
-          "gamesWithCard": 85,
-          "staticRating": 3.1
-        },
-        {
-          "id": "REFLEX",
-          "simId": "REFLEX",
-          "beta": -0.484,
-          "ci95": [
-            -0.9683,
-            0.0049
-          ],
-          "gamesWithCard": 74,
-          "staticRating": 2.067
-        },
-        {
-          "id": "RICOCHET",
-          "simId": "RICOCHET",
-          "beta": -0.4935,
-          "ci95": [
-            -0.977,
-            -0.0222
-          ],
-          "gamesWithCard": 160,
-          "staticRating": 0.825
-        },
-        {
-          "id": "ANTICIPATE",
-          "simId": "ANTICIPATE",
-          "beta": -0.6056,
-          "ci95": [
-            -0.9458,
-            -0.3746
-          ],
-          "gamesWithCard": 840,
-          "staticRating": 8
+          "gamesWithCard": 84,
+          "staticRating": -0.4
         },
         {
           "id": "EXPOSE",
           "simId": "EXPOSE",
-          "beta": -0.6473,
+          "beta": -0.3464,
           "ci95": [
-            -1.0511,
-            -0.1974
+            -0.6029,
+            -0.023
           ],
-          "gamesWithCard": 60,
+          "gamesWithCard": 73,
           "staticRating": 0.6
         },
         {
-          "id": "EXPERTISE",
-          "simId": "EXPERTISE",
-          "beta": -0.655,
+          "id": "PIERCING_WAIL",
+          "simId": "PIERCING_WAIL",
+          "beta": -0.4071,
           "ci95": [
-            -1.2045,
-            -0.2161
+            -0.6879,
+            -0.1247
           ],
-          "gamesWithCard": 241,
-          "staticRating": 7.2
-        },
-        {
-          "id": "CALCULATED_GAMBLE",
-          "simId": "CALCULATED_GAMBLE",
-          "beta": -0.7263,
-          "ci95": [
-            -0.952,
-            -0.431
-          ],
-          "gamesWithCard": 57,
-          "staticRating": 0.6
-        },
-        {
-          "id": "SPEEDSTER",
-          "simId": "SPEEDSTER_CARD",
-          "beta": -0.752,
-          "ci95": [
-            -1.1257,
-            -0.3293
-          ],
-          "gamesWithCard": 66,
-          "staticRating": 1.85
-        },
-        {
-          "id": "BUBBLE_BUBBLE",
-          "simId": "BUBBLE_BUBBLE",
-          "beta": -0.7565,
-          "ci95": [
-            -1.0938,
-            -0.3567
-          ],
-          "gamesWithCard": 52,
-          "staticRating": 0.6
+          "gamesWithCard": 194,
+          "staticRating": -1
         },
         {
           "id": "SPOILS_MAP",
           "simId": "SPOILS_MAP",
-          "beta": -0.8196,
+          "beta": -0.4193,
           "ci95": [
-            -1.1613,
-            -0.4376
+            -0.6979,
+            -0.1606
           ],
-          "gamesWithCard": 119,
+          "gamesWithCard": 155,
           "staticRating": -6
         },
         {
-          "id": "ACROBATICS",
-          "simId": "ACROBATICS",
-          "beta": -0.8757,
+          "id": "ANTICIPATE",
+          "simId": "ANTICIPATE",
+          "beta": -0.4453,
           "ci95": [
-            -1.4167,
-            -0.386
+            -0.6987,
+            -0.2512
           ],
-          "gamesWithCard": 249,
+          "gamesWithCard": 458,
+          "staticRating": 8
+        },
+        {
+          "id": "EXPERTISE",
+          "simId": "EXPERTISE",
+          "beta": -0.4999,
+          "ci95": [
+            -0.8187,
+            -0.2007
+          ],
+          "gamesWithCard": 142,
           "staticRating": 7.2
         }
       ]
     }
   ],
-  "keepTest": null
+  "keepTest": {
+    "adr": "ADR-053",
+    "alpha": 0.05,
+    "primary": {
+      "id": "pooled-keepvals-vs-curvals-val",
+      "contentSha256": "1a93b9169555e873bb0adcfa4a760858dd37f9b29259c7faf4070098a5226a23",
+      "pairedSeeds": 10000,
+      "bothCompleted": 9687,
+      "excludedNotCompleted": 313,
+      "notFinished": {
+        "a": 229,
+        "b": 210
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 6742,
+          "rate": 0.6959843088675545,
+          "wilson95": [
+            0.686747986675451,
+            0.7050652543247861
+          ]
+        },
+        "b": {
+          "games": 6602,
+          "rate": 0.6815319500361309,
+          "wilson95": [
+            0.6721840820165303,
+            0.6907358991785797
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 972,
+          "b_only": 832,
+          "both": 5770,
+          "mcnemar_p": 0.0010599975693945671,
+          "neither": 2113
+        }
+      },
+      "reachedAct3": {
+        "a": {
+          "games": 882,
+          "rate": 0.09104986063796841,
+          "wilson95": [
+            0.08548201804440236,
+            0.0969419196840999
+          ]
+        },
+        "b": {
+          "games": 918,
+          "rate": 0.09476618148033447,
+          "wilson95": [
+            0.08909318315756219,
+            0.10076044994940124
+          ]
+        },
+        "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+        "pairedTable": {
+          "a_only": 376,
+          "b_only": 412,
+          "both": 506,
+          "mcnemar_p": 0.2124355078183531,
+          "neither": 8393
+        }
+      },
+      "wins": {
+        "a": 88,
+        "b": 88,
+        "pairedTable": {
+          "a_only": 53,
+          "b_only": 53,
+          "both": 35,
+          "mcnemar_p": 1,
+          "neither": 9546
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          0.08371786930938376,
+          0.3806131929389904
+        ],
+        "meanAMinusB": 0.2333023639929803,
+        "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+      },
+      "clusteredDifference": {
+        "ci95": [
+          0.005995451726276618,
+          0.022870169182038907
+        ],
+        "definition": "pooled difference (A minus B) in the share that got past the Act-1 boss, with a bootstrap interval that resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
+        "meanAMinusB": 0.014452358831423557,
+        "method": "percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "members": [
+        {
+          "character": "ironclad",
+          "a": {
+            "batchId": "rules_v3-keepvals-ironclad-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "0c90943b1e9dd7ee84d0539dfebc09206c1f558cfdfbab7c1cc2dfdd63291db2",
+            "wins": 37
+          },
+          "b": {
+            "batchId": "rules_v3-curvals-ironclad-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "a598271c547c7ad3ad38de64297b3325ab89561daddfd7437448c03d94b3d7a1",
+            "wins": 40
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1901,
+          "reachedAct2": {
+            "a": 0.8174644923724356,
+            "b": 0.8516570226196739,
+            "pairedTable": {
+              "a_only": 99,
+              "b_only": 164,
+              "both": 1455,
+              "mcnemar_p": 0.0000733853175975743,
+              "neither": 183
+            }
+          },
+          "meanFloorDifference": -0.5597054182009469
+        },
+        {
+          "character": "silent",
+          "a": {
+            "batchId": "rules_v3-keepvals-silent-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "91e667fc8584724a7b1699bac9caf605674ee66ecaedd1d7a93c115f759ba0ce",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "rules_v3-curvals-silent-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "84b3d153b03717a6dbad7dcbfc96dc8ffb1a5d64851e69c3bb15cbed1c867b5c",
+            "wins": 0
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1985,
+          "reachedAct2": {
+            "a": 0.36675062972292194,
+            "b": 0.35113350125944587,
+            "pairedTable": {
+              "a_only": 263,
+              "b_only": 232,
+              "both": 465,
+              "mcnemar_p": 0.1774702535388741,
+              "neither": 1025
+            }
+          },
+          "meanFloorDifference": -0.040806045340050376
+        },
+        {
+          "character": "regent",
+          "a": {
+            "batchId": "rules_v3-keepvals-regent-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "341c9b98b72af17a92377906d7db85b6089784a9ed8ad19f8f8b3fb71e51d2d0",
+            "wins": 6
+          },
+          "b": {
+            "batchId": "rules_v3-curvals-regent-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "5ba62231d1c1ec1da21abc722b7809c36bec6bc1620eb66f58a52d1a0b8f9490",
+            "wins": 3
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1937,
+          "reachedAct2": {
+            "a": 0.6628807434176561,
+            "b": 0.6236448115642746,
+            "pairedTable": {
+              "a_only": 248,
+              "b_only": 172,
+              "both": 1036,
+              "mcnemar_p": 0.00024375941991483331,
+              "neither": 481
+            }
+          },
+          "meanFloorDifference": 0.7263810015487868
+        },
+        {
+          "character": "necrobinder",
+          "a": {
+            "batchId": "rules_v3-keepvals-necrobinder-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "132c4e7ea50fcfe1f7e89db8ee64554074dec5e899274240ee05a533ee20a578",
+            "wins": 0
+          },
+          "b": {
+            "batchId": "rules_v3-curvals-necrobinder-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "6871bb6a91d6e2dabe30eec7466ab6f18ba96fe9b44af5d7be337711cce49d18",
+            "wins": 1
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1945,
+          "reachedAct2": {
+            "a": 0.7892030848329049,
+            "b": 0.7506426735218509,
+            "pairedTable": {
+              "a_only": 235,
+              "b_only": 160,
+              "both": 1300,
+              "mcnemar_p": 0.00018877839971331295,
+              "neither": 250
+            }
+          },
+          "meanFloorDifference": 0.7784061696658098
+        },
+        {
+          "character": "defect",
+          "a": {
+            "batchId": "rules_v3-keepvals-defect-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "f8f3ab5120cd100c04346414f0294d61e88bb0ed35f589daa4af23da35490b79",
+            "wins": 45
+          },
+          "b": {
+            "batchId": "rules_v3-curvals-defect-a0-veteran-keeprelics-val-n2000",
+            "contentSha256": "eca59a07eb88332c58229b6e44bb2d60692674c8d924c5cb77c440482ad37eaa",
+            "wins": 44
+          },
+          "pairedSeeds": 2000,
+          "bothCompleted": 1919,
+          "reachedAct2": {
+            "a": 0.8551328817092235,
+            "b": 0.8431474726420011,
+            "pairedTable": {
+              "a_only": 127,
+              "b_only": 104,
+              "both": 1514,
+              "mcnemar_p": 0.1475989121085985,
+              "neither": 174
+            }
+          },
+          "meanFloorDifference": 0.2522146951537259
+        }
+      ]
+    },
+    "verdict": "gain",
+    "adopted": [
+      "silent",
+      "regent",
+      "necrobinder",
+      "defect"
+    ],
+    "classes": {
+      "ironclad": {
+        "new": {
+          "file": "experiments/cardvalue/ironclad-a0-keep-v1.json",
+          "sha256": "dd0d0616020329354c20764392b73bb6ac6d529f03a8ce0a696940903960efa0",
+          "games": 4275,
+          "bossFights": 4275,
+          "passRate": 0.6465
+        },
+        "current": {
+          "file": "experiments/cardvalue/ironclad-a0-v2.json",
+          "sha256": "f6388301c12fe6ba7411001e527468774cc31f151d4fb5a02fbc99119cf6b421"
+        },
+        "own": {
+          "aOnly": 99,
+          "bOnly": 164,
+          "p": 0.0000733853175975743
+        },
+        "currentSignificantlyAhead": true,
+        "adopted": false
+      },
+      "silent": {
+        "new": {
+          "file": "experiments/cardvalue/silent-a0-keep-v1.json",
+          "sha256": "a8d7b3519d0284538fe8f92c68c62579b7727a4c27781399d57f9955bbc75fe0",
+          "games": 3025,
+          "bossFights": 3025,
+          "passRate": 0.3021
+        },
+        "current": {
+          "file": "experiments/cardvalue/silent-a0-v1.json",
+          "sha256": "fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859"
+        },
+        "own": {
+          "aOnly": 263,
+          "bOnly": 232,
+          "p": 0.1774702535388741
+        },
+        "currentSignificantlyAhead": false,
+        "adopted": true
+      },
+      "regent": {
+        "new": {
+          "file": "experiments/cardvalue/regent-a0-keep-v1.json",
+          "sha256": "70bc58ef9dddb33ddf6a07ece9ae79363f4210b18bb1dd5043d1f6e552417097",
+          "games": 3543,
+          "bossFights": 3543,
+          "passRate": 0.4894
+        },
+        "current": {
+          "file": "experiments/cardvalue/regent-a0-v1.json",
+          "sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db"
+        },
+        "own": {
+          "aOnly": 248,
+          "bOnly": 172,
+          "p": 0.00024375941991483331
+        },
+        "currentSignificantlyAhead": false,
+        "adopted": true
+      },
+      "necrobinder": {
+        "new": {
+          "file": "experiments/cardvalue/necrobinder-a0-keep-v1.json",
+          "sha256": "a24d80f77baf2881501ee6f0ba71359f717162c3e1e53feaf17799c06c621607",
+          "games": 3829,
+          "bossFights": 3829,
+          "passRate": 0.6226
+        },
+        "current": {
+          "file": "experiments/cardvalue/necrobinder-a0-v1.json",
+          "sha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97"
+        },
+        "own": {
+          "aOnly": 235,
+          "bOnly": 160,
+          "p": 0.00018877839971331295
+        },
+        "currentSignificantlyAhead": false,
+        "adopted": true
+      },
+      "defect": {
+        "new": {
+          "file": "experiments/cardvalue/defect-a0-keep-v1.json",
+          "sha256": "bf653d43aaa4840fe9ada645103732da3b804634f7ef367478879e2392646772",
+          "games": 3850,
+          "bossFights": 3850,
+          "passRate": 0.7151
+        },
+        "current": {
+          "file": "experiments/cardvalue/defect-a0-v1.json",
+          "sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
+        },
+        "own": {
+          "aOnly": 127,
+          "bOnly": 104,
+          "p": 0.1475989121085985
+        },
+        "currentSignificantlyAhead": false,
+        "adopted": true
+      }
+    }
+  }
 }

@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 
-import { CHARACTER_NAMES } from "@slay2/game-schema";
-
-import { useRunState } from "@/lib/run-store";
+import { useRunSummary } from "@/hooks/useRunSummary";
 
 /** Shown in the header only when a run is saved in this browser. */
 export function ResumeChip() {
-  const run = useRunState();
-  if (!run?.character) {
+  const run = useRunSummary();
+  if (!run) {
     return null;
   }
   return (
@@ -22,8 +20,7 @@ export function ResumeChip() {
       {/* the class and ascension only where the header has the room: a tablet's row is full with the six links */}
       <span className="hidden xl:inline">
         {" · "}
-        {CHARACTER_NAMES[run.character.toUpperCase() as keyof typeof CHARACTER_NAMES]} A
-        {run.ascension}
+        {run.name} A{run.ascension}
       </span>
     </Link>
   );

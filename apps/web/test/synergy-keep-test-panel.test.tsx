@@ -38,6 +38,11 @@ describe("the registered test repeated with the relics kept, on /methods", () =>
     expect(box).toHaveTextContent("Ahead again.");
     expect(box).toHaveTextContent("still improved what the heuristic index picks");
     expect(box).toHaveTextContent("620 games only the pilot with the term got past the boss");
+    // with the relics kept the simulator's errors come deep into a run, so leaving those pairs out reads the share slightly low
+    expect(box).toHaveTextContent(
+      "which with the relics kept come deep into a run, after the Act-1 boss in nearly every case (ADR-053), so leaving them out of the pair reads the share past the boss slightly low in both arms alike",
+    );
+    expect(box.textContent).not.toContain("which says nothing about play");
     expect(box).toHaveTextContent("450 only the one without it");
     expect(box).toHaveTextContent("The first test, without the relics:");
     expect(box).toHaveTextContent("getting past the first boss is not winning");

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
-import { runStore } from "@/lib/run-store";
+import { LEGACY_RUN_KEY, RUN_KEY, announceRunChanged } from "@/lib/run-summary";
 
 /** Server-side error identifiers are safe to show (they only match a log line); messages and stacks are not. */
 function digestOf(error: unknown): string | null {
@@ -25,12 +25,24 @@ export default function RouteError({ error, retry }: { error: unknown; retry: ()
   }, [error]);
 
   const clearSavedRun = (): void => {
-    try {
-      runStore.set(null);
-      setCleared(true);
-    } catch {
-      setCleared(false);
-    }
+    // The run store (the card catalog and the run's schema) is fetched only now: this boundary is part of every page, and the
+    // store is not.
+    import("@/lib/run-store")
+      .then(({ runStore }) => {
+        runStore.set(null);
+        setCleared(true);
+      })
+      .catch(() => {
+        // the store could not be loaded, which the error may be the reason for: take both copies out of storage directly
+        try {
+          window.localStorage.removeItem(RUN_KEY);
+          window.localStorage.removeItem(LEGACY_RUN_KEY);
+          announceRunChanged();
+          setCleared(true);
+        } catch {
+          setCleared(false);
+        }
+      });
   };
 
   return (
