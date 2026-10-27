@@ -297,7 +297,7 @@ describe("What did Neow offer?", () => {
     expect(screen.getByRole("button", { name: "Recorded" })).toBeDisabled();
   });
 
-  it("warns that every simulated run was Ascension 0 when the player has chosen a higher ascension", () => {
+  it("tells a player at a higher Ascension that the rule was measured at Ascension 0 only", () => {
     const run = withAscension({ ...newRun("silent"), ascensionConfirmed: true }, 5);
     render(
       <NeowOffer
@@ -308,7 +308,8 @@ describe("What did Neow offer?", () => {
         data={withTest(test(true))}
       />,
     );
-    expect(screen.getByText(/you are at Ascension 5/)).toBeInTheDocument();
+    expect(screen.getByText(/Your run is at Ascension 5/)).toBeInTheDocument();
+    expect(screen.getByText(/measured at Ascension 0 only/)).toBeInTheDocument();
   });
 
   it("gives no advice to a class whose own held-out games did not clearly favour the rule, and says why", () => {

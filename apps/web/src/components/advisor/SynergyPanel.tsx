@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { PART_WEIGHT, type DeckSynergy, type DraftResponse } from "@slay2/decision";
 
+import { AscensionNote } from "@/components/advisor/AscensionNote";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
@@ -223,11 +224,18 @@ export function SynergyPanel({
   synergy,
   relics,
   evidence = SYNERGY_EVIDENCE,
+  ascension,
 }: {
   synergy: DeckSynergy;
   /** The relics the ranking counted as suppliers (what the answer says it read from the relics the player listed). */
   relics?: DraftResponse["relics"];
   evidence?: SynergyEvidence;
+  /** The run's Ascension, whether the player confirmed it and its class: a run above 0 is told what was tested (ADR-058). */
+  ascension?: {
+    readonly level: number;
+    readonly confirmed: boolean;
+    readonly character?: string | null | undefined;
+  };
 }) {
   const label = labelOf(evidence);
   const top = Math.max(...synergy.engines.map((e) => e.value), 1);
@@ -239,6 +247,15 @@ export function SynergyPanel({
       aside={<Badge tone="heuristic">{label}</Badge>}
       aria-label="Synergy of your deck"
     >
+      {ascension ? (
+        <AscensionNote
+          finding="synergy"
+          level={ascension.level}
+          confirmed={ascension.confirmed}
+          character={ascension.character}
+          className="mb-4"
+        />
+      ) : null}
       {relics && (relics.supplying.length > 0 || relics.taking.length > 0) ? (
         <p className="mb-4 text-xs text-muted">
           {relics.supplying.length > 0
