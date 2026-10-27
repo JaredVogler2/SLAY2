@@ -102,6 +102,8 @@ MARGIN=0 PY=python3 bash scripts/studies/synergy/pool-val.sh
 sha256sum experiments/synergy/val/pooled-astar-vs-d0star.json               # 1401cde3ce48…e65b
 ```
 
+The ten held-out batches were also re-derived in full on 2026-10-27 (`slay2_sim audit rederive --batch <dir> --workers 3`, about 8 minutes a batch): every one of the 20,000 games reproduced its stored record, and the table of batches below lists the audit.
+
 Re-playing the games takes the simulator: about 90 and 35 minutes on four cores for the two development phases, and about 80
 minutes for the held-out arms (`run-dev.sh`, `run-val.sh`, which refuses to start unless `preflight-val.sh` passes). The held-out test
 was run once; re-computing it from the committed games changes nothing and is not a second test.
@@ -130,21 +132,21 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 <!-- table:batches:begin -->
 | Batch id | Policy | Class | Partition · n | Completed | Wins | Content sha256 | Tree | Audits | Class check |
 |---|---|---|---|---|---|---|---|---|---|
-| `advisor_v1-astar-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 2000 | 0 | `7145541305bc…` | clean | sample | yes |
-| `advisor_v1-astar-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1997 | 2 | `57051e5df185…` | clean | wins,sample | yes |
-| `advisor_v1-astar-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1997 | 0 | `af9e8efb162c…` | clean | sample | yes |
-| `advisor_v1-astar-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1990 | 0 | `eb199bc6d2a3…` | clean | sample | yes |
-| `advisor_v1-astar-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `c46e319bff5a…` | clean | sample | yes |
+| `advisor_v1-astar-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 2000 | 0 | `7145541305bc…` | clean | sample,rederivation | yes |
+| `advisor_v1-astar-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1997 | 2 | `57051e5df185…` | clean | wins,sample,rederivation | yes |
+| `advisor_v1-astar-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1997 | 0 | `af9e8efb162c…` | clean | sample,rederivation | yes |
+| `advisor_v1-astar-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1990 | 0 | `eb199bc6d2a3…` | clean | sample,rederivation | yes |
+| `advisor_v1-astar-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `c46e319bff5a…` | clean | sample,rederivation | yes |
 | `advisor_v1-d0-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `5f28f56c474d…` | clean | – | yes |
 | `advisor_v1-d0-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 999 | 0 | `1e80771827ca…` | clean | – | yes |
 | `advisor_v1-d0-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `5723808d69b9…` | clean | – | yes |
 | `advisor_v1-d0-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 998 | 0 | `3a98dbe91d01…` | clean | – | yes |
 | `advisor_v1-d0-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `165d8631ec0d…` | clean | – | yes |
-| `advisor_v1-d0star-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 1998 | 0 | `bb1d5364903c…` | clean | sample | yes |
-| `advisor_v1-d0star-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1998 | 0 | `8eba6d4b503c…` | clean | sample | yes |
-| `advisor_v1-d0star-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1998 | 0 | `9d29eae7897c…` | clean | sample | yes |
-| `advisor_v1-d0star-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1988 | 0 | `a294345df0cf…` | clean | sample | yes |
-| `advisor_v1-d0star-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `47a8504bbda1…` | clean | sample | yes |
+| `advisor_v1-d0star-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 1998 | 0 | `bb1d5364903c…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1998 | 0 | `8eba6d4b503c…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1998 | 0 | `9d29eae7897c…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1988 | 0 | `a294345df0cf…` | clean | sample,rederivation | yes |
+| `advisor_v1-d0star-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `47a8504bbda1…` | clean | sample,rederivation | yes |
 | `advisor_v1-d1-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `c8bd5abc57f7…` | clean | – | yes |
 | `advisor_v1-d1-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `913967cb9d65…` | clean | – | yes |
 | `advisor_v1-d1-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `e75a16dc7d69…` | clean | – | yes |

@@ -1,0 +1,52 @@
+{
+  "all_rederived": true,
+  "batch_content_sha256": "8eba6d4b503cf171ef2644766e574afa4e5f6a1d8c3f1eaa70fcf2e48cc0b3af",
+  "batch_id": "advisor_v1-d0star-ironclad-a0-veteran-val-n2000",
+  "criteria": "every game re-run on its seed with the manifest's policy in fresh worker processes; outcome, floor, act, hp, max_hp, deck size, relics, combats won, steps and killer identical to the stored record",
+  "differing": [],
+  "games": 2000,
+  "policy": {
+    "name": "advisor_v1",
+    "params": {
+      "engines": 0.0,
+      "explore": 0.0,
+      "margin": 0,
+      "needs": 1.0,
+      "replicate": 0,
+      "risk": "balanced",
+      "scalers": 0.7,
+      "synergy": 0,
+      "tune": {
+        "boss_heal_below": 0.9,
+        "card_slope": 0.09,
+        "card_threshold": 3.2,
+        "danger_frac": 0.3,
+        "elite_bad_value": -2.5,
+        "elite_mid_hp": 0.65,
+        "elite_mid_value": 0.2,
+        "elite_ok_floor": 8,
+        "elite_ok_hp": 0.9,
+        "elite_value": 0.5,
+        "heal_below": 0.7,
+        "max_deck": 32,
+        "monster_hp_penalty": 0.5,
+        "monster_value": 1.0,
+        "potion_hp_abs": 6,
+        "potion_hp_frac": 0.15,
+        "rest_base": 1.0,
+        "rest_weight": 3.0,
+        "shop_base": 0.3,
+        "shop_card_threshold": 3.6,
+        "shop_mid": 0.5,
+        "shop_mid_gold": 75,
+        "shop_potion_margin": 40,
+        "shop_rich": 1.2,
+        "shop_rich_gold": 150,
+        "treasure_value": 1.8,
+        "unknown_value": 0.8
+      }
+    }
+  },
+  "rederived_exactly": 2000,
+  "schema": 1
+}

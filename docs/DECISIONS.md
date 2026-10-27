@@ -797,6 +797,8 @@ Disclosure: before writing this note I ran `slay2_sim.synergyreport` on the `d0`
 *What the page says now.* The advisor's synergy panel is labelled *Judgement, tested in simulation* and quotes these figures with their limits (`/advisor`, `/methods#synergy`); the engine credit stays at none. The result, the pooled files and the arm profile are in `experiments/synergy/val/`, the 14 batches in `experiments/batches/`, and the generated tables in `docs/MODEL-AND-DATA-CARDS.md` (M8).
 
 
+*After the result was written (2026-10-27, 03:59 to 05:23 UTC), the ten `A*` and `d0*` batches were re-derived in full (`slay2_sim audit rederive`: every game re-run in fresh workers and compared with its stored record): 20,000 of 20,000 games identical, none differing. That checks the games, not the question: it changes no number above, and nothing was re-analysed.*
+
 ## 2026-10-27 — ADR-051: the advisor counts the relics a run holds as suppliers of the mechanics they provide (a judgement, read twice and reconciled by a written rule, not yet tested in simulation)
 
 **Context.** The advisor's assumptions said it did not use relics (ADR-048: "the app has no relic catalog yet"), and relics are central to how a player builds a deck: a relic that starts every fight with Strength changes what a Strength payoff is worth exactly as a card that gives Strength does. The relic catalog now exists (data card D11: 296 relics as facts, derived from the pinned local references, ADR-011). What is missing is a reading of what each relic provides to a deck, and a way to say which relics a run holds.
