@@ -210,10 +210,14 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
     return body
 
 
-def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 20000, seed: int = 0) -> dict:
+def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 20000, seed: int = 0, confidence: float | None = None) -> dict:
     """The paired comparisons of several cohorts that differ in the class only (ADR-041), pooled into one test: the
     discordant pairs of every cohort are added and the exact McNemar test runs once on the total. Each member keeps its own
-    counts so that a reader can see which class carries the result. Seeds are paired within a member, never across."""
+    counts so that a reader can see which class carries the result. Seeds are paired within a member, never across.
+
+    ``confidence`` (None by default, which leaves the output exactly as it was): also give the whole-seed bootstrap interval of the pooled
+    difference at that level, for a test that is read at a level other than 0.05 (ADR-058 reads three tests at 0.05 / 3 and asks the
+    seed-clustered interval at the same level to exclude zero, because the classes' games of one seed are not independent pairs)."""
     if len(pairs) < 2:
         raise ValueError("a pooled comparison needs at least two cohorts")
     members, flags = [], {k: ([], []) for k in ("win", "act1", "act2")}
@@ -256,9 +260,14 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
     partition = next(iter(partitions))
     n = len(floors_a)
     mean_diff, lo, hi = paired_bootstrap_ci(floors_a, floors_b, iters=iters, seed=seed)
-    cl_mean, cl_lo, cl_hi = clustered_bootstrap_ci(
-        [float(x) - float(y) for x, y in zip(*flags["act1"])], seed_ids, iters=iters, seed=seed
-    )
+    cl_rows = [float(x) - float(y) for x, y in zip(*flags["act1"])]
+    cl_mean, cl_lo, cl_hi = clustered_bootstrap_ci(cl_rows, seed_ids, iters=iters, seed=seed)
+    cl_level = None
+    if confidence is not None:
+        if not 0.5 < confidence < 1:
+            raise ValueError(f"confidence must be between 0.5 and 1, got {confidence!r}")
+        _, lvl_lo, lvl_hi = clustered_bootstrap_ci(cl_rows, seed_ids, iters=iters, confidence=confidence, seed=seed)
+        cl_level = {"level": confidence, "ci": [lvl_lo, lvl_hi]}
     body = {
         "schema": SCHEMA,
         "kind": "pooled-paired-comparison",
@@ -288,6 +297,7 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
             "meanAMinusB": cl_mean,
             "ci95": [cl_lo, cl_hi],
             "method": f"percentile bootstrap over seeds, {iters} resamples, rng seed {seed}",
+            **({"ciAtLevel": cl_level} if cl_level is not None else {}),
         },
         "floorDifference": {
             "meanAMinusB": mean_diff,
