@@ -203,9 +203,39 @@ export interface SynergyTest {
   readonly profile: TestProfile | null;
 }
 
+/** Stage B1 read again on random drafts played with the relics kept, with and without the relics a run held counted (ADR-053 item 6). */
+export interface KeepReading {
+  readonly file: string;
+  readonly sha256: string;
+  readonly outcome: string;
+  readonly bossFights: number;
+  /** boss decks of a run that held a relic the relic table tags, and those whose index parts the relics change */
+  readonly withTaggedRelic: number;
+  readonly partsDiffer: number;
+  readonly passRate: number;
+  readonly bootstrapDraws: number;
+  readonly classAlone: KeepArm;
+  readonly relicsCounted: KeepArm;
+  /** held-out log loss with the relics counted minus without (negative: counting them predicts better) */
+  readonly relicGain: Interval;
+  readonly perClass: Readonly<Record<string, Interval & { readonly rows: number }>>;
+}
+
+export interface KeepArm {
+  readonly logLoss: number;
+  /** change in held-out log loss when the synergy term is added to the index, read this way */
+  readonly synergyAdded: Interval;
+  readonly ratios: {
+    readonly needs: PartRatio;
+    readonly scalers: PartRatio;
+    readonly engines: PartRatio;
+  };
+}
+
 export interface SynergyEvidence {
   readonly table: { readonly sha256: string; readonly cards: number; readonly mechanics: number };
   readonly b1: SynergyReading | null;
+  readonly keep: KeepReading | null;
   readonly b2: SynergyTest | null;
 }
 

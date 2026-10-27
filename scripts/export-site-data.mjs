@@ -775,10 +775,74 @@ function parseSynergy(reports) {
       })),
     };
   }
+  // Stage B1 read again on random drafts played with the relics kept (ADR-053 item 6; exploratory). Optional, but when it is there it has to
+  // be about the two tables the page computes with and the exploration batches that are in the repository.
+  out.keep = parseKeepReading(table.sha256);
   // The one registered test (stage B2-val). When its pooled result exists it is read, with everything it rests on, or the export stops:
   // the /methods panel must never say that the test has not been run when it has.
   out.b2 = parseSynergyTest(reports, table.sha256);
   return out;
+}
+
+function parseKeepReading(cardTableSha) {
+  const file = join(root, "experiments", "synergy", "keep-b1.json");
+  if (!existsSync(file)) return null;
+  const raw = readFileSync(file);
+  const r = JSON.parse(raw.toString("utf8"));
+  if (r.kind !== "synergy-calibration-relics-kept" || r.schema !== 1)
+    throw new Error("experiments/synergy/keep-b1.json: not a relics-kept reading of schema 1");
+  const relicTable = JSON.parse(
+    readFileSync(
+      join(root, "packages", "game-data", "data", "relic-synergy.sts2-main-0.107.1.json"),
+      "utf8",
+    ),
+  );
+  if (r.synergy_table_sha256 !== cardTableSha || r.relic_synergy_table_sha256 !== relicTable.sha256)
+    throw new Error(
+      "experiments/synergy/keep-b1.json was made on other tag tables than the page uses: run python -m slay2_sim.synergykeep",
+    );
+  for (const c of r.cohorts) {
+    const manifest = JSON.parse(
+      readFileSync(join(root, "experiments", "cardvalue", c.batch_id, "manifest.json"), "utf8"),
+    );
+    if (
+      manifest.episodes_gz.sha256 !== c.episodes_gz_sha256 ||
+      manifest.config.keep_relics !== true
+    )
+      throw new Error(
+        `experiments/synergy/keep-b1.json reads ${c.batch_id}, which is not the batch in the repository with the relics kept`,
+      );
+  }
+  const gap = (g) => ({ mean: g.mean, ci95: g.ci95 });
+  const ratio = (x) => ({ toQuality: x.to_quality, ci95: x.ci95 });
+  const reading = (a) => ({
+    logLoss: a.cross_validation["index+synergy"].log_loss,
+    synergyAdded: gap(a.loss_gaps.synergy_added_to_index),
+    ratios: {
+      needs: ratio(a.ratios.unmet),
+      scalers: ratio(a.ratios.scaler),
+      engines: ratio(a.ratios.engines),
+    },
+  });
+  return {
+    file: "experiments/synergy/keep-b1.json",
+    sha256: createHash("sha256").update(raw).digest("hex"),
+    outcome: r.outcome,
+    bossFights: r.runs.runs,
+    withTaggedRelic: r.runs.with_a_tagged_relic,
+    partsDiffer: r.runs.parts_differ,
+    passRate: r.class_alone.pass_rate,
+    bootstrapDraws: r.bootstrap_draws,
+    classAlone: reading(r.class_alone),
+    relicsCounted: reading(r.relics_counted),
+    relicGain: gap(r.gap_relics_counted_minus_class_alone),
+    perClass: Object.fromEntries(
+      Object.entries(r.per_class).map(([name, v]) => [
+        name,
+        { rows: v.rows, ...gap(v.gap_relics_counted_minus_class_alone) },
+      ]),
+    ),
+  };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------

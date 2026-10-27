@@ -115,6 +115,12 @@ export interface DraftResponse {
       readonly name: string;
       readonly mechanics: readonly string[];
     }[];
+    /** Relics whose tags take a mechanic away, with the mechanics they take (the index counts them against the cards that need them). */
+    readonly taking: readonly {
+      readonly id: string;
+      readonly name: string;
+      readonly mechanics: readonly string[];
+    }[];
     /** Relics the catalog knows but the table has nothing to say about (the index reads nothing from them). */
     readonly unread: readonly string[];
   };

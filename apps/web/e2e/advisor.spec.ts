@@ -362,12 +362,35 @@ test.describe("advisor journey", () => {
     await expect(relics).toContainText("Amethyst Aubergine");
     await expect(relics).toContainText("Provides no mechanic in SLAY2's reading");
     expect(await indexChange(await openOption(page, "Sword Boomerang"))).toBe(without);
-    await expect(page.getByText(/not been tested in simulation/).first()).toBeVisible();
+    await expect(page.getByText(/no registered test/).first()).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await page.evaluate(() => {
       window.scrollTo(0, 0);
     });
     await expectNoSeriousA11yViolations(page, "advisor with relics");
+  });
+
+  test("relics: one that takes a mechanic away is counted against it, removing one keeps the keyboard in the list, and the search says when nothing matches", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addRelic(page, "big mushroom");
+    const relics = page.getByRole("list", { name: "Your relics" });
+    await expect(relics).toContainText("Big Mushroom");
+    await expect(relics).toContainText("counted against the cards that need it");
+    await expect(relics).not.toContainText("reads nothing");
+    await addRelic(page, "vajra");
+    await page.getByRole("button", { name: "Remove Big Mushroom" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Remove Vajra" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    const box = page.getByRole("combobox", { name: "Add a relic you hold" });
+    await expect(box).toBeFocused();
+    await box.fill("zzzzqx");
+    await expect(
+      page.locator('[aria-live="polite"]').filter({ hasText: "No relic matches" }),
+    ).toHaveText(/zzzzqx/);
+    await expectNoSeriousA11yViolations(page, "advisor relic search with no match");
   });
 
   // Every other class whose held-out test passed gives the same second opinion as Ironclad, from its own values.

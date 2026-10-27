@@ -16,6 +16,7 @@ import {
   newRun,
   parseRunState,
   resetToStart,
+  serializeRunState,
   withAscension,
   withCharacter,
   type PackSource,
@@ -137,7 +138,7 @@ export function AdvisorWorkbench() {
     if (!run) {
       return;
     }
-    const blob = new Blob([JSON.stringify(run, null, 2)], { type: "application/json" });
+    const blob = new Blob([serializeRunState(run, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

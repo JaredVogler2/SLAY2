@@ -63,6 +63,32 @@ describe("the /methods synergy section", () => {
     }
   });
 
+  it("quotes the reading repeated with the relics kept: its own figures, and what it is not", () => {
+    const keep = SYNERGY_EVIDENCE.keep;
+    expect(keep).not.toBeNull();
+    if (!keep) return;
+    render(<SynergyStudyPanel />);
+    const block = screen
+      .getByRole("heading", { name: /Read again with the relics kept/ })
+      .closest("section");
+    expect(block).not.toBeNull();
+    if (!block) return;
+    expect(block).toHaveTextContent(keep.bossFights.toLocaleString("en-US"));
+    expect(block).toHaveTextContent(keep.withTaggedRelic.toLocaleString("en-US"));
+    expect(block).toHaveTextContent(num(keep.classAlone.logLoss, 5));
+    expect(block).toHaveTextContent(num(keep.relicsCounted.logLoss, 5));
+    expect(block).toHaveTextContent(change(keep.relicsCounted.synergyAdded));
+    // the further gain from counting the relics is reported as a positive amount with an interval that does not include zero
+    expect(keep.relicGain.mean).toBeLessThan(0);
+    expect(keep.relicGain.ci95[1] ?? 1).toBeLessThan(0);
+    expect(block).toHaveTextContent(`further ${num(-keep.relicGain.mean, 5)}`);
+    expect(block).toHaveTextContent("exploratory");
+    expect(block).toHaveTextContent("could not see the relic term");
+    expect(block).toHaveTextContent("gap G14");
+    // the table the reading was made with is the one the page computes with
+    expect(keep.sha256).toMatch(/^[0-9a-f]{64}$/);
+  });
+
   it("says the registered test has not been run, and claims no result of it, until a result is exported", () => {
     render(<SynergyStudyPanel evidence={withTest(null)} />);
     const test = screen.getByRole("heading", { name: "The registered test" }).parentElement;

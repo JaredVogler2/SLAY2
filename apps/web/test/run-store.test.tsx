@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { newRun } from "../src/lib/run-state";
+import { newRun, withRelic } from "../src/lib/run-state";
 
 /**
  * The run is saved under a key named after its schema version. A page loaded before the Act 1 version and the opening Ancient
@@ -44,6 +44,25 @@ describe("the saved run and its version", () => {
     window.localStorage.setItem("slay2.run.v1", JSON.stringify({ ...newRun("regent"), v: 1 }));
     window.dispatchEvent(new StorageEvent("storage", { key: "slay2.run.v1" }));
     expect(store.getSnapshot()?.character).toBe("defect");
+  });
+
+  it("saves a run that lists no relic without the relics key (a page from before relics reads it), and with it once one is listed", async () => {
+    const store = await freshStore();
+    store.set(newRun("ironclad"));
+    const bare = JSON.parse(window.localStorage.getItem("slay2.run.v2") ?? "{}") as Record<
+      string,
+      unknown
+    >;
+    expect(bare.character).toBe("ironclad");
+    expect("relics" in bare).toBe(false);
+    store.set(withRelic(newRun("ironclad"), "VAJRA"));
+    const held = JSON.parse(window.localStorage.getItem("slay2.run.v2") ?? "{}") as {
+      relics?: string[];
+    };
+    expect(held.relics).toEqual(["VAJRA"]);
+    // and the saved text loads back into the same relics
+    const again = await freshStore();
+    expect(again.getSnapshot()?.relics).toEqual(["VAJRA"]);
   });
 
   it("does not bring a cleared run back from the old key", async () => {

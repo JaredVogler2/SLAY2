@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RELIC_SYNERGY, getCard, relicTags, starterDeck } from "@slay2/game-data";
+import { MECHANICS, RELIC_SYNERGY, getCard, relicTags, starterDeck } from "@slay2/game-data";
 
 import {
   InvalidDraftRequestError,
@@ -51,6 +51,7 @@ describe("relics as suppliers of mechanics (ADR-051)", () => {
     expect(held.relics?.supplying).toEqual([
       { id: "VAJRA", name: "Vajra", mechanics: ["Strength"] },
     ]);
+    expect(held.relics?.taking).toEqual([]);
     expect(held.relics?.unread).toEqual([]);
     const reasons = held.ranking
       .find((o) => o.action.kind === "pick" && o.action.cardId === "SWORD_BOOMERANG")
@@ -58,7 +59,8 @@ describe("relics as suppliers of mechanics (ADR-051)", () => {
       .join(" ");
     expect(reasons).toContain("Vajra");
     expect(held.stateDigest).not.toBe(bare.stateDigest);
-    expect(held.assumptions.join(" ")).toContain("not been tested in simulation");
+    expect(held.assumptions.join(" ")).toContain("a judgement with no registered test");
+    expect(held.assumptions.join(" ")).toContain("keep their relics, as an exploration");
     expect(held.missingInputs.join(" ")).not.toContain("Your relics");
     expect(held.notModelled.join(" ")).toContain("beyond supplying a mechanic");
   });
@@ -68,7 +70,55 @@ describe("relics as suppliers of mechanics (ADR-051)", () => {
     const bare = evaluateDraft(request());
     const held = evaluateDraft(request({ relics: ["AMETHYST_AUBERGINE"] }));
     expect(held.ranking.map((o) => o.indexDelta)).toEqual(bare.ranking.map((o) => o.indexDelta));
-    expect(held.relics).toEqual({ supplying: [], unread: ["Amethyst Aubergine"] });
+    expect(held.relics).toEqual({ supplying: [], taking: [], unread: ["Amethyst Aubergine"] });
+  });
+
+  it("count a relic that takes a mechanic away against the cards that need it, and name it (it is not 'read as nothing')", () => {
+    expect(relicTags("BIG_MUSHROOM").gives.draw ?? 0).toBeLessThan(0);
+    const silent = (over: Partial<DraftRequest> = {}): DraftRequest =>
+      request({
+        character: "silent",
+        deck: starterDeck("silent"),
+        offered: ["CORROSIVE_WAVE", "MURDER", "GRAND_FINALE"],
+        ...over,
+      });
+    const bare = evaluateDraft(silent());
+    const held = evaluateDraft(silent({ relics: ["BIG_MUSHROOM"] }));
+    // the ranking does move, so the answer cannot say that nothing is read from the relic
+    const moved = held.ranking.filter(
+      (o) => o.indexDelta !== bare.ranking.find((b) => b.label === o.label)?.indexDelta,
+    );
+    expect(moved.length).toBeGreaterThan(0);
+    expect(delta(held, "CORROSIVE_WAVE")).toBeLessThan(delta(bare, "CORROSIVE_WAVE"));
+    expect(held.relics).toEqual({
+      supplying: [],
+      taking: [{ id: "BIG_MUSHROOM", name: "Big Mushroom", mechanics: [MECHANICS.draw.label] }],
+      unread: [],
+    });
+    const assumption = held.assumptions.find((a) => a.startsWith("Relics:")) ?? "";
+    expect(assumption).toContain("counts against the cards that need it");
+    expect(assumption).toContain("0 of them provide one and 1 takes one away");
+    // listed with a relic that provides a mechanic, each is in its own list
+    const both = evaluateDraft(silent({ relics: ["BIG_MUSHROOM", "VAJRA"] }));
+    expect(both.relics?.supplying.map((r) => r.id)).toEqual(["VAJRA"]);
+    expect(both.relics?.taking.map((r) => r.id)).toEqual(["BIG_MUSHROOM"]);
+    expect(both.relics?.unread).toEqual([]);
+  });
+
+  it("do not tell a player who holds relics that the role coverage counted them", () => {
+    const bare = evaluateDraft(request({ offered: ["INFLAME"], actIndex: 0 }));
+    const held = evaluateDraft(request({ offered: ["INFLAME"], actIndex: 0, relics: ["VAJRA"] }));
+    const text = (r: ReturnType<typeof evaluateDraft>): string =>
+      r.ranking
+        .flatMap((o) => o.reasons)
+        .filter((reason) => reason.kind === "coverage")
+        .map((reason) => reason.text)
+        .join(" ");
+    expect(text(bare)).toContain("(you have none yet)");
+    expect(text(held)).not.toContain("you have none yet");
+    expect(text(held)).toContain("among your cards");
+    expect(text(held)).toContain("relics are read by the synergy part");
+    expect(held.assumptions.join(" ")).toContain("not by the role coverage");
   });
 
   it("take each relic once and in any order", () => {

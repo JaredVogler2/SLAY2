@@ -8,10 +8,14 @@ import {
   MECHANIC_IDS,
   PLAYABLE_CLASSES,
   RELIC_CATALOG,
+  RELIC_SYNERGY,
   getCard,
+  hasRelicTags,
   relicTags,
   rewardPool,
+  synergyTags,
   type CardEntry,
+  type RelicEntry,
 } from "@slay2/game-data";
 
 import {
@@ -30,8 +34,9 @@ import {
 
 /**
  * The deck index is also written in Python (`sim/slay2_sim/advisor.py`), so the simulator can measure it against simulated
- * runs and play card rewards by it. This file is what the TypeScript code (the original) computes for 160 fixed random decks and,
- * after them, 40 more that also hold relics (ADR-051);
+ * runs and play card rewards by it. This file is what the TypeScript code (the original) computes for 160 fixed random decks,
+ * after them 40 more that also hold relics (ADR-051) and, after those, 40 whose relics are chosen so that every relic the table
+ * tags is held by at least one case (the ones only the event pool offers, and the one that takes a mechanic away, included);
  * `sim/tests/test_advisor_port.py` fails if the Python port does not reproduce every number in it, and this test fails if the
  * file is not what the code writes today. After a deliberate change to the index:
  *
@@ -41,6 +46,8 @@ const FILE = join(__dirname, "golden", "advisor-index.json");
 const CASES = 160;
 /** Cases 160 to 199 hold relics too; the first 160 are exactly what they were before relics were an input. */
 const RELIC_CASES = 40;
+/** Cases 200 to 239 hold relics chosen to cover every tagged relic; the 200 before them are exactly what they were. */
+const COVER_CASES = 40;
 
 interface GoldenCase {
   readonly character: string;
@@ -97,6 +104,44 @@ function pickRelics(rnd: () => number, character: string): string[] {
   return [...picked].sort();
 }
 
+/** The item at `index` of the list, walking round it. */
+function cycle<T>(items: readonly T[], index: number): T {
+  const item = items[index % items.length];
+  if (item === undefined) throw new Error("nothing to walk round");
+  return item;
+}
+
+const isGeneral = (r: RelicEntry): boolean =>
+  r.pools.includes("shared") || r.pools.includes("event");
+
+/**
+ * The relics of a covering case: three of the tagged relics every class can hold (walking round the sorted list, so the cases
+ * together hold all of them), two of the tagged ones only this class can hold, and up to two more from anywhere the class could
+ * find a relic, tagged or not.
+ */
+function coveringRelics(rnd: () => number, character: string, k: number): string[] {
+  const tagged = RELIC_CATALOG.relics
+    .filter((r) => hasRelicTags(r.id))
+    .sort((a, b) => (a.id < b.id ? -1 : 1));
+  const general = tagged.filter(isGeneral);
+  const own = tagged.filter((r) => !isGeneral(r) && r.pools.includes(character as never));
+  const picked = new Set<string>();
+  for (let i = 0; i < 3; i += 1) picked.add(cycle(general, 3 * k + i).id);
+  // the one relic that takes a mechanic away is held in a case in four, so every class has it
+  if (k % 4 === 0) picked.add("BIG_MUSHROOM");
+  const round = Math.floor(k / PLAYABLE_CLASSES.length);
+  for (let i = 0; i < 2 && own.length > 0; i += 1) picked.add(cycle(own, 2 * round + i).id);
+  const eligible = RELIC_CATALOG.relics.filter(
+    (r) =>
+      r.rarity !== "starter" &&
+      r.rarity !== "none" &&
+      (isGeneral(r) || r.pools.includes(character as never)),
+  );
+  const target = picked.size + Math.floor(rnd() * 3);
+  while (picked.size < target) picked.add(pickOne(rnd, eligible).id);
+  return [...picked].sort();
+}
+
 function buildCase(index: number): GoldenCase {
   const rnd = mulberry32(0x51a7 + index * 7919);
   const character = PLAYABLE_CLASSES[index % PLAYABLE_CLASSES.length] ?? "ironclad";
@@ -121,7 +166,17 @@ function buildCase(index: number): GoldenCase {
   const actIndex = Math.floor(rnd() * 3) as 0 | 1 | 2;
   const risk = pickOne(rnd, ["safe", "balanced", "aggressive"] as const);
   // drawn last, so the cases before it keep the numbers they always had
-  const relics = index >= CASES ? pickRelics(rnd, character) : [];
+  const relics =
+    index >= CASES + RELIC_CASES
+      ? coveringRelics(rnd, character, index - CASES - RELIC_CASES)
+      : index >= CASES
+        ? pickRelics(rnd, character)
+        : [];
+  // where the relic that takes Draw away is held, a card that needs Draw is among those offered, so the negative supply reaches the ranking
+  if (relics.includes("BIG_MUSHROOM")) {
+    const needy = pool.filter((c) => (synergyTags(c).wants.draw ?? 0) > 0);
+    if (needy.length > 0) offered.add(pickOne(rnd, needy).id);
+  }
   const setting: Setting = { character, relics };
 
   const weights = baseWeights(actIndex, risk);
@@ -182,7 +237,7 @@ function must(id: string): CardEntry {
 function build(): { schema: 1; cases: GoldenCase[] } {
   return {
     schema: 1,
-    cases: Array.from({ length: CASES + RELIC_CASES }, (_, i) => buildCase(i)),
+    cases: Array.from({ length: CASES + RELIC_CASES + COVER_CASES }, (_, i) => buildCase(i)),
   };
 }
 
@@ -252,21 +307,48 @@ describe("the deck index's golden cases (the Python port is tested against them)
     expect(golden.cases.some((c) => c.ranking[0]?.[0] !== "skip")).toBe(true);
   });
 
-  it("hold relics in 40 cases, most of them with tags, and the relics move the index", () => {
+  it("hold relics in 80 cases, most of them with tags, and the relics move the index", () => {
     const golden = build();
     const withRelics = golden.cases.filter((c) => c.relics !== undefined);
-    expect(withRelics).toHaveLength(RELIC_CASES);
+    expect(withRelics).toHaveLength(RELIC_CASES + COVER_CASES);
     expect(golden.cases.slice(0, CASES).every((c) => c.relics === undefined)).toBe(true);
     expect(
       withRelics.filter((c) =>
         (c.relics ?? []).some((id) => Object.keys(relicTags(id).gives).length > 0),
       ).length,
-    ).toBeGreaterThan(RELIC_CASES / 2);
+    ).toBeGreaterThan((RELIC_CASES + COVER_CASES) / 2);
     // the same deck without its relics scores differently in at least some cases: the relics are not decoration
     const moved = withRelics.filter((c) => {
       const entries: DeckEntry[] = c.deck.map(([id, count]) => ({ card: must(id), count }));
       const bare = profileDeck(entries, c.actIndex, c.character as never);
       return Math.abs(bare.synergy - c.profile.synergy) > 1e-9;
+    });
+    expect(moved.length).toBeGreaterThan(0);
+  });
+
+  it("hold every relic the table tags in at least one case: the event-pool ones and the one that takes a mechanic away too", () => {
+    const golden = build();
+    const held = new Set(golden.cases.flatMap((c) => c.relics ?? []));
+    expect(Object.keys(RELIC_SYNERGY.relics).filter((id) => !held.has(id))).toEqual([]);
+    // the relic that takes a mechanic away is held in every class, and it moves the ranking of the offered cards where it is held
+    const mushroom = golden.cases.filter((c) => c.relics?.includes("BIG_MUSHROOM"));
+    expect(new Set(mushroom.map((c) => c.character)).size).toBe(PLAYABLE_CLASSES.length);
+    const moved = mushroom.filter((c) => {
+      const entries: DeckEntry[] = c.deck.map(([id, count]) => ({ card: must(id), count }));
+      const rank = (relics: readonly string[]): number[] => {
+        const setting: Setting = { character: c.character as never, relics };
+        return rankWith(
+          baseWeights(c.actIndex, c.risk),
+          profileDeck(entries, c.actIndex, setting),
+          entries,
+          c.offered.map((id) => must(id)),
+          c.actIndex,
+          setting,
+        ).map((r) => r.delta);
+      };
+      const held = rank(c.relics ?? []);
+      const without = rank((c.relics ?? []).filter((id) => id !== "BIG_MUSHROOM"));
+      return held.some((d, i) => Math.abs(d - (without[i] ?? d)) > 1e-9);
     });
     expect(moved.length).toBeGreaterThan(0);
   });

@@ -21,14 +21,15 @@ def close(a: float, b: float) -> bool:
     return math.isclose(a, b, rel_tol=TOL, abs_tol=TOL)
 
 
-@pytest.mark.parametrize("index", range(200))
+@pytest.mark.parametrize("index", range(240))
 def test_every_golden_case_is_reproduced(index):
     case = cases()[index]
     deck = {card_id: count for card_id, count in case["deck"]}
     act = case["actIndex"]
     weights = advisor.base_weights(act, case["risk"])
 
-    # the cases from 160 on also hold relics (ADR-051); the others are the class alone, as before
+    # the cases from 160 on also hold relics (ADR-051); the others are the class alone, as before. Cases 200 on hold every relic the
+    # table tags between them, the one that takes a mechanic away included (it is negative supply, which the port must read as the page does)
     character = advisor.Setting(case["character"], tuple(case.get("relics", ())))
     profile = advisor.profile_deck(deck, act, character=character)
     want = case["profile"]
@@ -69,8 +70,12 @@ def test_the_golden_file_covers_what_the_port_must_get_right():
     assert any(c["terms"]["synergy"] < 0 for c in data) and any(c["terms"]["synergy"] > 0 for c in data)
     assert any(c["profile"]["size"] > 30 for c in data)
     assert any(c["enginesJudged"] for c in data)
-    # forty cases hold relics (ADR-051), the first hundred and sixty are the class alone
-    assert len(data) == 200 and [i for i, c in enumerate(data) if "relics" in c] == list(range(160, 200))
+    # eighty cases hold relics (ADR-051), the first hundred and sixty are the class alone
+    assert len(data) == 240 and [i for i, c in enumerate(data) if "relics" in c] == list(range(160, 240))
+    # between them they hold every relic the table tags, and the one that takes a mechanic away
+    held = {r for c in data for r in c.get("relics", [])}
+    assert set(advisor.relic_synergy_table()["relics"]) <= held
+    assert any("BIG_MUSHROOM" in c.get("relics", []) for c in data)
 
 
 def test_the_vocabulary_is_the_tag_files_own():
@@ -100,7 +105,7 @@ def test_skipping_wins_ties_and_is_worth_zero():
     assert ranking == [("skip", 0.0)]
 
 
-@pytest.mark.parametrize("index", range(0, 200, 7))
+@pytest.mark.parametrize("index", range(0, 240, 7))
 def test_the_synergy_parts_add_up_to_the_synergy_term(index):
     case = cases()[index]
     deck = {card_id: count for card_id, count in case["deck"]}

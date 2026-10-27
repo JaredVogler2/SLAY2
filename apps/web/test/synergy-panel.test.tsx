@@ -19,7 +19,7 @@ function deck(character: "ironclad" | "necrobinder", ...rows: [string, number][]
 }
 
 describe("the synergy panel", () => {
-  it("names the relics it counted and says that their reading is not tested, only when there are some", () => {
+  it("names the relics it counted and says that their reading has no registered test, only when there are some", () => {
     const synergy = deck("ironclad", ["STRIKE_IRONCLAD", 5]);
     const { rerender } = render(<SynergyPanel synergy={synergy} />);
     expect(screen.queryByText(/Counted as suppliers here/)).toBeNull();
@@ -28,15 +28,35 @@ describe("the synergy panel", () => {
         synergy={synergy}
         relics={{
           supplying: [{ id: "VAJRA", name: "Vajra", mechanics: ["Strength"] }],
+          taking: [],
           unread: [],
         }}
       />,
     );
     const note = screen.getByText(/Counted as suppliers here/);
     expect(note).toHaveTextContent("Vajra (Strength)");
-    expect(note).toHaveTextContent("has not been tested in simulation");
-    rerender(<SynergyPanel synergy={synergy} relics={{ supplying: [], unread: ["Anchor"] }} />);
+    expect(note).toHaveTextContent("a separate judgement with no registered test");
+    expect(note).toHaveTextContent("simulated runs that keep their relics");
+    rerender(
+      <SynergyPanel synergy={synergy} relics={{ supplying: [], taking: [], unread: ["Anchor"] }} />,
+    );
     expect(screen.queryByText(/Counted as suppliers here/)).toBeNull();
+    expect(screen.queryByText(/Counted against here/)).toBeNull();
+    // a relic that takes a mechanic away is named, as counted against and not as a supplier
+    rerender(
+      <SynergyPanel
+        synergy={synergy}
+        relics={{
+          supplying: [],
+          taking: [{ id: "BIG_MUSHROOM", name: "Big Mushroom", mechanics: ["Card draw"] }],
+          unread: [],
+        }}
+      />,
+    );
+    const against = screen.getByText(/Counted against here/);
+    expect(against).toHaveTextContent("Big Mushroom (Card draw)");
+    expect(against).not.toHaveTextContent("Counted as suppliers here");
+    expect(against).toHaveTextContent("no registered test");
   });
 
   it("lists the engines the deck has, who supplies them and who uses them", () => {

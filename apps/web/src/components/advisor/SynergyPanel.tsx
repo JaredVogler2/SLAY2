@@ -190,12 +190,24 @@ export function SynergyPanel({
       aside={<Badge tone="heuristic">{label}</Badge>}
       aria-label="Synergy of your deck"
     >
-      {relics && relics.supplying.length > 0 ? (
+      {relics && (relics.supplying.length > 0 || relics.taking.length > 0) ? (
         <p className="mb-4 text-xs text-muted">
-          Counted as suppliers here:{" "}
-          {names(relics.supplying.map((r) => `${r.name} (${r.mechanics.join(", ")})`))}. That
-          reading of relics is a separate judgement and has not been tested in simulation: the test
-          below covers the cards.
+          {relics.supplying.length > 0
+            ? `Counted as suppliers here: ${names(relics.supplying.map((r) => `${r.name} (${r.mechanics.join(", ")})`))}. `
+            : ""}
+          {relics.taking.length > 0
+            ? `Counted against here, because they take a mechanic away: ${names(relics.taking.map((r) => `${r.name} (${r.mechanics.join(", ")})`))}. `
+            : ""}
+          That reading of relics is a separate judgement with no registered test; read once against
+          simulated runs that keep their relics, counting them predicted getting past the Act 1 boss
+          slightly better (an exploration, see{" "}
+          <Link
+            className="text-teal underline decoration-dotted underline-offset-4"
+            href="/methods#synergy"
+          >
+            Evidence &amp; methods
+          </Link>
+          ). The test below covers the cards.
         </p>
       ) : null}
       {synergy.engines.length === 0 && synergy.waiting.length === 0 ? (

@@ -7,7 +7,7 @@ import {
   getAct1Boss,
   getCard,
   getRelic,
-  relicTags,
+  relicEffects,
   resolveRelics,
   rewardPool,
   ALL_UNLOCKED,
@@ -252,6 +252,7 @@ function describeDelta(
   card: CardEntry,
   ex: SynergyExplanation,
   synergyWeight: number,
+  relicsHeld: boolean,
 ): Reason[] {
   const reasons: Reason[] = [];
   const dq = after.quality - before.quality;
@@ -272,7 +273,9 @@ function describeDelta(
         delta: d,
         text:
           had === 0
-            ? `Adds your first ${GROUP_LABELS[g]} source (you have none yet).`
+            ? relicsHeld
+              ? `Adds your first ${GROUP_LABELS[g]} source among your cards (relics are read by the synergy part, not by this count).`
+              : `Adds your first ${GROUP_LABELS[g]} source (you have none yet).`
             : `Adds ${GROUP_LABELS[g]} coverage (${String(had)} -> ${String(ap.groups[g])} cards), with diminishing returns.`,
       });
     }
@@ -379,20 +382,23 @@ function normalize(request: DraftRequest): DraftRequest {
   return held.length > 0 ? { ...rest, deck, relics: held } : { ...rest, deck };
 }
 
-/** What the index read from each listed relic: the mechanics it supplies, or that the table has nothing to say about it. */
+/**
+ * What the index read from each listed relic: the mechanics it supplies, the ones it takes away (read as negative supply, which
+ * lowers the cards that need them), or that the table has nothing to say about it. A relic that does both is in both lists.
+ */
 function describeRelics(ids: readonly string[]): NonNullable<DraftResponse["relics"]> {
   const supplying: { id: string; name: string; mechanics: string[] }[] = [];
+  const taking: { id: string; name: string; mechanics: string[] }[] = [];
   const unread: string[] = [];
+  const labels = (ms: readonly MechanicId[]): string[] => ms.map((m) => MECHANICS[m].label);
   for (const id of ids) {
     const name = getRelic(id)?.name ?? id;
-    const gives = Object.entries(relicTags(id).gives).filter(([, g]) => g > 0);
-    if (gives.length > 0) {
-      supplying.push({ id, name, mechanics: gives.map(([m]) => MECHANICS[m as MechanicId].label) });
-    } else {
-      unread.push(name);
-    }
+    const { provides, takesAway } = relicEffects(id);
+    if (provides.length > 0) supplying.push({ id, name, mechanics: labels(provides) });
+    if (takesAway.length > 0) taking.push({ id, name, mechanics: labels(takesAway) });
+    if (provides.length === 0 && takesAway.length === 0) unread.push(name);
   }
-  return { supplying, unread };
+  return { supplying, taking, unread };
 }
 
 /** The relics of the request that the catalog knows; an id it does not know is an invalid request, like an unknown card. */
@@ -437,6 +443,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const entries = resolveDeck(request);
   const offered = resolveOffered(request);
   const relics = resolveRelicIds(request);
+  const relicReading = relics.length > 0 ? describeRelics(relics) : null;
   const setting: Setting = { character: request.character, relics };
 
   const warnings: string[] = [];
@@ -505,6 +512,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
         card,
         explained,
         neutral.synergy,
+        relics.length > 0,
       );
       if (tilt) {
         const shift = r.delta - (neutralDelta.get(actionKey(r.action)) ?? r.delta);
@@ -606,9 +614,9 @@ export function evaluateDraft(input: unknown): DraftResponse {
     assumptions: [
       "Card quality is a static prior from rarity plus a bounded stat adjustment; it is not a win-rate estimate. It is read as a card's worth when what the card needs is there.",
       `Synergy is SLAY2's judgement of how cards work together (${String(Object.keys(SYNERGY.cards).length)} cards tagged by what they supply and what they need, table ${SYNERGY.sha256.slice(0, 12)}), not a measurement: a card whose needs the deck does not meet loses up to ${String(Math.round(MAX_DEPENDENCE * PART_WEIGHT.needs * 100))} % of its rating, less in early acts because picks to come may bring support (${FUTURE_SUPPORT.map((f) => `${String(Math.round(f * 100))} %`).join(" / ")} of the gap in acts 1 / 2 / 3); a card that supplies what others need is credited for them.${engineAssumption()}`,
-      ...(relics.length > 0
+      ...(relicReading
         ? [
-            `Relics: the ${String(relics.length)} you listed count as suppliers of the mechanics they provide, like a card that provides them (${String(relics.filter((id) => Object.keys(relicTags(id).gives).length > 0).length)} of them provide one in SLAY2's reading, table ${RELIC_SYNERGY.sha256.slice(0, 12)}). That reading is a judgement that has not been tested in simulation (ADR-051).`,
+            `Relics: the ${String(relics.length)} you listed are read by the synergy part of the index (what other cards need, scaling and engines), not by the role coverage below: a relic that provides a mechanic counts as a supplier of it, like a card that provides it${relicReading.taking.length > 0 ? ", and one that takes a mechanic away counts against the cards that need it" : ""} (${String(relicReading.supplying.length)} of them provide one${relicReading.taking.length > 0 ? ` and ${String(relicReading.taking.length)} take${relicReading.taking.length === 1 ? "s" : ""} one away` : ""} in SLAY2's reading, table ${RELIC_SYNERGY.sha256.slice(0, 12)}). That reading is a judgement with no registered test; it was read once against simulated runs that keep their relics, as an exploration (ADR-051, ADR-053).`,
           ]
         : []),
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
@@ -640,7 +648,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
       starterShare: base.starterShare,
     },
     deckSynergy: deckSynergy(entries, request.actIndex, setting),
-    ...(relics.length > 0 ? { relics: describeRelics(relics) } : {}),
+    ...(relicReading ? { relics: relicReading } : {}),
     ...(request.actContext
       ? {
           actContext: {

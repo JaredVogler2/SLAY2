@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-import { parseRunState, touch, type RunState } from "./run-state";
+import { parseRunState, serializeRunState, touch, type RunState } from "./run-state";
 
 /**
  * The run lives under a key named after its schema version. Version 1 (before the Act 1 version, the opening Ancient and
@@ -88,7 +88,7 @@ class RunStore {
   private persist(): void {
     try {
       if (this.state) {
-        window.localStorage.setItem(KEY, JSON.stringify(this.state));
+        window.localStorage.setItem(KEY, serializeRunState(this.state));
       } else {
         // clearing the run clears the old copy too, or it would come back at the next load
         window.localStorage.removeItem(KEY);

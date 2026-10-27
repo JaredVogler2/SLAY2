@@ -8,6 +8,7 @@ import {
   RELIC_SYNERGY,
   getRelic,
   hasRelicTags,
+  relicEffects,
   relicSupply,
   relicTags,
   resolveRelics,
@@ -84,6 +85,29 @@ describe("the relic synergy tags (SLAY2's judgement of what a relic provides to 
     ]) {
       expect(hasRelicTags(id), id).toBe(false);
       expect(relicTags(id).gives, id).toEqual({});
+    }
+  });
+
+  it("read nothing from an id that only exists on every object (constructor, __proto__ ...)", () => {
+    for (const id of ["constructor", "__proto__", "toString", "hasOwnProperty", "valueOf"]) {
+      expect(hasRelicTags(id), id).toBe(false);
+      expect(relicTags(id).gives, id).toEqual({});
+      expect(relicEffects(id), id).toEqual({ provides: [], takesAway: [] });
+    }
+  });
+
+  it("say what a relic provides and what it takes away, from the sign of what the table wrote", () => {
+    expect(relicEffects("VAJRA")).toEqual({ provides: ["strength"], takesAway: [] });
+    expect(relicEffects("BIG_MUSHROOM")).toEqual({ provides: [], takesAway: ["draw"] });
+    expect(relicEffects("AMETHYST_AUBERGINE")).toEqual({ provides: [], takesAway: [] });
+    // every written entry has an effect, and the only one that takes a mechanic away is the one the table says
+    const taking = Object.keys(RELIC_SYNERGY.relics).filter(
+      (id) => relicEffects(id).takesAway.length > 0,
+    );
+    expect(taking).toEqual(["BIG_MUSHROOM"]);
+    for (const id of Object.keys(RELIC_SYNERGY.relics)) {
+      const { provides, takesAway } = relicEffects(id);
+      expect(provides.length + takesAway.length, id).toBeGreaterThan(0);
     }
   });
 

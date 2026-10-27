@@ -32,10 +32,31 @@ export interface RelicTags {
 
 const NONE: RelicTags = { gives: {} };
 
-/** The written tags of a relic (none for a relic the table has nothing to say about, or one that is not in the catalog). */
+/**
+ * The written tags of a relic (none for a relic the table has nothing to say about, or one that is not in the catalog). An id
+ * that only exists on `Object.prototype` (`constructor`, `__proto__`) is not a written entry.
+ */
 export function relicTags(id: string): RelicTags {
+  if (!Object.hasOwn(RELIC_SYNERGY.relics, id)) return NONE;
   const written = RELIC_SYNERGY.relics[id];
   return written ? { gives: written.g } : NONE;
+}
+
+/**
+ * What the table says a relic does to the deck's mechanics: the ones it provides (counted as a supplier, positive) and the ones it
+ * takes away (counted against the cards that need them, negative). A relic the table has nothing to say about has neither.
+ */
+export function relicEffects(id: string): {
+  readonly provides: readonly MechanicId[];
+  readonly takesAway: readonly MechanicId[];
+} {
+  const provides: MechanicId[] = [];
+  const takesAway: MechanicId[] = [];
+  for (const [mechanic, g] of Object.entries(relicTags(id).gives)) {
+    if (g > 0) provides.push(mechanic as MechanicId);
+    else if (g < 0) takesAway.push(mechanic as MechanicId);
+  }
+  return { provides, takesAway };
 }
 
 /** Whether the relic has a written entry. */

@@ -16,6 +16,7 @@ export function Combobox<T>({
   renderOption,
   placeholder,
   hint,
+  emptyText,
   className,
 }: {
   label: string;
@@ -27,6 +28,8 @@ export function Combobox<T>({
   renderOption: (item: T) => ReactNode;
   placeholder: string;
   hint?: string;
+  /** What to say when the typed text matches nothing (the typed text is passed in); a generic line when not given. */
+  emptyText?: (query: string) => string;
   className?: string;
 }) {
   const id = useId();
@@ -49,6 +52,9 @@ export function Combobox<T>({
 
   const listId = `${id}-list`;
   const expanded = open && results.length > 0;
+  const typed = query.trim();
+  const nothing = open && typed !== "" && results.length === 0;
+  const nothingText = nothing ? (emptyText ? emptyText(typed) : `No match for “${typed}”.`) : "";
   return (
     <div className={cn("relative min-w-0", className)}>
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-parchment">
@@ -82,6 +88,10 @@ export function Combobox<T>({
           }, 120);
         }}
         onKeyDown={(e) => {
+          // the key that confirms an IME composition is not a choice (Chrome and Firefox report it as composing or as "Process")
+          if (e.nativeEvent.isComposing || e.key === "Process") {
+            return;
+          }
           if (e.key === "ArrowDown") {
             e.preventDefault();
             setOpen(true);
@@ -102,6 +112,17 @@ export function Combobox<T>({
         <p id={`${id}-hint`} className="mt-1 text-xs text-muted">
           {hint}
         </p>
+      ) : null}
+      <p aria-live="polite" className="sr-only">
+        {nothingText}
+      </p>
+      {nothing ? (
+        <div
+          aria-hidden="true"
+          className="absolute z-30 mt-1 w-full rounded-xl border border-line-strong bg-ink-2 px-3 py-2.5 text-sm text-muted shadow-2xl"
+        >
+          {nothingText}
+        </div>
       ) : null}
       <ul
         id={listId}

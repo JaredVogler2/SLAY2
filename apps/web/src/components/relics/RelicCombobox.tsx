@@ -58,6 +58,7 @@ export function RelicCombobox({
         );
       }}
       placeholder={placeholder}
+      emptyText={(q) => `No relic matches “${q}” (relics already listed are not offered again).`}
       {...(hint ? { hint } : {})}
       {...(className ? { className } : {})}
     />

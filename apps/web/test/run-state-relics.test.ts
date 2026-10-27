@@ -6,6 +6,7 @@ import {
   newRun,
   parseRunState,
   resetToStart,
+  serializeRunState,
   withCharacter,
   withRelic,
   withoutRelic,
@@ -47,6 +48,29 @@ describe("the relics of a run", () => {
     const { relics: _omit, ...old } = held;
     const parsedOld = parseRunState(JSON.stringify(old));
     expect(parsedOld.ok && parsedOld.state.relics).toEqual([]);
+  });
+
+  it("are left out of the saved text while there are none, so a page from before relics can still read it", () => {
+    const bare = newRun("silent");
+    const written = JSON.parse(serializeRunState(bare)) as Record<string, unknown>;
+    expect("relics" in written).toBe(false);
+    // every other key is there, and the text reads back as the same run
+    expect(Object.keys(written).sort()).toEqual(
+      Object.keys(bare)
+        .filter((k) => k !== "relics")
+        .sort(),
+    );
+    const back = parseRunState(serializeRunState(bare, 2));
+    expect(back.ok && back.state).toEqual(bare);
+    // once a relic is listed it is written, and read back
+    const held = withRelic(bare, "VAJRA");
+    expect((JSON.parse(serializeRunState(held)) as { relics: string[] }).relics).toEqual(["VAJRA"]);
+    const heldBack = parseRunState(serializeRunState(held));
+    expect(heldBack.ok && heldBack.state.relics).toEqual(["VAJRA"]);
+    // removing the last one takes the key out again
+    expect("relics" in (JSON.parse(serializeRunState(withoutRelic(held, "VAJRA"))) as object)).toBe(
+      false,
+    );
   });
 
   it("refuse an unknown relic id in an imported file and read a repeated id once", () => {

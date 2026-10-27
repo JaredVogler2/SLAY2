@@ -336,6 +336,19 @@ export function unknownObservations(state: RunState): UnknownObservation[] {
   return state.unknownRooms.map((r) => (r.outcome === undefined ? {} : { outcome: r.outcome }));
 }
 
+/**
+ * The text a run is stored and exported as. `relics` is left out while the list is empty, so a run that never listed a relic is
+ * exactly what a page from before relics wrote and reads: an older page left open in another tab, or an older deployment given an
+ * exported file, would otherwise refuse the key it does not know and drop the run.
+ */
+export function serializeRunState(state: RunState, space?: number): string {
+  if (state.relics.length > 0) {
+    return JSON.stringify(state, null, space);
+  }
+  const { relics: _none, ...older } = state;
+  return JSON.stringify(older, null, space);
+}
+
 export type ParseResult = { ok: true; state: RunState } | { ok: false; error: string };
 
 /** Parse and validate untrusted JSON (localStorage or an imported file). Never throws. */
