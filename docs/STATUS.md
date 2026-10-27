@@ -1,6 +1,6 @@
 # SLAY2 status
 
-**Last updated:** 2026-10-27 (session 1, continued) - **Branch:** `claude/adoring-brahmagupta-n2irn6` (pull requests #1 to #9 merged, the last one [PR #9](https://github.com/JaredVogler2/SLAY2/pull/9) at 00:43 UTC as `db67e11`; the branch was restarted from `main` and carries the next change, which has its own pull request) - **Game target:** STS2 **main v0.107.1** (Steam build 23811903). Beta v0.111.0 is **unsupported** (rules unverified).
+**Last updated:** 2026-10-27 (session 1, continued) - **Branch:** `claude/adoring-brahmagupta-n2irn6` (pull requests #1 to #9 merged, the last one [PR #9](https://github.com/JaredVogler2/SLAY2/pull/9) at 00:43 UTC as `db67e11`; the branch was restarted from `main` and carries the next change, [PR #10](https://github.com/JaredVogler2/SLAY2/pull/10): the development stage and the one held-out test of the synergy term) - **Game target:** STS2 **main v0.107.1** (Steam build 23811903). Beta v0.111.0 is **unsupported** (rules unverified).
 
 ## Honest headline
 

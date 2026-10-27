@@ -1,7 +1,7 @@
 # Reproducibility
 
 How each published number can be checked from this repository, what is needed to do it, and what cannot be done from the repository
-alone. Written 2026-10-26 against the code of `7379420` and the supported game build **STS2 main v0.107.1** (Steam build 23811903);
+alone. Written 2026-10-26 against the code of `7379420` (the synergy study and the generated table of every batch were added on 2026-10-27) and the supported game build **STS2 main v0.107.1** (Steam build 23811903);
 the beta v0.111.0 is not supported. Every statement of a result here points to a committed file with its hash.
 
 ## What can and cannot be reproduced
@@ -64,6 +64,7 @@ number of steps) predate the process-state fix and can move at most six pairs of
 | Search policy `search_v3` (74.3 % against 64.7 %) | ADR-040 | `experiments/batches/search_v3-*`, `experiments/comparisons/search_v3-all-vs-rules_v2-*-val.json` | `slay2_sim compare` |
 | G11 (no start-of-act heal) and G13 (Necrobinder at 75 HP) | ADR-039, ADR-049 | `experiments/batches/rules_v2-ironclad-a0-veteran-ancientheal-dev-n500`, `experiments/batches/g13-necrobinder-*-dev-n500`, `experiments/comparisons/g13-gamehp-vs-base-necrobinder-a0-veteran-dev.json` | `slay2_sim compare` |
 | **Opening-relic study** (61.05 % against 54.30 % past the Act-1 boss, p = 9.1e-45) | ADR-049 | `experiments/neow/explore-<class>-a0-train-n3000/`, `experiments/neow/neow-values-v2.json` (SHA-256 `b1afa02c47c5bc74df31ed2d8d40ae53dc5b514c34a07e4e5399ed474845877c`), `experiments/batches/rules_v2_neow_values-<class>-a0-veteran-val-n2000/`, `experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json`, `experiments/neow/per-class/` | below |
+| **Synergy study** (33.0 % against 26.0 % past the Act-1 boss, p = 3.8e-60) | ADR-050 and its addenda A to D | `packages/game-data/data/synergy.sts2-main-0.107.1.json` (the tags, SHA-256 `bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a`), `experiments/synergy/b1-calibration.json` and `b1-mechanics.json` (stage B1, exploratory), `experiments/batches/advisor_v1-*-dev-o4000-n1000` (35 development batches) and `experiments/synergy/dev/` (the arms against `d0` and the two selection files, SHA-256 `352cb7a0f273…` and `2235b11af758…`), `experiments/batches/advisor_v1-{astar,d0star}-<class>-a0-veteran-val-n2000` (10) and `experiments/batches/rules_v3-{silent,regent,necrobinder,defect}-a0-veteran-val-n2000` (4, the reference), `experiments/synergy/val/` (the pooled test, the per-class comparisons and the arm profile) | below |
 | Combat networks (no improvement) | ADR-026 | `experiments/rl/results/` | evaluation files only; checkpoints are not committed |
 | The void first opening-relic study (not evidence) | ADR-049 | `experiments/void/2026-10-26-wrong-class-ids/` | `VOID.md` says why |
 
@@ -85,6 +86,26 @@ PYTHONPATH=sim python -m slay2_sim pool $(for c in ironclad silent regent necrob
 
 Re-playing the 25,000 games takes the simulator and about 1.5 hours on four cores (`explore.sh`, `run-val.sh`).
 
+### The synergy study, command by command
+
+`scripts/studies/synergy/` holds every stage as a command, in the order it was run (`README.md` there). Without the simulator, the
+development selection and the held-out test re-compute from the committed games, and **both were, on 2026-10-27, and came out byte
+for byte the committed files** (no file under `experiments/` changed, and `A*` printed back as `{"needs":1,"scalers":0.7,"engines":0,"margin":0.0}`):
+
+```bash
+# the development selection (phase 1 and 2), from the 35 committed development batches: 46 s, writes experiments/synergy/dev/
+PY=python3 bash scripts/studies/synergy/select-dev.sh 1 && PY=python3 bash scripts/studies/synergy/select-dev.sh 2 d1
+sha256sum experiments/synergy/dev/selection-phase{1,2}.json                  # 352cb7a0f273…, 2235b11af758…
+
+# the primary test and the secondary pooled comparisons, from the committed held-out batches: 38 s, writes experiments/synergy/val/
+MARGIN=0 PY=python3 bash scripts/studies/synergy/pool-val.sh
+sha256sum experiments/synergy/val/pooled-astar-vs-d0star.json               # 1401cde3ce48…e65b
+```
+
+Re-playing the games takes the simulator: about 90 and 35 minutes on four cores for the two development phases, and about 80
+minutes for the held-out arms (`run-dev.sh`, `run-val.sh`, which refuses to start unless `preflight-val.sh` passes). The held-out test
+was run once; re-computing it from the committed games changes nothing and is not a second test.
+
 ## The website's data
 
 `apps/web/src/content/*.generated.json` are generated, never edited: `node scripts/export-site-data.mjs` writes them from the
@@ -100,13 +121,76 @@ written (`dirty` batches predate the rule that a batch is started from a clean t
 `Class check` says whether the per-game class check (ADR-049) existed when the batch was played. All batches from before it used the
 exact class ids (every manifest and the final maximum HP of every batch were scanned on 2026-10-26).
 
+The table is written by `python3 scripts/docs-tables.py --write` from the manifests and folders of every batch under
+`experiments/batches/`, of the opening-relic exploration (`experiments/neow/explore-*`) and of the card-value exploration
+(`experiments/cardvalue/explore*`); the void study is not in it. A test (`sim/tests/test_docs_tables.py`) fails when it is stale.
+`Audits` lists the audit files in the batch's folder: `wins` (every win re-derived), `sample` (a 40-game sample re-derived) and
+`rederivation` (every game re-derived); the table above says what each proves.
+
+<!-- table:batches:begin -->
 | Batch id | Policy | Class | Partition · n | Completed | Wins | Content sha256 | Tree | Audits | Class check |
 |---|---|---|---|---|---|---|---|---|---|
+| `advisor_v1-astar-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 2000 | 0 | `7145541305bc…` | clean | sample | yes |
+| `advisor_v1-astar-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1997 | 2 | `57051e5df185…` | clean | wins,sample | yes |
+| `advisor_v1-astar-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1997 | 0 | `af9e8efb162c…` | clean | sample | yes |
+| `advisor_v1-astar-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1990 | 0 | `eb199bc6d2a3…` | clean | sample | yes |
+| `advisor_v1-astar-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `c46e319bff5a…` | clean | sample | yes |
+| `advisor_v1-d0-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `5f28f56c474d…` | clean | – | yes |
+| `advisor_v1-d0-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 999 | 0 | `1e80771827ca…` | clean | – | yes |
+| `advisor_v1-d0-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `5723808d69b9…` | clean | – | yes |
+| `advisor_v1-d0-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 998 | 0 | `3a98dbe91d01…` | clean | – | yes |
+| `advisor_v1-d0-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `165d8631ec0d…` | clean | – | yes |
+| `advisor_v1-d0star-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 1998 | 0 | `bb1d5364903c…` | clean | sample | yes |
+| `advisor_v1-d0star-ironclad-a0-veteran-val-n2000` | advisor_v1 | Ironclad | val · 2000 | 1998 | 0 | `8eba6d4b503c…` | clean | sample | yes |
+| `advisor_v1-d0star-necrobinder-a0-veteran-val-n2000` | advisor_v1 | Necrobinder | val · 2000 | 1998 | 0 | `9d29eae7897c…` | clean | sample | yes |
+| `advisor_v1-d0star-regent-a0-veteran-val-n2000` | advisor_v1 | Regent | val · 2000 | 1988 | 0 | `a294345df0cf…` | clean | sample | yes |
+| `advisor_v1-d0star-silent-a0-veteran-val-n2000` | advisor_v1 | Silent | val · 2000 | 2000 | 0 | `47a8504bbda1…` | clean | sample | yes |
+| `advisor_v1-d1-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `c8bd5abc57f7…` | clean | – | yes |
+| `advisor_v1-d1-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `913967cb9d65…` | clean | – | yes |
+| `advisor_v1-d1-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `e75a16dc7d69…` | clean | – | yes |
+| `advisor_v1-d1-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 994 | 0 | `316dc3545c5d…` | clean | – | yes |
+| `advisor_v1-d1-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `575627368adc…` | clean | – | yes |
+| `advisor_v1-d2-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `23d4abc982fc…` | clean | – | yes |
+| `advisor_v1-d2-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `cefc89ef2433…` | clean | – | yes |
+| `advisor_v1-d2-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `2018a3a35caf…` | clean | – | yes |
+| `advisor_v1-d2-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 997 | 0 | `f907859e574d…` | clean | – | yes |
+| `advisor_v1-d2-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `cab50f3f702e…` | clean | – | yes |
+| `advisor_v1-d3-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `4175c609d402…` | clean | – | yes |
+| `advisor_v1-d3-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `d100fd5f42ba…` | clean | – | yes |
+| `advisor_v1-d3-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `0ad147d050d2…` | clean | – | yes |
+| `advisor_v1-d3-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 997 | 0 | `1e8738b91c59…` | clean | – | yes |
+| `advisor_v1-d3-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `238c6dc184a7…` | clean | – | yes |
+| `advisor_v1-d4-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `bcbc55e4c56c…` | clean | – | yes |
+| `advisor_v1-d4-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `d0f237c1292b…` | clean | – | yes |
+| `advisor_v1-d4-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `d85ac84b3e6c…` | clean | – | yes |
+| `advisor_v1-d4-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 998 | 0 | `a8706cfdebb2…` | clean | – | yes |
+| `advisor_v1-d4-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `3e803f61d067…` | clean | – | yes |
+| `advisor_v1-m1-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `9cdd4b0cf61d…` | clean | – | yes |
+| `advisor_v1-m1-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 0 | `f559f006e189…` | clean | – | yes |
+| `advisor_v1-m1-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `bdea570cf169…` | clean | – | yes |
+| `advisor_v1-m1-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 994 | 0 | `a58f0b142f00…` | clean | – | yes |
+| `advisor_v1-m1-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 1000 | 0 | `744d7b2eb54e…` | clean | – | yes |
+| `advisor_v1-m2-defect-a0-veteran-dev-o4000-n1000` | advisor_v1 | Defect | dev · 1000 | 1000 | 0 | `d01b205c5e0d…` | clean | – | yes |
+| `advisor_v1-m2-ironclad-a0-veteran-dev-o4000-n1000` | advisor_v1 | Ironclad | dev · 1000 | 1000 | 2 | `49f8cf39d1ab…` | clean | wins | yes |
+| `advisor_v1-m2-necrobinder-a0-veteran-dev-o4000-n1000` | advisor_v1 | Necrobinder | dev · 1000 | 1000 | 0 | `c0903f12fb93…` | clean | – | yes |
+| `advisor_v1-m2-regent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Regent | dev · 1000 | 997 | 0 | `67109e933bab…` | clean | – | yes |
+| `advisor_v1-m2-silent-a0-veteran-dev-o4000-n1000` | advisor_v1 | Silent | dev · 1000 | 999 | 0 | `e9c687c6f97f…` | clean | – | yes |
+| `explore-defect-a0-train-rep0` | rules_explore | Defect | train · 5000 | 4998 | 0 | `90714d2eacf5…` | dirty | – | predates |
+| `explore-ironclad-a0-train-rep0` | rules_explore | Ironclad | train · 5000 | 4995 | 1 | `02655d2f95c3…` | clean | wins | predates |
+| `explore-necrobinder-a0-train-rep0` | rules_explore | Necrobinder | train · 5000 | 4999 | 0 | `46f1a3fc302f…` | clean | – | predates |
+| `explore-regent-a0-train-rep0` | rules_explore | Regent | train · 5000 | 4967 | 0 | `6da7f793a28c…` | dirty | – | predates |
+| `explore-silent-a0-train-rep0` | rules_explore | Silent | train · 5000 | 5000 | 0 | `41a417aab74a…` | dirty | – | predates |
+| `explore3-ironclad-a0-dev-o5000-n5000` | rules_explore_v3 | Ironclad | dev · 5000 | 4998 | 4 | `d8e0c898e170…` | dirty | wins | predates |
 | `g13-necrobinder-base-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 500 | 0 | `e229542e3004…` | clean | sample | yes |
 | `g13-necrobinder-gamehp-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 499 | 0 | `8949438fffb7…` | clean | sample | yes |
 | `ladder-random_legal-ironclad-a0-first_run-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `570dd90b3617…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `77b084b95fbf…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n2000` | random_legal | Ironclad | train · 2000 | 1999 | 0 | `3ab5c4052170…` | dirty | – | predates |
+| `neow-explore-defect-a0-train-n3000` | rules_v2_neow | Defect | train · 3000 | 2991 | 18 | `38518f7ff41b…` | clean | wins,sample | yes |
+| `neow-explore-ironclad-a0-train-n3000` | rules_v2_neow | Ironclad | train · 3000 | 2984 | 13 | `212359e9bd5f…` | clean | wins,sample | yes |
+| `neow-explore-necrobinder-a0-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2995 | 0 | `71bcd527e5ec…` | clean | sample | yes |
+| `neow-explore-regent-a0-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2964 | 0 | `c5d25c54549d…` | clean | sample | yes |
+| `neow-explore-silent-a0-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2999 | 0 | `4367f6c6b434…` | clean | sample | yes |
 | `random_legal-ironclad-a0-veteran-val-n2000` | random_legal | Ironclad | val · 2000 | 2000 | 0 | `6039113dcdc9…` | dirty | sample | predates |
 | `rules_v1-defect-a0-veteran-val-n2000` | rules_v1 | Defect | val · 2000 | 1999 | 0 | `2773566cc727…` | dirty | sample | predates |
 | `rules_v1-ironclad-a0-veteran-train-n300` | rules_v1 | Ironclad | train · 300 | 300 | 0 | `f0b6fb7eec8f…` | clean | – | predates |
@@ -116,8 +200,8 @@ exact class ids (every manifest and the final maximum HP of every batch were sca
 | `rules_v1-silent-a0-veteran-val-n2000` | rules_v1 | Silent | val · 2000 | 1999 | 0 | `ebf95798bae0…` | clean | sample | predates |
 | `rules_v2-defect-a0-veteran-val-n2000` | rules_v2 | Defect | val · 2000 | 1996 | 7 | `b4a6768e1e48…` | clean | wins,sample,rederivation | predates |
 | `rules_v2-ironclad-a0-veteran-ancientheal-dev-n500` | rules_v2 | Ironclad | dev · 500 | 499 | 2 | `59e32ae71e40…` | clean | wins,sample | predates |
-| `rules_v2-ironclad-a0-veteran-dev-n500-recheck` | rules_v2 | Ironclad | dev · 500 | 499 | 0 | `139ea0a007a8…` | dirty | sample | predates |
 | `rules_v2-ironclad-a0-veteran-dev-n500` | rules_v2 | Ironclad | dev · 500 | 499 | 0 | `c6d0120c6c59…` | dirty | – | predates |
+| `rules_v2-ironclad-a0-veteran-dev-n500-recheck` | rules_v2 | Ironclad | dev · 500 | 499 | 0 | `139ea0a007a8…` | dirty | sample | predates |
 | `rules_v2-ironclad-a0-veteran-val-n2000` | rules_v2 | Ironclad | val · 2000 | 1994 | 6 | `70a62f3df49a…` | dirty | wins,sample,rederivation | predates |
 | `rules_v2-necrobinder-a0-veteran-val-n2000` | rules_v2 | Necrobinder | val · 2000 | 1999 | 0 | `124099adcf74…` | clean | sample,rederivation | predates |
 | `rules_v2-regent-a0-veteran-val-n2000` | rules_v2 | Regent | val · 2000 | 1987 | 1 | `a20b58d12a9f…` | clean | wins,sample,rederivation | predates |
@@ -127,15 +211,15 @@ exact class ids (every manifest and the final maximum HP of every batch were sca
 | `rules_v2_neow_values-necrobinder-a0-veteran-val-n2000` | rules_v2_neow_values | Necrobinder | val · 2000 | 1992 | 0 | `e6686cfac179…` | clean | sample | yes |
 | `rules_v2_neow_values-regent-a0-veteran-val-n2000` | rules_v2_neow_values | Regent | val · 2000 | 1976 | 1 | `d7107d820e90…` | clean | wins,sample | yes |
 | `rules_v2_neow_values-silent-a0-veteran-val-n2000` | rules_v2_neow_values | Silent | val · 2000 | 2000 | 0 | `f96a3564038c…` | clean | sample | yes |
+| `rules_v3-defect-a0-veteran-val-n2000` | rules_v3 | Defect | val · 2000 | 1998 | 10 | `fa969034c3eb…` | clean | wins,sample | yes |
 | `rules_v3-ironclad-a0-veteran-val-n2000` | rules_v3 | Ironclad | val · 2000 | 1996 | 6 | `6afa85d50be6…` | clean | wins,sample | predates |
+| `rules_v3-necrobinder-a0-veteran-val-n2000` | rules_v3 | Necrobinder | val · 2000 | 1997 | 0 | `9e3aca7a950f…` | clean | sample | yes |
+| `rules_v3-regent-a0-veteran-val-n2000` | rules_v3 | Regent | val · 2000 | 1990 | 0 | `e5a38e8ec26b…` | clean | sample | yes |
+| `rules_v3-silent-a0-veteran-val-n2000` | rules_v3 | Silent | val · 2000 | 2000 | 0 | `4f36d2eedcb3…` | clean | sample | yes |
 | `rules_v3-values2-ironclad-a0-veteran-val-n2000` | rules_v3 | Ironclad | val · 2000 | 1992 | 2 | `92d281e79d7d…` | dirty | wins,sample | predates |
 | `search_v1-ironclad-a0-veteran-train-n200` | search_v1 | Ironclad | train · 200 | 200 | 0 | `5edbd6700442…` | dirty | – | predates |
 | `search_v3-all-ironclad-a0-veteran-dev-n200` | search_v3 | Ironclad | dev · 200 | 190 | 1 | `9f9eca42fb36…` | dirty | wins,sample | predates |
 | `search_v3-all-ironclad-a0-veteran-val-n300` | search_v3 | Ironclad | val · 300 | 300 | 2 | `307658fb33b6…` | clean | wins,sample | predates |
 | `search_v3-boss-ironclad-a0-veteran-dev-n500` | search_v3 | Ironclad | dev · 500 | 500 | 0 | `9c6212b8c85c…` | dirty | – | predates |
 | `smoke-random_legal-ironclad-a0-veteran-n10` | random_legal | Ironclad | train · 10 | 10 | 0 | `863f8cce3adc…` | dirty | – | predates |
-| `neow-explore-defect-a0-train-n3000` | rules_v2_neow | Defect | train · 3000 | 2991 | 18 | `38518f7ff41b…` | clean | wins,sample | yes |
-| `neow-explore-ironclad-a0-train-n3000` | rules_v2_neow | Ironclad | train · 3000 | 2984 | 13 | `212359e9bd5f…` | clean | wins,sample | yes |
-| `neow-explore-necrobinder-a0-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2995 | 0 | `71bcd527e5ec…` | clean | sample | yes |
-| `neow-explore-regent-a0-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2964 | 0 | `c5d25c54549d…` | clean | sample | yes |
-| `neow-explore-silent-a0-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2999 | 0 | `4367f6c6b434…` | clean | sample | yes |
+<!-- table:batches:end -->

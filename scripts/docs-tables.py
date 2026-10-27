@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Regenerates the tables of docs/MODEL-AND-DATA-CARDS.md, docs/RELEASE-AUDIT.md and docs/STATUS.md from the committed experiment
-files and the findings table (standard library only).
+"""Regenerates the tables of docs/MODEL-AND-DATA-CARDS.md, docs/RELEASE-AUDIT.md, docs/STATUS.md and docs/REPRODUCIBILITY.md from the
+committed experiment files and the findings table (standard library only).
 
     python3 scripts/docs-tables.py --write    rewrite every block between <!-- table:NAME:begin --> and <!-- table:NAME:end -->
     python3 scripts/docs-tables.py --check    exit 1 and name the stale blocks (sim/tests/test_docs_tables.py runs this in CI)
@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CARDS = ROOT / "docs" / "MODEL-AND-DATA-CARDS.md"
 AUDIT = ROOT / "docs" / "RELEASE-AUDIT.md"
 STATUS = ROOT / "docs" / "STATUS.md"
+REPRO = ROOT / "docs" / "REPRODUCIBILITY.md"
 FINDINGS = ROOT / "docs" / "ADVERSARIAL-AUDIT.md"
 
 # Which registration (docs/DECISIONS.md) a comparison belongs to. A comparison that is not listed here is development evidence
@@ -266,13 +267,19 @@ def table_gaps() -> str:
 
 
 # ------------------------------------------------------------------------------------------------------------ completed games
-def table_games() -> str:
-    """Games actually played and completed (a win or a death), by class and by what the seeds were for. Void batches are not here."""
-    manifests = (
+def manifest_paths() -> list[str]:
+    """Every committed batch that counts as evidence: the batches, the opening-relic exploration and the card-value exploration. Void
+    batches (experiments/void) are not among them."""
+    return sorted(
         glob.glob(str(ROOT / "experiments" / "batches" / "*" / "manifest.json"))
         + glob.glob(str(ROOT / "experiments" / "neow" / "explore-*" / "manifest.json"))
         + glob.glob(str(ROOT / "experiments" / "cardvalue" / "explore*" / "manifest.json"))
     )
+
+
+def table_games() -> str:
+    """Games actually played and completed (a win or a death), by class and by what the seeds were for. Void batches are not here."""
+    manifests = manifest_paths()
     cols = ("batches", "games", "completed", "wins", "errors", "timeouts")
     acc: dict[tuple[str, str], dict[str, int]] = {}
     for p in manifests:
@@ -298,6 +305,37 @@ def table_games() -> str:
     return "\n".join(
         ["| Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |", "|---|---|---|---|---|---|---|---|"] + rows
     )
+
+
+# ----------------------------------------------------------------------------------------------------------------- every batch
+def table_batches() -> str:
+    """One row per committed batch (the same set as the games table), read from its manifest and its folder: what was played, how many
+    games ended, the content hash of the records, whether the tracked files were modified when it started, which audits exist."""
+    rows = []
+    for path in manifest_paths():
+        folder = Path(path).parent
+        m = load(path)
+        counts = m["summary"]["counts"]
+        slay2 = (m.get("environment") or {}).get("slay2") or {}
+        tree = "not recorded" if "dirty" not in slay2 else ("dirty" if slay2["dirty"] else "clean")
+        audits = ",".join(
+            label
+            for name, label in (("wins-audit.json", "wins"), ("sample-audit.json", "sample"), ("rederivation-audit.json", "rederivation"))
+            if (folder / name).exists()
+        )
+        rows.append(
+            (
+                m["batch_id"],
+                f"| `{m['batch_id']}` | {m['policy']['name']} | {m['config']['character']} | {m['seeds']['partition']} · {m['seeds']['n']} "
+                f"| {m['summary']['completed']} | {counts['win']} | `{m['content_sha256'][:12]}…` | {tree} | {audits or '–'} "
+                f"| {'yes' if m.get('class_start_verified') else 'predates'} |",
+            )
+        )
+    head = [
+        "| Batch id | Policy | Class | Partition · n | Completed | Wins | Content sha256 | Tree | Audits | Class check |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    return "\n".join(head + [row for _, row in sorted(rows)])
 
 
 # ---------------------------------------------------------------------------------------------------------------- findings
@@ -507,11 +545,13 @@ DOCS = {
     CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev", "synergy_val", "synergy_val_profile"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
+    REPRO: ("batches",),
 }
 BLOCKS = {
     "rules": table_rules,
     "gaps": table_gaps,
     "games": table_games,
+    "batches": table_batches,
     "findings": table_findings,
     "policies": table_policies,
     "comparisons": table_comparisons,
