@@ -1,0 +1,43 @@
+{
+  "a": {
+    "boss_fights": 4269,
+    "file": "experiments/cardvalue/ironclad-a0-v2.json",
+    "games": 4269,
+    "pass_rate": 0.5488,
+    "sha256": "f6388301c12fe6ba7411001e527468774cc31f151d4fb5a02fbc99119cf6b421"
+  },
+  "b": {
+    "boss_fights": 4275,
+    "file": "experiments/cardvalue/ironclad-a0-keep-v1.json",
+    "games": 4275,
+    "pass_rate": 0.6465,
+    "sha256": "dd0d0616020329354c20764392b73bb6ac6d529f03a8ce0a696940903960efa0"
+  },
+  "comparison": {
+    "best_k_in_both": 7,
+    "cards_in_both": 94,
+    "cards_only_in_a": [
+      "FINESSE"
+    ],
+    "cards_only_in_b": [],
+    "disjoint_ci95": 1,
+    "k": 10,
+    "spearman": 0.82335729509085,
+    "worst_k_in_both": 6
+  },
+  "kind": "card-value-comparison",
+  "noise_reference": {
+    "best_k_in_both": 6,
+    "cards_in_both": 72,
+    "definition": "the second file's games split by the parity of the game seed, each half fitted like the full data, Spearman correlation of the two halves and the same corrected to the full number of games as 2r/(1+r)",
+    "games": [
+      2119,
+      2156
+    ],
+    "k": 10,
+    "spearman": 0.6903980963406007,
+    "spearman_brown": 0.8168467508750571,
+    "worst_k_in_both": 4
+  },
+  "schema": 1
+}

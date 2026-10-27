@@ -184,6 +184,11 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `explore-regent-a0-train-rep0` | rules_explore | Regent | train · 5000 | 4967 | 0 | `6da7f793a28c…` | dirty | – | predates |
 | `explore-silent-a0-train-rep0` | rules_explore | Silent | train · 5000 | 5000 | 0 | `41a417aab74a…` | dirty | – | predates |
 | `explore3-ironclad-a0-dev-o5000-n5000` | rules_explore_v3 | Ironclad | dev · 5000 | 4998 | 4 | `d8e0c898e170…` | dirty | wins | predates |
+| `explore4-defect-a0-keeprelics-dev-o5000-n5000` | rules_explore_v3 | Defect | dev · 5000 | 4946 | 25 | `cd8a8780bcc5…` | clean | – | yes |
+| `explore4-ironclad-a0-keeprelics-dev-o5000-n5000` | rules_explore_v3 | Ironclad | dev · 5000 | 4921 | 50 | `183ab8e5994b…` | clean | – | yes |
+| `explore4-necrobinder-a0-keeprelics-dev-o5000-n5000` | rules_explore_v3 | Necrobinder | dev · 5000 | 4932 | 0 | `71a19ccf1ac9…` | clean | – | yes |
+| `explore4-regent-a0-keeprelics-dev-o5000-n5000` | rules_explore_v3 | Regent | dev · 5000 | 4917 | 1 | `31df060a2315…` | clean | – | yes |
+| `explore4-silent-a0-keeprelics-dev-o5000-n5000` | rules_explore_v3 | Silent | dev · 5000 | 4992 | 0 | `2f4d0763173e…` | clean | – | yes |
 | `g13-necrobinder-base-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 500 | 0 | `e229542e3004…` | clean | sample | yes |
 | `g13-necrobinder-gamehp-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 499 | 0 | `8949438fffb7…` | clean | sample | yes |
 | `g14-defect-base-dev-n500` | rules_v2 | Defect | dev · 500 | 499 | 2 | `9640980bfab7…` | clean | wins,sample | yes |

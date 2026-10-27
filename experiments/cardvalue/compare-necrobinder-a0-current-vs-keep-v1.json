@@ -1,0 +1,49 @@
+{
+  "a": {
+    "boss_fights": 3389,
+    "file": "experiments/cardvalue/necrobinder-a0-v1.json",
+    "games": 3389,
+    "pass_rate": 0.44,
+    "sha256": "5634d67a81f7536ed216e4bcd2898f903086d7941558fb2242723fc7588bad97"
+  },
+  "b": {
+    "boss_fights": 3829,
+    "file": "experiments/cardvalue/necrobinder-a0-keep-v1.json",
+    "games": 3829,
+    "pass_rate": 0.6226,
+    "sha256": "a24d80f77baf2881501ee6f0ba71359f717162c3e1e53feaf17799c06c621607"
+  },
+  "comparison": {
+    "best_k_in_both": 7,
+    "cards_in_both": 90,
+    "cards_only_in_a": [
+      "FLASH_OF_STEEL"
+    ],
+    "cards_only_in_b": [
+      "OBLIVION",
+      "SEANCE",
+      "SHARED_FATE",
+      "SPIRIT_OF_ASH",
+      "TRANSFIGURE"
+    ],
+    "disjoint_ci95": 2,
+    "k": 10,
+    "spearman": 0.7288224883730502,
+    "worst_k_in_both": 6
+  },
+  "kind": "card-value-comparison",
+  "noise_reference": {
+    "best_k_in_both": 5,
+    "cards_in_both": 68,
+    "definition": "the second file's games split by the parity of the game seed, each half fitted like the full data, Spearman correlation of the two halves and the same corrected to the full number of games as 2r/(1+r)",
+    "games": [
+      1891,
+      1938
+    ],
+    "k": 10,
+    "spearman": 0.7619193037370692,
+    "spearman_brown": 0.8648742335940378,
+    "worst_k_in_both": 7
+  },
+  "schema": 1
+}

@@ -1,0 +1,1145 @@
+{
+  "schema": 1,
+  "kind": "card-values",
+  "outcome": "the run gets past the Act-1 boss",
+  "games": 3850,
+  "boss_fights": 3850,
+  "pass_rate": 0.7151,
+  "model": {
+    "l2": 10.0,
+    "folds": 5,
+    "cross_validation": {
+      "l2": {
+        "0.3": {
+          "log_loss": 0.36325871173134916,
+          "auc": 0.8960437954319164
+        },
+        "1.0": {
+          "log_loss": 0.3595827772864973,
+          "auc": 0.8973745720670679
+        },
+        "3.0": {
+          "log_loss": 0.35521954341142664,
+          "auc": 0.898927199994967
+        },
+        "10.0": {
+          "log_loss": 0.35355096181994733,
+          "auc": 0.8993271945645771
+        },
+        "30.0": {
+          "log_loss": 0.3604610540368522,
+          "auc": 0.8955772454744819
+        },
+        "100.0": {
+          "log_loss": 0.38074257042906345,
+          "auc": 0.8821045806994011
+        }
+      },
+      "baseline_log_loss": 0.4362545505785234,
+      "best_l2": 10.0
+    },
+    "bootstrap_draws": 200,
+    "features": 149
+  },
+  "covariates": {
+    "intercept": -10.5401,
+    "hp_frac": 6.4465,
+    "max_hp_per_100": 4.495,
+    "potions": 0.5358,
+    "upgraded": 0.2048,
+    "boss:KIN_FOLLOWER+KIN_FOLLOWER+KIN_PRIEST": 0.2966,
+    "boss:VANTOM": 0.868,
+    "relic:AMETHYST_AUBERGINE": -0.5809,
+    "relic:ANCHOR": 0.0482,
+    "relic:ARCANE_SCROLL": -0.4936,
+    "relic:BAG_OF_PREPARATION": -0.1986,
+    "relic:BLOOD_VIAL": -0.1431,
+    "relic:BOOK_OF_FIVE_RINGS": -0.0443,
+    "relic:BOOMING_CONCH": -0.4792,
+    "relic:BRONZE_SCALES": 0.5018,
+    "relic:CENTENNIAL_PUZZLE": 0.0975,
+    "relic:DATA_DISK": 0.9276,
+    "relic:FESTIVE_POPPER": 0.2082,
+    "relic:FISHING_ROD": -0.3834,
+    "relic:GOLDEN_PEARL": -0.6246,
+    "relic:GORGET": -0.1234,
+    "relic:HAPPY_FLOWER": 0.5603,
+    "relic:JUZU_BRACELET": -0.3608,
+    "relic:KALEIDOSCOPE": -0.8637,
+    "relic:LANTERN": 0.3737,
+    "relic:LAVA_ROCK": -0.7779,
+    "relic:LEAD_PAPERWEIGHT": -0.4512,
+    "relic:LOST_COFFER": -0.5163,
+    "relic:MEAL_TICKET": -0.3192,
+    "relic:NEOWS_TALISMAN": -0.2828,
+    "relic:NEOWS_TORMENT": -0.5331,
+    "relic:NEW_LEAF": -0.3161,
+    "relic:NUTRITIOUS_OYSTER": -0.4322,
+    "relic:ODDLY_SMOOTH_STONE": 1.121,
+    "relic:PENDULUM": 0.2925,
+    "relic:PHIAL_HOLSTER": -0.6912,
+    "relic:POMANDER": -1.0113,
+    "relic:POTION_BELT": 0.4617,
+    "relic:PRECISE_SCISSORS": -0.4597,
+    "relic:REGAL_PILLOW": 0.1246,
+    "relic:SCROLL_BOXES": -0.3313,
+    "relic:SMALL_CAPSULE": -0.4688,
+    "relic:STONE_HUMIDIFIER": -0.9589,
+    "relic:STRAWBERRY": -0.6494,
+    "relic:STRIKE_DUMMY": 0.7005,
+    "relic:SWORD_OF_STONE": -0.0448,
+    "relic:TEA_OF_DISCOURTESY": 0.1458,
+    "relic:VAJRA": 0.3826,
+    "relic:VENERABLE_TEA_SET": 0.2793,
+    "relic:WAR_PAINT": -0.0341,
+    "relic:WHETSTONE": -0.034,
+    "relic:WINGED_BOOTS": -0.465
+  },
+  "cards": [
+    {
+      "id": "CLAW",
+      "beta": 1.3859,
+      "ci95": [
+        1.2401,
+        1.5726
+      ],
+      "games_with_card": 1430,
+      "static_rating": 2.65
+    },
+    {
+      "id": "BULK_UP",
+      "beta": 1.0866,
+      "ci95": [
+        0.8884,
+        1.3282
+      ],
+      "games_with_card": 570,
+      "static_rating": 9.85
+    },
+    {
+      "id": "BALL_LIGHTNING",
+      "beta": 0.8411,
+      "ci95": [
+        0.721,
+        1.0562
+      ],
+      "games_with_card": 1377,
+      "static_rating": 3.85
+    },
+    {
+      "id": "COLD_SNAP",
+      "beta": 0.7496,
+      "ci95": [
+        0.6086,
+        0.9697
+      ],
+      "games_with_card": 1203,
+      "static_rating": 3.3
+    },
+    {
+      "id": "LIGHTNING_ROD",
+      "beta": 0.5733,
+      "ci95": [
+        0.4045,
+        0.7486
+      ],
+      "games_with_card": 1292,
+      "static_rating": 2.0
+    },
+    {
+      "id": "ADAPTIVE_STRIKE",
+      "beta": 0.5099,
+      "ci95": [
+        0.2135,
+        0.7773
+      ],
+      "games_with_card": 125,
+      "static_rating": 6.15
+    },
+    {
+      "id": "NULL_CARD",
+      "beta": 0.5009,
+      "ci95": [
+        0.2929,
+        0.7298
+      ],
+      "games_with_card": 474,
+      "static_rating": 4.75
+    },
+    {
+      "id": "FTL",
+      "beta": 0.4532,
+      "ci95": [
+        0.246,
+        0.7485
+      ],
+      "games_with_card": 503,
+      "static_rating": 6.55
+    },
+    {
+      "id": "GO_FOR_THE_EYES",
+      "beta": 0.3598,
+      "ci95": [
+        0.2101,
+        0.5271
+      ],
+      "games_with_card": 1132,
+      "static_rating": 4.05
+    },
+    {
+      "id": "BEAM_CELL",
+      "beta": 0.3381,
+      "ci95": [
+        0.1912,
+        0.5164
+      ],
+      "games_with_card": 1058,
+      "static_rating": 4.25
+    },
+    {
+      "id": "CHARGE_BATTERY",
+      "beta": 0.3176,
+      "ci95": [
+        0.1734,
+        0.4919
+      ],
+      "games_with_card": 1085,
+      "static_rating": 6.5
+    },
+    {
+      "id": "SUPERCRITICAL",
+      "beta": 0.3091,
+      "ci95": [
+        -0.0054,
+        0.583
+      ],
+      "games_with_card": 76,
+      "static_rating": 10.2
+    },
+    {
+      "id": "SPINNER_CARD",
+      "beta": 0.306,
+      "ci95": [
+        0.0216,
+        0.5879
+      ],
+      "games_with_card": 92,
+      "static_rating": 3.7
+    },
+    {
+      "id": "MACHINE_LEARNING_CARD",
+      "beta": 0.2983,
+      "ci95": [
+        -0.0557,
+        0.6015
+      ],
+      "games_with_card": 113,
+      "static_rating": 5.9
+    },
+    {
+      "id": "ULTIMATE_STRIKE",
+      "beta": 0.2975,
+      "ci95": [
+        0.07,
+        0.5134
+      ],
+      "games_with_card": 51,
+      "static_rating": 8.3
+    },
+    {
+      "id": "GLASSWORK",
+      "beta": 0.2949,
+      "ci95": [
+        0.0509,
+        0.5432
+      ],
+      "games_with_card": 477,
+      "static_rating": 3.1
+    },
+    {
+      "id": "OMNISLICE",
+      "beta": 0.2887,
+      "ci95": [
+        0.1124,
+        0.4416
+      ],
+      "games_with_card": 34,
+      "static_rating": 6.0
+    },
+    {
+      "id": "COOLHEADED",
+      "beta": 0.28,
+      "ci95": [
+        0.1242,
+        0.4484
+      ],
+      "games_with_card": 881,
+      "static_rating": 2.2
+    },
+    {
+      "id": "ROCKET_PUNCH",
+      "beta": 0.2679,
+      "ci95": [
+        0.092,
+        0.4819
+      ],
+      "games_with_card": 580,
+      "static_rating": 5.275
+    },
+    {
+      "id": "GLACIER",
+      "beta": 0.2666,
+      "ci95": [
+        -0.0148,
+        0.5385
+      ],
+      "games_with_card": 333,
+      "static_rating": 2.1
+    },
+    {
+      "id": "MOMENTUM_STRIKE",
+      "beta": 0.2524,
+      "ci95": [
+        0.1058,
+        0.4027
+      ],
+      "games_with_card": 1204,
+      "static_rating": 5.5
+    },
+    {
+      "id": "HAILSTORM",
+      "beta": 0.2243,
+      "ci95": [
+        -0.04,
+        0.521
+      ],
+      "games_with_card": 135,
+      "static_rating": 3.1
+    },
+    {
+      "id": "SHADOW_SHIELD",
+      "beta": 0.2231,
+      "ci95": [
+        0.016,
+        0.4267
+      ],
+      "games_with_card": 465,
+      "static_rating": 3.35
+    },
+    {
+      "id": "TESLA_COIL",
+      "beta": 0.2094,
+      "ci95": [
+        -0.0415,
+        0.4864
+      ],
+      "games_with_card": 245,
+      "static_rating": 3.25
+    },
+    {
+      "id": "COMPILE_DRIVER",
+      "beta": 0.194,
+      "ci95": [
+        0.0041,
+        0.3838
+      ],
+      "games_with_card": 654,
+      "static_rating": 3.85
+    },
+    {
+      "id": "ICE_LANCE",
+      "beta": 0.1818,
+      "ci95": [
+        -0.0113,
+        0.402
+      ],
+      "games_with_card": 81,
+      "static_rating": 4.683
+    },
+    {
+      "id": "PROWESS",
+      "beta": 0.1557,
+      "ci95": [
+        -0.1445,
+        0.3863
+      ],
+      "games_with_card": 52,
+      "static_rating": 11.1
+    },
+    {
+      "id": "SUBROUTINE",
+      "beta": 0.1485,
+      "ci95": [
+        -0.1697,
+        0.4275
+      ],
+      "games_with_card": 142,
+      "static_rating": 3.1
+    },
+    {
+      "id": "SWEEPING_BEAM",
+      "beta": 0.1391,
+      "ci95": [
+        -0.0269,
+        0.3262
+      ],
+      "games_with_card": 795,
+      "static_rating": 7.6
+    },
+    {
+      "id": "DRAMATIC_ENTRANCE",
+      "beta": 0.1352,
+      "ci95": [
+        -0.0402,
+        0.2942
+      ],
+      "games_with_card": 38,
+      "static_rating": 10.5
+    },
+    {
+      "id": "SYNTHESIS",
+      "beta": 0.1324,
+      "ci95": [
+        -0.0856,
+        0.358
+      ],
+      "games_with_card": 278,
+      "static_rating": 4.45
+    },
+    {
+      "id": "STORM_CARD",
+      "beta": 0.12,
+      "ci95": [
+        -0.1765,
+        0.4381
+      ],
+      "games_with_card": 245,
+      "static_rating": 3.1
+    },
+    {
+      "id": "SEEKER_STRIKE",
+      "beta": 0.1142,
+      "ci95": [
+        -0.0932,
+        0.3162
+      ],
+      "games_with_card": 40,
+      "static_rating": 12.0
+    },
+    {
+      "id": "PRODUCTION",
+      "beta": 0.1123,
+      "ci95": [
+        -0.1811,
+        0.3972
+      ],
+      "games_with_card": 36,
+      "static_rating": 6.6
+    },
+    {
+      "id": "FERAL",
+      "beta": 0.1112,
+      "ci95": [
+        -0.1943,
+        0.4281
+      ],
+      "games_with_card": 147,
+      "static_rating": 1.85
+    },
+    {
+      "id": "DEFRAGMENT",
+      "beta": 0.1099,
+      "ci95": [
+        -0.0989,
+        0.3017
+      ],
+      "games_with_card": 31,
+      "static_rating": 3.7
+    },
+    {
+      "id": "BOOST_AWAY",
+      "beta": 0.0944,
+      "ci95": [
+        -0.1041,
+        0.3093
+      ],
+      "games_with_card": 764,
+      "static_rating": 4.0
+    },
+    {
+      "id": "GENETIC_ALGORITHM",
+      "beta": 0.0906,
+      "ci95": [
+        -0.2787,
+        0.4007
+      ],
+      "games_with_card": 43,
+      "static_rating": 1.2
+    },
+    {
+      "id": "LEAP",
+      "beta": 0.0738,
+      "ci95": [
+        -0.1124,
+        0.2594
+      ],
+      "games_with_card": 886,
+      "static_rating": 4.5
+    },
+    {
+      "id": "COOLANT",
+      "beta": 0.0702,
+      "ci95": [
+        -0.2708,
+        0.3743
+      ],
+      "games_with_card": 57,
+      "static_rating": 3.7
+    },
+    {
+      "id": "HELIX_DRILL",
+      "beta": 0.0651,
+      "ci95": [
+        -0.194,
+        0.3539
+      ],
+      "games_with_card": 68,
+      "static_rating": 3.85
+    },
+    {
+      "id": "STRIKE_DEFECT",
+      "beta": 0.0432,
+      "ci95": [
+        -0.2337,
+        0.3967
+      ],
+      "games_with_card": 3850,
+      "static_rating": 3.3
+    },
+    {
+      "id": "DEFEND_DEFECT",
+      "beta": 0.0273,
+      "ci95": [
+        -0.1698,
+        0.2529
+      ],
+      "games_with_card": 3850,
+      "static_rating": 2.5
+    },
+    {
+      "id": "GUNK_UP",
+      "beta": 0.0164,
+      "ci95": [
+        -0.2634,
+        0.2571
+      ],
+      "games_with_card": 423,
+      "static_rating": 2.2
+    },
+    {
+      "id": "BARRAGE",
+      "beta": 0.0147,
+      "ci95": [
+        -0.2521,
+        0.2286
+      ],
+      "games_with_card": 455,
+      "static_rating": 2.75
+    },
+    {
+      "id": "DOUBLE_ENERGY",
+      "beta": 0.0083,
+      "ci95": [
+        -0.2571,
+        0.2656
+      ],
+      "games_with_card": 86,
+      "static_rating": -0.4
+    },
+    {
+      "id": "TRASH_TO_TREASURE",
+      "beta": 0.006,
+      "ci95": [
+        -0.3036,
+        0.2573
+      ],
+      "games_with_card": 69,
+      "static_rating": 3.7
+    },
+    {
+      "id": "COMPACT",
+      "beta": 0.0028,
+      "ci95": [
+        -0.1996,
+        0.2548
+      ],
+      "games_with_card": 330,
+      "static_rating": 3.6
+    },
+    {
+      "id": "REBOOT",
+      "beta": -0.0134,
+      "ci95": [
+        -0.2557,
+        0.2539
+      ],
+      "games_with_card": 47,
+      "static_rating": 7.8
+    },
+    {
+      "id": "CREATIVE_AI_CARD",
+      "beta": -0.0191,
+      "ci95": [
+        -0.3618,
+        0.2421
+      ],
+      "games_with_card": 38,
+      "static_rating": 2.033
+    },
+    {
+      "id": "BOOT_SEQUENCE",
+      "beta": -0.024,
+      "ci95": [
+        -0.2981,
+        0.2312
+      ],
+      "games_with_card": 213,
+      "static_rating": 5.6
+    },
+    {
+      "id": "NEOWS_FURY",
+      "beta": -0.0271,
+      "ci95": [
+        -0.0878,
+        -0.0
+      ],
+      "games_with_card": 266,
+      "static_rating": 8.9
+    },
+    {
+      "id": "MODDED",
+      "beta": -0.029,
+      "ci95": [
+        -0.3337,
+        0.2276
+      ],
+      "games_with_card": 49,
+      "static_rating": 4.4
+    },
+    {
+      "id": "CLUMSY",
+      "beta": -0.0349,
+      "ci95": [
+        -0.3738,
+        0.2863
+      ],
+      "games_with_card": 42,
+      "static_rating": -6.0
+    },
+    {
+      "id": "ECHO_FORM_CARD",
+      "beta": -0.061,
+      "ci95": [
+        -0.3044,
+        0.1497
+      ],
+      "games_with_card": 49,
+      "static_rating": 2.033
+    },
+    {
+      "id": "RAINBOW",
+      "beta": -0.0625,
+      "ci95": [
+        -0.255,
+        0.1604
+      ],
+      "games_with_card": 37,
+      "static_rating": 0.7
+    },
+    {
+      "id": "THRUMMING_HATCHET",
+      "beta": -0.0648,
+      "ci95": [
+        -0.3115,
+        0.1857
+      ],
+      "games_with_card": 31,
+      "static_rating": 6.65
+    },
+    {
+      "id": "REFRACT",
+      "beta": -0.0673,
+      "ci95": [
+        -0.3612,
+        0.2545
+      ],
+      "games_with_card": 195,
+      "static_rating": 2.25
+    },
+    {
+      "id": "PANIC_BUTTON",
+      "beta": -0.069,
+      "ci95": [
+        -0.3874,
+        0.2023
+      ],
+      "games_with_card": 51,
+      "static_rating": 12.0
+    },
+    {
+      "id": "SCRAPE",
+      "beta": -0.0796,
+      "ci95": [
+        -0.2778,
+        0.217
+      ],
+      "games_with_card": 422,
+      "static_rating": 11.05
+    },
+    {
+      "id": "LOOP_CARD",
+      "beta": -0.0801,
+      "ci95": [
+        -0.3316,
+        0.199
+      ],
+      "games_with_card": 327,
+      "static_rating": 3.1
+    },
+    {
+      "id": "FOCUSED_STRIKE_CARD",
+      "beta": -0.0851,
+      "ci95": [
+        -0.2608,
+        0.0782
+      ],
+      "games_with_card": 946,
+      "static_rating": 4.95
+    },
+    {
+      "id": "THUNDER_CARD",
+      "beta": -0.0854,
+      "ci95": [
+        -0.3893,
+        0.1791
+      ],
+      "games_with_card": 160,
+      "static_rating": 3.1
+    },
+    {
+      "id": "HOLOGRAM",
+      "beta": -0.1069,
+      "ci95": [
+        -0.3248,
+        0.1056
+      ],
+      "games_with_card": 541,
+      "static_rating": 0.5
+    },
+    {
+      "id": "METEOR_STRIKE",
+      "beta": -0.1138,
+      "ci95": [
+        -0.3705,
+        0.1723
+      ],
+      "games_with_card": 37,
+      "static_rating": 3.84
+    },
+    {
+      "id": "SKIM",
+      "beta": -0.1258,
+      "ci95": [
+        -0.4452,
+        0.1438
+      ],
+      "games_with_card": 205,
+      "static_rating": 7.2
+    },
+    {
+      "id": "SMOKESTACK",
+      "beta": -0.1264,
+      "ci95": [
+        -0.4047,
+        0.2236
+      ],
+      "games_with_card": 145,
+      "static_rating": 3.1
+    },
+    {
+      "id": "SIGNAL_BOOST",
+      "beta": -0.1414,
+      "ci95": [
+        -0.4079,
+        0.1626
+      ],
+      "games_with_card": 55,
+      "static_rating": 0.2
+    },
+    {
+      "id": "FUSION",
+      "beta": -0.1683,
+      "ci95": [
+        -0.4285,
+        0.1082
+      ],
+      "games_with_card": 93,
+      "static_rating": -0.4
+    },
+    {
+      "id": "ITERATION_CARD",
+      "beta": -0.1753,
+      "ci95": [
+        -0.435,
+        0.088
+      ],
+      "games_with_card": 315,
+      "static_rating": 3.1
+    },
+    {
+      "id": "ZAP",
+      "beta": -0.1791,
+      "ci95": [
+        -0.3976,
+        0.0006
+      ],
+      "games_with_card": 1567,
+      "static_rating": 0.0
+    },
+    {
+      "id": "MULTI_CAST",
+      "beta": -0.1821,
+      "ci95": [
+        -0.3644,
+        0.0056
+      ],
+      "games_with_card": 31,
+      "static_rating": 2.2
+    },
+    {
+      "id": "WHITE_NOISE",
+      "beta": -0.1823,
+      "ci95": [
+        -0.4896,
+        0.0251
+      ],
+      "games_with_card": 89,
+      "static_rating": -0.4
+    },
+    {
+      "id": "SUNDER",
+      "beta": -0.1867,
+      "ci95": [
+        -0.4466,
+        0.0204
+      ],
+      "games_with_card": 324,
+      "static_rating": 8.0
+    },
+    {
+      "id": "CHILL",
+      "beta": -0.1979,
+      "ci95": [
+        -0.4619,
+        0.1001
+      ],
+      "games_with_card": 137,
+      "static_rating": 0.6
+    },
+    {
+      "id": "RESTLESSNESS",
+      "beta": -0.2261,
+      "ci95": [
+        -0.4987,
+        0.0722
+      ],
+      "games_with_card": 56,
+      "static_rating": 12.0
+    },
+    {
+      "id": "ALL_FOR_ONE",
+      "beta": -0.2269,
+      "ci95": [
+        -0.5031,
+        0.0675
+      ],
+      "games_with_card": 31,
+      "static_rating": 3.95
+    },
+    {
+      "id": "BUFFER_CARD",
+      "beta": -0.232,
+      "ci95": [
+        -0.5219,
+        0.0909
+      ],
+      "games_with_card": 39,
+      "static_rating": 2.45
+    },
+    {
+      "id": "VOLTAIC",
+      "beta": -0.2323,
+      "ci95": [
+        -0.4956,
+        0.1456
+      ],
+      "games_with_card": 59,
+      "static_rating": 0.867
+    },
+    {
+      "id": "PURITY",
+      "beta": -0.2418,
+      "ci95": [
+        -0.513,
+        0.0704
+      ],
+      "games_with_card": 33,
+      "static_rating": 7.2
+    },
+    {
+      "id": "DARKNESS_CARD",
+      "beta": -0.2422,
+      "ci95": [
+        -0.5451,
+        0.0431
+      ],
+      "games_with_card": 138,
+      "static_rating": 0.6
+    },
+    {
+      "id": "SYNCHRONIZE",
+      "beta": -0.2565,
+      "ci95": [
+        -0.4832,
+        0.0091
+      ],
+      "games_with_card": 114,
+      "static_rating": -0.4
+    },
+    {
+      "id": "POOR_SLEEP",
+      "beta": -0.283,
+      "ci95": [
+        -0.5437,
+        -0.0013
+      ],
+      "games_with_card": 125,
+      "static_rating": -6.0
+    },
+    {
+      "id": "UPROAR",
+      "beta": -0.2876,
+      "ci95": [
+        -0.5184,
+        -0.0355
+      ],
+      "games_with_card": 434,
+      "static_rating": 1.65
+    },
+    {
+      "id": "CAPACITOR",
+      "beta": -0.2962,
+      "ci95": [
+        -0.5628,
+        -0.0278
+      ],
+      "games_with_card": 150,
+      "static_rating": 3.1
+    },
+    {
+      "id": "FIGHT_THROUGH",
+      "beta": -0.2997,
+      "ci95": [
+        -0.5708,
+        -0.0451
+      ],
+      "games_with_card": 217,
+      "static_rating": 7.1
+    },
+    {
+      "id": "SHATTER",
+      "beta": -0.3007,
+      "ci95": [
+        -0.5662,
+        0.0211
+      ],
+      "games_with_card": 43,
+      "static_rating": 7.5
+    },
+    {
+      "id": "TEMPEST",
+      "beta": -0.3118,
+      "ci95": [
+        -0.6193,
+        0.0193
+      ],
+      "games_with_card": 141,
+      "static_rating": 1.6
+    },
+    {
+      "id": "DUALCAST",
+      "beta": -0.3482,
+      "ci95": [
+        -0.6195,
+        -0.0666
+      ],
+      "games_with_card": 3752,
+      "static_rating": 0.0
+    },
+    {
+      "id": "TURBO",
+      "beta": -0.3662,
+      "ci95": [
+        -0.5805,
+        -0.1893
+      ],
+      "games_with_card": 621,
+      "static_rating": 7.0
+    },
+    {
+      "id": "CONSUMING_SHADOW",
+      "beta": -0.3813,
+      "ci95": [
+        -0.6594,
+        -0.0959
+      ],
+      "games_with_card": 49,
+      "static_rating": 2.45
+    },
+    {
+      "id": "CHAOS",
+      "beta": -0.3933,
+      "ci95": [
+        -0.6667,
+        -0.1419
+      ],
+      "games_with_card": 149,
+      "static_rating": 0.6
+    },
+    {
+      "id": "HYPERBEAM",
+      "beta": -0.3953,
+      "ci95": [
+        -0.7171,
+        -0.1135
+      ],
+      "games_with_card": 60,
+      "static_rating": 12.0
+    },
+    {
+      "id": "SCAVENGE",
+      "beta": -0.4079,
+      "ci95": [
+        -0.7364,
+        -0.1573
+      ],
+      "games_with_card": 208,
+      "static_rating": 6.6
+    },
+    {
+      "id": "SPOILS_MAP",
+      "beta": -0.475,
+      "ci95": [
+        -0.7521,
+        -0.2067
+      ],
+      "games_with_card": 201,
+      "static_rating": -6.0
+    },
+    {
+      "id": "OVERCLOCK",
+      "beta": -0.5483,
+      "ci95": [
+        -0.8717,
+        -0.231
+      ],
+      "games_with_card": 184,
+      "static_rating": 6.0
+    },
+    {
+      "id": "HOTFIX",
+      "beta": -0.5538,
+      "ci95": [
+        -0.7952,
+        -0.3702
+      ],
+      "games_with_card": 412,
+      "static_rating": 0.0
+    }
+  ],
+  "spearman_with_static_rating": 0.2615,
+  "character": "Defect",
+  "ascension": 0,
+  "profile": "veteran",
+  "batches": [
+    {
+      "batch_id": "explore4-defect-a0-keeprelics-dev-o5000-n5000",
+      "content_sha256": "cd8a8780bcc534d6380eb110536ad9ce3083260380efc8f2ea5b9803503ec4a4",
+      "policy": {
+        "effective": {
+          "params": {
+            "explore": 0.6,
+            "replicate": 0,
+            "threshold": 0.0,
+            "tune": {
+              "boss_heal_below": 0.9,
+              "card_slope": 0.09,
+              "card_threshold": 3.2,
+              "danger_frac": 0.3,
+              "elite_bad_value": -2.5,
+              "elite_mid_hp": 0.65,
+              "elite_mid_value": 0.2,
+              "elite_ok_floor": 8,
+              "elite_ok_hp": 0.9,
+              "elite_value": 0.5,
+              "heal_below": 0.7,
+              "max_deck": 32,
+              "monster_hp_penalty": 0.5,
+              "monster_value": 1.0,
+              "potion_hp_abs": 6,
+              "potion_hp_frac": 0.15,
+              "rest_base": 1.0,
+              "rest_weight": 3.0,
+              "shop_base": 0.3,
+              "shop_card_threshold": 3.6,
+              "shop_mid": 0.5,
+              "shop_mid_gold": 75,
+              "shop_potion_margin": 40,
+              "shop_rich": 1.2,
+              "shop_rich_gold": 150,
+              "treasure_value": 1.8,
+              "unknown_value": 0.8
+            },
+            "values": "experiments/cardvalue/defect-a0-v1.json",
+            "values_sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
+          },
+          "version": "1"
+        },
+        "name": "rules_explore_v3",
+        "params": {
+          "explore": 0.6,
+          "replicate": 0,
+          "values": "experiments/cardvalue/defect-a0-v1.json"
+        }
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+      },
+      "known_simulator_gaps": [
+        "G3-sovereign-blade-crash",
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G6-undefined-name-in-reward-roll",
+        "G7-no-legal-actions",
+        "G8-dragon-fruit-lucky-fysh-shop",
+        "G9-particle-wall-loop",
+        "G10-first-game-card-id-shift",
+        "G11-no-act-start-ancient-heal",
+        "G12-only-overgrowth-played",
+        "G14-relics-lost-after-first-fight"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "a": {
+    "boss_fights": 2332,
+    "file": "experiments/cardvalue/silent-a0-v1.json",
+    "games": 2332,
+    "pass_rate": 0.1068,
+    "sha256": "fa088419e45eba01edbe4851e70cc8e3a0aabef6fc2cfd96aa2e4be9ba103859"
+  },
+  "b": {
+    "boss_fights": 3025,
+    "file": "experiments/cardvalue/silent-a0-keep-v1.json",
+    "games": 3025,
+    "pass_rate": 0.3021,
+    "sha256": "a8d7b3519d0284538fe8f92c68c62579b7727a4c27781399d57f9955bbc75fe0"
+  },
+  "comparison": {
+    "best_k_in_both": 7,
+    "cards_in_both": 75,
+    "cards_only_in_a": [],
+    "cards_only_in_b": [
+      "ABRASIVE",
+      "AFTERIMAGE_CARD",
+      "PROWESS",
+      "THRUMMING_HATCHET",
+      "TOOLS_OF_THE_TRADE"
+    ],
+    "disjoint_ci95": 4,
+    "k": 10,
+    "spearman": 0.5607965860597439,
+    "worst_k_in_both": 4
+  },
+  "kind": "card-value-comparison",
+  "noise_reference": {
+    "best_k_in_both": 8,
+    "cards_in_both": 66,
+    "definition": "the second file's games split by the parity of the game seed, each half fitted like the full data, Spearman correlation of the two halves and the same corrected to the full number of games as 2r/(1+r)",
+    "games": [
+      1483,
+      1542
+    ],
+    "k": 10,
+    "spearman": 0.5499425947187141,
+    "spearman_brown": 0.7096296296296296,
+    "worst_k_in_both": 3
+  },
+  "schema": 1
+}

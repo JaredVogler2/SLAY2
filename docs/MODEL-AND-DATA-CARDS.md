@@ -92,17 +92,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
 | Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
-| Defect | development (train, dev) | 13 | 17,000 | 16,966 | 29 | 34 | 0 |
+| Defect | development (train, dev) | 14 | 22,000 | 21,912 | 54 | 88 | 0 |
 | Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
-| Ironclad | development (train, dev) | 25 | 26,910 | 26,847 | 59 | 53 | 10 |
+| Ironclad | development (train, dev) | 26 | 31,910 | 31,768 | 109 | 132 | 10 |
 | Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
-| Necrobinder | development (train, dev) | 15 | 18,000 | 17,977 | 0 | 21 | 2 |
+| Necrobinder | development (train, dev) | 16 | 23,000 | 22,909 | 0 | 86 | 5 |
 | Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
-| Regent | development (train, dev) | 13 | 17,000 | 16,864 | 0 | 20 | 116 |
+| Regent | development (train, dev) | 14 | 22,000 | 21,781 | 1 | 60 | 159 |
 | Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
-| Silent | development (train, dev) | 13 | 17,000 | 16,997 | 0 | 3 | 0 |
+| Silent | development (train, dev) | 14 | 22,000 | 21,989 | 0 | 11 | 0 |
 | **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
-| **All classes** | **development (train, dev)** | **79** | **95,910** | **95,651** | **88** | **131** | **128** |
+| **All classes** | **development (train, dev)** | **84** | **120,910** | **120,359** | **164** | **377** | **174** |
 <!-- table:games:end -->
 
 * **Outcome rule:** a win is an episode that ended won after the third act's boss (`docs/game/MECHANICS-COVERAGE.md` RUN-2); a death ends it lost; a timeout (step, stall, turn or 900-second wall-clock limit), a simulator error and an invalid action are separate outcomes, are shown, and are never counted as losses or silently dropped. A timeout or an error is excluded from the denominator of a rate and the exclusion is reported.
