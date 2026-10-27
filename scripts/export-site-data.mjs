@@ -277,6 +277,16 @@ const ALPHA = {
   defect: 0.0125,
 };
 
+// Whether a batch was played with the relics kept (gap G14), from its own manifest: exploration batches live beside the value files,
+// the rest under experiments/batches. A batch that is not on disk is read as not kept.
+function batchKeptRelics(batchId) {
+  for (const where of [join(root, "experiments", "cardvalue"), join(root, "experiments", "batches")]) {
+    const file = join(where, batchId, "manifest.json");
+    if (existsSync(file)) return JSON.parse(readFileSync(file, "utf8")).config?.keep_relics === true;
+  }
+  return false;
+}
+
 // Which value files the site shows is a decision, not a side effect of a file existing (ADR-046): experiments/cardvalue/
 // site-sets.json lists them, and the golden cases of the simulation panel (sim/slay2_sim/pickgolden.py) read the same list.
 // A set measured for a study stays out of the site until it is listed there.
@@ -399,6 +409,8 @@ function parseCardValues(comparisons) {
       validation,
       supersedes: entry.supersedes ? entry.supersedes.replace(/\.json$/, "") : null,
       drift,
+      // whether the games the values were fitted from kept the relics a run gains (gap G14: the pinned simulator drops them)
+      relicsKept: v.batches.length > 0 && v.batches.every((b) => batchKeptRelics(b.batch_id)),
       file: `experiments/cardvalue/${name}`,
       sha256: createHash("sha256").update(raw).digest("hex"),
       outcome: v.outcome,
@@ -1117,6 +1129,119 @@ function readPooledHeldOut({ where, path, names: [a, b], seeds, byId, check }) {
     };
   }
 
+// The one registered held-out test of ADR-053: `rules_v3` following the card values measured again with the relics kept, against
+// `rules_v3` following the values the site showed, both played with the relics kept on the 2,000 val seeds of each class; the five classes
+// pooled into one exact McNemar test at level 0.05. The reading rule (item 5) decides which value files the site shows, and the exporter
+// applies it to the numbers and refuses a site-sets.json that disagrees: the decision is the rule's, not the author's.
+const KEEP_VALUES_ALPHA = 0.05;
+const KEEP_VALUES_SEEDS = 2000;
+const currentValuesFile = (cls) => (cls === "ironclad" ? "ironclad-a0-v2.json" : `${cls}-a0-v1.json`);
+const keepValuesFile = (cls) => `${cls}-a0-keep-v1.json`;
+const keepValuesComparison = (cls) => `rules_v3-keepvals-vs-curvals-${cls}-a0-veteran-keeprelics-val`;
+
+function parseKeepValuesTest(reports) {
+  const dir = join(root, "experiments", "cardvalue");
+  const primaryFile = join(dir, "pooled-keepvals-vs-curvals-val.json");
+  if (!existsSync(primaryFile)) return null;
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const sha256 = (file) => createHash("sha256").update(readFileSync(join(dir, file))).digest("hex");
+  // the new files are the ones ADR-053 recorded before any held-out game: their hashes are in the decision log
+  const decisions = readFileSync(join(root, "docs", "DECISIONS.md"), "utf8");
+  for (const cls of CLASSES) {
+    if (!decisions.includes(sha256(keepValuesFile(cls))))
+      throw new Error(
+        `${keepValuesFile(cls)} is not the file ADR-053 recorded: its SHA-256 is not in docs/DECISIONS.md`,
+      );
+  }
+  const newFit = (cls) => JSON.parse(readFileSync(join(dir, keepValuesFile(cls)), "utf8"));
+  const heads = new Set();
+  const armProblem = (current, name, cls) => {
+    const want = `experiments/cardvalue/${name === "keepvals" ? keepValuesFile(cls) : currentValuesFile(cls)}`;
+    if (current.policy !== "rules_v3") return `its policy is ${current.policy}`;
+    if (current.policyParams?.values !== want || current.policyParams?.threshold !== 0)
+      return `it does not follow ${want} at threshold 0`;
+    const env =
+      JSON.parse(readFileSync(join(root, "experiments", "batches", current.id, "manifest.json"), "utf8"))
+        .environment?.slay2 ?? {};
+    heads.add(env.head);
+    return env.dirty === false
+      ? null
+      : "it was played from a working tree with uncommitted changes (ADR-053 asks for a clean checkout)";
+  };
+  const primary = readPooledHeldOut({
+    where: "experiments/cardvalue/pooled-keepvals-vs-curvals-val.json",
+    path: primaryFile,
+    names: ["keepvals", "curvals"],
+    seeds: KEEP_VALUES_SEEDS,
+    byId,
+    check: (current, name, cls) =>
+      commonBatchProblem(current, cls, {
+        seeds: KEEP_VALUES_SEEDS,
+        keepRelics: true,
+        adr: "ADR-053",
+      }) ?? armProblem(current, name, cls),
+  });
+  if (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h))))
+    throw new Error(
+      `the arms of the test were not all played from one commit (heads: ${[...heads].join(", ")})`,
+    );
+
+  // the reading rule (ADR-053 item 5), from the numbers alone
+  const t = primary.reachedAct2.pairedTable;
+  const verdict = t.mcnemar_p < KEEP_VALUES_ALPHA ? (t.a_only > t.b_only ? "gain" : "loss") : "none";
+  const classes = {};
+  for (const m of primary.members) {
+    const own = m.reachedAct2.pairedTable;
+    // the class's own comparison shows the current values significantly ahead (two-sided exact McNemar, uncorrected)
+    const currentAhead = own.mcnemar_p < KEEP_VALUES_ALPHA && own.b_only > own.a_only;
+    classes[m.character] = {
+      new: {
+        file: `experiments/cardvalue/${keepValuesFile(m.character)}`,
+        sha256: sha256(keepValuesFile(m.character)),
+        // how much the new fit rests on: the games played, those that reached the Act-1 boss, the share that got past it
+        games: newFit(m.character).games,
+        bossFights: newFit(m.character).boss_fights,
+        passRate: newFit(m.character).pass_rate,
+      },
+      current: { file: `experiments/cardvalue/${currentValuesFile(m.character)}`, sha256: sha256(currentValuesFile(m.character)) },
+      own: { aOnly: own.a_only, bOnly: own.b_only, p: own.mcnemar_p },
+      currentSignificantlyAhead: currentAhead,
+      adopted: verdict === "gain" && !currentAhead,
+    };
+  }
+
+  // the value files the site shows are the rule's: the new set for a class that adopts, the current one for the rest
+  const listed = JSON.parse(readFileSync(join(dir, "site-sets.json"), "utf8")).sets;
+  for (const cls of CLASSES) {
+    const entries = listed.filter((e) => e.file.startsWith(`${cls}-a0-`));
+    const want = classes[cls].adopted ? keepValuesFile(cls) : currentValuesFile(cls);
+    if (entries.length !== 1 || entries[0].file !== want)
+      throw new Error(
+        `experiments/cardvalue/site-sets.json lists ${entries.map((e) => e.file).join(", ") || "nothing"} for ${cls}; the rule of ADR-053 item 5 applied to its numbers gives ${want}`,
+      );
+    if (classes[cls].adopted) {
+      const entry = entries[0];
+      if (
+        entry.supersedes !== currentValuesFile(cls) ||
+        entry.test?.comparison !== keepValuesComparison(cls) ||
+        entry.test?.against !== "current-values" ||
+        !entry.drift
+      )
+        throw new Error(
+          `experiments/cardvalue/site-sets.json: the entry for ${keepValuesFile(cls)} has to name what it supersedes (${currentValuesFile(cls)}), its test (${keepValuesComparison(cls)}, against current-values) and the descriptive comparison`,
+        );
+    }
+  }
+  return {
+    adr: "ADR-053",
+    alpha: KEEP_VALUES_ALPHA,
+    primary,
+    verdict,
+    adopted: CLASSES.filter((c) => classes[c].adopted),
+    classes,
+  };
+}
+
 // The two registered held-out tests of the synergy term: A* against the same pilot without it, five classes pooled. The first (ADR-050)
 // was played in the simulator as it is, which drops the relics a run gains after its first fight (G14); the second (ADR-054) repeats it
 // with the relics kept and has only the one comparison.
@@ -1365,6 +1490,7 @@ const outputs = {
     generatedFrom:
       "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
     sets: parseCardValues(comparisons),
+    keepTest: parseKeepValuesTest(reports),
   },
   "synergy.generated.json": {
     schema: 1,

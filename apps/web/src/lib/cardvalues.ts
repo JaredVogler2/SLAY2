@@ -1,6 +1,7 @@
 import { getCard } from "@slay2/game-data";
 
 import cardvalues from "@/content/cardvalues.generated.json";
+import type { PooledTest } from "@/lib/synergy-evidence";
 
 /**
  * The held-out test of acting on a class's values, when it has been run: by default the policy that follows them against
@@ -25,7 +26,9 @@ export interface Validation {
 export function againstText(v: Validation): string {
   return v.against === "first-values"
     ? "the first measurement of the values"
-    : "the hand-written ratings";
+    : v.against === "current-values"
+      ? "the values measured in the simulator that drops the relics"
+      : "the hand-written ratings";
 }
 
 /** How far a set that replaces an earlier one moved from it (a descriptive comparison, ADR-046; not a test). */
@@ -71,6 +74,8 @@ export interface CardValueSet {
   /** the id of the set this one replaces, and how far it moved from it */
   readonly supersedes: string | null;
   readonly drift: Drift | null;
+  /** whether the runs the values were fitted from kept the relics they gained (the pinned simulator drops them: gap G14, ADR-052) */
+  readonly relicsKept: boolean;
   readonly file: string;
   readonly sha256: string;
   readonly outcome: string;
@@ -90,6 +95,53 @@ export interface CardValueSet {
   readonly batches: readonly { readonly id: string; readonly contentSha256: string }[];
   readonly cards: readonly MeasuredCard[];
 }
+
+/** One class of the test of the values measured again with the relics kept (ADR-053). */
+export interface KeepValuesClass {
+  readonly new: {
+    readonly file: string;
+    readonly sha256: string;
+    /** the games the new fit rests on, those that reached the Act-1 boss, and the share that got past it */
+    readonly games: number;
+    readonly bossFights: number;
+    readonly passRate: number;
+  };
+  readonly current: { readonly file: string; readonly sha256: string };
+  /** this class's own comparison (descriptive; the pooled test is the registered one): pairs only the new values / only the current ones got past the boss */
+  readonly own: { readonly aOnly: number; readonly bOnly: number; readonly p: number };
+  /** the class's own comparison shows the current values significantly ahead (two-sided exact McNemar, level 0.05) */
+  readonly currentSignificantlyAhead: boolean;
+  /** the rule of ADR-053 item 5 gives this class the new values */
+  readonly adopted: boolean;
+}
+
+/**
+ * The one registered held-out test of the card values measured again with the relics kept (ADR-053): `rules_v3` following the new
+ * values against `rules_v3` following the values the site showed, both with the relics kept, five classes pooled.
+ */
+export interface KeepValuesTest {
+  readonly adr: string;
+  readonly alpha: number;
+  readonly primary: PooledTest;
+  /** the exporter's reading (a `KeepValuesVerdict`); the page recomputes it with `keepValuesVerdict` */
+  readonly verdict: string;
+  readonly adopted: readonly string[];
+  readonly classes: Readonly<Record<string, KeepValuesClass>>;
+}
+
+/** The reading rule of ADR-053 item 5: a significant pooled gain for the new values, a significant loss, or neither. */
+export type KeepValuesVerdict = "gain" | "loss" | "none";
+
+export function keepValuesVerdict(
+  test: Pick<KeepValuesTest, "alpha" | "primary">,
+): KeepValuesVerdict {
+  const t = test.primary.reachedAct2.pairedTable;
+  if (t.mcnemar_p >= test.alpha) return "none";
+  return t.a_only > t.b_only ? "gain" : "loss";
+}
+
+/** The test, once it has been run and read (null before). */
+export const KEEP_VALUES_TEST: KeepValuesTest | null = cardvalues.keepTest;
 
 const SETS: readonly CardValueSet[] = cardvalues.sets;
 

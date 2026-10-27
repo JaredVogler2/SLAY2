@@ -27,7 +27,7 @@ Every finding has a reproduction, a fix and a regression test in [docs/ADVERSARI
 | P0 | false probability certainty, wrong game, hidden information, illegal play, security | 0 | none found |
 | P1 | an unsupported simulator or model shipped as validated, or a production error | 6 | RT-3-01, RT-2-04, RT-10-07, RT-10-13, RT-10-14, RT-6-02 |
 | P2 | accessibility or user flow | 12 | RT-9-01, RT-9-02, RT-9-03, RT-9-04, RT-9-05, RT-9-07, RT-3-08, RT-3-10, RT-3-11, RT-6-01, RT-5-02, RT-3-13 |
-| P3 | polish | 10 | RT-9-06, RT-3-12, RT-9-08, RT-9-09, RT-6-03, RT-3-14, RT-9-10, RT-10-15, RT-9-11, RT-3-15 |
+| P3 | polish | 11 | RT-9-06, RT-3-12, RT-9-08, RT-9-09, RT-6-03, RT-3-14, RT-9-10, RT-10-15, RT-9-11, RT-3-15, RT-3-17 |
 <!-- table:findings:end -->
 
 No P0 was found. One finding was reported by a user, not found by a test, and is **addressed in part**: the advisor had no model of synergies between cards (the next section). The two findings of the first opening-relic study are worth stating plainly: a class id in the wrong letter case made four classes play as Ironclad, and **every audit passed**, because an audit re-runs a game from its manifest and reproduces the same wrong class (RT-6-02). It was found by an independent read of the site code, not by a test; the guards that now exist (exact class ids, a per-game start check, a pairing refusal) are the answer to *that* failure, and no list of tests can promise there is no other of its kind.

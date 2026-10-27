@@ -142,7 +142,10 @@ export function MeasuredValue({
           </p>
           <p className="mt-1 text-xs text-dim">
             Held in {m.gamesWithCard.toLocaleString("en-US")} of{" "}
-            {set.bossFights.toLocaleString("en-US")} simulated runs that reached the boss.
+            {set.bossFights.toLocaleString("en-US")} simulated runs that reached the boss.{" "}
+            {set.relicsKept
+              ? "Those runs kept the relics they gained (gap G14, repaired in the harness)."
+              : "Those runs kept only two relics, because the simulator drops the rest (gap G14)."}{" "}
             Unverified against the live game.
           </p>
         </>

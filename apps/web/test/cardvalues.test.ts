@@ -44,6 +44,10 @@ describe("measured card values", () => {
       expect(set.model.cvAuc).toBeGreaterThan(0.5);
       expect(set.model.cvLogLoss).toBeLessThan(set.model.baselineLogLoss);
     }
+    // every set says whether the runs it was fitted from kept the relics they gained (read from the manifests of its batches, gap G14)
+    for (const set of allSets()) {
+      expect(typeof set.relicsKept, set.id).toBe("boolean");
+    }
     // round two replaced round one for Ironclad after its pre-registered test (ADR-046); the others are still round one
     expect(ironclad?.id).toBe("ironclad-a0-v2");
     expect(setFor("silent")?.id).toBe("silent-a0-v1");
