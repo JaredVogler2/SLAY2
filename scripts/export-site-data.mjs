@@ -158,6 +158,8 @@ function parseEvidence() {
       ancientHeal: m.config.ancient_heal === true,
       // a harness variant (gap G13: a class started with the maximum HP of the game's source instead of the simulator's); never a headline
       gameHp: m.config.game_hp === true,
+      // a harness variant (gap G14: the relics a run gains after its first fight are kept instead of dropped at the next fight); never a headline
+      keepRelics: m.config.keep_relics === true,
       partition: m.seeds.partition,
       sealedPartitionUsed: m.seeds.sealed_partition_used,
       seeds: m.seeds.n,

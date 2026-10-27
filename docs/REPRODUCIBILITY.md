@@ -50,7 +50,7 @@ look-ahead from the live game (ADR-035), and writes a content hash over the reco
 | Ledger and replay sample | `slay2_sim audit sample --batch <dir> --limit 40` | the ledger holds one record per seed, and a random sample of completed games re-runs to the stored record and replays observation by observation | anything about the games it did not draw |
 | Wins | `slay2_sim audit wins --batch <dir>` | every win re-runs to the same record, replays hash for hash, ends in the third act after one boss fight per act | that wins are not rare (they are: about 1 game in 300 at best) |
 | Complete re-derivation | `slay2_sim audit rederive --batch <dir>` | every game re-run in fresh workers equals the stored record | that the class asked for is the class played (it reproduces the same wrong class: RT-6-02) |
-| Class check | built in since ADR-049; `class_start_verified` in the manifest | each game started with its class's HP and starter deck | the rest of the simulator's fidelity (G1 to G13 in `sim/slay2_sim/gaps.json`) |
+| Class check | built in since ADR-049; `class_start_verified` in the manifest | each game started with its class's HP and starter deck | the rest of the simulator's fidelity (G1 to G14 in `sim/slay2_sim/gaps.json`) |
 
 The five `rules_v2` held-out baselines were re-derived in full: 9,994 of 10,000 games exactly; the six that differ (five only in the
 number of steps) predate the process-state fix and can move at most six pairs of any comparison that uses them.
@@ -63,6 +63,7 @@ number of steps) predate the process-state fix and can move at most six pairs of
 | Tuned pilot `rules_v3` (74.8 % against 65.1 % past the Act-1 boss) | ADR-036, ADR-045 | `experiments/tuning/`, `experiments/batches/rules_v3-*-val-n2000`, `experiments/comparisons/rules_v3-vs-rules_v2-*` | `slay2_sim compare` |
 | Search policy `search_v3` (74.3 % against 64.7 %) | ADR-040 | `experiments/batches/search_v3-*`, `experiments/comparisons/search_v3-all-vs-rules_v2-*-val.json` | `slay2_sim compare` |
 | G11 (no start-of-act heal) and G13 (Necrobinder at 75 HP) | ADR-039, ADR-049 | `experiments/batches/rules_v2-ironclad-a0-veteran-ancientheal-dev-n500`, `experiments/batches/g13-necrobinder-*-dev-n500`, `experiments/comparisons/g13-gamehp-vs-base-necrobinder-a0-veteran-dev.json` | `slay2_sim compare` |
+| G14 (relics gained after the first fight are dropped by the simulator) | ADR-052 | `experiments/batches/g14-<class>-{base,keeprelics}-dev-n500` (10), `experiments/comparisons/g14-keeprelics-vs-base-<class>-a0-veteran-dev.json` (5) | `slay2_sim compare`; `python -m pytest sim/tests/test_keep_relics.py` reproduces the gap on real games |
 | **Opening-relic study** (61.05 % against 54.30 % past the Act-1 boss, p = 9.1e-45) | ADR-049 | `experiments/neow/explore-<class>-a0-train-n3000/`, `experiments/neow/neow-values-v2.json` (SHA-256 `b1afa02c47c5bc74df31ed2d8d40ae53dc5b514c34a07e4e5399ed474845877c`), `experiments/batches/rules_v2_neow_values-<class>-a0-veteran-val-n2000/`, `experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json`, `experiments/neow/per-class/` | below |
 | **Synergy study** (33.0 % against 26.0 % past the Act-1 boss, p = 3.8e-60) | ADR-050 and its addenda A to D | `packages/game-data/data/synergy.sts2-main-0.107.1.json` (the tags, SHA-256 `bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a`), `experiments/synergy/b1-calibration.json` and `b1-mechanics.json` (stage B1, exploratory), `experiments/batches/advisor_v1-*-dev-o4000-n1000` (35 development batches) and `experiments/synergy/dev/` (the arms against `d0` and the two selection files, SHA-256 `352cb7a0f273…` and `2235b11af758…`), `experiments/batches/advisor_v1-{astar,d0star}-<class>-a0-veteran-val-n2000` (10) and `experiments/batches/rules_v3-{silent,regent,necrobinder,defect}-a0-veteran-val-n2000` (4, the reference), `experiments/synergy/val/` (the pooled test, the per-class comparisons and the arm profile) | below |
 | Combat networks (no improvement) | ADR-026 | `experiments/rl/results/` | evaluation files only; checkpoints are not committed |
@@ -185,6 +186,16 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `explore3-ironclad-a0-dev-o5000-n5000` | rules_explore_v3 | Ironclad | dev · 5000 | 4998 | 4 | `d8e0c898e170…` | dirty | wins | predates |
 | `g13-necrobinder-base-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 500 | 0 | `e229542e3004…` | clean | sample | yes |
 | `g13-necrobinder-gamehp-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 499 | 0 | `8949438fffb7…` | clean | sample | yes |
+| `g14-defect-base-dev-n500` | rules_v2 | Defect | dev · 500 | 499 | 2 | `9640980bfab7…` | clean | wins,sample | yes |
+| `g14-defect-keeprelics-dev-n500` | rules_v2 | Defect | dev · 500 | 488 | 9 | `0b51dde512c1…` | clean | wins,sample | yes |
+| `g14-ironclad-base-dev-n500` | rules_v2 | Ironclad | dev · 500 | 499 | 0 | `87754afaf599…` | clean | sample | yes |
+| `g14-ironclad-keeprelics-dev-n500` | rules_v2 | Ironclad | dev · 500 | 482 | 25 | `2510774e39bb…` | clean | wins,sample | yes |
+| `g14-necrobinder-base-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 500 | 0 | `47892c75935d…` | clean | sample | yes |
+| `g14-necrobinder-keeprelics-dev-n500` | rules_v2 | Necrobinder | dev · 500 | 492 | 0 | `7bddd07110d6…` | clean | sample | yes |
+| `g14-regent-base-dev-n500` | rules_v2 | Regent | dev · 500 | 492 | 0 | `7f86ddb1ebd2…` | clean | sample | yes |
+| `g14-regent-keeprelics-dev-n500` | rules_v2 | Regent | dev · 500 | 486 | 0 | `98014e133ab6…` | clean | sample | yes |
+| `g14-silent-base-dev-n500` | rules_v2 | Silent | dev · 500 | 500 | 0 | `7de19dc78a62…` | clean | sample | yes |
+| `g14-silent-keeprelics-dev-n500` | rules_v2 | Silent | dev · 500 | 499 | 0 | `eb2eb8416b56…` | clean | sample | yes |
 | `ladder-random_legal-ironclad-a0-first_run-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `570dd90b3617…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n100` | random_legal | Ironclad | train · 100 | 100 | 0 | `77b084b95fbf…` | dirty | – | predates |
 | `ladder-random_legal-ironclad-a0-veteran-train-n2000` | random_legal | Ironclad | train · 2000 | 1999 | 0 | `3ab5c4052170…` | dirty | – | predates |

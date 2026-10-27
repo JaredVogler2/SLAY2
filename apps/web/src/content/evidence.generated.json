@@ -36,7 +36,7 @@
       "id": "G6-undefined-name-in-reward-roll",
       "min_ascension": 0,
       "affects": "coverage",
-      "summary": "A reward path calls `_roll_random_relic_rewards`, a name the pinned simulator never defines (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses."
+      "summary": "The three options of a trading event (`events/act2.py`) call `_roll_random_relic_rewards`, which that module does not import from `events/shared.py`, where it is defined (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses. With the relics a run gains kept (G14) the event is reached more often: 32 of 2,500 development games."
     },
     {
       "id": "G7-no-legal-actions",
@@ -87,7 +87,7 @@
       "id": "G14-relics-lost-after-first-fight",
       "min_ascension": 0,
       "affects": "results",
-      "summary": "A run in the pinned simulator keeps the relics it holds when its first fight starts (the starting relic and the opening Ancient's pick) and loses every relic it gains afterwards: relics from chests, shops, elites, events and bosses are dropped when the next fight starts. The cause is in the simulator: `RunState.relics` is an alias of the player's relic list, the setup of the first fight gives the player a new list, the alias goes stale, and every later fight rebuilds the player's relics from it. So 97.05 % of the 19,717 Act-1 boss decks of the exploration batches hold exactly two relics, 2.95 % three, none more, and a run that dies in the third act holds about two as well; every simulated result here, the card values and the held-out tests among them, comes from a game whose runs never keep a boss, elite, chest or shop relic. A harness variant (`keep_relics`, off in every other batch) points the alias back at the player's list after every action. Its effect is measured on development seeds (ADR-052)."
+      "summary": "A run in the pinned simulator keeps the relics it holds when its first fight starts (the starting relic and the opening Ancient's pick) and loses every relic it gains afterwards: relics from chests, shops, elites, events and bosses are dropped when the next fight starts. The cause is in the simulator: `RunState.relics` is an alias of the player's relic list, the setup of the first fight gives the player a new list, the alias goes stale, and every later fight rebuilds the player's relics from it. So 97.05 % of the 19,717 Act-1 boss decks of the exploration batches hold exactly two relics, 2.95 % three, none more, and every simulated result here, the card values and the held-out tests among them, comes from a game whose runs never keep a boss, elite, chest or shop relic. A harness variant (`keep_relics`, off in every other batch) points the alias back at the player's list after every action. On 2,444 paired development games of `rules_v2` (500 seeds per class, A0) it lifts the share of runs that get past the Act-1 boss from 52.5 % to 63.1 % (325 pairs one way, 67 the other, exact McNemar p = 9.6e-42; every class, from Ironclad 63.2 to 77.1 % to Necrobinder 62.8 to 69.3 %), past the Act-2 boss from 2.1 % to 9.1 %, the mean floors reached by 3.04 (95 % bootstrap 2.81 to 3.28; Ironclad 5.40), and wins from 2 to 34 (Ironclad 0 to 25 of 481, Defect 2 to 9; every win re-derived). The simulator as it is is therefore much harsher than the game on this one point, by more than any pilot difference measured in this project; whether the order of choices (cards, pilots, opening relics) holds with relics kept has not been measured (ADR-052)."
     }
   ],
   "reports": [
@@ -106,6 +106,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -203,6 +204,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -308,6 +310,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -406,6 +409,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -502,6 +506,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -595,6 +600,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -676,6 +682,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -758,6 +765,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -840,6 +848,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -921,6 +930,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1003,6 +1013,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1098,6 +1109,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1193,6 +1205,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1289,6 +1302,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1384,6 +1398,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -1479,6 +1494,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1562,6 +1578,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1646,6 +1663,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1731,6 +1749,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1815,6 +1834,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1898,6 +1918,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -1981,6 +2002,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2065,6 +2087,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2150,6 +2173,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2234,6 +2258,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2317,6 +2342,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2400,6 +2426,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2484,6 +2511,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2569,6 +2597,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2652,6 +2681,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2735,6 +2765,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2819,6 +2850,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2903,6 +2935,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -2988,6 +3021,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3071,6 +3105,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3155,6 +3190,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3240,6 +3276,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3325,6 +3362,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3411,6 +3449,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3495,6 +3534,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3579,6 +3619,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3664,6 +3705,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3757,6 +3799,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3843,6 +3886,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -3928,6 +3972,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 1000,
@@ -4010,6 +4055,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -4101,6 +4147,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": true,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -4180,6 +4227,981 @@
       "role": "development (dev partition): not a held-out result"
     },
     {
+      "id": "g14-defect-base-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 497,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 2
+      },
+      "completed": 499,
+      "winRate": 0.004008016032064128,
+      "winRateWilson95": [
+        0.0010998315628468246,
+        0.01449446497563783
+      ],
+      "meanFloor": 21.73,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 116,
+        "1": 356,
+        "2": 27
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 35
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 32
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 29
+        },
+        {
+          "id": "TUNNELER",
+          "n": 29
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 28
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.9,
+      "winsAudit": {
+        "audited": 2,
+        "verified": 2,
+        "seeds": [
+          664417758,
+          1638496060
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 499,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "9640980bfab73a1ec7a463d19825732bb15772a0bf65719da5a79d8274365d3e",
+      "episodesGzSha256": "95ad7ac8d91ba0651436117d050848cc7af8e676534326691ec45adb65838577",
+      "finished": "2026-10-27T06:15:11+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-defect-keeprelics-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 479,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 12,
+        "timeout": 0,
+        "win": 9
+      },
+      "completed": 488,
+      "winRate": 0.018442622950819672,
+      "winRateWilson95": [
+        0.009732467149131317,
+        0.03467505163357597
+      ],
+      "meanFloor": 24.84,
+      "medianFloor": 22,
+      "deathsByAct": {
+        "0": 89,
+        "1": 333,
+        "2": 66
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 62
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 36
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 35
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 25
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 22
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.98,
+      "winsAudit": {
+        "audited": 9,
+        "verified": 9,
+        "seeds": [
+          532065816,
+          635515539,
+          664417758,
+          669145635,
+          1466355779,
+          1585763175,
+          1638496060,
+          1882875224,
+          1927184137
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 488,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "0b51dde512c114e136744602ba5eb683904749174f15671b3d2a4b65dc9a98e2",
+      "episodesGzSha256": "0aef609e08c13f97d55d01bd658d5c022a0ec5b376d3f8e3cdc13de113de1c89",
+      "finished": "2026-10-27T06:17:15+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-ironclad-base-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 499,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 499,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007639502975159277
+      ],
+      "meanFloor": 21.12,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 179,
+        "1": 295,
+        "2": 25
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 49
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 34
+        },
+        {
+          "id": "VANTOM",
+          "n": 34
+        },
+        {
+          "id": "TUNNELER",
+          "n": 33
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 32
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.85,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 499,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "87754afaf5998ace21bb5d7712cc61687a5f21f92f1f5304d1d2a3fa24e40db3",
+      "episodesGzSha256": "4bd35bdb29772b648205526461751bb1f1b4aff50c41c17d653d53e179822abd",
+      "finished": "2026-10-27T05:59:35+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-ironclad-keeprelics-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/ironclad-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 457,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 18,
+        "timeout": 0,
+        "win": 25
+      },
+      "completed": 482,
+      "winRate": 0.05186721991701245,
+      "winRateWilson95": [
+        0.03537583928203386,
+        0.07544520705556368
+      ],
+      "meanFloor": 26.31,
+      "medianFloor": 29,
+      "deathsByAct": {
+        "0": 110,
+        "1": 267,
+        "2": 105
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 59
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 36
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 25
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 22
+        },
+        {
+          "id": "VANTOM",
+          "n": 22
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.98,
+      "winsAudit": {
+        "audited": 25,
+        "verified": 25,
+        "seeds": [
+          101319698,
+          102523676,
+          532065816,
+          560812152,
+          635515539,
+          638100119,
+          697650531,
+          738211042,
+          799748900,
+          811116895,
+          1274956298,
+          1306064978,
+          1367204534,
+          1429054853,
+          1500310925,
+          1570666037,
+          1579788483,
+          1585763175,
+          1586782333,
+          1617669327,
+          1759969522,
+          1768589054,
+          1898316157,
+          1944824183,
+          1963777529
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 482,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "2510774e39bb4d75e221c34e047dcb13ea378e34043ebfe93b950f091e13498d",
+      "episodesGzSha256": "b82d1349c23d5b4bed89fb1ce8017ae623726ff1467739c536f025fa4b2e665d",
+      "finished": "2026-10-27T06:01:39+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-necrobinder-base-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 500,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 500,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007624340461552238
+      ],
+      "meanFloor": 19.68,
+      "medianFloor": 20,
+      "deathsByAct": {
+        "0": 183,
+        "1": 315,
+        "2": 2
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 46
+        },
+        {
+          "id": "VANTOM",
+          "n": 44
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 28
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 26
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 24
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.91,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 500,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "47892c75935d236414081d487fdec4025caf660f5574f401832e36bd1243d74f",
+      "episodesGzSha256": "112f0f04fc43b3905e02f4a74ecb1a85c4cbf2368947bacc50cfa82c13d5e33b",
+      "finished": "2026-10-27T06:11:10+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-necrobinder-keeprelics-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 492,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 8,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 492,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0077473530144708406
+      ],
+      "meanFloor": 22.51,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 151,
+        "1": 310,
+        "2": 31
+      },
+      "topKillers": [
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 53
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 51
+        },
+        {
+          "id": "VANTOM",
+          "n": 38
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 37
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 35
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 492,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "7bddd07110d6ae4dccb422d87512f3c51848cd99258734c4dbf6f4d89484ad38",
+      "episodesGzSha256": "52c901494bfbee5451358b7afaeb5e850d4eb3f788fe93a681f59963e5709ea8",
+      "finished": "2026-10-27T06:13:17+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-regent-base-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 492,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 8,
+        "win": 0
+      },
+      "completed": 492,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0077473530144708406
+      ],
+      "meanFloor": 17.49,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 278,
+        "1": 211,
+        "2": 3
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 71
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 61
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 40
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 24
+        },
+        {
+          "id": "TUNNELER",
+          "n": 22
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.96,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 492,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "7f86ddb1ebd20659c196fdc131b3421413c4b39e813aecf3b9249fbec704e889",
+      "episodesGzSha256": "0c07fa26e01352eb3729e2720bf524e6a5527740b824d12fcdbce99bfcc76007",
+      "finished": "2026-10-27T06:06:59+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-regent-keeprelics-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 486,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 6,
+        "timeout": 8,
+        "win": 0
+      },
+      "completed": 486,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007842249265594086
+      ],
+      "meanFloor": 19.81,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 206,
+        "1": 260,
+        "2": 20
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 50
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 41
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 35
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 27
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 27
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.04,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 486,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "98014e133ab6db2c6692037fc6fa53e47bf517d8093b75660c1391a5ec2a2614",
+      "episodesGzSha256": "174458e4e081ab486607e8cfbf5a4d00e53a8c664052dfd402d1405370354228",
+      "finished": "2026-10-27T06:09:14+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-silent-base-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": false,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 500,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 0,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 500,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007624340461552238
+      ],
+      "meanFloor": 14.04,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 411,
+        "1": 89
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 91
+        },
+        {
+          "id": "VANTOM",
+          "n": 75
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 45
+        },
+        {
+          "id": "FOGMOG",
+          "n": 21
+        },
+        {
+          "id": "TUNNELER",
+          "n": 21
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.71,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 500,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "7de19dc78a62eb6df11de166d287ff0d0198f3e1c1a01b724095eaa232aeaa04",
+      "episodesGzSha256": "11e97558fce412b94db30a940811f8e6fa3f1a619c42e5eb505f08c05c7af663",
+      "finished": "2026-10-27T06:03:10+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
+      "id": "g14-silent-keeprelics-dev-n500",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "dev",
+      "sealedPartitionUsed": false,
+      "seeds": 500,
+      "counts": {
+        "aborted": 0,
+        "death": 499,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 1,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 499,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.007639502975159277
+      ],
+      "meanFloor": 15.48,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 347,
+        "1": 151,
+        "2": 1
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 81
+        },
+        {
+          "id": "VANTOM",
+          "n": 57
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 50
+        },
+        {
+          "id": "TUNNELER",
+          "n": 23
+        },
+        {
+          "id": "FOGMOG",
+          "n": 20
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.8,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 499,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "eb2eb8416b564982994cf2679295b8c9238300cd2ed6f629c876f2dcafcf5cba",
+      "episodesGzSha256": "108bb122ea414fd7024f8501b3b1073923921eb46db45d999820c22536c7a9ef",
+      "finished": "2026-10-27T06:04:51+00:00",
+      "role": "development (dev partition): not a held-out result"
+    },
+    {
       "id": "ladder-random_legal-ironclad-a0-first_run-train-n100",
       "policy": "random_legal",
       "policyParams": {},
@@ -4189,6 +5211,7 @@
       "profile": "first_run",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 100,
@@ -4263,6 +5286,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4338,6 +5362,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4422,6 +5447,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4508,6 +5534,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 300,
@@ -4587,6 +5614,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4673,6 +5701,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4759,6 +5788,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4845,6 +5875,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -4934,6 +5965,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5043,6 +6075,7 @@
       "profile": "veteran",
       "ancientHeal": true,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -5139,6 +6172,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -5221,6 +6255,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -5309,6 +6344,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5415,6 +6451,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5513,6 +6550,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5614,6 +6652,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5711,6 +6750,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5823,6 +6863,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -5932,6 +6973,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6024,6 +7066,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6122,6 +7165,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6211,6 +7255,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6316,6 +7361,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6418,6 +7464,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6509,6 +7556,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6599,6 +7647,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6688,6 +7737,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 2000,
@@ -6783,6 +7833,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "train",
       "sealedPartitionUsed": false,
       "seeds": 200,
@@ -6864,6 +7915,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 200,
@@ -6959,6 +8011,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "val",
       "sealedPartitionUsed": false,
       "seeds": 300,
@@ -7056,6 +8109,7 @@
       "profile": "veteran",
       "ancientHeal": false,
       "gameHp": false,
+      "keepRelics": false,
       "partition": "dev",
       "sealedPartitionUsed": false,
       "seeds": 500,
@@ -7218,6 +8272,466 @@
       "role": "development (dev partition): not a held-out result",
       "preIsolation": false,
       "contentSha256": "370f84173ef5900e6cae8ddfab052939ca6d05f609202dd9e700d84eb6c9f0cc"
+    },
+    {
+      "id": "g14-keeprelics-vs-base-defect-a0-veteran-dev",
+      "a": {
+        "batchId": "g14-defect-keeprelics-dev-n500",
+        "contentSha256": "0b51dde512c114e136744602ba5eb683904749174f15671b3d2a4b65dc9a98e2",
+        "meanFloor": 24.84426229508197,
+        "meanWallSecondsPerEpisode": 0.9791,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/defect-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0.018442622950819672,
+        "winRateWilson95": [
+          0.009732467149131317,
+          0.03467505163357597
+        ],
+        "wins": 9
+      },
+      "b": {
+        "batchId": "g14-defect-base-dev-n500",
+        "contentSha256": "9640980bfab73a1ec7a463d19825732bb15772a0bf65719da5a79d8274365d3e",
+        "meanFloor": 21.672131147540984,
+        "meanWallSecondsPerEpisode": 0.9018,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/defect-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0.004098360655737705,
+        "winRateWilson95": [
+          0.0011246387501208238,
+          0.014818423145262844
+        ],
+        "wins": 2
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Defect",
+        "partition": "dev",
+        "profile": "veteran",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+      },
+      "pairedSeeds": 500,
+      "bothCompleted": 488,
+      "excludedNotCompleted": 12,
+      "pairedWinTable": {
+        "a_only": 7,
+        "b_only": 0,
+        "both": 2,
+        "mcnemar_p": 0.015625,
+        "neither": 479
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 399,
+          "rate": 0.8176229508196722,
+          "wilson95": [
+            0.7809252302798642,
+            0.8493591722251588
+          ]
+        },
+        "b": {
+          "games": 375,
+          "rate": 0.7684426229508197,
+          "wilson95": [
+            0.7290075366595624,
+            0.8036844422317794
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 40,
+          "b_only": 16,
+          "both": 359,
+          "mcnemar_p": 0.0018415547884925443,
+          "neither": 73
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          2.6065573770491803,
+          3.762295081967213
+        ],
+        "meanAMinusB": 3.1721311475409837,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.921,
+      "role": "development (dev partition): not a held-out result",
+      "preIsolation": false,
+      "contentSha256": "10fac90126a634ce875c1d1b308260ea9f6659d953465acc93b30dc6f155201a"
+    },
+    {
+      "id": "g14-keeprelics-vs-base-ironclad-a0-veteran-dev",
+      "a": {
+        "batchId": "g14-ironclad-keeprelics-dev-n500",
+        "contentSha256": "2510774e39bb4d75e221c34e047dcb13ea378e34043ebfe93b950f091e13498d",
+        "meanFloor": 26.2972972972973,
+        "meanWallSecondsPerEpisode": 0.9806,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/ironclad-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0.05197505197505198,
+        "winRateWilson95": [
+          0.03544990021632742,
+          0.07559971784161588
+        ],
+        "wins": 25
+      },
+      "b": {
+        "batchId": "g14-ironclad-base-dev-n500",
+        "contentSha256": "87754afaf5998ace21bb5d7712cc61687a5f21f92f1f5304d1d2a3fa24e40db3",
+        "meanFloor": 20.896049896049895,
+        "meanWallSecondsPerEpisode": 0.8463,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/ironclad-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.007923123633110728
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Ironclad",
+        "partition": "dev",
+        "profile": "veteran",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+      },
+      "pairedSeeds": 500,
+      "bothCompleted": 481,
+      "excludedNotCompleted": 19,
+      "pairedWinTable": {
+        "a_only": 25,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 5.960464477539063e-8,
+        "neither": 456
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 371,
+          "rate": 0.7713097713097713,
+          "wilson95": [
+            0.7317143411514532,
+            0.8066059597461727
+          ]
+        },
+        "b": {
+          "games": 304,
+          "rate": 0.632016632016632,
+          "wilson95": [
+            0.5880312989099441,
+            0.6739099969291307
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 77,
+          "b_only": 10,
+          "both": 294,
+          "mcnemar_p": 5.91755837353286e-14,
+          "neither": 100
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          4.717203742203743,
+          6.08939708939709
+        ],
+        "meanAMinusB": 5.401247401247401,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.863,
+      "role": "development (dev partition): not a held-out result",
+      "preIsolation": false,
+      "contentSha256": "f3e53397615277234c75288ea9719b28c3782548fd64ba5b33986e5204bf28dc"
+    },
+    {
+      "id": "g14-keeprelics-vs-base-necrobinder-a0-veteran-dev",
+      "a": {
+        "batchId": "g14-necrobinder-keeprelics-dev-n500",
+        "contentSha256": "7bddd07110d6ae4dccb422d87512f3c51848cd99258734c4dbf6f4d89484ad38",
+        "meanFloor": 22.51219512195122,
+        "meanWallSecondsPerEpisode": 0.9925,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0077473530144708406
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "g14-necrobinder-base-dev-n500",
+        "contentSha256": "47892c75935d236414081d487fdec4025caf660f5574f401832e36bd1243d74f",
+        "meanFloor": 19.63617886178862,
+        "meanWallSecondsPerEpisode": 0.9082,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/necrobinder-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.0077473530144708406
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Necrobinder",
+        "partition": "dev",
+        "profile": "veteran",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+      },
+      "pairedSeeds": 500,
+      "bothCompleted": 492,
+      "excludedNotCompleted": 8,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 492
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 341,
+          "rate": 0.693089430894309,
+          "wilson95": [
+            0.6509705077523855,
+            0.7322164900672294
+          ]
+        },
+        "b": {
+          "games": 309,
+          "rate": 0.6280487804878049,
+          "wilson95": [
+            0.5845033279170071,
+            0.6696101548475797
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 47,
+          "b_only": 15,
+          "both": 294,
+          "mcnemar_p": 0.00005778372004920304,
+          "neither": 136
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          2.4004065040650406,
+          3.3780487804878048
+        ],
+        "meanAMinusB": 2.8760162601626016,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.915,
+      "role": "development (dev partition): not a held-out result",
+      "preIsolation": false,
+      "contentSha256": "678bd5b84263db80db723578cade201ef594269d845c8ba2adc89e5166a240fa"
+    },
+    {
+      "id": "g14-keeprelics-vs-base-regent-a0-veteran-dev",
+      "a": {
+        "batchId": "g14-regent-keeprelics-dev-n500",
+        "contentSha256": "98014e133ab6db2c6692037fc6fa53e47bf517d8093b75660c1391a5ec2a2614",
+        "meanFloor": 19.760330578512395,
+        "meanWallSecondsPerEpisode": 0.837,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/regent-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.00787440007657498
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "g14-regent-base-dev-n500",
+        "contentSha256": "7f86ddb1ebd20659c196fdc131b3421413c4b39e813aecf3b9249fbec704e889",
+        "meanFloor": 17.39669421487603,
+        "meanWallSecondsPerEpisode": 0.7697,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/regent-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.00787440007657498
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Regent",
+        "partition": "dev",
+        "profile": "veteran",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+      },
+      "pairedSeeds": 500,
+      "bothCompleted": 484,
+      "excludedNotCompleted": 16,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 484
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 278,
+          "rate": 0.5743801652892562,
+          "wilson95": [
+            0.5299153291436767,
+            0.617673603076337
+          ]
+        },
+        "b": {
+          "games": 207,
+          "rate": 0.42768595041322316,
+          "wilson95": [
+            0.38434927014425907,
+            0.47216149019739423
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 83,
+          "b_only": 12,
+          "both": 195,
+          "mcnemar_p": 3.211393990185144e-14,
+          "neither": 194
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          1.927634297520662,
+          2.81198347107438
+        ],
+        "meanAMinusB": 2.3636363636363638,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.92,
+      "role": "development (dev partition): not a held-out result",
+      "preIsolation": false,
+      "contentSha256": "1df54ca1721bd25dc3d2141cf50f5ebea1b221fae196055133f39374d65d5078"
+    },
+    {
+      "id": "g14-keeprelics-vs-base-silent-a0-veteran-dev",
+      "a": {
+        "batchId": "g14-silent-keeprelics-dev-n500",
+        "contentSha256": "eb2eb8416b564982994cf2679295b8c9238300cd2ed6f629c876f2dcafcf5cba",
+        "meanFloor": 15.47695390781563,
+        "meanWallSecondsPerEpisode": 0.7955,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/silent-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.007639502975159277
+        ],
+        "wins": 0
+      },
+      "b": {
+        "batchId": "g14-silent-base-dev-n500",
+        "contentSha256": "7de19dc78a62eb6df11de166d287ff0d0198f3e1c1a01b724095eaa232aeaa04",
+        "meanFloor": 14.01803607214429,
+        "meanWallSecondsPerEpisode": 0.7144,
+        "params": {
+          "threshold": 0,
+          "values": "experiments/cardvalue/silent-a0-v1.json"
+        },
+        "policy": "rules_v2",
+        "winRate": 0,
+        "winRateWilson95": [
+          0,
+          0.007639502975159277
+        ],
+        "wins": 0
+      },
+      "cohort": {
+        "ascension": 0,
+        "character": "Silent",
+        "partition": "dev",
+        "profile": "veteran",
+        "seedManifestSha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e"
+      },
+      "pairedSeeds": 500,
+      "bothCompleted": 499,
+      "excludedNotCompleted": 1,
+      "pairedWinTable": {
+        "a_only": 0,
+        "b_only": 0,
+        "both": 0,
+        "mcnemar_p": 1,
+        "neither": 499
+      },
+      "reachedAct2": {
+        "a": {
+          "games": 152,
+          "rate": 0.3046092184368738,
+          "wilson95": [
+            0.26584713949475897,
+            0.34635667429312894
+          ]
+        },
+        "b": {
+          "games": 88,
+          "rate": 0.17635270541082165,
+          "wilson95": [
+            0.14542207171086652,
+            0.21222834805060936
+          ]
+        },
+        "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+        "pairedTable": {
+          "a_only": 78,
+          "b_only": 14,
+          "both": 74,
+          "mcnemar_p": 6.162186756126439e-12,
+          "neither": 333
+        }
+      },
+      "floorDifference": {
+        "ci95": [
+          1.1402805611222444,
+          1.7915831663326653
+        ],
+        "meanAMinusB": 1.4589178356713426,
+        "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+      },
+      "wallTimeRatioBOverA": 0.898,
+      "role": "development (dev partition): not a held-out result",
+      "preIsolation": false,
+      "contentSha256": "5e2ce465d54b2fb6f1be1e3ecdc263b5c0f024b33441b70d40489376f17e6795"
     },
     {
       "id": "rules_v1-vs-random_legal-ironclad-a0-veteran-val",

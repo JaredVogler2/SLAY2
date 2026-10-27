@@ -81,6 +81,12 @@ export function SimulationOpinion({
           ? "You said you are in Underdocks. These runs were all played in Overgrowth (the simulator never plays Underdocks), so the numbers below were not measured for your Act 1: read them as a prior about the cards, not about your fights."
           : "Every simulated run was played in Overgrowth, the Act 1 every profile starts with. The simulator never plays Underdocks."}
       </p>
+      <p className="mt-3 text-xs text-dim">
+        In the simulator a run keeps only the relics it has when its first fight starts (gap G14),
+        so these runs held two where yours may hold more. With the relics kept, the same pilot went
+        about three floors further, so read the values below as a ranking of cards in a harsher game
+        than yours.
+      </p>
       <StartHpNote
         character={run.character ?? ""}
         subject="values"

@@ -311,9 +311,11 @@ export function NeowOffer({
             by that value, so they are estimates, not counts of {label} runs.
           </li>
           <li>
-            One rules pilot played them, the simulator has not been compared with the live game, and
-            the Ancients of acts two and three are not simulated. Your deck, your plans and what you
-            know of the run matter more than a single number.
+            One rules pilot played them, the simulator has not been compared with the live game, the
+            Ancients of acts two and three are not simulated, and a simulated run keeps no relic it
+            gains after its first fight (gap G14), so the relic offered here was measured as the
+            only extra one a run holds. Your deck, your plans and what you know of the run matter
+            more than a single number.
           </li>
           <li>
             The method, every value and the one held-out test are on{" "}

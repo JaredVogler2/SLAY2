@@ -241,6 +241,19 @@ describe("comparison wording is derived from the data", () => {
     expect(evidence.reports.filter((r) => !r.gameHp && r.id.includes("gamehp"))).toEqual([]);
   });
 
+  it("the relic variant (gap G14) is shown with its label and is never a headline report either", () => {
+    const variants = evidence.reports.filter((r) => r.keepRelics);
+    expect(variants.length).toBeGreaterThan(0);
+    for (const v of variants) {
+      expect(v.id).toContain("keeprelics");
+      expect(v.role).toContain("development");
+      expect(largestReport(v.policy, v.character)?.keepRelics).toBe(false);
+    }
+    expect(evidence.reports.filter((r) => !r.keepRelics && r.id.includes("keeprelics"))).toEqual(
+      [],
+    );
+  });
+
   it("formats exact p-values without printing a misleading zero", () => {
     expect(formatP(0.0173)).toBe("p = 0.017");
     expect(formatP(8.13e-261)).toBe("p = 8.1e-261");

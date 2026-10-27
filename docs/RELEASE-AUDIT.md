@@ -65,17 +65,17 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
 | Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
-| Defect | development (train, dev) | 9 | 15,000 | 14,989 | 18 | 11 | 0 |
+| Defect | development (train, dev) | 11 | 16,000 | 15,976 | 29 | 24 | 0 |
 | Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
-| Ironclad | development (train, dev) | 21 | 24,910 | 24,872 | 23 | 28 | 10 |
+| Ironclad | development (train, dev) | 23 | 25,910 | 25,853 | 48 | 47 | 10 |
 | Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
-| Necrobinder | development (train, dev) | 11 | 16,000 | 15,993 | 0 | 5 | 2 |
+| Necrobinder | development (train, dev) | 13 | 17,000 | 16,985 | 0 | 13 | 2 |
 | Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
-| Regent | development (train, dev) | 9 | 15,000 | 14,906 | 0 | 2 | 92 |
+| Regent | development (train, dev) | 11 | 16,000 | 15,884 | 0 | 8 | 108 |
 | Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
-| Silent | development (train, dev) | 9 | 15,000 | 14,998 | 0 | 2 | 0 |
+| Silent | development (train, dev) | 11 | 16,000 | 15,997 | 0 | 3 | 0 |
 | **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
-| **All classes** | **development (train, dev)** | **59** | **85,910** | **85,758** | **41** | **48** | **104** |
+| **All classes** | **development (train, dev)** | **69** | **90,910** | **90,695** | **77** | **95** | **120** |
 <!-- table:games:end -->
 
 ## The twelve campaigns
@@ -88,7 +88,7 @@ Detail and evidence per campaign: the coverage table in [docs/ADVERSARIAL-AUDIT.
 | 2 | Patch contamination | attacked; no beta snapshot exists, so "same id, different cost" cannot be tested and the beta is refused instead |
 | 3 | Statistical fake certainty | attacked; three P1 findings fixed |
 | 4 | Hidden RNG oracle | counterfactual tests on every pilot behind a published number, with a leak canary; **not run on a trained network** (none earned a place) |
-| 5 | Simulator fidelity | not re-attacked; 13 known gaps travel with every result; no live-game fixture |
+| 5 | Simulator fidelity | not re-attacked; 14 known gaps travel with every result; no live-game fixture |
 | 6 | Full-run truth | attacked in two rounds; the class-id failure found and fixed; development batches not all re-derived |
 | 7 | Model science | not re-attacked; one negative result committed |
 | 8 | Co-op | by construction unsupported |
@@ -118,13 +118,14 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Not done, and why
 
 * No network is deployed or claimed: three combat networks were trained and judged on 796 held-out combats and none improved on the rules baseline; a fourth run is paused with only a monitor-set number.
-* Pilots are weak: about 0.3 % of simulated Ironclad games are won, and Silent and Necrobinder won none of their held-out games. The evidence is about surviving the first boss.
-* The simulator plays Overgrowth only, at Ascension 0, with no Ancients in acts two and three and a Necrobinder at 75 HP.
+* Pilots are weak: about 0.3 % of simulated Ironclad games are won, and Silent and Necrobinder won none of their held-out games. The evidence is about surviving the first boss. **That level belongs to a simulator that drops every relic a run gains after its first fight (G14, ADR-052):** with the relics kept, the same pilot got past the Act-1 boss in 63.1 % of 2,444 paired development games instead of 52.5 %, went 3.04 floors further and won 34 games against 2 (Ironclad 25 of 482 against 0 of 499).
+* The simulator plays Overgrowth only, at Ascension 0, with no Ancients in acts two and three, a Necrobinder at 75 HP, and, the largest of its known gaps, **no relic kept after a run's first fight (G14)**. No registered result is withdrawn (each compared two arms inside the simulator as it is), but none is evidence that its ordering holds with relics kept; the replications are queued as new registrations (STATUS, Next steps 0b).
 * No local companion or bridge to the running game, so nothing reads a live run and no game-control surface exists.
 * No re-verification against a newer main build: a patch needs the rules, the catalog and the simulations redone; `patch-watch` only tells when to.
 
 ## Next actions, in order
 
+00. **Re-base the simulated evidence on runs that keep their relics (ADR-052, 2026-10-27).** The test of the relic reading that ADR-051 promised is possible only with `--keep-relics`; the synergy test, the card values and the opening-relic study each need the same replication as a new registration. A report to the simulator's maintainers is the owner's call.
 0. **The synergy study (the user's feedback) is finished** as registered in ADR-050: the model, the exploratory reading (B1), the development stage (addendum D) and the one held-out test, published as it came out, with the page's weights and wording set by it. Open, each a new registration: a second pilot or higher Ascensions, the tags re-read with the table unfrozen, and whether the strengths hold for the beta build.
 1. Measure Web Vitals on the hosted site again now that pull requests #8 and #9 (the synergy work and its study programs) are live.
 2. Registered question with the largest use for a player: the opening-relic rule at the game's own Necrobinder HP (`--game-hp`, G13), then the full re-derivation of the older batches, then the decision on the paused network.
