@@ -82,6 +82,12 @@
         "Necrobinder"
       ],
       "summary": "The pinned simulator starts a Necrobinder run with 75 HP; the game's own source (CharacterModel.StartingHp of the Necrobinder) says 66. Every simulated Necrobinder result, the card values and the held-out tests among them, starts 9 HP (14 %) above the game and makes the class look sturdier than it is. A harness variant (`game_hp`, off in every other batch) starts the class with the game's number. On 499 paired development games of `rules_v2` (Necrobinder, A0) it lowers the share of runs that get past the Act-1 boss from 63.5 % to 51.5 % (86 pairs one way, 26 the other, exact McNemar p = 1.1e-8) and the mean floors reached from 19.7 to 18.1 (difference -1.63, 95 % bootstrap -2.10 to -1.16); no game is won either way. So the level of every simulated Necrobinder number is too high, by an amount measured for this one pilot; whether the order of choices (cards, relics) holds at 66 HP has not been measured (ADR-049). Found on 2026-10-26 by comparing the simulator's starting state with the repository's class facts (the other four classes' starting HP and every class's starter deck match the game)."
+    },
+    {
+      "id": "G14-relics-lost-after-first-fight",
+      "min_ascension": 0,
+      "affects": "results",
+      "summary": "A run in the pinned simulator keeps the relics it holds when its first fight starts (the starting relic and the opening Ancient's pick) and loses every relic it gains afterwards: relics from chests, shops, elites, events and bosses are dropped when the next fight starts. The cause is in the simulator: `RunState.relics` is an alias of the player's relic list, the setup of the first fight gives the player a new list, the alias goes stale, and every later fight rebuilds the player's relics from it. So 97.05 % of the 19,717 Act-1 boss decks of the exploration batches hold exactly two relics, 2.95 % three, none more, and a run that dies in the third act holds about two as well; every simulated result here, the card values and the held-out tests among them, comes from a game whose runs never keep a boss, elite, chest or shop relic. A harness variant (`keep_relics`, off in every other batch) points the alias back at the player's list after every action. Its effect is measured on development seeds (ADR-052)."
     }
   ],
   "reports": [
