@@ -389,7 +389,9 @@ describe("what a class may be told (ADR-049)", () => {
   it("names the classes the rule did not clearly help in the coverage line", () => {
     const line = neowCoverage(data);
     expect(line.state).toBe("validated");
-    expect(line.detail).toContain("ahead in 3 of 5 classes, not in Regent, Necrobinder");
+    expect(line.detail).toContain(
+      "ahead at the class level (exact McNemar p below 0.01) in 3 of 5 classes, not in Regent, Necrobinder",
+    );
     const everyone = neowCoverage(
       fixture(
         testResult(true, {
@@ -401,6 +403,8 @@ describe("what a class may be told (ADR-049)", () => {
         }),
       ),
     );
-    expect(everyone.detail).toContain("ahead in all 5 classes");
+    expect(everyone.detail).toContain(
+      "ahead at the class level (exact McNemar p below 0.01) in all 5 classes",
+    );
   });
 });

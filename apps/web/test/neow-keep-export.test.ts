@@ -48,6 +48,8 @@ interface Options {
   primary?: readonly (readonly [number, number])[] | null;
   /** the secondary arm's discordant pairs, or none */
   secondary?: readonly (readonly [number, number])[] | null;
+  /** the decision log records the SHA-256 of each fit (it did, before any held-out game) */
+  recorded?: boolean;
 }
 
 const dirs: string[] = [];
@@ -222,7 +224,7 @@ const everyClass = (a: number, b: number): readonly (readonly [number, number])[
   CLASSES.map(() => [a, b] as const);
 
 function buildWorld(options: Options = {}): { root: string; path: (...parts: string[]) => string } {
-  const o = { fit: true, primary: null, secondary: null, ...options };
+  const o = { fit: true, primary: null, secondary: null, recorded: true, ...options };
   const root = mkdtempSync(join(tmpdir(), "slay2-neowkeep-"));
   dirs.push(root);
   for (const name of ["packages", "sim"]) {
@@ -268,6 +270,13 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
     const newSha = createHash("sha256")
       .update(readFileSync(path("experiments", "neow", "neow-values-keep-v1.json")))
       .digest("hex");
+    // the decision log records each fit before any held-out game of its study
+    writeFileSync(
+      path("docs", "DECISIONS.md"),
+      o.recorded
+        ? `ADR-049 fit ${oldSha}\nADR-055 fit ${newSha}\n`
+        : "ADR-055 fit (not recorded)\n",
+    );
     for (const cls of CLASSES) {
       const m = JSON.parse(readFileSync(real(exploreDir(cls, false), "manifest.json"), "utf8")) as {
         batch_id: string;
@@ -444,7 +453,7 @@ describe("the exporter reads the opening-relic study repeated with the relics ke
     rmSync(x.path("experiments", "batches", batchId("keepvals", "defect"), "sample-audit.json"));
     const b = run(x.root);
     expect(b.status).not.toBe(0);
-    expect(b.stderr).toContain("no sample audit");
+    expect(b.stderr).toContain("no passing sample audit");
   });
 
   it("refuses an arm that followed another version of the values file", () => {
@@ -471,6 +480,92 @@ describe("the exporter reads the opening-relic study repeated with the relics ke
     expect(r.stderr).toContain(
       "the two arms of regent do not differ only in the opening-relic rule",
     );
+  });
+
+  describe("reads the held-out result as strictly as the other registered tests (the numbers must add up and the audits must have passed)", () => {
+    const POOLED = [
+      "experiments",
+      "neow",
+      "pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
+    ];
+    const refused = (w: { root: string }, message: string) => {
+      const r = run(w.root);
+      expect(r.status, "the exporter should refuse").not.toBe(0);
+      expect(r.stderr).toContain(message);
+    };
+
+    it("accepts a result whose numbers are consistent (the control for the refusals below)", () => {
+      const w = buildWorld({ primary: everyClass(300, 200) });
+      const r = run(w.root);
+      expect(r.status, r.stderr).toBe(0);
+    });
+
+    it("refuses a fit that the decision log did not record", () => {
+      const w = buildWorld({ primary: everyClass(300, 200), recorded: false });
+      refused(w, "is not the file ADR-055 recorded");
+    });
+
+    it("refuses a pooled p-value that is not the exact McNemar p-value of its counts, whatever it says about the rule", () => {
+      const w = buildWorld({ primary: everyClass(250, 250) });
+      edit(w.path(...POOLED), (p) => {
+        ((p.reachedAct2 as Json).pairedTable as Json).mcnemar_p = 1e-9;
+      });
+      refused(w, "is not the exact McNemar p-value of its counts");
+    });
+
+    it("refuses a class's p-value that is not the exact McNemar p-value of its counts", () => {
+      const w = buildWorld({ primary: everyClass(300, 200) });
+      edit(w.path(...POOLED), (p) => {
+        const members = p.members as { reachedAct2: { pairedTable: Json } }[];
+        const silent = members[1];
+        if (silent) silent.reachedAct2.pairedTable.mcnemar_p = 0.9;
+      });
+      refused(w, "Act-1 p-value");
+    });
+
+    it("refuses rates that are not the counts of the table, and totals that are not the sum of the classes'", () => {
+      const a = buildWorld({ primary: everyClass(300, 200) });
+      edit(a.path(...POOLED), (p) => {
+        ((p.reachedAct2 as Json).a as Json).rate = 0.9;
+      });
+      refused(a, "the Act-1 rates are not the counts of its table");
+      const b = buildWorld({ primary: everyClass(300, 200) });
+      edit(b.path(...POOLED), (p) => {
+        (((p.reachedAct2 as Json).pairedTable as Json).a_only as number) += 1;
+      });
+      refused(b, "is not the sum of the classes'");
+    });
+
+    it("refuses a sample audit that did not pass", () => {
+      const w = buildWorld({ primary: everyClass(300, 200) });
+      edit(
+        w.path("experiments", "batches", batchId("keepvals", "silent"), "sample-audit.json"),
+        (a) => {
+          a.verified = 12;
+          (a.ledger as Json).ok = false;
+        },
+      );
+      refused(w, "no passing sample audit");
+    });
+
+    it("refuses arms that were not played from one clean checkout of one commit", () => {
+      const dirty = buildWorld({ primary: everyClass(300, 200) });
+      edit(
+        dirty.path("experiments", "batches", batchId("baseline", "regent"), "manifest.json"),
+        (m) => {
+          ((m.environment as Json).slay2 as Json).dirty = true;
+        },
+      );
+      refused(dirty, "uncommitted changes");
+      const split = buildWorld({ primary: everyClass(300, 200) });
+      edit(
+        split.path("experiments", "batches", batchId("keepvals", "defect"), "manifest.json"),
+        (m) => {
+          ((m.environment as Json).slay2 as Json).head = "e".repeat(40);
+        },
+      );
+      refused(split, "not all played from one commit");
+    });
   });
 
   it("refuses a descriptive comparison of other value files than the two the site reads", () => {

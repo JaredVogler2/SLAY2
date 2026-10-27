@@ -122,18 +122,18 @@ What these numbers are not: field data (nobody visited); a Lighthouse score (Lig
 
 ## What the browser is sent as script (bytes, not timings)
 
-`pnpm --filter @slay2/web build && pnpm --filter @slay2/web bytes` (`apps/web/scripts/script-bytes.mjs`) reads the script files named in each prerendered page of the build and prints their size and their size gzipped at level 6; no server, browser or third-party package is involved, and it counts neither the router's prefetch of other pages nor fonts and styles. ADR-056 (2026-10-27) records a change found with it: the header's "Resume" chip and the error boundary imported the run store, which imports the card catalog, the synergy table and the schema library, so every page carried them. After the change (KB of script, gzipped in brackets):
+`pnpm --filter @slay2/web build && pnpm --filter @slay2/web bytes` (`apps/web/scripts/script-bytes.mjs`) reads the script files named in each prerendered page of the build and prints their size and their size gzipped at level 6; no server, browser or third-party package is involved, and it counts neither the router's prefetch of other pages nor fonts and styles. `bytes:check` does the same and exits 1 when a page is over its budget (the size ADR-056 recorded plus about 8 %); CI runs it after the build, because no source scan sees through the workspace packages. ADR-056 (2026-10-27) records what it found: the header's "Resume" chip and the error boundary imported the run store, which imports the card catalog, the synergy table and the schema library, so every page carried them, and the workspace packages did not declare `"sideEffects": false`, so a page that used one constant of a package received everything the package re-exports. After the change (KB of script, gzipped in brackets):
 
-| Page | Before (`580a573`) | After |
-|---|---|---|
-| `/about`, `/methods` | 902.5 (255.9) | 570.1 (177.1) |
-| `/` | 912.2 (259.6) | 716.9 (222.7) |
-| `/codex` | 1,029.2 (287.1) | 995.2 (274.6) |
-| `/advisor` | 1,150.4 (325.2) | 1,152.4 (326.0) |
-| `/odds` | 959.8 (273.1) | 961.9 (274.8) |
-| `/routes` | 931.4 (265.2) | 933.6 (266.6) |
+| Page | Before (`580a573`) | After | Budget (gzipped) |
+|---|---|---|---|
+| `/about`, `/methods` | 902.5 (255.9) | 570.1 (177.1) | 192 |
+| `/` | 912.2 (259.6) | 588.5 (184.0) | 200 |
+| `/codex` | 1,029.2 (287.1) | 960.4 (263.3) | 285 |
+| `/advisor` | 1,150.4 (325.2) | 1,139.1 (321.7) | 345 |
+| `/odds` | 959.8 (273.1) | 930.3 (265.0) | 285 |
+| `/routes` | 931.4 (265.2) | 903.7 (257.6) | 278 |
 
-`apps/web/test/bundle-weight.test.ts` fails if the layout, the error boundary, the landing page, the About page or the methods page can reach the catalog, the schema library, the run's schema or the run store. The Web Vitals tables above were measured before this change and have not been repeated: the machine was busy with the held-out games of ADR-055. What remains heavy is `/methods` itself, a 944 KB document of which the serialized page is 560 KB.
+`apps/web/test/bundle-weight.test.ts` is the fast guard for the app's own imports (the layout, the error boundary, the landing page, the About page and the methods page may not import the catalog, the schema library, the run's schema or the run store) and checks the `sideEffects` declarations. The Web Vitals tables above were measured before this change and have not been repeated: the machine was busy with the held-out games of ADR-055. What remains heavy is `/methods` itself, a 944 KB document of which the serialized page is 560 KB.
 
 ## Smoke test after a READY deployment exists
 

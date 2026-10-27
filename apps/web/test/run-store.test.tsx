@@ -76,3 +76,65 @@ describe("the saved run and its version", () => {
     expect(again.getSnapshot()).toBeNull();
   });
 });
+
+describe("the run shared with the other tabs", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+  afterEach(() => {
+    window.localStorage.clear();
+  });
+
+  const tell = (key: string | null): void => {
+    window.dispatchEvent(new StorageEvent("storage", { key }));
+  };
+
+  it("follows another tab even when no component is looking at the run (the header used to be what kept it listening)", async () => {
+    window.localStorage.setItem("slay2.run.v2", JSON.stringify(newRun("ironclad")));
+    const store = await freshStore();
+    expect(store.getSnapshot()?.character).toBe("ironclad");
+    // nobody subscribed: the page is on an About page, and another tab starts a different run
+    window.localStorage.setItem(
+      "slay2.run.v2",
+      JSON.stringify({ ...newRun("silent"), ascension: 5 }),
+    );
+    tell("slay2.run.v2");
+    expect(store.getSnapshot()?.character).toBe("silent");
+    expect(store.getSnapshot()?.ascension).toBe(5);
+  });
+
+  it("drops the run that another tab cleared, or the whole storage it cleared, so that the next edit cannot bring it back", async () => {
+    window.localStorage.setItem("slay2.run.v2", JSON.stringify(newRun("defect")));
+    const store = await freshStore();
+    expect(store.getSnapshot()?.character).toBe("defect");
+    window.localStorage.removeItem("slay2.run.v2");
+    tell("slay2.run.v2");
+    expect(store.getSnapshot()).toBeNull();
+
+    window.localStorage.setItem("slay2.run.v2", JSON.stringify(newRun("regent")));
+    tell("slay2.run.v2");
+    expect(store.getSnapshot()?.character).toBe("regent");
+    window.localStorage.clear();
+    tell(null);
+    expect(store.getSnapshot()).toBeNull();
+  });
+
+  it("says why a saved run is not shown, until a new run replaces it", async () => {
+    const refused = { ...newRun("defect"), deck: [{ id: "NO_SUCH_CARD", count: 1 }] };
+    window.localStorage.setItem("slay2.run.v2", JSON.stringify(refused));
+    const store = await freshStore();
+    expect(store.getSnapshot()).toBeNull();
+    expect(store.unreadableRun).toContain("Unknown card id");
+    // nothing is saved: nothing to say
+    window.localStorage.clear();
+    tell("slay2.run.v2");
+    expect(store.getSnapshot()).toBeNull();
+    expect(store.unreadableRun).toBeNull();
+    // and a refused run is replaced by the next run, after which there is nothing to say
+    window.localStorage.setItem("slay2.run.v2", "not json");
+    tell("slay2.run.v2");
+    expect(store.unreadableRun).toBe("Not valid JSON.");
+    store.set(newRun("silent"));
+    expect(store.unreadableRun).toBeNull();
+  });
+});

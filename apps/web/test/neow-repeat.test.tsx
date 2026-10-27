@@ -164,7 +164,7 @@ describe("the /methods block on the opening-relic study repeated with the relics
       const block = need(container.querySelector("#opening-ancient-keep"));
       expect(block).toHaveTextContent("The same study, played in both games");
       expect(block).toHaveTextContent(
-        passed ? "rule ahead with the relics kept" : "rule not ahead with the relics kept",
+        passed ? "rule ahead with the relics kept" : "rule not shown ahead with the relics kept",
       );
       // the first study's own result, and why it stays in the record
       expect(block).toHaveTextContent("The first study, in the simulator that drops the relics");
@@ -245,18 +245,22 @@ describe("What did Neow offer? when the repetition has been tested", () => {
     fireEvent.change(screen.getByLabelText("Second helpful option"), { target: { value: two.id } });
   }
 
-  it("names no relic when the repetition did not show the rule ahead, and says that the earlier study found the opposite", () => {
+  it("names no relic when the repetition did not show the rule ahead, and says that the earlier study found it helpful and this one did not confirm it", () => {
     setup(tested(false));
     const text = document.body.textContent;
     expect(text).toContain("SLAY2 does not say which relic to take.");
-    expect(text).toContain("found the opposite");
-    expect(text).toContain("this one keeps the relics, as the game does");
+    expect(text).toContain("found the rule helpful");
+    expect(text).toContain("this one keeps the relics, as the game does, and did not confirm it");
+    // a result with the rule nominally ahead but not at the registered level is not "no improvement", and not "the opposite"
+    expect(text).toContain("does not show that it improves play");
+    expect(text).not.toContain("found the opposite");
+    expect(text).not.toContain("did not improve play");
     expect(text).not.toContain("would take");
   });
 
   it("does not mention an earlier study while the first one is the one shown", () => {
     setup({ ...registered, test: { ...FIRST_TEST, passed: false } });
-    expect(document.body.textContent).not.toContain("found the opposite");
+    expect(document.body.textContent).not.toContain("found the rule helpful");
   });
 
   it("says the simulated runs kept the relics they gained, and not that they kept none", () => {

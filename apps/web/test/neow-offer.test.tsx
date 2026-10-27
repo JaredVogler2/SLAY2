@@ -233,14 +233,14 @@ describe("What did Neow offer?", () => {
     expect(screen.queryByText(/Simulated pilot.s pick/)).toBeNull();
   });
 
-  it("gives no advice when the held-out test did not improve play, and says what it found", () => {
+  it("gives no advice when the held-out test does not show that it improves play, and says what it found", () => {
     const s = setup(withTest(test(false)));
     offer(s);
     expect(screen.queryByText(/would take/)).toBeNull();
     expect(screen.queryByText(/Simulated pilot.s pick/)).toBeNull();
     const note = screen.getByText(/does not say which relic to take/);
     expect(note).toHaveTextContent("55% of 9,800 games against 56%");
-    expect(note).toHaveTextContent("did not improve play");
+    expect(note).toHaveTextContent("does not show that it improves play");
     // the measurements are still there
     expect(
       screen.getByRole("list", { name: "Measured values of the relics offered" }),

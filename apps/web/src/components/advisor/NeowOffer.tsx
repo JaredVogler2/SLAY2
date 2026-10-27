@@ -64,9 +64,9 @@ function VerdictText({
           SLAY2 does not say which relic to take. In the held-out test a simulated pilot that took
           the best-measured relic got past the Act-1 boss in {percent(t.reachedAct2.a.rate)} of{" "}
           {games(t.bothCompleted)} games against {percent(t.reachedAct2.b.rate)} for one that took
-          the first helpful relic ({pText(p)}), so it did not improve play.
+          the first helpful relic ({pText(p)}), so the test does not show that it improves play.
           {earlier?.passed
-            ? ` An earlier study, in simulated runs that dropped every relic they gained after the first fight, found the opposite (${percent(earlier.reachedAct2.a.rate)} against ${percent(earlier.reachedAct2.b.rate)}, ${pText(earlier.reachedAct2.pairedTable.mcnemar_p)}); this one keeps the relics, as the game does, so it is the one SLAY2 follows.`
+            ? ` An earlier study, in simulated runs that dropped every relic they gained after the first fight, found the rule helpful (${percent(earlier.reachedAct2.a.rate)} against ${percent(earlier.reachedAct2.b.rate)}, ${pText(earlier.reachedAct2.pairedTable.mcnemar_p)}); this one keeps the relics, as the game does, and did not confirm it, so it is the one SLAY2 follows.`
             : ""}{" "}
           The numbers below are measurements, not advice.
         </p>
@@ -103,8 +103,8 @@ function VerdictText({
           </p>
           <p className="text-sm text-muted">
             {verdict.separation === "clear"
-              ? `Its 95% interval sits clear of ${verdict.runnerUp.name}'s, the next best of the three.`
-              : `The simulated runs do not clearly separate it from ${verdict.runnerUp.name}, the next best of the three: their 95% intervals overlap. Use what you know.`}
+              ? `Its 95% interval sits clear of ${verdict.runnerUp.name}'s, ${verdict.offered === 2 ? "the other relic you entered" : "the next best of the three"}.`
+              : `The simulated runs do not clearly separate it from ${verdict.runnerUp.name}, ${verdict.offered === 2 ? "the other relic you entered" : "the next best of the three"}: their 95% intervals overlap. Use what you know.`}
           </p>
           <p className="text-xs text-dim">
             In held-out simulated games that rule got past the Act-1 boss in{" "}

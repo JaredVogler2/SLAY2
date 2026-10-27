@@ -379,6 +379,12 @@ function parseCardValues(comparisons) {
         [...new Set((file.batches ?? []).map((b) => b.policy?.name).filter(Boolean))]
           .sort()
           .join(" + ") || "unknown";
+      // the page prints these with a fixed number of decimals: a missing or out-of-range correlation would crash it
+      const corr = (x, what) => {
+        if (typeof x !== "number" || !Number.isFinite(x) || x < -1 || x > 1)
+          throw new Error(`${name}: ${entry.drift}: ${what} (${String(x)}) is not a correlation`);
+        return x;
+      };
       drift = {
         previous: entry.supersedes.replace(/\.json$/, ""),
         previousSha256: d.a.sha256,
@@ -387,14 +393,17 @@ function parseCardValues(comparisons) {
         previousBossFights: d.a.boss_fights,
         previousPassRate: d.a.pass_rate,
         cardsInBoth: d.comparison.cards_in_both,
-        spearman: d.comparison.spearman,
+        spearman: corr(d.comparison.spearman, "the Spearman correlation"),
         k: d.comparison.k,
         bestShared: d.comparison.best_k_in_both,
         worstShared: d.comparison.worst_k_in_both,
         disjointIntervals: d.comparison.disjoint_ci95,
         noiseCards: d.noise_reference.cards_in_both,
-        noiseSpearman: d.noise_reference.spearman,
-        noiseSpearmanBrown: d.noise_reference.spearman_brown,
+        noiseSpearman: corr(d.noise_reference.spearman, "the noise reference's Spearman correlation"),
+        noiseSpearmanBrown: corr(
+          d.noise_reference.spearman_brown,
+          "the noise reference's corrected correlation",
+        ),
       };
     }
     const cv = v.model.cross_validation;
@@ -644,76 +653,66 @@ function parseNeow(reports, spec = NEOW_FIRST) {
 
   const testFile = join(dir, spec.testFile);
   if (!existsSync(testFile)) return { values, test: null };
-  const t = JSON.parse(readFileSync(testFile, "utf8"));
   const where = `experiments/neow/${spec.testFile}`;
-  if (
-    t.kind !== "pooled-paired-comparison" ||
-    t.policies?.a !== NEOW_POLICIES.a ||
-    t.policies?.b !== NEOW_POLICIES.b
-  ) {
+  const t = JSON.parse(readFileSync(testFile, "utf8"));
+  if (t.policies?.a !== NEOW_POLICIES.a || t.policies?.b !== NEOW_POLICIES.b) {
     throw new Error(
       `${where}: not the pooled comparison of ${NEOW_POLICIES.a} against ${NEOW_POLICIES.b}`,
     );
   }
-  if (t.cohort?.partition !== "val" || t.role !== "held-out")
-    throw new Error(`${where}: not a held-out comparison`);
-  if (t.cohort.ascension !== v.ascension || t.cohort.profile !== v.profile)
+  if (t.cohort?.ascension !== v.ascension || t.cohort?.profile !== v.profile)
     throw new Error(
       `${where}: played at another ascension or profile than the values were measured at`,
     );
-  const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
-  const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
-  const everyClassOnce = (list) =>
-    list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
-  // the members carry the numbers and the cohort names the classes: both must be the five classes, once each
-  if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed))
-    throw new Error(`${where}: it must pool all five classes, once each`);
   const byId = new Map(reports.map((r) => [r.id, r]));
-  const sums = { a_only: 0, b_only: 0, both: 0, neither: 0, pairedSeeds: 0, bothCompleted: 0 };
+  const manifestOf = (id) =>
+    JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8"));
+  const heads = new Set();
+  // what each batch is, from its own manifest, not from what the pooled file says about it
+  const check = (current, policy, cls) => {
+    const bad =
+      current.policy !== policy
+        ? `its policy is ${current.policy}, not ${policy}`
+        : current.character !== EXACT[cls]
+          ? `it was played as "${current.character}", not as ${EXACT[cls]}`
+          : current.partition !== "val" || current.seeds !== NEOW_VAL_SEEDS
+            ? `it is not the ${NEOW_VAL_SEEDS} val seeds`
+            : current.ascension !== v.ascension || current.profile !== v.profile
+              ? "its ascension or profile differ from the values'"
+              : current.keepRelics !== spec.testKeepRelics
+                ? spec.testKeepRelics
+                  ? `it was not played with the relics kept (${spec.adr})`
+                  : `it was played with the relics kept (${spec.adr} was not)`
+                : spec.testKeepRelics && !current.classStartVerified
+                  ? "its games were not checked against the class they were played as"
+                  : spec.testKeepRelics && !current.canonicalProcessState
+                    ? "it was not played in the harness's canonical process state"
+                    : null;
+    if (bad || !spec.testKeepRelics) return bad;
+    // the games of the repetition are played from a clean checkout of one commit (ADR-055 item 4)
+    const env = manifestOf(current.id).environment?.slay2 ?? {};
+    heads.add(env.head);
+    return env.dirty === false
+      ? null
+      : `it was played from a working tree with uncommitted changes (${spec.adr} asks for a clean checkout)`;
+  };
+  const pooled = readPooledHeldOut({
+    where,
+    path: testFile,
+    names: [NEOW_POLICIES.a, NEOW_POLICIES.b],
+    seeds: NEOW_VAL_SEEDS,
+    byId,
+    check,
+  });
+  if (spec.testKeepRelics && (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h)))))
+    throw new Error(
+      `${where}: the arms of the test were not all played from one commit (heads: ${[...heads].join(", ")})`,
+    );
   for (const m of t.members) {
     const cls = String(m.character).toLowerCase();
-    for (const [side, policy] of [
-      [m.a, NEOW_POLICIES.a],
-      [m.b, NEOW_POLICIES.b],
-    ]) {
-      const current = byId.get(side.batchId);
-      if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
-      if (current.contentSha256 !== side.contentSha256) {
-        throw new Error(
-          `${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`,
-        );
-      }
-      // what the batch is, from its own manifest, not from what the pooled file says about it
-      const bad =
-        current.policy !== policy
-          ? `its policy is ${current.policy}, not ${policy}`
-          : current.character !== EXACT[cls]
-            ? `it was played as "${current.character}", not as ${EXACT[cls]}`
-            : current.partition !== "val" || current.seeds !== NEOW_VAL_SEEDS
-              ? `it is not the ${NEOW_VAL_SEEDS} val seeds`
-              : current.ascension !== v.ascension || current.profile !== v.profile
-                ? "its ascension or profile differ from the values'"
-                : current.keepRelics !== spec.testKeepRelics
-                  ? spec.testKeepRelics
-                    ? `it was not played with the relics kept (${spec.adr})`
-                    : `it was played with the relics kept (${spec.adr} was not)`
-                  : spec.testKeepRelics && !current.classStartVerified
-                    ? "its games were not checked against the class they were played as"
-                    : spec.testKeepRelics && !current.sampleAudit
-                      ? "it has no sample audit (slay2_sim audit sample --limit 40)"
-                      : null;
-      if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}): ${bad}`);
-    }
-    if (m.pairedSeeds !== NEOW_VAL_SEEDS)
-      throw new Error(
-        `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${NEOW_VAL_SEEDS}`,
-      );
     if (!byId.get(m.a.batchId).classStartVerified)
       throw new Error(`${where}: ${m.a.batchId} was not played with the per-game class check`);
-    const manifest = JSON.parse(
-      readFileSync(join(root, "experiments", "batches", m.a.batchId, "manifest.json"), "utf8"),
-    );
-    if (manifest.policy?.effective?.params?.neow_values_sha256 !== sha256) {
+    if (manifestOf(m.a.batchId).policy?.effective?.params?.neow_values_sha256 !== sha256) {
       throw new Error(
         `${where}: ${m.a.batchId} was played with another version of ${spec.valuesFile}`,
       );
@@ -722,22 +721,20 @@ function parseNeow(reports, spec = NEOW_FIRST) {
       // the page says the two arms differ in one thing, the rule for the opening relic: their recorded parameters (the card values and
       // their hash, the thresholds, the tuning) are equal once the opening-relic parameters are set aside. The stored baselines of ADR-049
       // predate that record, so the check is for the games played with the relics kept.
-      const canon = (v) =>
-        v !== null && typeof v === "object"
+      const canon = (x) =>
+        x !== null && typeof x === "object"
           ? Object.fromEntries(
-              Object.keys(v)
+              Object.keys(x)
                 .sort()
-                .map((k) => [k, canon(v[k])]),
+                .map((k) => [k, canon(x[k])]),
             )
-          : v;
+          : x;
       const withoutRule = (id) =>
         canon(
           Object.fromEntries(
-            Object.entries(
-              JSON.parse(
-                readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8"),
-              ).policy?.effective?.params ?? {},
-            ).filter(([k]) => !k.startsWith("neow_")),
+            Object.entries(manifestOf(id).policy?.effective?.params ?? {}).filter(
+              ([k]) => !k.startsWith("neow_"),
+            ),
           ),
         );
       if (JSON.stringify(withoutRule(m.a.batchId)) !== JSON.stringify(withoutRule(m.b.batchId)))
@@ -745,24 +742,16 @@ function parseNeow(reports, spec = NEOW_FIRST) {
           `${where}: the two arms of ${cls} do not differ only in the opening-relic rule (their other recorded parameters differ)`,
         );
     }
-    const tab = m.reachedAct2.pairedTable;
-    for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
-    sums.pairedSeeds += m.pairedSeeds;
-    sums.bothCompleted += m.bothCompleted;
   }
+  // the fit is the file the decision log recorded before any held-out game of its study
+  if (!readFileSync(join(root, "docs", "DECISIONS.md"), "utf8").includes(sha256))
+    throw new Error(
+      `${where}: ${spec.valuesFile} is not the file ${spec.adr} recorded: its SHA-256 is not in docs/DECISIONS.md`,
+    );
   const r1 = t.reachedAct2;
-  // the pooled numbers are the sum of the classes' own, and the file says what it adds up to
-  for (const k of ["a_only", "b_only", "both", "neither"]) {
-    if (r1.pairedTable[k] !== sums[k])
-      throw new Error(
-        `${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`,
-      );
-  }
-  if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted)
-    throw new Error(`${where}: its totals are not the sum of the classes'`);
   const test = {
     id: spec.testFile.replace(/\.json$/, ""),
-    // whether the held-out games kept the relics a run gains (gap G14, ADR-052)
+    // whether the held-out games kept the relics a run gains after its first fight (gap G14, ADR-052)
     relicsKept: spec.testKeepRelics,
     contentSha256: t.contentSha256,
     valuesSha256: sha256,
@@ -770,22 +759,14 @@ function parseNeow(reports, spec = NEOW_FIRST) {
     b: t.policies.b,
     cohort: t.cohort,
     alpha: NEOW_ALPHA,
-    pairedSeeds: t.pairedSeeds,
-    bothCompleted: t.bothCompleted,
-    excludedNotCompleted: t.excludedNotCompleted,
-    reachedAct2: r1,
-    reachedAct3: t.reachedAct3,
-    wins: t.wins,
-    floorDifference: t.floorDifference,
-    members: t.members.map((m) => ({
-      character: String(m.character).toLowerCase(),
-      a: m.a,
-      b: m.b,
-      pairedSeeds: m.pairedSeeds,
-      bothCompleted: m.bothCompleted,
-      reachedAct2: m.reachedAct2,
-      meanFloorDifference: m.meanFloorDifference,
-    })),
+    pairedSeeds: pooled.pairedSeeds,
+    bothCompleted: pooled.bothCompleted,
+    excludedNotCompleted: pooled.excludedNotCompleted,
+    reachedAct2: pooled.reachedAct2,
+    reachedAct3: pooled.reachedAct3,
+    wins: pooled.wins,
+    floorDifference: pooled.floorDifference,
+    members: pooled.members,
     role: t.role,
     // improved the primary endpoint at the pre-registered level (ADR-041 item 4, ADR-049)
     passed: r1.a.rate > r1.b.rate && r1.pairedTable.mcnemar_p < NEOW_ALPHA,
