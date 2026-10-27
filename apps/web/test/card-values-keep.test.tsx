@@ -87,6 +87,7 @@ describe("the card values measured again with the relics kept, on /methods", () 
         passRateBase: 0.5,
         p: 0.5,
         against: "current-values",
+        basis: "pooled",
         passed: false,
       }),
     ).toContain("the values measured in the simulator that drops the relics");

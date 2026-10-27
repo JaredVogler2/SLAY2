@@ -9,7 +9,13 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { CLASS_STYLE } from "@/lib/card-style";
-import { againstText, measuredValue, setFor } from "@/lib/cardvalues";
+import {
+  adoptedByPooledTest,
+  againstText,
+  measuredValue,
+  pointsText,
+  setFor,
+} from "@/lib/cardvalues";
 import type { RunState } from "@/lib/run-state";
 import { simulationPick } from "@/lib/simulation-pick";
 
@@ -147,9 +153,11 @@ export function SimulationOpinion({
               <li>
                 {test === null
                   ? `The ${label} values have not been tested against play yet, so no rule is offered (see `
-                  : test.passed
-                    ? `The rule shown is the one a simulated pilot followed when it was tested against ${againstText(test)} (+${((test.passRate - test.passRateBase) * 100).toFixed(1)} percentage points past the Act-1 boss on ${test.pairedGames.toLocaleString("en-US")} held-out seeds, the same seeds for both; see `
-                    : `The ${label} values did not beat ${againstText(test)} in the held-out test (${(test.passRate * 100).toFixed(1)}% against ${(test.passRateBase * 100).toFixed(1)}% past the Act-1 boss), so no rule is offered (see `}
+                  : adoptedByPooledTest(set)
+                    ? `The rule shown follows values that replaced ${set.supersedes ?? "the earlier ones"} under a rule registered before the test (ADR-053): the pooled test of the five classes favoured them over ${againstText(test)}, and in the ${test.pairedGames.toLocaleString("en-US")} held-out games of ${label} alone the pilot that follows them got past the Act-1 boss in ${(test.passRate * 100).toFixed(1)}% against ${(test.passRateBase * 100).toFixed(1)}% (${pointsText(test.passRate, test.passRateBase)} percentage points, the same seeds for both), which does not show the earlier values ahead (see `
+                    : test.passed
+                      ? `The rule shown is the one a simulated pilot followed when it was tested against ${againstText(test)} (${pointsText(test.passRate, test.passRateBase)} percentage points past the Act-1 boss on ${test.pairedGames.toLocaleString("en-US")} held-out seeds, the same seeds for both; see `
+                      : `The ${label} values did not beat ${againstText(test)} in the held-out test (${(test.passRate * 100).toFixed(1)}% against ${(test.passRateBase * 100).toFixed(1)}% past the Act-1 boss), so no rule is offered (see `}
                 <Link
                   className="text-teal underline decoration-dotted underline-offset-4"
                   href="/methods#card-values"

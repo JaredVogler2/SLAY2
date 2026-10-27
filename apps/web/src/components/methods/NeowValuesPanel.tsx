@@ -139,15 +139,17 @@ export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
             takes the offered relic with the largest measured value (a costly one is allowed)
             instead of the first helpful one. Both played the same held-out seeds,{" "}
             {games(perClass ?? test.pairedSeeds)} {perClass ? "in each class " : ""}(
-            {games(test.pairedSeeds)} pairs, {games(test.bothCompleted)} completed by both; the
-            others ended in a simulator error or a timeout, which says nothing about play, and are
-            left out of the pair). The primary endpoint, fixed before any of these games: the share
-            of games that got past the Act-1 boss, paired by seed, pooled over the five classes,
-            exact McNemar test, two-sided, level {test.alpha}, one test.{" "}
-            {test.passed ? "It passed" : "It did not pass"}: {pct(test.reachedAct2.a.rate, 1)}{" "}
-            against {pct(test.reachedAct2.b.rate, 1)} ({test.reachedAct2.pairedTable.a_only} games
-            only the best-measured relic got past the boss, {test.reachedAct2.pairedTable.b_only}{" "}
-            only the first helpful one, {formatP(test.reachedAct2.pairedTable.mcnemar_p)}).{" "}
+            {games(test.pairedSeeds)} pairs, {games(test.bothCompleted)} completed by both;{" "}
+            {test.relicsKept
+              ? "the others ended in a simulator error or a timeout, which with the relics kept come deep into a run, after the Act-1 boss in nearly every case (ADR-053), so leaving them out of the pair reads the share past the boss slightly low in both arms alike"
+              : "the others ended in a simulator error or a timeout, which says nothing about play, and are left out of the pair"}
+            ). The primary endpoint, fixed before any of these games: the share of games that got
+            past the Act-1 boss, paired by seed, pooled over the five classes, exact McNemar test,
+            two-sided, level {test.alpha}, one test. {test.passed ? "It passed" : "It did not pass"}
+            : {pct(test.reachedAct2.a.rate, 1)} against {pct(test.reachedAct2.b.rate, 1)} (
+            {test.reachedAct2.pairedTable.a_only} games only the best-measured relic got past the
+            boss, {test.reachedAct2.pairedTable.b_only} only the first helpful one,{" "}
+            {formatP(test.reachedAct2.pairedTable.mcnemar_p)}).{" "}
             {test.passed
               ? "On the strength of that test, and only that, the advisor can say which of three offered relics a simulated pilot would take."
               : "So the values are reported as measurements that did not improve play, and the advisor does not say which relic to take."}

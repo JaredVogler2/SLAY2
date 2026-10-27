@@ -49,6 +49,8 @@ type Discordant = readonly (readonly [number, number])[];
 
 interface Options {
   discordant?: Discordant;
+  /** the classes whose new set the site lists (a result that adopts changes `site-sets.json`; the rest list the current set) */
+  adopt?: readonly (typeof CLASSES)[number][];
 }
 
 const dirs: string[] = [];
@@ -209,6 +211,42 @@ function pooledFile(discordant: Discordant): Json {
   };
 }
 
+/** One class's own comparison, as `slay2_sim compare` writes it: the new values (a) against the current values (b), the same seeds. */
+function comparisonFile(cls: (typeof CLASSES)[number], a: number, b: number): Json {
+  const both = 800;
+  const neither = 600;
+  const total = a + b + both + neither;
+  return {
+    a: {
+      batchId: batchId("keepvals", cls),
+      contentSha256: hex(batchId("keepvals", cls)),
+      policy: "rules_v3",
+      wins: 0,
+      meanFloor: 20,
+    },
+    b: {
+      batchId: batchId("curvals", cls),
+      contentSha256: hex(batchId("curvals", cls)),
+      policy: "rules_v3",
+      wins: 0,
+      meanFloor: 19.8,
+    },
+    cohort: { ascension: 0, character: EXACT[cls], partition: "val", profile: "veteran" },
+    pairedSeeds: 2000,
+    bothCompleted: total,
+    excludedNotCompleted: 2000 - total,
+    pairedWinTable: table(0, 0, 0, total),
+    reachedAct2: endpoint(a, b, both, neither, "the run got past the Act-1 boss"),
+    floorDifference: { meanAMinusB: 0.2, ci95: [0, 0.4] },
+    wallTimeRatioBOverA: 1,
+    role: "held-out",
+    contentSha256: hex(`comparison-${cls}`),
+  };
+}
+
+const comparisonId = (cls: string): string =>
+  `rules_v3-keepvals-vs-curvals-${cls}-a0-veteran-keeprelics-val`;
+
 function buildWorld(options: Options = {}): { root: string; path: (...parts: string[]) => string } {
   const discordant: Discordant = options.discordant ?? CLASSES.map(() => [100, 100] as const);
   const root = mkdtempSync(join(tmpdir(), "slay2-keepvalues-"));
@@ -229,10 +267,37 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
       cpSync(join(repo, "experiments", "cardvalue", f), path("experiments", "cardvalue", f));
     }
   }
+  const adopt = new Set<string>(options.adopt ?? []);
   write(path("experiments", "cardvalue", "site-sets.json"), {
     schema: 1,
-    sets: CLASSES.map((cls) => ({ file: current(cls) })),
+    sets: CLASSES.map((cls) =>
+      adopt.has(cls)
+        ? {
+            file: fresh(cls),
+            supersedes: current(cls),
+            test: { comparison: comparisonId(cls), against: "current-values" },
+            drift: `compare-${cls}-a0-current-vs-keep-v1.json`,
+          }
+        : { file: current(cls) },
+    ),
   });
+  for (const cls of CLASSES.filter((c) => adopt.has(c))) {
+    // the descriptive comparison and the exploration batches of the new set are the repository's own; the class's own comparison is
+    // written from its discordant pairs
+    const drift = `compare-${cls}-a0-current-vs-keep-v1.json`;
+    cpSync(join(repo, "experiments", "cardvalue", drift), path("experiments", "cardvalue", drift));
+    const explore = `explore4-${cls}-a0-keeprelics-dev-o5000-n5000`;
+    mkdirSync(path("experiments", "cardvalue", explore), { recursive: true });
+    cpSync(
+      join(repo, "experiments", "cardvalue", explore, "manifest.json"),
+      path("experiments", "cardvalue", explore, "manifest.json"),
+    );
+    const [a, b] = discordant[CLASSES.indexOf(cls)] ?? [0, 0];
+    write(
+      path("experiments", "comparisons", `${comparisonId(cls)}.json`),
+      comparisonFile(cls, a, b),
+    );
+  }
   // the decision log records the hashes of the five new files before any held-out game
   mkdirSync(path("docs"), { recursive: true });
   symlinkSync(join(repo, "docs", "game"), path("docs", "game"), "dir");
@@ -284,6 +349,13 @@ function edit(file: string, change: (body: Json) => void) {
 }
 
 interface Exported {
+  sets: {
+    id: string;
+    character: string;
+    relicsKept: boolean;
+    supersedes: string | null;
+    validation: { basis: string; passed: boolean; against: string; p: number } | null;
+  }[];
   keepTest: {
     verdict: string;
     adopted: string[];
@@ -408,5 +480,66 @@ describe("the exporter reads the card-value test of ADR-053 only when it belongs
     const r = run(w.root);
     expect(r.status).not.toBe(0);
     expect(r.stderr).toContain("its wins are not the sum of the classes'");
+  });
+
+  it("adopts a class whose own comparison is not significant when the pooled test is, and licenses it by the rule", () => {
+    // the pooled gain is significant; Ironclad's own games show the current values significantly ahead (it keeps its set), Silent's own
+    // games favour the new values without being significant (it adopts them all the same: item 5 asks only that the current values are
+    // not significantly ahead), the other three are significant
+    const w = buildWorld({
+      discordant: [
+        [60, 140],
+        [110, 100],
+        [160, 100],
+        [160, 100],
+        [160, 100],
+      ],
+      adopt: ["silent", "regent", "necrobinder", "defect"],
+    });
+    const r = run(w.root);
+    expect(r.status, r.stderr).toBe(0);
+    const out = exported(w.root);
+    expect(out.keepTest?.verdict).toBe("gain");
+    expect(out.keepTest?.adopted).toEqual(["silent", "regent", "necrobinder", "defect"]);
+    const byClass = new Map(out.sets.map((set) => [set.character, set]));
+    const silent = byClass.get("silent");
+    expect(silent?.id).toBe("silent-a0-keep-v1");
+    expect(silent?.supersedes).toBe("silent-a0-v1");
+    expect(silent?.relicsKept).toBe(true);
+    expect(silent?.validation?.against).toBe("current-values");
+    // licensed by the pooled test and the rule, not by this class's own p-value, which is not significant
+    expect(silent?.validation?.basis).toBe("pooled");
+    expect(silent?.validation?.passed).toBe(true);
+    expect(silent?.validation?.p ?? 0).toBeGreaterThan(0.05);
+    expect(byClass.get("defect")?.validation?.passed).toBe(true);
+    // Ironclad keeps the current set, which is not a set of the pooled test
+    expect(byClass.get("ironclad")?.id).toBe("ironclad-a0-v2");
+    expect(byClass.get("ironclad")?.relicsKept).toBe(false);
+  });
+
+  it("refuses a listing that adopts a class the rule keeps", () => {
+    const w = buildWorld({
+      discordant: [
+        [60, 140],
+        [110, 100],
+        [160, 100],
+        [160, 100],
+        [160, 100],
+      ],
+      adopt: ["ironclad", "silent", "regent", "necrobinder", "defect"],
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("ironclad-a0-v2.json");
+    expect(r.stderr).toContain("the rule of ADR-053 item 5 applied to its numbers gives");
+  });
+
+  it("refuses a listing of relic-kept sets tested by a pooled result that does not exist", () => {
+    const w = buildWorld({ adopt: ["silent"] });
+    rmSync(w.path("experiments", "cardvalue", "pooled-keepvals-vs-curvals-val.json"));
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("pooled test of ADR-053, whose result");
+    expect(r.stderr).toContain("does not exist");
   });
 });

@@ -146,10 +146,15 @@ describe("the /methods block on the opening-relic study repeated with the relics
     );
     expect(block).toHaveTextContent("agree at 0.89");
     expect(block).toHaveTextContent("3 of the 5 best and 2 of the 5 worst relics are shared");
-    expect(block).toHaveTextContent("4 have intervals that do not overlap");
     expect(block).toHaveTextContent(
-      `would take ${best.name} where the second would take ${second.name}`,
+      "4 have intervals that do not overlap (fewer than one relic in a hundred would if nothing had changed)",
     );
+    // the fits are compared by what they rank first, never by what a pilot "would take": the repetition has no test yet
+    expect(block).toHaveTextContent(
+      `the first fit ranks ${best.name} first where the second ranks ${second.name} first`,
+    );
+    expect(block).not.toHaveTextContent("would take");
+    expect(block).not.toHaveTextContent("one in twenty");
     expect(block).toHaveTextContent("it tests nothing");
   });
 
@@ -172,6 +177,14 @@ describe("the /methods block on the opening-relic study repeated with the relics
       expect(block).not.toHaveTextContent(
         "The first study’s rule in the game with the relics kept",
       );
+      // the first study's values stay on the page, in a disclosure, with the relic the first study measured best at the top
+      const values = within(block as HTMLElement).getByLabelText(
+        "Values of the first study, measured in the simulator that drops the relics",
+      );
+      expect(within(values).getAllByRole("row")[1]).toHaveTextContent(best.name);
+      expect(
+        within(block as HTMLElement).getByText(/The first study's relic values/),
+      ).toBeInTheDocument();
       unmount();
     }
   });
@@ -201,6 +214,16 @@ describe("the opening-relic panel", () => {
     expect(kept.container).not.toHaveTextContent("These runs kept only two relics");
     // the shown test is the repetition's: its verdict follows its own result
     expect(kept.container).toHaveTextContent("It did not pass");
+    // with the relics kept the simulator's errors come deep into a run, so leaving those pairs out reads the share slightly low
+    expect(kept.container).toHaveTextContent(
+      "leaving them out of the pair reads the share past the boss slightly low in both arms alike).",
+    );
+    expect(kept.container).not.toHaveTextContent("which says nothing about play");
+    kept.unmount();
+    const unfitted = render(<NeowValuesPanel data={registered} />);
+    expect(unfitted.container).toHaveTextContent(
+      "which says nothing about play, and are left out of the pair).",
+    );
   });
 });
 

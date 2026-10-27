@@ -12,6 +12,7 @@ for C in ${@:-$CLASSES}; do
   nice -n 8 "$PY" -m slay2_sim run --policy rules_v2_neow --policy-params "$(policy_params "$C" ',"neow_explore":1.0')" \
     --character "$C" --ascension 0 --profile veteran --seeds "$SEEDS" --partition train --n 3000 --keep-relics \
     --workers "$W" --trace 0 --batch-id "$id" --out "$dir" > "$OUT/explore-$(lower "$C").log" 2>&1
-  echo "EXPLORE_$(lower "$C")_EXIT=$?" >> "$OUT/explore-done.txt"   # exit code 2 means some episodes ended in a simulator error, which is normal
+  rc=$?   # read before the command substitution below resets it
+  echo "EXPLORE_$(lower "$C")_EXIT=$rc" >> "$OUT/explore-done.txt"   # exit code 2 means some episodes ended in a simulator error, which is normal
 done
 echo EXPLORE_DONE >> "$OUT/explore-done.txt"

@@ -1,15 +1,20 @@
 import { getOpeningOption } from "@slay2/game-data";
 
 import { Badge } from "@/components/ui/Badge";
+import { Disclosure } from "@/components/ui/Disclosure";
+import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { Tile } from "@/components/ui/Tile";
+import { formatBeta, oddsMultiplier } from "@/lib/cardvalues";
 import { formatP, pct } from "@/lib/methods-data";
 import {
   NEOW,
   neowStudy,
   optionIdOfLabel,
+  relicValues,
   type NeowComparison,
   type NeowData,
   type NeowTest,
+  type NeowValues,
 } from "@/lib/neow";
 
 const games = (n: number): string => n.toLocaleString("en-US");
@@ -30,10 +35,65 @@ function ComparisonText({ c }: { c: NeowComparison }) {
       {rho(c.noise.spearmanBrown)} (the second fit&rsquo;s games split by seed,{" "}
       {c.noise.relicsInBoth} relics fitted in both halves, corrected to the full number of games).{" "}
       {c.bestShared} of the {c.k} best and {c.worstShared} of the {c.k} worst relics are shared,{" "}
-      {c.disjointIntervals} have intervals that do not overlap (about one in twenty would by
-      chance), and the first fit would take {relicName(c.bestInFirst)} where the second would take{" "}
-      {relicName(c.bestInRepeated)}. This describes the values; it tests nothing.
+      {c.disjointIntervals} have intervals that do not overlap (fewer than one relic in a hundred
+      would if nothing had changed), and the first fit ranks {relicName(c.bestInFirst)} first where
+      the second ranks {relicName(c.bestInRepeated)} first. This describes the values; it tests
+      nothing.
     </p>
+  );
+}
+
+/** The first study's values, which stay on the page once the repetition has been tested (ADR-055 item 6): measured in the simulator that drops the relics. */
+function FirstValuesTable({ values }: { values: NeowValues }) {
+  const relics = relicValues({ values, test: null });
+  return (
+    <ScrollRegion label="Values of the first study, measured in the simulator that drops the relics">
+      <table className="mt-3 w-full min-w-[36rem] text-left text-sm">
+        <caption className="pb-2 text-left font-display text-base text-gold">
+          The first study&rsquo;s values, best first
+        </caption>
+        <thead>
+          <tr className="border-b border-line text-muted">
+            <th scope="col" className="py-2 pr-3 font-medium">
+              Relic
+            </th>
+            <th scope="col" className="py-2 pr-3 font-medium">
+              Kind
+            </th>
+            <th scope="col" className="py-2 pr-3 font-medium">
+              Value
+            </th>
+            <th scope="col" className="py-2 pr-3 font-medium">
+              95% interval
+            </th>
+            <th scope="col" className="py-2 pr-3 font-medium">
+              Odds
+            </th>
+            <th scope="col" className="py-2 font-medium">
+              Taken in
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {relics.map((r) => (
+            <tr key={r.id} className="align-top">
+              <th scope="row" className="py-2 pr-3 font-medium text-parchment">
+                {r.name}
+              </th>
+              <td className="py-2 pr-3 text-muted">
+                {r.optionKind === "positive" ? "helpful" : "costly"}
+              </td>
+              <td className="num py-2 pr-3">{formatBeta(r.beta)}</td>
+              <td className="num py-2 pr-3 text-muted">
+                {formatBeta(r.ci95[0] ?? r.beta)} to {formatBeta(r.ci95[1] ?? r.beta)}
+              </td>
+              <td className="num py-2 pr-3 text-muted">{oddsMultiplier(r.beta)}</td>
+              <td className="num py-2 text-muted">{games(r.taken)} runs</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ScrollRegion>
   );
 }
 
@@ -149,6 +209,13 @@ export function NeowRepeatBlock({ data = NEOW }: { data?: NeowData }) {
             test={first.test}
             label="Result of the first opening-relic test, the first helpful relic against the best-measured relic"
           />
+          {first.values ? (
+            <div className="mt-3">
+              <Disclosure summary="The first study's relic values (the simulator that drops the relics)">
+                <FirstValuesTable values={first.values} />
+              </Disclosure>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {repeated.secondary ? (

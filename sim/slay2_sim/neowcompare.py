@@ -5,7 +5,8 @@ reference for how much two measurements of the *same* pilot differ by chance:
 
 * the Spearman correlation of the two sets of values over the relics measured in both;
 * how many of the ``k`` best and ``k`` worst relics of one are among the ``k`` best and ``k`` worst of the other;
-* how many relics have disjoint 95 % intervals (about one in twenty would under no change at all);
+* how many relics have disjoint 95 % intervals (two independent intervals of equal width are disjoint with probability about 0.6 %
+  when nothing has changed, so fewer than one relic in a hundred);
 * **noise reference**: the second fit's games split by the parity of the game seed, each half fitted like the full data (no
   bootstrap), the Spearman correlation of the two halves, corrected to the full number of games as 2r / (1 + r). A correlation
   between the two files near that figure says the two games rank the relics alike; one clearly below it says the game matters.
@@ -67,7 +68,8 @@ def split_half(records: list[dict], min_taken: int = 30, k: int = K_RELICS) -> d
     comp["relics_in_both"] = comp.pop("cards_in_both")
     r = comp["spearman"]
     comp["seeds"] = [len({x["seed"] for x in h}) for h in halves]
-    comp["spearman_brown"] = (2 * r / (1 + r)) if r is not None and r > -1 else None
+    # the correction is defined for a positive correlation between the halves; a zero or negative one has nothing to correct
+    comp["spearman_brown"] = (2 * r / (1 + r)) if r is not None and r > 0 else None
     return comp
 
 

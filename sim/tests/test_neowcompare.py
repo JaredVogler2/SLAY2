@@ -78,6 +78,21 @@ def test_the_split_half_reference_splits_by_seed_parity_and_applies_spearman_bro
     assert neowcompare.split_half(recs, min_taken=30) == half  # deterministic
 
 
+def test_halves_that_disagree_have_no_spearman_brown_correction(monkeypatch):
+    """The correction 2r / (1 + r) is for a positive correlation; the site's exporter reads the file and would refuse a value outside [-1, 1]."""
+    calls: list[int] = []
+
+    def fake_fit(records: list[dict], min_taken: int) -> dict[str, float]:
+        calls.append(1)
+        values = {f"Relic {i}": float(i) for i in range(6)}
+        return values if len(calls) == 1 else {k: -v for k, v in values.items()}
+
+    monkeypatch.setattr(neowcompare, "fit_betas", fake_fit)
+    half = neowcompare.split_half([{"seed": s} for s in range(10)])
+    assert half["spearman"] == pytest.approx(-1.0)
+    assert half["spearman_brown"] is None
+
+
 def write_batch(root: Path, name: str, truth: dict[str, float], seed: int) -> Path:
     d = root / name
     d.mkdir(parents=True)

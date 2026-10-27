@@ -7,6 +7,7 @@ import { Tile } from "@/components/ui/Tile";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
   KEEP_VALUES_TEST,
+  adoptedByPooledTest,
   againstText,
   allSets,
   extremes,
@@ -287,7 +288,14 @@ function ClassBlock({ set }: { set: CardValueSet }) {
         <h3 id={`cv-${set.character}`} className="font-display text-xl text-parchment">
           {label}
         </h3>
-        {isValidated(set) ? (
+        {adoptedByPooledTest(set) ? (
+          <Badge
+            tone="exact"
+            title={`The pooled test of the five classes favoured these values over ${against}, and this class's own games do not show ${against} significantly ahead (ADR-053)`}
+          >
+            adopted by the pooled test
+          </Badge>
+        ) : isValidated(set) ? (
           <Badge tone="exact" title={`Acting on these values beat ${against} in the held-out test`}>
             validated in simulation
           </Badge>
@@ -353,12 +361,17 @@ function ClassBlock({ set }: { set: CardValueSet }) {
             Does acting on the {label} values help? (pre-registered test)
           </p>
           <p className="mt-2">
-            {set.validation?.against === "first-values" ? (
+            {set.validation?.against === "first-values" ||
+            set.validation?.against === "current-values" ? (
               <>
                 Both arms are {test.a.policy}, the same pilot with the same thresholds, and each
                 takes the offered card with the largest measured value if that value is above zero
-                (and the deck is under 32 cards), otherwise it skips. The one change is which values
-                it follows: {set.id} against the earlier {set.supersedes}.
+                (and the deck is under 32 cards), otherwise it skips
+                {set.validation.against === "current-values"
+                  ? ", both played with the relics kept"
+                  : ""}
+                . The one change is which values it follows: {set.id} against the earlier{" "}
+                {set.supersedes}.
               </>
             ) : (
               <>
@@ -369,7 +382,8 @@ function ClassBlock({ set }: { set: CardValueSet }) {
             )}{" "}
             Both played the same {test.pairedSeeds.toLocaleString("en-US")} held-out seeds (
             {test.bothCompleted.toLocaleString("en-US")} completed by both).{" "}
-            {set.validation?.against === "first-values"
+            {set.validation?.against === "first-values" ||
+            set.validation?.against === "current-values"
               ? newValuesSentence(test)
               : actTwoSentence(test)}
             . Mean floor reached {test.a.meanFloor.toFixed(2)} against {test.b.meanFloor.toFixed(2)}{" "}
@@ -378,7 +392,9 @@ function ClassBlock({ set }: { set: CardValueSet }) {
             {signed(test.floorDifference.ci95[1] ?? 0)}). Wins: {test.a.wins} against {test.b.wins}{" "}
             ({formatP(test.pairedWinTable.mcnemar_p)}).{" "}
             {set.validation
-              ? `Significance level for this class: ${String(set.validation.alpha)}; ${set.validation.passed ? "the primary endpoint passed" : "the primary endpoint did not pass"}.`
+              ? set.validation.basis === "pooled"
+                ? `The test that was registered is the pooled one above; this class's own comparison is secondary. By the rule registered with it (ADR-053 item 5) these values replace ${set.supersedes ?? "the earlier ones"} because the pooled test favoured them and this class's own games do not show the earlier values significantly ahead (level ${String(set.validation.alpha)} here).`
+                : `Significance level for this class: ${String(set.validation.alpha)}; ${set.validation.passed ? "the primary endpoint passed" : "the primary endpoint did not pass"}.`
               : ""}
           </p>
         </div>
@@ -387,22 +403,28 @@ function ClassBlock({ set }: { set: CardValueSet }) {
         <div className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
           <p className="font-medium text-parchment">
             {set.relicsKept
-              ? "How these values moved when the relics were kept"
+              ? set.drift.previousPilot === set.drift.pilot
+                ? "How these values moved when the relics were kept"
+                : "How these values moved from the earlier measurement"
               : "How these values moved when the pilot got stronger"}
           </p>
           <p className="mt-2">
             {set.relicsKept
-              ? `These values replace the earlier measurement (${set.drift.previous}), which was made in a simulator that dropped the relics a run gains after its first fight (gap G14): ${set.drift.previousBossFights.toLocaleString("en-US")} runs reached the Act-1 boss and ${pct(set.drift.previousPassRate, 1)} got past it, against ${pct(set.passRate, 1)} now, with the relics kept.`
+              ? `These values replace the earlier measurement (${set.drift.previous}), which was made in a simulator that dropped the relics a run gains after its first fight (gap G14)${set.drift.previousPilot === set.drift.pilot ? "" : `, by an older pilot (${set.drift.previousPilot}; ${set.drift.pilot} now)`}: ${set.drift.previousBossFights.toLocaleString("en-US")} runs reached the Act-1 boss and ${pct(set.drift.previousPassRate, 1)} got past it, against ${pct(set.passRate, 1)} now, with the relics kept.`
               : `These values replace the first measurement (${set.drift.previous}), which was made while a weaker pilot played: ${set.drift.previousBossFights.toLocaleString("en-US")} runs reached the Act-1 boss and ${pct(set.drift.previousPassRate, 1)} got past it, against ${pct(set.passRate, 1)} now.`}{" "}
             Over the {set.drift.cardsInBoth} cards measured in both, the two sets of values
-            correlate at {set.drift.spearman.toFixed(2)}, where two measurements of the same pilot
-            agree at {set.drift.noiseSpearmanBrown.toFixed(2)} (the new games split by seed,{" "}
-            {set.drift.noiseCards} cards fitted in both halves, corrected to the full number of
-            games). {set.drift.bestShared} of the {set.drift.k} best and {set.drift.worstShared} of
-            the {set.drift.k} worst cards are shared, and {set.drift.disjointIntervals} cards have
-            intervals that do not overlap (about one would by chance).{" "}
+            correlate at {set.drift.spearman.toFixed(2)}
             {set.relicsKept
-              ? "This is a description, not a test."
+              ? `; two halves of the new games, split by seed, correlate at ${set.drift.noiseSpearmanBrown.toFixed(2)} (${String(set.drift.noiseCards)} cards fitted in both halves, corrected to the full number of games), so a correlation clearly below that says the values depend on what changed`
+              : `, where two measurements of the same pilot agree at ${set.drift.noiseSpearmanBrown.toFixed(2)} (the new games split by seed, ${String(set.drift.noiseCards)} cards fitted in both halves, corrected to the full number of games)`}
+            . {set.drift.bestShared} of the {set.drift.k} best and {set.drift.worstShared} of the{" "}
+            {set.drift.k} worst cards are shared, and {set.drift.disjointIntervals} cards have
+            intervals that do not overlap (about one would by chance
+            {set.relicsKept ? " if nothing had changed" : ""}).{" "}
+            {set.relicsKept
+              ? set.drift.previousPilot === set.drift.pilot
+                ? "This is a description, not a test."
+                : "The game and the pilot both changed, so this does not separate them. This is a description, not a test."
               : "The values depend on the pilot, moderately; this is a description, not a test."}
             {earlier && !set.relicsKept
               ? ` In its own test the first measurement took the pilot from ${pct(earlier.reachedAct2.b.rate, 1)} to ${pct(earlier.reachedAct2.a.rate, 1)} past the Act-1 boss against the hand-written ratings (${formatP(earlier.reachedAct2.pairedTable.mcnemar_p)}).`

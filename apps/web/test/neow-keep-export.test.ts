@@ -442,6 +442,19 @@ describe("the exporter reads the opening-relic study repeated with the relics ke
     expect(r.stderr).toContain("was played with another version of neow-values-keep-v1.json");
   });
 
+  it("refuses arms that differ in anything but the opening-relic rule", () => {
+    const w = buildWorld({ primary: everyClass(300, 200) });
+    // the baseline of Regent followed other card values (or other thresholds): the page's "one change" would be false
+    edit(w.path("experiments", "batches", batchId("baseline", "regent"), "manifest.json"), (m) => {
+      (((m.policy as Json).effective as Json).params as Json).values_sha256 = hex("other values");
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain(
+      "the two arms of regent do not differ only in the opening-relic rule",
+    );
+  });
+
   it("refuses a descriptive comparison of other value files than the two the site reads", () => {
     const w = buildWorld();
     writeFileSync(

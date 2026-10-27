@@ -16,6 +16,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import evidence from "@/content/evidence.generated.json";
+import { setFor } from "@/lib/cardvalues";
 import {
   comparisonSentence,
   actTwoSentence,
@@ -133,7 +134,9 @@ describe("comparison wording is derived from the data", () => {
   });
 
   it("finds the pre-registered test of the card values the site shows, and it is a held-out, paired comparison", () => {
-    // Ironclad's shown set is round two, tested against the pilot that follows round one (ADR-046): the same policy twice
+    // Ironclad's shown set replaced an earlier one and was tested against the pilot that follows that one (ADR-046, ADR-053): the same
+    // policy twice. Its own comparison is significant when its class's comparison licenses it; a set adopted by the pooled test of
+    // ADR-053 is licensed by the rule, and its own comparison is only described.
     const test = valuesValidation("ironclad");
     expect(test).toBeDefined();
     expect(test?.role).toBe("held-out");
@@ -142,7 +145,9 @@ describe("comparison wording is derived from the data", () => {
     expect(test?.a.batchId).toMatch(/-val-/);
     expect(test?.b.batchId).toMatch(/-val-/);
     expect(test?.a.batchId).not.toBe(test?.b.batchId);
-    expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+    if (setFor("ironclad")?.validation?.basis === "own") {
+      expect(test?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
+    }
     // and the first measurement's own test, against the hand-written ratings
     const first = ratingsValidation("ironclad");
     expect(first?.role).toBe("held-out");

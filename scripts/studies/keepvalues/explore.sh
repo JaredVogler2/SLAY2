@@ -10,6 +10,7 @@ for C in ${@:-$CLASSES}; do
   nice -n 8 "$PY" -m slay2_sim run --policy rules_explore_v3 --policy-params "{\"explore\":0.6,\"replicate\":0,\"values\":\"$(first_values "$C")\"}" \
     --character "$C" --ascension 0 --profile veteran --seeds "$SEEDS" --partition dev --offset 5000 --n 5000 --keep-relics \
     --workers "$W" --trace 0 --batch-id "$id" --out "experiments/cardvalue/$id" > "$OUT/explore-$(lower "$C").log" 2>&1
-  echo "EXPLORE_$(lower "$C")_EXIT=$?" >> "$OUT/explore-done.txt"   # exit code 2 means some episodes ended in a simulator error, which is normal
+  rc=$?   # read before the command substitution below resets it
+  echo "EXPLORE_$(lower "$C")_EXIT=$rc" >> "$OUT/explore-done.txt"   # exit code 2 means some episodes ended in a simulator error, which is normal
 done
 echo EXPLORE_DONE >> "$OUT/explore-done.txt"

@@ -351,6 +351,9 @@ function parseCardValues(comparisons) {
           p: test.reachedAct2.pairedTable.mcnemar_p,
           // what the pilot that followed these values was compared with
           against: entry.test?.against ?? "ratings",
+          // what licenses the set: "own", this class's comparison at its own level; "pooled", the pooled test of the five classes and the
+          // rule registered before it (ADR-053 item 5), which can adopt a class whose own comparison is not significant (see parseCardValueSets)
+          basis: entry.test?.against === "current-values" ? "pooled" : "own",
           // improved the primary endpoint at the pre-registered level
           passed:
             test.reachedAct2.a.rate > test.reachedAct2.b.rate &&
@@ -367,9 +370,15 @@ function parseCardValues(comparisons) {
       const previous = readFileSync(join(dir, entry.supersedes));
       if (d.a.sha256 !== createHash("sha256").update(previous).digest("hex"))
         throw new Error(`${name}: ${entry.drift} compares another version of ${entry.supersedes}`);
+      // the pilot that played each set's exploration games: a set that replaces another measured by a different pilot moved for that reason too
+      const pilotOf = (file) =>
+        [...new Set((file.batches ?? []).map((b) => b.policy?.name).filter(Boolean))].sort().join(" + ") ||
+        "unknown";
       drift = {
         previous: entry.supersedes.replace(/\.json$/, ""),
         previousSha256: d.a.sha256,
+        previousPilot: pilotOf(JSON.parse(previous.toString("utf8"))),
+        pilot: pilotOf(v),
         previousBossFights: d.a.boss_fights,
         previousPassRate: d.a.pass_rate,
         cardsInBoth: d.comparison.cards_in_both,
@@ -674,6 +683,33 @@ function parseNeow(reports, spec = NEOW_FIRST) {
       throw new Error(
         `${where}: ${m.a.batchId} was played with another version of ${spec.valuesFile}`,
       );
+    }
+    if (spec.testKeepRelics) {
+      // the page says the two arms differ in one thing, the rule for the opening relic: their recorded parameters (the card values and
+      // their hash, the thresholds, the tuning) are equal once the opening-relic parameters are set aside. The stored baselines of ADR-049
+      // predate that record, so the check is for the games played with the relics kept.
+      const canon = (v) =>
+        v !== null && typeof v === "object"
+          ? Object.fromEntries(
+              Object.keys(v)
+                .sort()
+                .map((k) => [k, canon(v[k])]),
+            )
+          : v;
+      const withoutRule = (id) =>
+        canon(
+          Object.fromEntries(
+            Object.entries(
+              JSON.parse(
+                readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8"),
+              ).policy?.effective?.params ?? {},
+            ).filter(([k]) => !k.startsWith("neow_")),
+          ),
+        );
+      if (JSON.stringify(withoutRule(m.a.batchId)) !== JSON.stringify(withoutRule(m.b.batchId)))
+        throw new Error(
+          `${where}: the two arms of ${cls} do not differ only in the opening-relic rule (their other recorded parameters differ)`,
+        );
     }
     const tab = m.reachedAct2.pairedTable;
     for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
@@ -1252,6 +1288,24 @@ function readPooledHeldOut({ where, path, names: [a, b], seeds, byId, check }) {
     };
   }
 
+// The sets the site shows with the test of ADR-053. A set adopted under that test is licensed by the rule registered before it (the pooled
+// gain, and the class's own games not showing the current values significantly ahead), not by its own class's significance: its `passed`
+// says whether the rule adopted it, read from the numbers, and the exporter refuses a listing that has no pooled result to rest on.
+function parseCardValueSets(comparisons, reports) {
+  const sets = parseCardValues(comparisons);
+  const keepTest = parseKeepValuesTest(reports);
+  for (const set of sets) {
+    if (set.validation?.basis !== "pooled") continue;
+    const verdict = keepTest?.classes[set.character];
+    if (!verdict)
+      throw new Error(
+        `${set.id} is listed as tested by the pooled test of ADR-053, whose result (experiments/cardvalue/pooled-keepvals-vs-curvals-val.json) does not exist`,
+      );
+    set.validation.passed = verdict.adopted;
+  }
+  return { sets, keepTest };
+}
+
 // The one registered held-out test of ADR-053: `rules_v3` following the card values measured again with the relics kept, against
 // `rules_v3` following the values the site showed, both played with the relics kept on the 2,000 val seeds of each class; the five classes
 // pooled into one exact McNemar test at level 0.05. The reading rule (item 5) decides which value files the site shows, and the exporter
@@ -1612,8 +1666,7 @@ const outputs = {
     schema: 1,
     generatedFrom:
       "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
-    sets: parseCardValues(comparisons),
-    keepTest: parseKeepValuesTest(reports),
+    ...parseCardValueSets(comparisons, reports),
   },
   "synergy.generated.json": {
     schema: 1,
@@ -1624,7 +1677,7 @@ const outputs = {
   "neow.generated.json": {
     schema: 1,
     generatedFrom:
-      "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
+      "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json (the first study) + experiments/neow/neow-values-keep-v1.json + experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-keeprelics-val.json + experiments/neow/compare-v2-keep-v1.json (the repetition with the relics kept, ADR-055) + experiments/batches/*/manifest.json",
     ...parseNeowStudies(reports),
     startHpGaps: parseStartHpGaps(),
   },

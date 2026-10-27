@@ -25,8 +25,9 @@ describe("generated site content", () => {
 
   it("shows only adopted card-value sets: one per class, the ones experiments/cardvalue/site-sets.json lists (ADR-046)", () => {
     // Adopting a set is a decision recorded in experiments/cardvalue/site-sets.json, not a side effect of a file appearing in
-    // experiments/cardvalue. Round two for Ironclad (ironclad-a0-v2.json) was adopted after its pre-registered test; the first
-    // measurement (ironclad-a0-v1.json) stays in the repository and off the site.
+    // experiments/cardvalue: round two for Ironclad was adopted after its pre-registered test (ADR-046), and a set measured with the
+    // relics kept is adopted only by the rule of ADR-053 item 5, which the exporter applies to the pooled result. The sets that are not
+    // listed stay in the repository and off the site.
     const listing = JSON.parse(
       readFileSync(
         join(__dirname, "..", "..", "..", "experiments", "cardvalue", "site-sets.json"),
@@ -35,16 +36,9 @@ describe("generated site content", () => {
     ) as { sets: { file: string }[] };
     const shown = cardvalues.sets.map((set) => set.file).sort();
     expect(shown).toEqual(listing.sets.map((s) => `experiments/cardvalue/${s.file}`).sort());
-    expect(shown).toEqual(
-      [
-        "ironclad-a0-v2.json",
-        "silent-a0-v1.json",
-        "regent-a0-v1.json",
-        "necrobinder-a0-v1.json",
-        "defect-a0-v1.json",
-      ]
-        .map((f) => `experiments/cardvalue/${f}`)
-        .sort(),
+    // one per class, whichever generation of the values it is
+    expect(cardvalues.sets.map((set) => set.character).sort()).toEqual(
+      ["defect", "ironclad", "necrobinder", "regent", "silent"].sort(),
     );
   });
 
