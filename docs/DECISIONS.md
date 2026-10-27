@@ -985,3 +985,26 @@ The pooled p-value counts the pairs of the five classes as independent although 
 - *Descriptive comparison with the values of ADR-049* (`experiments/neow/compare-v2-keep-v1.json`, SHA-256 `d0484213…`; not a test). The 27 relics are the same in both files; Spearman correlation **+0.86**; 4 of the five best and 3 of the five worst are shared; 3 relics have disjoint 95 % intervals (about 0.15 would by chance); **the first fit ranks Silver Crucible first and the second ranks Nutritious Oyster first**; noise reference (the new games split by the parity of the seed, 1,506 and 1,490 seeds, corrected to the full number of games): +0.90, corrected **+0.95**. By the reading ADR-046 used, the values moved somewhat more than two measurements of the same game differ by chance (+0.86 against +0.95), not much. It describes the values and chooses nothing.
 - *The site's exporter.* Its check of the fit's seed count compared it with the registered 3,000; four seeds that no class can play to a clean end made it refuse a correct file. The check now recomputes the count from the batches the file names (and still refuses more than 3,000): a repair of the check, not of the registration, whose item 1 fixes the seeds that are played.
 
+
+## 2026-10-27 — ADR-056: the header and the error page no longer send the card catalog to every page (a measured change of what the browser is sent, no change of any number or claim)
+
+**Finding.** Measured on a production build of `580a573` with `pnpm --filter @slay2/web bytes` (`apps/web/scripts/script-bytes.mjs`: the script files named in each prerendered page, each gzipped at level 6): the About page, which has no calculator and no card, sent **902.5 KB of script (255.9 KB gzipped)**, the same as `/methods`, and the landing page 912.2 KB (259.6 KB). Two shared chunks (68 KB and 49 KB gzipped) held the card catalog with its synergy table, the schema library (`zod`) and the run's schema. The cause was one import chain: the header's "Resume" chip (a client component on every page) read the saved run through the run store, which imports the run's schema, which imports the catalog and the schema library; the error boundary (also part of every page) imported the same store to clear a saved run. The chip needs two fields, the class and the ascension.
+
+**Change (no number, wording or rule on any page changes).**
+- `src/lib/run-summary.ts` reads the class and ascension from the stored JSON with a check of those two fields (a version of 1 or 2, one of the five classes, an integer ascension from 0 to 10) and a size limit equal to the advisor's. The header chip and the landing page's "Resume" button use it through `useRunSummary`.
+- Where the run store is loaded (the advisor, the calculators, Route Lab, and any page reached from them without a reload) the store registers itself as the source, so the chip shows what the store holds, run through the full validation and in memory when storage is blocked, exactly as before. The reading of storage alone differs in one corner: on a fresh load whose saved run the advisor would refuse (a card id the catalog does not have), the chip still offers "Resume", and the advisor says it cannot read the run.
+- The error boundary fetches the run store when "Clear my saved run" is pressed (a separate chunk); if that fetch fails, which the error may be the reason for, it removes both copies from storage directly.
+- `test/bundle-weight.test.ts` walks the imports as the bundler does (a client module and everything it imports go to the browser; a server module's imports do not; `import type` and `import()` add nothing) and fails if the layout, the error boundary, the landing page, the About page or the methods page can reach the catalog, the schema library, the run's schema or the run store. It fails on the previous code for the layout, the error boundary and the landing page. `test/run-summary.test.ts` (9 tests) pins the reading to the full parser for the five classes and eleven ascensions, the first version's key, the corner above, the keys the store uses, every change the store makes (set, undo, redo, clear), other tabs, and an unreadable storage.
+
+**Measured after** (the same command on this change, KB of script, gzipped in brackets; before, then after):
+
+| Page | Before | After |
+|---|---|---|
+| `/about`, `/methods` | 902.5 (255.9) | **570.1 (177.1)** |
+| `/` | 912.2 (259.6) | **716.9 (222.7)** |
+| `/codex` (it needs the catalog) | 1,029.2 (287.1) | 995.2 (274.6) |
+| `/advisor`, `/odds`, `/routes` (they use the run store) | 1,150.4 (325.2), 959.8 (273.1), 931.4 (265.2) | 1,152.4 (326.0), 961.9 (274.8), 933.6 (266.6) |
+
+So `/about` and `/methods` download 78.8 KB less (31 %) and parse 332 KB less; the three pages that use the run store carry the 2 KB of the new module. What is left on a page that needs nothing of the game is the framework and the page shell.
+
+**Not claimed.** No Web Vitals were re-measured: the machine was running the held-out games of ADR-055 (load average above 4), which would make a lab timing meaningless; the bytes are what this records. The throttled-phone blocking time of `/methods` (243 to 535 ms in the earlier lab measurement on the hosted site) comes mostly from hydrating its 944 KB document, of which the serialized page is 560 KB; that is not changed by this.

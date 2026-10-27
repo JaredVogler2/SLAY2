@@ -1,20 +1,17 @@
 "use client";
 
-import { CHARACTER_NAMES } from "@slay2/game-schema";
-
 import { ButtonLink } from "@/components/ui/Button";
-import { useRunState } from "@/lib/run-store";
+import { useRunSummary } from "@/hooks/useRunSummary";
 
 /** “Resume run” appears only when a run exists in this browser. */
 export function ResumeButton() {
-  const run = useRunState();
-  if (!run?.character) {
+  const run = useRunSummary();
+  if (!run) {
     return null;
   }
-  const name = CHARACTER_NAMES[run.character.toUpperCase() as keyof typeof CHARACTER_NAMES];
   return (
     <ButtonLink href="/advisor" variant="ghost" size="lg">
-      ↺ Resume {name} A{run.ascension}
+      ↺ Resume {run.name} A{run.ascension}
     </ButtonLink>
   );
 }

@@ -3,14 +3,15 @@
 import { useSyncExternalStore } from "react";
 
 import { parseRunState, serializeRunState, touch, type RunState } from "./run-state";
+import { LEGACY_RUN_KEY, RUN_KEY, announceRunChanged, setLiveRunSource } from "./run-summary";
 
 /**
  * The run lives under a key named after its schema version. Version 1 (before the Act 1 version, the opening Ancient and
  * upgraded copies) is read once when there is no version 2 and never written: a page loaded before this deployment keeps
  * working on its own copy under the old key instead of failing on fields it does not know and dropping the run.
  */
-const KEY = "slay2.run.v2";
-const LEGACY_KEY = "slay2.run.v1";
+const KEY = RUN_KEY;
+const LEGACY_KEY = LEGACY_RUN_KEY;
 const MAX_UNDO = 50;
 
 type Listener = () => void;
@@ -53,6 +54,8 @@ class RunStore {
     this.listeners.forEach((l) => {
       l();
     });
+    // the header and the landing page read the saved run without this store (run-summary.ts)
+    announceRunChanged();
   }
 
   private load(): void {
@@ -144,6 +147,12 @@ class RunStore {
 }
 
 export const runStore = new RunStore();
+
+// From here on the header shows the run this store holds (see run-summary.ts), not a reading of storage.
+setLiveRunSource(() => {
+  const run = runStore.getSnapshot();
+  return run ? { character: run.character, ascension: run.ascension } : null;
+});
 
 export function useRunState(): RunState | null {
   return useSyncExternalStore(runStore.subscribe, runStore.getSnapshot, runStore.getServerSnapshot);
