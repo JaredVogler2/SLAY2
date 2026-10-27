@@ -90,6 +90,22 @@ describe("the registered test on /methods", () => {
     expect(section).toHaveTextContent("read every percentage below as too high for Necrobinder");
   });
 
+  it("says how many games of each arm did not finish, and that each win was re-derived", () => {
+    const test = fixtureTest(600, 480);
+    const section = renderPanel(test);
+    expect(section).toHaveTextContent(
+      `${test.primary.notFinished.a} games of the pilot with the term and ${test.primary.notFinished.b} of the one without`,
+    );
+    expect(section).toHaveTextContent("each re-derived");
+    document.body.innerHTML = "";
+    const noWins = fixtureTest(600, 480);
+    const none = {
+      ...noWins,
+      primary: { ...noWins.primary, wins: { ...noWins.primary.wins, a: 0, b: 0 } },
+    };
+    expect(renderPanel(none)).not.toHaveTextContent("each re-derived");
+  });
+
   it("reports the secondary comparisons whatever the primary shows", () => {
     for (const [a, b] of [
       [600, 480],

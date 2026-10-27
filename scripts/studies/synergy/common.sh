@@ -26,3 +26,8 @@ arm_params() {
     *) echo "unknown arm $1" >&2; return 1 ;;
   esac
 }
+
+# True (exit status 0) when $1 is a number other than zero: "1.5", "3"; false for "0", "0.0", "0e0".
+margin_is_set() {
+  "$PY" -c 'import sys; sys.exit(0 if float(sys.argv[1]) != 0 else 1)' "$1"
+}

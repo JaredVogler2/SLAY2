@@ -799,6 +799,23 @@ const SYN_CONFIGS = {
 const SYN_MARGINS = { m1: 1.5, m2: 3 };
 const SYN_POLICY = "advisor_v1";
 
+// The exact two-sided McNemar p-value of the discordant counts, as slay2_sim.stats.mcnemar_exact computes it (2 x the lower binomial tail at
+// 1/2, capped at 1), in exact integers: the exporter does not take a p-value from a file without checking it against the counts.
+function mcnemarExact(aOnly, bOnly) {
+  const n = aOnly + bOnly;
+  if (n === 0) return 1;
+  const k = Math.min(aOnly, bOnly);
+  let term = 1n;
+  let tail = 1n;
+  for (let i = 1; i <= k; i++) {
+    term = (term * BigInt(n - i + 1)) / BigInt(i);
+    tail += term;
+  }
+  const scaled = (2n * tail * 10n ** 40n) / 2n ** BigInt(n);
+  return Math.min(1, Number(scaled) / 1e40);
+}
+const closeP = (x, y) => Math.abs(x - y) <= 1e-9 * Math.max(x, y) + 1e-35;
+
 // What the development stage chose, read from its two selection files and checked by applying the rule again.
 function parseSynergySelection() {
   const dir = join(root, "experiments", "synergy", "dev");
@@ -847,6 +864,21 @@ function parseSynergySelection() {
     throw new Error(
       `experiments/synergy/dev/selection-phase2.json chooses margin ${p2.chosen_margin}; the rule of ADR-050 chooses ${margin} from its numbers`,
     );
+  // The record of A* is public before the test: the decision log has an Addendum D and quotes the hash of both selection files, so a
+  // result cannot follow selection files other than the ones that were announced.
+  const hashes = raws.map((r) => createHash("sha256").update(r).digest("hex"));
+  const decisionsFile = join(root, "docs", "DECISIONS.md");
+  const decisions = existsSync(decisionsFile) ? readFileSync(decisionsFile, "utf8") : "";
+  if (!decisions.includes("Addendum D"))
+    throw new Error(
+      "docs/DECISIONS.md has no Addendum D, the record of A* that the registered test follows (ADR-050)",
+    );
+  ["selection-phase1.json", "selection-phase2.json"].forEach((name, i) => {
+    if (!decisions.includes(hashes[i].slice(0, 12)))
+      throw new Error(
+        `docs/DECISIONS.md does not quote the hash (${hashes[i].slice(0, 12)}) of ${name}: the test must follow the selection files Addendum D records`,
+      );
+  });
   const read = (d) => ({
     difference: d.difference,
     ci95: d.ci95,
@@ -858,11 +890,11 @@ function parseSynergySelection() {
     config: SYN_CONFIGS[chosen],
     margin,
     phase1: {
-      sha256: createHash("sha256").update(raws[0]).digest("hex"),
+      sha256: hashes[0],
       differences: Object.fromEntries(arms.map((a) => [a, read(p1.differences[a])])),
     },
     phase2: {
-      sha256: createHash("sha256").update(raws[1]).digest("hex"),
+      sha256: hashes[1],
       differences: Object.fromEntries(
         Object.keys(SYN_MARGINS).map((a) => [a, read(p2.differences[a])]),
       ),
@@ -928,8 +960,13 @@ function parseSynergyTest(reports, tableSha256) {
         : !isNoTerm(0)(effective(r.id))
           ? "it is not the index without the synergy term at margin 0"
           : played(r),
+    // the Ironclad reference batch is older than the rules above (it was played from a working tree with changes, before the class check)
     rules_v3: (r) =>
-      measuredValues(r) ? null : "it is not rules_v3 with the class's measured card values",
+      !measuredValues(r)
+        ? "it is not rules_v3 with the class's measured card values"
+        : r.character === "Ironclad"
+          ? null
+          : played(r),
   };
 
   function pooled(file, a, b) {
@@ -982,6 +1019,11 @@ function parseSynergyTest(reports, tableSha256) {
                     ? "it was not played in the harness's canonical process state"
                     : arm[name](current);
         if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}, ${name}): ${bad}`);
+        const audit = current.sampleAudit;
+        if (!audit || !audit.ledgerOk || audit.verified !== audit.drawn || audit.drawn < 40)
+          throw new Error(
+            `${where}: ${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`,
+          );
       }
       if (m.pairedSeeds !== SYN_VAL_SEEDS)
         throw new Error(
@@ -1005,12 +1047,45 @@ function parseSynergyTest(reports, tableSha256) {
       throw new Error(`${where}: its totals are not the sum of the classes'`);
     if (t.wins.a !== sums.winsA || t.wins.b !== sums.winsB)
       throw new Error(`${where}: its wins are not the sum of the classes'`);
+    // every table adds up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts
+    if (t.bothCompleted + t.excludedNotCompleted !== t.pairedSeeds)
+      throw new Error(`${where}: completed and excluded pairs do not add up to the paired seeds`);
+    const table = (label, tab, total) => {
+      const n = tab.a_only + tab.b_only + tab.both + tab.neither;
+      if (n !== total)
+        throw new Error(`${where}: the ${label} table adds up to ${n}, not the ${total} pairs both arms completed`);
+      const exact = mcnemarExact(tab.a_only, tab.b_only);
+      if (!closeP(exact, tab.mcnemar_p))
+        throw new Error(
+          `${where}: the ${label} p-value (${tab.mcnemar_p}) is not the exact McNemar p-value of its counts (${exact})`,
+        );
+    };
+    for (const [label, e] of [
+      ["Act-1", r1],
+      ["Act-2", t.reachedAct3],
+    ]) {
+      table(label, e.pairedTable, t.bothCompleted);
+      if (
+        e.a.games !== e.pairedTable.a_only + e.pairedTable.both ||
+        e.b.games !== e.pairedTable.b_only + e.pairedTable.both ||
+        Math.abs(e.a.rate - e.a.games / t.bothCompleted) > 1e-9 ||
+        Math.abs(e.b.rate - e.b.games / t.bothCompleted) > 1e-9
+      )
+        throw new Error(`${where}: the ${label} rates are not the counts of its table`);
+    }
+    table("wins", t.wins.pairedTable, t.bothCompleted);
+    for (const m of t.members) table(`${m.character} Act-1`, m.reachedAct2.pairedTable, m.bothCompleted);
     return {
       id: file.replace(/\.json$/, ""),
       contentSha256: t.contentSha256,
       pairedSeeds: t.pairedSeeds,
       bothCompleted: t.bothCompleted,
       excludedNotCompleted: t.excludedNotCompleted,
+      // games of each arm that ended in a simulator error or a timeout (never counted as losses); the pairs they were in are left out
+      notFinished: {
+        a: t.members.reduce((n, m) => n + SYN_VAL_SEEDS - byId.get(m.a.batchId).completed, 0),
+        b: t.members.reduce((n, m) => n + SYN_VAL_SEEDS - byId.get(m.b.batchId).completed, 0),
+      },
       reachedAct2: r1,
       reachedAct3: t.reachedAct3,
       wins: t.wins,
@@ -1029,16 +1104,6 @@ function parseSynergyTest(reports, tableSha256) {
   }
 
   const primary = pooled("pooled-astar-vs-d0star.json", "astar", "d0star");
-  // the two arms of the primary contrast each carry a passing sample audit (ADR-050 item 6)
-  for (const m of primary.members) {
-    for (const side of [m.a, m.b]) {
-      const s = byId.get(side.batchId).sampleAudit;
-      if (!s || !s.ledgerOk || s.verified !== s.drawn || s.drawn < 40)
-        throw new Error(
-          `${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`,
-        );
-    }
-  }
   const optional = (file, a, b) => (existsSync(join(valDir, file)) ? pooled(file, a, b) : null);
   const noTermAtZero = optional("pooled-astar-vs-d0.json", "astar", "d0");
   if (choice.margin !== 0 && !noTermAtZero)

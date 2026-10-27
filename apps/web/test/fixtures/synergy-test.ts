@@ -45,6 +45,7 @@ function pooled(
     pairedSeeds: 10000,
     bothCompleted: total,
     excludedNotCompleted: 10000 - total,
+    notFinished: { a: 31, b: 27 },
     reachedAct2: {
       definition: "the run got past the Act-1 boss",
       a: { games: total, rate: rate(aOnly + both), wilson95: [0.5, 0.6] },

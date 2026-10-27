@@ -114,6 +114,8 @@ export interface PooledTest {
   readonly pairedSeeds: number;
   readonly bothCompleted: number;
   readonly excludedNotCompleted: number;
+  /** games of each arm that ended in a simulator error or a timeout; the pairs they were in are left out of the test */
+  readonly notFinished: { readonly a: number; readonly b: number };
   readonly reachedAct2: Endpoint;
   readonly reachedAct3: Endpoint;
   readonly wins: { readonly a: number; readonly b: number; readonly pairedTable: PairedTable };

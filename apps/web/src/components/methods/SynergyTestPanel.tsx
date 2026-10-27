@@ -138,7 +138,7 @@ export function SynergyTestPanel({ test }: { test: SynergyTest }) {
   const perClass = new Set(p.members.map((m) => m.pairedSeeds));
   const seedsPerClass = perClass.size === 1 ? [...perClass][0] : undefined;
   const badge = BADGE[verdict];
-  const rederived = p.members.reduce((n, m) => n + m.a.wins, 0) + p.wins.b;
+  const hasWins = p.wins.a + p.wins.b > 0;
   const profile = test.profile;
   const hasNecrobinder = p.members.some((m) => m.character === "necrobinder");
   return (
@@ -166,7 +166,7 @@ export function SynergyTestPanel({ test }: { test: SynergyTest }) {
         <Tile
           k="Wins"
           value={`${String(p.wins.b)} → ${String(p.wins.a)}`}
-          note={`${formatP(p.wins.pairedTable.mcnemar_p)}${rederived > 0 ? ", each re-derived" : ""}`}
+          note={`${formatP(p.wins.pairedTable.mcnemar_p)}${hasWins ? ", each re-derived" : ""}`}
         />
       </ul>
       <p>
@@ -180,11 +180,12 @@ export function SynergyTestPanel({ test }: { test: SynergyTest }) {
         ). They played the same held-out seeds, {games(seedsPerClass ?? p.pairedSeeds)}{" "}
         {seedsPerClass ? "in each class " : ""}({games(p.pairedSeeds)} pairs,{" "}
         {games(p.bothCompleted)} completed by both; the others ended in a simulator error or a
-        timeout, which says nothing about play, and are left out of the pair). The primary endpoint,
-        fixed before any of these games: the share of games that got past the Act-1 boss, paired by
-        seed, pooled over the five classes, exact McNemar test, two-sided, level {test.alpha}, one
-        test. {pct(p.reachedAct2.a.rate, 1)} with the term against {pct(p.reachedAct2.b.rate, 1)}{" "}
-        without it, a difference of{" "}
+        timeout, which says nothing about play, and are left out of the pair:{" "}
+        {games(p.notFinished.a)} games of the pilot with the term and {games(p.notFinished.b)} of
+        the one without). The primary endpoint, fixed before any of these games: the share of games
+        that got past the Act-1 boss, paired by seed, pooled over the five classes, exact McNemar
+        test, two-sided, level {test.alpha}, one test. {pct(p.reachedAct2.a.rate, 1)} with the term
+        against {pct(p.reachedAct2.b.rate, 1)} without it, a difference of{" "}
         <span className="num">
           {signed(p.clusteredDifference.meanAMinusB * 100, 1)} points (95 %{" "}
           {signed((p.clusteredDifference.ci95[0] ?? 0) * 100, 1)} to{" "}

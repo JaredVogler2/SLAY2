@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The checks that must hold before the first held-out game of stage B2-val (ADR-050 item 4); run-val.sh sources this file.
-#   ASTAR='{"needs":1,"scalers":0.7,"engines":0.25,"margin":1.5}' MARGIN=1.5 PREFLIGHT_ONLY=1 run-val.sh
+#   ASTAR="$(python -m slay2_sim.synergydev --astar --dir experiments/synergy/dev)" MARGIN=<its margin> PREFLIGHT_ONLY=1 run-val.sh 4
 # Any failed check stops the run before a val seed is played, because the test is run once.
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 : "${ASTAR:?ASTAR is the registered configuration of A* as a JSON object}"
@@ -9,6 +9,8 @@ fail() { echo "preflight-val: $*" >&2; exit 1; }
 
 # 1. a clean checkout of a commit that is already on the remote (the manifests record `dirty`, and the addendum has to be public before the test)
 [ -z "$(git status --porcelain --untracked-files=no)" ] || fail "tracked files are modified: start from a clean checkout of the commit that carries the addendum"
+# the manifests record `dirty` for tracked files only; a new untracked source file would change what is played without showing there
+[ -z "$(git ls-files --others --exclude-standard | grep -vE '^(experiments|artifacts)/')" ] || fail "untracked files outside experiments/ and artifacts/: start from a clean checkout"
 git fetch -q origin 2>/dev/null || fail "cannot reach the remote to check that this commit is pushed"
 [ -n "$(git branch -r --contains HEAD 2>/dev/null)" ] || fail "HEAD is not on the remote: push the addendum before the first val game"
 
@@ -45,9 +47,11 @@ if not found or tuple(float(x) for x in found.groups()) != tuple(float(x) for x 
     raise SystemExit(f"PART_WEIGHT in packages/decision/src/synergy.ts is {found.groups() if found else 'unreadable'}, A* keeps {kept}")
 PYEOF
 
-# 4. the test has not been run before: no result exists, and a val batch of these arms may exist only when an interrupted run is being finished
+# 4. the test has not been run before: no result exists or ever existed in the history, and a val batch of these arms may exist only when an
+#    interrupted run is being finished. (This stops a mistake, not a person: a person could delete files, and the history is the record.)
 [ ! -e experiments/synergy/val/pooled-astar-vs-d0star.json ] || fail "the pooled result of the registered test exists: the test is run once"
-if ls experiments/batches 2>/dev/null | grep -Eq '^advisor_v1-(astar|d0star|d0)-.*-val-n2000$'; then
+[ -z "$(git log --all --oneline -1 -- experiments/synergy/val/pooled-astar-vs-d0star.json)" ] || fail "the pooled result of the registered test is in the history: the test is run once"
+if ls experiments/batches 2>/dev/null | grep -Eq '^advisor_v1-(astar|d0star|d0)-.*-val-'; then
   [ "${RESUME:-}" = 1 ] || fail "batches of the val arms already exist; if a run was interrupted, finish it with RESUME=1 (a finished batch is never touched)"
 fi
 echo "preflight-val: ok (A* $ASTAR, margin $MARGIN, commit $(git rev-parse --short=12 HEAD))"

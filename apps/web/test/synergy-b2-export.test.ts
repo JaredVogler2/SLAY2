@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   cpSync,
   mkdirSync,
@@ -13,6 +14,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
+
+import { mcnemarP } from "./fixtures/synergy-test";
 
 /**
  * `scripts/export-site-data.mjs` reads the one registered held-out test of the synergy term (ADR-050, stage B2) only when everything
@@ -130,32 +133,44 @@ function manifest(arm: Arm, cls: string, o: Required<Options>): Json {
   };
 }
 
+function pairedTable(aOnly: number, bOnly: number, both: number, neither: number): Json {
+  return { a_only: aOnly, b_only: bOnly, both, neither, mcnemar_p: mcnemarP(aOnly, bOnly) };
+}
+
+function endpoint(
+  aOnly: number,
+  bOnly: number,
+  both: number,
+  neither: number,
+  definition: string,
+): Json {
+  const total = aOnly + bOnly + both + neither;
+  return {
+    a: { games: aOnly + both, rate: (aOnly + both) / total, wilson95: [0.5, 0.6] },
+    b: { games: bOnly + both, rate: (bOnly + both) / total, wilson95: [0.5, 0.6] },
+    definition,
+    pairedTable: pairedTable(aOnly, bOnly, both, neither),
+  };
+}
+
 function pooledFile(a: Arm, b: Arm, name: string, discordant: [number, number]): Json {
   const [aOnly, bOnly] = discordant;
   const both = 5000;
   const neither = 3000;
+  const total = aOnly + bOnly + both + neither;
   const members = CLASSES.map((cls) => ({
     a: { batchId: batchId(a, cls), contentSha256: hex(batchId(a, cls)), wins: 0 },
     b: { batchId: batchId(b, cls), contentSha256: hex(batchId(b, cls)), wins: 0 },
-    bothCompleted: (aOnly + bOnly + both + neither) / 5,
+    bothCompleted: total / 5,
     character: EXACT[cls],
     meanFloorDifference: 0.4,
     pairedSeeds: 2000,
     reachedAct2: {
-      a: 0.6,
-      b: 0.55,
-      pairedTable: {
-        a_only: aOnly / 5,
-        b_only: bOnly / 5,
-        both: both / 5,
-        neither: neither / 5,
-        mcnemar_p: 0.5,
-      },
+      a: (aOnly / 5 + both / 5) / (total / 5),
+      b: (bOnly / 5 + both / 5) / (total / 5),
+      pairedTable: pairedTable(aOnly / 5, bOnly / 5, both / 5, neither / 5),
     },
   }));
-  const total = aOnly + bOnly + both + neither;
-  // an exact two-sided McNemar p-value is not needed to be right here: the exporter compares it with the level only
-  const p = aOnly === bOnly ? 1 : Math.abs(aOnly - bOnly) > 100 ? 0.001 : 0.4;
   return {
     bothCompleted: total,
     clusteredDifference: { ci95: [0.001, 0.02], meanAMinusB: (aOnly - bOnly) / total },
@@ -173,25 +188,23 @@ function pooledFile(a: Arm, b: Arm, name: string, discordant: [number, number]):
     members,
     pairedSeeds: 10000,
     policies: { a: "advisor_v1", b: b === "rules_v3" ? "rules_v3" : "advisor_v1" },
-    reachedAct2: {
-      a: { games: total, rate: (aOnly + both) / total, wilson95: [0.5, 0.6] },
-      b: { games: total, rate: (bOnly + both) / total, wilson95: [0.5, 0.6] },
-      definition: "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
-      pairedTable: { a_only: aOnly, b_only: bOnly, both, neither, mcnemar_p: p },
-    },
-    reachedAct3: {
-      a: { games: total, rate: 0.04, wilson95: [0.03, 0.05] },
-      b: { games: total, rate: 0.035, wilson95: [0.03, 0.05] },
-      definition: "the run got past the Act-2 boss (it ended in Act 3, or won)",
-      pairedTable: { a_only: 50, b_only: 40, both: 300, neither: total - 390, mcnemar_p: 0.4 },
-    },
+    reachedAct2: endpoint(
+      aOnly,
+      bOnly,
+      both,
+      neither,
+      "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    ),
+    reachedAct3: endpoint(
+      50,
+      40,
+      300,
+      total - 390,
+      "the run got past the Act-2 boss (it ended in Act 3, or won)",
+    ),
     role: "held-out",
     schema: 1,
-    wins: {
-      a: 0,
-      b: 0,
-      pairedTable: { a_only: 0, b_only: 0, both: 0, neither: total, mcnemar_p: 1 },
-    },
+    wins: { a: 0, b: 0, pairedTable: pairedTable(0, 0, 0, total) },
   };
 }
 
@@ -276,7 +289,7 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
   const o: Required<Options> = { arm: "d2", margin: 1.5, discordant: [600, 480], ...options };
   const root = mkdtempSync(join(tmpdir(), "slay2-b2-"));
   dirs.push(root);
-  for (const name of ["docs", "packages", "sim"]) {
+  for (const name of ["packages", "sim"]) {
     symlinkSync(join(repo, name), join(root, name), "dir");
   }
   mkdirSync(join(root, "apps", "web", "src", "content"), { recursive: true });
@@ -296,7 +309,7 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
         join(dir, "episodes.jsonl"),
         '{"seed":1,"outcome":"death","floor":12,"act":1,"killed_by":"X","wall_seconds":1}\n',
       );
-      if (arm === "astar" || arm === "d0star") {
+      {
         write(join(dir, "sample-audit.json"), {
           batch_id: m.batch_id,
           batch_content_sha256: m.content_sha256,
@@ -316,6 +329,14 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
   const [p1, p2] = selection(o);
   write(path("experiments", "synergy", "dev", "selection-phase1.json"), p1);
   write(path("experiments", "synergy", "dev", "selection-phase2.json"), p2);
+  const sha12 = (file: string) =>
+    createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 12);
+  mkdirSync(path("docs"), { recursive: true });
+  symlinkSync(join(repo, "docs", "game"), path("docs", "game"), "dir");
+  writeFileSync(
+    path("docs", "DECISIONS.md"),
+    `**Addendum D: the development stage and A*.** selection-phase1.json ${sha12(path("experiments", "synergy", "dev", "selection-phase1.json"))}, selection-phase2.json ${sha12(path("experiments", "synergy", "dev", "selection-phase2.json"))}.\n`,
+  );
   const val = (file: string, body: unknown) => {
     write(path("experiments", "synergy", "val", file), body);
   };
@@ -630,5 +651,91 @@ describe("the exporter reads the registered synergy test only when it belongs to
     expect(r.stderr).toContain(
       "arm-profile.json: its astar silent batch is not the one the test used",
     );
+  });
+
+  it("refuses a p-value that is not the exact McNemar p-value of its counts", () => {
+    const w = buildWorld({ discordant: [500, 500] });
+    edit(w.path("experiments", "synergy", "val", "pooled-astar-vs-d0star.json"), (t) => {
+      ((t.reachedAct2 as Json).pairedTable as Json).mcnemar_p = 0.001;
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("is not the exact McNemar p-value of its counts");
+  });
+
+  it("refuses a table that does not add up to the pairs both arms completed, and rates that are not its counts", () => {
+    const table = buildWorld();
+    edit(table.path("experiments", "synergy", "val", "pooled-astar-vs-d0star.json"), (t) => {
+      const tab = (t.reachedAct3 as Json).pairedTable as Json;
+      tab.neither = (tab.neither as number) + 1;
+    });
+    const a = run(table.root);
+    expect(a.status).not.toBe(0);
+    expect(a.stderr).toContain("the Act-2 table adds up to");
+    const rate = buildWorld();
+    edit(rate.path("experiments", "synergy", "val", "pooled-astar-vs-d0star.json"), (t) => {
+      (((t.reachedAct2 as Json).a as Json).rate as number) = 0.99;
+    });
+    const b = run(rate.root);
+    expect(b.status).not.toBe(0);
+    expect(b.stderr).toContain("rates are not the counts of its table");
+  });
+
+  it("refuses any arm of any comparison without a passing sample audit, the reference arms included", () => {
+    const w = buildWorld({ margin: 1.5 });
+    rmSync(w.path("experiments", "batches", batchId("rules_v3", "silent"), "sample-audit.json"));
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("no passing sample audit of at least 40 games");
+    const noTerm = buildWorld({ margin: 1.5 });
+    rmSync(noTerm.path("experiments", "batches", batchId("d0", "defect"), "sample-audit.json"));
+    const r2 = run(noTerm.root);
+    expect(r2.status).not.toBe(0);
+    expect(r2.stderr).toContain("no passing sample audit of at least 40 games");
+  });
+
+  it("refuses a result whose selection files are not the ones the decision log records (Addendum D)", () => {
+    const noAddendum = buildWorld();
+    writeFileSync(noAddendum.path("docs", "DECISIONS.md"), "no addendum here\n");
+    const a = run(noAddendum.root);
+    expect(a.status).not.toBe(0);
+    expect(a.stderr).toContain("has no Addendum D");
+    const otherHash = buildWorld();
+    edit(otherHash.path("experiments", "synergy", "dev", "selection-phase2.json"), (p2) => {
+      p2.tie_points = 0.4; // still the same choice by the rule, but not the file the log quotes
+    });
+    const b = run(otherHash.root);
+    expect(b.status).not.toBe(0);
+    expect(b.stderr).toContain("does not quote the hash");
+  });
+
+  it("says how many games of each arm did not finish, from the manifests", () => {
+    const w = buildWorld();
+    expect(run(w.root).status).toBe(0);
+    const primary = (exported(w.root).b2 as { primary: { notFinished: { a: number; b: number } } })
+      .primary;
+    expect(primary.notFinished).toEqual({ a: 50, b: 50 });
+  });
+
+  it("holds the new reference batches to the clean-checkout rule, and the old Ironclad one to none", () => {
+    const old = buildWorld();
+    edit(
+      old.path("experiments", "batches", batchId("rules_v3", "ironclad"), "manifest.json"),
+      (m) => {
+        ((m.environment as Json).slay2 as Json).dirty = true;
+      },
+    );
+    const a = run(old.root);
+    expect(a.status, a.stderr).toBe(0);
+    const fresh = buildWorld();
+    edit(
+      fresh.path("experiments", "batches", batchId("rules_v3", "silent"), "manifest.json"),
+      (m) => {
+        ((m.environment as Json).slay2 as Json).dirty = true;
+      },
+    );
+    const b = run(fresh.root);
+    expect(b.status).not.toBe(0);
+    expect(b.stderr).toContain("uncommitted changes");
   });
 });
