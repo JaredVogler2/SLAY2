@@ -187,11 +187,13 @@ function KeepValuesTestBlock({ test }: { test: KeepValuesTest }) {
         pilot that follows the new values against the same pilot following the values the site
         showed, both played with the relics kept on the same held-out seeds ({games(p.pairedSeeds)}{" "}
         pairs, {games(p.bothCompleted)} completed by both; the others ended in a simulator error or
-        a timeout, which says nothing about play, and are left out of the pair). Primary endpoint,
-        fixed beforehand: the share of games that got past the Act-1 boss, paired by seed, the five
-        classes pooled, exact McNemar test, level {test.alpha}, one test. {pct(e.a.rate, 1)} with
-        the new values against {pct(e.b.rate, 1)} with the current ones ({games(t.a_only)} games
-        only with the new values, {games(t.b_only)} only with the current ones).{" "}
+        a timeout, which with the relics kept come deep into a run, after the Act-1 boss in nearly
+        every case (ADR-053), so leaving them out of the pair reads the share past the boss slightly
+        low in both arms alike). Primary endpoint, fixed beforehand: the share of games that got
+        past the Act-1 boss, paired by seed, the five classes pooled, exact McNemar test, level{" "}
+        {test.alpha}, one test. {pct(e.a.rate, 1)} with the new values against {pct(e.b.rate, 1)}{" "}
+        with the current ones ({games(t.a_only)} games only with the new values, {games(t.b_only)}{" "}
+        only with the current ones).{" "}
         {verdict === "gain" ? (
           <>
             <strong className="font-medium text-parchment">New values ahead.</strong> By the rule
@@ -393,7 +395,7 @@ function ClassBlock({ set }: { set: CardValueSet }) {
             ({formatP(test.pairedWinTable.mcnemar_p)}).{" "}
             {set.validation
               ? set.validation.basis === "pooled"
-                ? `The test that was registered is the pooled one above; this class's own comparison is secondary. By the rule registered with it (ADR-053 item 5) these values replace ${set.supersedes ?? "the earlier ones"} because the pooled test favoured them and this class's own games do not show the earlier values significantly ahead (level ${String(set.validation.alpha)} here).`
+                ? `The test that was registered is the pooled one above; this class's own comparison is secondary. By the rule registered with it (ADR-053 item 5) these values replace ${set.supersedes ?? "the earlier ones"} because the pooled test favoured them and this class's own games do not show the earlier values significantly ahead (exact McNemar p below ${String(KEEP_VALUES_TEST?.alpha ?? 0.05)} the other way, uncorrected).`
                 : `Significance level for this class: ${String(set.validation.alpha)}; ${set.validation.passed ? "the primary endpoint passed" : "the primary endpoint did not pass"}.`
               : ""}
           </p>

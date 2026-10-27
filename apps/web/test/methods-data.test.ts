@@ -154,9 +154,22 @@ describe("comparison wording is derived from the data", () => {
     expect(first?.a.policy).toBe("rules_v2");
     expect(first?.b.policy).toBe("rules_v1");
     expect(first?.reachedAct2.pairedTable.mcnemar_p ?? 1).toBeLessThan(0.05);
-    // the other classes are first measurements: their test is the one against the ratings
-    expect(valuesValidation("silent")?.a.policy).toBe("rules_v2");
-    expect(valuesValidation("silent")?.b.policy).toBe("rules_v1");
+    // every other class: a first measurement is tested against the ratings; a set measured with the relics kept, against the values it replaces
+    for (const cls of ["silent", "regent", "necrobinder", "defect"]) {
+      const set = setFor(cls);
+      const own = valuesValidation(cls);
+      expect(own, cls).toBeDefined();
+      if (set?.validation?.against === "ratings") {
+        expect(own?.a.policy, cls).toBe("rules_v2");
+        expect(own?.b.policy, cls).toBe("rules_v1");
+      } else {
+        expect(set?.validation?.against, cls).toBe("current-values");
+        expect(own?.a.policy, cls).toBe("rules_v3");
+        expect(own?.b.policy, cls).toBe("rules_v3");
+        expect(own?.a.batchId, cls).toMatch(/keepvals.*keeprelics-val-/);
+        expect(own?.b.batchId, cls).toMatch(/curvals.*keeprelics-val-/);
+      }
+    }
   });
 
   it("names the arms of a test between two sets of values by their values, not by the policy they share", () => {

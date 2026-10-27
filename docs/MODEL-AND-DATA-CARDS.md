@@ -91,17 +91,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 8 | 16,000 | 15,950 | 33 | 50 | 0 |
+| Defect | held-out (val) | 10 | 20,000 | 19,830 | 125 | 170 | 0 |
 | Defect | development (train, dev) | 15 | 25,000 | 24,825 | 160 | 175 | 0 |
-| Ironclad | held-out (val) | 11 | 20,300 | 20,186 | 55 | 114 | 0 |
+| Ironclad | held-out (val) | 13 | 24,300 | 24,044 | 132 | 256 | 0 |
 | Ironclad | development (train, dev) | 27 | 34,910 | 34,647 | 282 | 253 | 10 |
-| Necrobinder | held-out (val) | 8 | 16,000 | 15,941 | 1 | 59 | 0 |
+| Necrobinder | held-out (val) | 10 | 20,000 | 19,865 | 2 | 134 | 1 |
 | Necrobinder | development (train, dev) | 17 | 26,000 | 25,840 | 0 | 154 | 6 |
-| Regent | held-out (val) | 8 | 16,000 | 15,888 | 2 | 23 | 89 |
+| Regent | held-out (val) | 10 | 20,000 | 19,806 | 11 | 80 | 114 |
 | Regent | development (train, dev) | 15 | 25,000 | 24,688 | 11 | 115 | 197 |
-| Silent | held-out (val) | 8 | 16,000 | 15,988 | 0 | 12 | 0 |
+| Silent | held-out (val) | 10 | 20,000 | 19,969 | 0 | 31 | 0 |
 | Silent | development (train, dev) | 15 | 25,000 | 24,970 | 0 | 30 | 0 |
-| **All classes** | **held-out (val)** | **43** | **84,300** | **83,953** | **91** | **258** | **89** |
+| **All classes** | **held-out (val)** | **53** | **104,300** | **103,514** | **270** | **671** | **115** |
 | **All classes** | **development (train, dev)** | **89** | **135,910** | **134,970** | **453** | **727** | **213** |
 <!-- table:games:end -->
 
@@ -141,15 +141,15 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | File | Class | Runs that reached the Act-1 boss | Passed it | Cards valued | Cross-validated AUC · log-loss (covariate-only log-loss) | Spearman with the hand-written rating | Held-out test: past the Act-1 boss, pilot with these values · comparator (exact McNemar p) |
 |---|---|---|---|---|---|---|---|
 | `ironclad-a0-v2.json` | Ironclad | 4269 | 54.9 % | 95 | 0.869 · 0.447 (0.545) | 0.44 | 79.4 % · 74.8 % against first values (2.6e-05) |
-| `silent-a0-v1.json` | Silent | 2332 | 10.7 % | 75 | 0.878 · 0.241 (0.263) | 0.43 | 18.5 % · 11.5 % against rules_v1 (8.5e-13) |
-| `regent-a0-v1.json` | Regent | 2703 | 22.4 % | 88 | 0.898 · 0.323 (0.398) | 0.07 | 49.7 % · 14.0 % against rules_v1 (3.9e-154) |
-| `necrobinder-a0-v1.json` | Necrobinder | 3389 | 44.0 % | 91 | 0.915 · 0.367 (0.406) | 0.43 | 62.1 % · 47.8 % against rules_v1 (5.9e-30) |
-| `defect-a0-v1.json` | Defect | 3212 | 40.3 % | 92 | 0.903 · 0.385 (0.492) | 0.27 | 76.2 % · 34.5 % against rules_v1 (7.2e-167) |
+| `silent-a0-keep-v1.json` | Silent | 3025 | 30.2 % | 80 | 0.861 · 0.417 (0.465) | 0.39 | 36.7 % · 35.1 % against the earlier values (0.18) |
+| `regent-a0-keep-v1.json` | Regent | 3543 | 48.9 % | 89 | 0.890 · 0.414 (0.504) | 0.18 | 66.3 % · 62.4 % against the earlier values (2.4e-04) |
+| `necrobinder-a0-keep-v1.json` | Necrobinder | 3829 | 62.3 % | 95 | 0.893 · 0.395 (0.450) | 0.41 | 78.9 % · 75.1 % against the earlier values (1.9e-04) |
+| `defect-a0-keep-v1.json` | Defect | 3850 | 71.5 % | 97 | 0.899 · 0.354 (0.436) | 0.26 | 85.5 % · 84.3 % against the earlier values (0.15) |
 <!-- table:cardvalues:end -->
 
-* **How to read the table:** the held-out column is the registered test of the *values*: a pilot that follows them against the same pilot without them (`rules_v1` for the first sets; for Ironclad's second set, against the pilot following the first set), on the 2,000 `val` seeds. The cross-validated AUC and log-loss are held out by seed within the fit; the covariate-only log-loss is the same model without any card (HP fraction, maximum HP, potions, upgrades, the boss and the common relics). The Spearman column is the correlation with the hand-written rating the advisor used before: **0.07 for Regent says the hand-written ratings had almost no relation to what the simulator measured for that class**.
+* **How to read the table:** the held-out column is the registered test of the *values*: a pilot that follows them against the same pilot without them (`rules_v1` for the first sets; for Ironclad's second set, against the pilot following the first set; for the four sets measured with the relics kept (ADR-053), against the pilot following the values they replace, both played with the relics kept, where the registered test is the one pooled over the five classes and a set is licensed by its rule, not by its own class's p-value: Silent's and Defect's own comparisons are not significant), on the 2,000 `val` seeds. The cross-validated AUC and log-loss are held out by seed within the fit; the covariate-only log-loss is the same model without any card (HP fraction, maximum HP, potions, upgrades, the boss and the common relics). The Spearman column is the correlation with the hand-written rating the advisor used before: **0.07 for Regent says the hand-written ratings had almost no relation to what the simulator measured for that class**.
 * **Fairness and information:** the fit uses what a player could see at the boss (the deck, HP, potions, relics) and the outcome; no seed, no RNG state, no draw order.
-* **Limits (they travel with the numbers on the site):** simulated by one rules pilot, in an unverified simulator, at Ascension 0, in Overgrowth only (G12), with no Ancient in acts two and three (G11) and **no relic kept after a run's first fight (G14: the values were measured where a run holds two relics, and whether they keep their order with relics kept is unmeasured)**; the model is additive, so synergies are invisible; a card the pilot plays badly is undervalued; **Silent's pilot wins none of its held-out games, so its values are conditional on weak play**; a Necrobinder starts with 75 HP in the simulator and 66 in the game (G13: 12 points fewer past the Act-1 boss at 66 HP on development seeds), so Necrobinder levels are too high and the site says so beside every Necrobinder number.
+* **Limits (they travel with the numbers on the site):** simulated by one rules pilot, in an unverified simulator, at Ascension 0, in Overgrowth only (G12), with no Ancient in acts two and three (G11) and, for Ironclad's set, **no relic kept after a run's first fight (G14: those values were measured where a run holds two relics; the sets now shown for Silent, Regent, Necrobinder and Defect were measured with the relics kept, ADR-053)**; the model is additive, so synergies are invisible; a card the pilot plays badly is undervalued; **Silent's pilot wins none of its held-out games, so its values are conditional on weak play**; a Necrobinder starts with 75 HP in the simulator and 66 in the game (G13: 12 points fewer past the Act-1 boss at 66 HP on development seeds), so Necrobinder levels are too high and the site says so beside every Necrobinder number.
 
 ## D7. Opening-relic values
 
@@ -322,11 +322,21 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v2 | Necrobinder | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
 | rules_v2 | Regent | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
 | rules_v2 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
+| rules_v3 | Defect | 2000 | 1945 | 46 | 1.78 to 3.14 % | 25.01 | 55 · 0 |
 | rules_v3 | Defect | 2000 | 1998 | 10 | 0.27 to 0.92 % | 21.86 | 2 · 0 |
+| rules_v3 | Defect | 2000 | 1935 | 46 | 1.79 to 3.16 % | 25.26 | 65 · 0 |
+| rules_v3 | Ironclad | 2000 | 1928 | 40 | 1.53 to 2.81 % | 27.44 | 72 · 0 |
 | rules_v3 | Ironclad | 2000 | 1996 | 6 | 0.14 to 0.65 % | 22.46 | 4 · 0 |
+| rules_v3 | Ironclad | 2000 | 1930 | 37 | 1.39 to 2.63 % | 26.88 | 70 · 0 |
 | rules_v3 + Ironclad values v2 | Ironclad | 2000 | 1992 | 2 | 0.03 to 0.37 % | 23.19 | 8 · 0 |
+| rules_v3 | Necrobinder | 2000 | 1962 | 1 | 0.01 to 0.29 % | 22.80 | 37 · 1 |
+| rules_v3 | Necrobinder | 2000 | 1962 | 0 | 0.00 to 0.20 % | 23.58 | 38 · 0 |
 | rules_v3 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 20.28 | 3 · 0 |
+| rules_v3 | Regent | 2000 | 1964 | 3 | 0.05 to 0.45 % | 20.55 | 25 · 11 |
+| rules_v3 | Regent | 2000 | 1954 | 6 | 0.14 to 0.67 % | 21.27 | 32 · 14 |
 | rules_v3 | Regent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 18.44 | 0 · 10 |
+| rules_v3 | Silent | 2000 | 1991 | 0 | 0.00 to 0.19 % | 16.27 | 9 · 0 |
+| rules_v3 | Silent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 16.23 | 10 · 0 |
 | rules_v3 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.01 | 0 · 0 |
 | rules_v2_neow_values | Defect | 2000 | 1990 | 16 | 0.50 to 1.30 % | 22.39 | 10 · 0 |
 | rules_v2_neow_values | Ironclad | 2000 | 1984 | 12 | 0.35 to 1.05 % | 22.69 | 16 · 0 |
@@ -377,6 +387,11 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | `rules_v2-vs-rules_v1-necrobinder-a0-veteran-val` | ADR-034 | Necrobinder · val | rules_v2 | rules_v1 | 1997 | 62.1 % · 47.8 % | 468 · 182 | 5.9e-30 | +1.99 (+1.69 to +2.30) | 0 · 0 |
 | `rules_v2-vs-rules_v1-regent-a0-veteran-val` | ADR-034 | Regent · val | rules_v2 | rules_v1 | 1978 | 49.7 % · 14.0 % | 771 · 65 | 3.9e-154 | +4.32 (+4.00 to +4.63) | 1 · 0 |
 | `rules_v2-vs-rules_v1-silent-a0-veteran-val` | ADR-034 | Silent · val | rules_v2 | rules_v1 | 1999 | 18.5 % · 11.5 % | 263 · 123 | 8.5e-13 | +0.97 (+0.74 to +1.20) | 0 · 0 |
+| `rules_v3-keepvals-vs-curvals-defect-a0-veteran-keeprelics-val` |  | Defect · val | rules_v3 | rules_v3 | 1919 | 85.5 % · 84.3 % | 127 · 104 | 0.15 | +0.25 (-0.09 to +0.60) | 45 · 44 |
+| `rules_v3-keepvals-vs-curvals-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | rules_v3 | rules_v3 | 1901 | 81.7 % · 85.2 % | 99 · 164 | 7.3e-05 | -0.56 (-0.93 to -0.19) | 37 · 40 |
+| `rules_v3-keepvals-vs-curvals-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | rules_v3 | rules_v3 | 1945 | 78.9 % · 75.1 % | 235 · 160 | 1.9e-04 | +0.78 (+0.42 to +1.14) | 0 · 1 |
+| `rules_v3-keepvals-vs-curvals-regent-a0-veteran-keeprelics-val` |  | Regent · val | rules_v3 | rules_v3 | 1937 | 66.3 % · 62.4 % | 248 · 172 | 2.4e-04 | +0.73 (+0.41 to +1.04) | 6 · 3 |
+| `rules_v3-keepvals-vs-curvals-silent-a0-veteran-keeprelics-val` |  | Silent · val | rules_v3 | rules_v3 | 1985 | 36.7 % · 35.1 % | 263 · 232 | 0.18 | -0.04 (-0.29 to +0.21) | 0 · 0 |
 | `rules_v3-values2-vs-rules_v3-ironclad-a0-veteran-val` | ADR-046 | Ironclad · val | rules_v3 + Ironclad values v2 | rules_v3 | 1990 | 79.4 % · 74.8 % | 276 · 185 | 2.6e-05 | +0.72 (+0.40 to +1.04) | 2 · 6 |
 | `rules_v3-vs-rules_v2-ironclad-a0-veteran-val` | ADR-045 | Ironclad · val | rules_v3 | rules_v2 | 1991 | 74.8 % · 65.1 % | 292 · 99 | 3.3e-23 | +1.39 (+1.10 to +1.68) | 6 · 5 |
 | `search_v3-all-vs-rules_v2-ironclad-a0-veteran-val` | ADR-040 | Ironclad · val | search_v3 (every fight) | rules_v2 | 300 | 74.3 % · 64.7 % | 59 · 30 | 0.0028 | +3.93 (+2.90 to +5.01) | 2 · 1 |

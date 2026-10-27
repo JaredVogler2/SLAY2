@@ -93,7 +93,9 @@ describe("measured card values", () => {
       }
       expect(set.supersedes, cls).toBe(entry.supersedes.replace(/\.json$/, ""));
       expect(v?.against, cls).toBe(entry.test?.against);
-      expect(v?.alpha, cls).toBe(0.05);
+      // the class's own level of the registered tests: 0.05 for the first class tested alone, split over the classes for the others
+      expect(v?.alpha, cls).toBeGreaterThan(0);
+      expect(v?.alpha, cls).toBeLessThanOrEqual(0.05);
       const d = set.drift;
       expect(d?.previous, cls).toBe(set.supersedes);
       expect(d?.previousSha256, cls).toMatch(/^[0-9a-f]{64}$/);
@@ -211,8 +213,12 @@ describe("measured card values", () => {
     for (const set of allSets()) {
       const v = set.validation;
       expect(isValidated(set)).toBe(v?.passed === true);
-      if (v) {
+      if (v?.basis === "own") {
         expect(v.passed).toBe(v.passRate > v.passRateBase && v.p < v.alpha);
+      } else if (v) {
+        // licensed by the pooled test and its rule (ADR-053): a set is listed only when the rule adopted it
+        expect(v.basis).toBe("pooled");
+        expect(v.passed).toBe(true);
       }
     }
     expect(isValidated(ironclad)).toBe(true);
