@@ -204,6 +204,16 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `neow-explore-necrobinder-a0-train-n3000` | rules_v2_neow | Necrobinder | train · 3000 | 2995 | 0 | `71bcd527e5ec…` | clean | sample | yes |
 | `neow-explore-regent-a0-train-n3000` | rules_v2_neow | Regent | train · 3000 | 2964 | 0 | `c5d25c54549d…` | clean | sample | yes |
 | `neow-explore-silent-a0-train-n3000` | rules_v2_neow | Silent | train · 3000 | 2999 | 0 | `4367f6c6b434…` | clean | sample | yes |
+| `r4dev-defect-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Defect | dev · 500 | 495 | 0 | `60fa2da8fc3c…` | clean | sample | yes |
+| `r4dev-defect-relics-keeprelics-dev-o500-n500` | advisor_v1 | Defect | dev · 500 | 495 | 0 | `d0cc2525c1eb…` | clean | sample | yes |
+| `r4dev-ironclad-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Ironclad | dev · 500 | 497 | 6 | `dc80c23a7c03…` | clean | wins,sample | yes |
+| `r4dev-ironclad-relics-keeprelics-dev-o500-n500` | advisor_v1 | Ironclad | dev · 500 | 497 | 5 | `0c50d5ec1979…` | clean | wins,sample | yes |
+| `r4dev-necrobinder-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Necrobinder | dev · 500 | 496 | 0 | `4f5ff34af550…` | clean | sample | yes |
+| `r4dev-necrobinder-relics-keeprelics-dev-o500-n500` | advisor_v1 | Necrobinder | dev · 500 | 496 | 0 | `4e89a04c0e07…` | clean | sample | yes |
+| `r4dev-regent-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Regent | dev · 500 | 490 | 0 | `d3ad86375c0e…` | clean | sample | yes |
+| `r4dev-regent-relics-keeprelics-dev-o500-n500` | advisor_v1 | Regent | dev · 500 | 490 | 0 | `911deefeda96…` | clean | sample | yes |
+| `r4dev-silent-norelics-keeprelics-dev-o500-n500` | advisor_v1 | Silent | dev · 500 | 500 | 0 | `c8fcc144a1ff…` | clean | sample | yes |
+| `r4dev-silent-relics-keeprelics-dev-o500-n500` | advisor_v1 | Silent | dev · 500 | 500 | 0 | `b9945e86a517…` | clean | sample | yes |
 | `random_legal-ironclad-a0-veteran-val-n2000` | random_legal | Ironclad | val · 2000 | 2000 | 0 | `6039113dcdc9…` | dirty | sample | predates |
 | `rules_v1-defect-a0-veteran-val-n2000` | rules_v1 | Defect | val · 2000 | 1999 | 0 | `2773566cc727…` | dirty | sample | predates |
 | `rules_v1-ironclad-a0-veteran-train-n300` | rules_v1 | Ironclad | train · 300 | 300 | 0 | `f0b6fb7eec8f…` | clean | – | predates |

@@ -65,17 +65,17 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
 | Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
-| Defect | development (train, dev) | 11 | 16,000 | 15,976 | 29 | 24 | 0 |
+| Defect | development (train, dev) | 13 | 17,000 | 16,966 | 29 | 34 | 0 |
 | Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
-| Ironclad | development (train, dev) | 23 | 25,910 | 25,853 | 48 | 47 | 10 |
+| Ironclad | development (train, dev) | 25 | 26,910 | 26,847 | 59 | 53 | 10 |
 | Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
-| Necrobinder | development (train, dev) | 13 | 17,000 | 16,985 | 0 | 13 | 2 |
+| Necrobinder | development (train, dev) | 15 | 18,000 | 17,977 | 0 | 21 | 2 |
 | Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
-| Regent | development (train, dev) | 11 | 16,000 | 15,884 | 0 | 8 | 108 |
+| Regent | development (train, dev) | 13 | 17,000 | 16,864 | 0 | 20 | 116 |
 | Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
-| Silent | development (train, dev) | 11 | 16,000 | 15,997 | 0 | 3 | 0 |
+| Silent | development (train, dev) | 13 | 17,000 | 16,997 | 0 | 3 | 0 |
 | **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
-| **All classes** | **development (train, dev)** | **69** | **90,910** | **90,695** | **77** | **95** | **120** |
+| **All classes** | **development (train, dev)** | **79** | **95,910** | **95,651** | **88** | **131** | **128** |
 <!-- table:games:end -->
 
 ## The twelve campaigns
@@ -125,7 +125,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 
 ## Next actions, in order
 
-00. **Re-base the simulated evidence on runs that keep their relics (ADR-052, 2026-10-27).** The test of the relic reading that ADR-051 promised is possible only with `--keep-relics`; the synergy test, the card values and the opening-relic study each need the same replication as a new registration. A report to the simulator's maintainers is the owner's call.
+00. **Re-base the simulated evidence on runs that keep their relics (ADR-052, 2026-10-27).** The test of the relic reading that ADR-051 promised was prepared with `--keep-relics` and not registered, because the pilot's decks differ in only 2.7 % of games with or without the relics counted (ADR-051 addendum A); the synergy test, the card values (with a stage-B1 reading of the relic term on the same random-draft runs) and the opening-relic study each need the replication as a new registration. A report to the simulator's maintainers is the owner's call.
 0. **The synergy study (the user's feedback) is finished** as registered in ADR-050: the model, the exploratory reading (B1), the development stage (addendum D) and the one held-out test, published as it came out, with the page's weights and wording set by it. Open, each a new registration: a second pilot or higher Ascensions, the tags re-read with the table unfrozen, and whether the strengths hold for the beta build.
 1. Measure Web Vitals on the hosted site again now that pull requests #8 and #9 (the synergy work and its study programs) are live.
 2. Registered question with the largest use for a player: the opening-relic rule at the game's own Necrobinder HP (`--game-hp`, G13), then the full re-derivation of the older batches, then the decision on the paused network.

@@ -92,17 +92,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
 | Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
-| Defect | development (train, dev) | 11 | 16,000 | 15,976 | 29 | 24 | 0 |
+| Defect | development (train, dev) | 13 | 17,000 | 16,966 | 29 | 34 | 0 |
 | Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
-| Ironclad | development (train, dev) | 23 | 25,910 | 25,853 | 48 | 47 | 10 |
+| Ironclad | development (train, dev) | 25 | 26,910 | 26,847 | 59 | 53 | 10 |
 | Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
-| Necrobinder | development (train, dev) | 13 | 17,000 | 16,985 | 0 | 13 | 2 |
+| Necrobinder | development (train, dev) | 15 | 18,000 | 17,977 | 0 | 21 | 2 |
 | Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
-| Regent | development (train, dev) | 11 | 16,000 | 15,884 | 0 | 8 | 108 |
+| Regent | development (train, dev) | 13 | 17,000 | 16,864 | 0 | 20 | 116 |
 | Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
-| Silent | development (train, dev) | 11 | 16,000 | 15,997 | 0 | 3 | 0 |
+| Silent | development (train, dev) | 13 | 17,000 | 16,997 | 0 | 3 | 0 |
 | **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
-| **All classes** | **development (train, dev)** | **69** | **90,910** | **90,695** | **77** | **95** | **120** |
+| **All classes** | **development (train, dev)** | **79** | **95,910** | **95,651** | **88** | **131** | **128** |
 <!-- table:games:end -->
 
 * **Outcome rule:** a win is an episode that ended won after the third act's boss (`docs/game/MECHANICS-COVERAGE.md` RUN-2); a death ends it lost; a timeout (step, stall, turn or 900-second wall-clock limit), a simulator error and an invalid action are separate outcomes, are shown, and are never counted as losses or silently dropped. A timeout or an error is excluded from the denominator of a rate and the exclusion is reported.
@@ -254,7 +254,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:relic_reading:end -->
 
 * **Intended use:** the advisor counts a relic the player lists as a supplier of the mechanics it provides, like a card that provides them, and names it in the reasons. **Not for:** saying a relic is strong or weak, or anything about what a relic does beyond supplying a mechanic.
-* **Limits:** **not tested in simulation** (the page says so beside the panel): the claim is of the kind the card table's was before its held-out test. It could not have been tested in the simulator as it is: its runs keep two relics (G14, ADR-052), so a relic's supply changes the index in about 1 % of boss decks; with the harness variant that keeps relics a test is possible and is a new registration. A relic that only multiplies a mechanic it cannot make (Strength, Poison) and one that acts only at a rest site or shop are read as nothing; drawbacks (a cap on cards played, a Status shuffled into the draw pile, a cost in gold) are not modelled; the starting relics' upgrades are not an input; a class's starting relic is counted by the card table's `innate`, not here.
+* **Limits:** **not tested in simulation** (the page says so beside the panel): the claim is of the kind the card table's was before its held-out test. It could not have been tested in the simulator as it is: its runs keep two relics (G14, ADR-052), so a relic's supply changes the index in about 1 % of boss decks; with the harness variant that keeps relics a test is possible, and a development pair showed it would see nothing: counting the relics changes the pilot's deck in 2.7 % of games (ADR-051 addendum A), so no held-out test was registered. A relic that only multiplies a mechanic it cannot make (Strength, Poison) and one that acts only at a rest site or shop are read as nothing; drawbacks (a cap on cards played, a Status shuffled into the draw pile, a cost in gold) are not modelled; the starting relics' upgrades are not an input; a class's starting relic is counted by the card table's `innate`, not here.
 * **Kept true by:** `packages/game-data/test/relic-synergy.test.ts` (the hash, only catalog relics and card-table mechanics, no starting relic, spot facts, what is left out), `sim/tests/test_relicreading.py` (the committed table is what the readings make, the lower magnitude, a decision for every one-reader mechanic), the golden cases of the index with relics (`packages/decision/test/golden/advisor-index.json`, reproduced by the Python port) and the end-to-end tests of the relics panel.
 
 ---

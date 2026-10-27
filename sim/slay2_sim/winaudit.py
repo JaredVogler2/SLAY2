@@ -96,6 +96,19 @@ def audit_wins(batch_dir: Path, *, limit: int | None = None) -> dict:
     return report
 
 
+def requested_seeds(seeds_info: dict) -> list[int]:
+    """The seeds a batch was asked to play, as its manifest records them: the partition's seeds after the offset (recorded only
+    when one was used, so a batch played without it has none), ``n`` of them."""
+    from . import external
+    from .manifest import load_seed_manifest, partition_seeds
+
+    seeds_file = Path(seeds_info["file"])
+    if not seeds_file.is_absolute():  # recorded relative to the repository; activating the simulator changes the working directory
+        seeds_file = external.REPO_ROOT / seeds_file
+    offset = int(seeds_info.get("offset", 0))
+    return partition_seeds(load_seed_manifest(seeds_file), seeds_info["partition"])[offset : offset + seeds_info["n"]]
+
+
 def audit_sample(batch_dir: Path, *, n: int = 50, rng_seed: int = 0) -> dict:
     """Full-run truth for a sample of completed games, deaths included (red-team campaign 6). Simulator must be activated.
 
@@ -110,20 +123,13 @@ def audit_sample(batch_dir: Path, *, n: int = 50, rng_seed: int = 0) -> dict:
     import tempfile
     from collections import Counter
 
-    from . import external
-    from .manifest import load_seed_manifest, partition_seeds
-
     batch_dir = Path(batch_dir)
     manifest = json.loads((batch_dir / "manifest.json").read_text(encoding="utf-8"))
     cfg = RunConfig(**manifest["config"])
     name, params = manifest["policy"]["name"], _policy_params(manifest)
     records = read_episodes(batch_dir)
 
-    seeds_info = manifest["seeds"]
-    seeds_file = Path(seeds_info["file"])
-    if not seeds_file.is_absolute():  # recorded relative to the repository; activating the simulator changes the working directory
-        seeds_file = external.REPO_ROOT / seeds_file
-    wanted = partition_seeds(load_seed_manifest(seeds_file), seeds_info["partition"])[: seeds_info["n"]]
+    wanted = requested_seeds(manifest["seeds"])
     counts = Counter(r.outcome for r in records)
     declared = {k: v for k, v in manifest["summary"]["counts"].items() if v}
     ledger = {
@@ -190,7 +196,6 @@ def audit_rederive(batch_dir: Path, *, workers: int = 4) -> dict:
 
     from . import external
     from .batch import run_batch
-    from .manifest import load_seed_manifest, partition_seeds
 
     batch_dir = Path(batch_dir)
     manifest = json.loads((batch_dir / "manifest.json").read_text(encoding="utf-8"))
@@ -198,10 +203,7 @@ def audit_rederive(batch_dir: Path, *, workers: int = 4) -> dict:
     name, params = manifest["policy"]["name"], _policy_params(manifest)
     stored = {r.seed: r for r in read_episodes(batch_dir)}
     seeds_info = manifest["seeds"]
-    seeds_file = Path(seeds_info["file"])
-    if not seeds_file.is_absolute():
-        seeds_file = external.REPO_ROOT / seeds_file
-    seeds = partition_seeds(load_seed_manifest(seeds_file), seeds_info["partition"])[: seeds_info["n"]]
+    seeds = requested_seeds(seeds_info)
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "again"
         run_batch(out_dir=out, batch_id=f"rederive-{manifest['batch_id']}", cfg=cfg, policy_name=name, policy_params=params, seeds=seeds,
