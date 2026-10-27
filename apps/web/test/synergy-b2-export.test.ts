@@ -91,6 +91,7 @@ function manifest(arm: Arm, cls: string, o: Required<Options>): Json {
     class_start_verified: true,
     config: { ascension: 0, character: EXACT[cls], profile: "veteran", start_with_neow: true },
     content_sha256: hex(id),
+    environment: { slay2: { head: "a".repeat(40), dirty: false } },
     episodes_gz: { sha256: hex(`${id}-gz`) },
     finished: "2026-10-27T03:00:00+00:00",
     known_simulator_gaps: [],
@@ -528,6 +529,26 @@ describe("the exporter reads the registered synergy test only when it belongs to
     const r = run(w.root);
     expect(r.status).not.toBe(0);
     expect(r.stderr).toContain("its games were not checked against the class they were played as");
+  });
+
+  it("refuses an arm that was played from a working tree with uncommitted changes", () => {
+    const w = buildWorld();
+    edit(w.path("experiments", "batches", batchId("astar", "regent"), "manifest.json"), (m) => {
+      ((m.environment as Json).slay2 as Json).dirty = true;
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("uncommitted changes");
+  });
+
+  it("refuses arms that were not all played from one commit", () => {
+    const w = buildWorld();
+    edit(w.path("experiments", "batches", batchId("d0star", "defect"), "manifest.json"), (m) => {
+      ((m.environment as Json).slay2 as Json).head = "b".repeat(40);
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("not all played from one commit");
   });
 
   it("refuses a pooled file whose batch changed after it was written", () => {

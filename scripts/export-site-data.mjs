@@ -876,9 +876,26 @@ function parseSynergyTest(reports, tableSha256) {
   if (!existsSync(primaryFile)) return null;
   const choice = parseSynergySelection();
   const byId = new Map(reports.map((r) => [r.id, r]));
-  const effective = (id) =>
-    JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8"))
-      .policy?.effective?.params ?? {};
+  const manifests = new Map();
+  const manifestOf = (id) => {
+    if (!manifests.has(id))
+      manifests.set(
+        id,
+        JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8")),
+      );
+    return manifests.get(id);
+  };
+  const effective = (id) => manifestOf(id).policy?.effective?.params ?? {};
+  // The arms of the test were played from a clean checkout (the manifest records `dirty`), and all from one commit: the one that carries
+  // the addendum that records A* (ADR-050 item 4). The second part is checked once every comparison has been read.
+  const heads = new Set();
+  const played = (r) => {
+    const env = manifestOf(r.id).environment?.slay2 ?? {};
+    heads.add(env.head);
+    return env.dirty === false
+      ? null
+      : "it was played from a working tree with uncommitted changes (ADR-050 asks for a clean checkout)";
+  };
   const isAstar = (p) =>
     p.synergy === 1 &&
     p.margin === choice.margin &&
@@ -896,21 +913,21 @@ function parseSynergyTest(reports, tableSha256) {
     astar: (r) =>
       r.policy !== SYN_POLICY
         ? `its policy is ${r.policy}`
-        : isAstar(effective(r.id))
-          ? null
-          : "its parameters are not the configuration the development stage chose",
+        : !isAstar(effective(r.id))
+          ? "its parameters are not the configuration the development stage chose"
+          : played(r),
     d0star: (r) =>
       r.policy !== SYN_POLICY
         ? `its policy is ${r.policy}`
-        : isNoTerm(choice.margin)(effective(r.id))
-          ? null
-          : "it is not the index without the synergy term at A*'s margin",
+        : !isNoTerm(choice.margin)(effective(r.id))
+          ? "it is not the index without the synergy term at A*'s margin"
+          : played(r),
     d0: (r) =>
       r.policy !== SYN_POLICY
         ? `its policy is ${r.policy}`
-        : isNoTerm(0)(effective(r.id))
-          ? null
-          : "it is not the index without the synergy term at margin 0",
+        : !isNoTerm(0)(effective(r.id))
+          ? "it is not the index without the synergy term at margin 0"
+          : played(r),
     rules_v3: (r) =>
       measuredValues(r) ? null : "it is not rules_v3 with the class's measured card values",
   };
@@ -1033,6 +1050,10 @@ function parseSynergyTest(reports, tableSha256) {
       "pooled-astar-vs-d0.json exists, but at margin 0 it is the primary comparison: remove it",
     );
   const measured = optional("pooled-astar-vs-rules_v3.json", "astar", "rules_v3");
+  if (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h))))
+    throw new Error(
+      `the arms of the test were not all played from one commit (heads: ${[...heads].join(", ")})`,
+    );
   if (!measured)
     throw new Error(
       "the comparison with the measured-values pilot (pooled-astar-vs-rules_v3.json) is part of the registered result",
