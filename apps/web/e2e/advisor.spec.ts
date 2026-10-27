@@ -420,9 +420,19 @@ test.describe("advisor journey", () => {
       await expect(panel).toContainText(
         `${s.bossFights.toLocaleString("en-US")} simulated ${s.label} runs that reached the Act-1 boss`,
       );
-      await expect(panel).toContainText(
-        `+${((v.passRate - v.passRateBase) * 100).toFixed(1)} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} held-out seeds`,
-      );
+      const points = Math.round((v.passRate - v.passRateBase) * 1000) / 10;
+      const signed = `${points > 0 ? "+" : points < 0 ? "\u2212" : ""}${Math.abs(points).toFixed(1)}`;
+      if (v.basis === "pooled") {
+        // adopted by the pooled test and its rule: the panel says so and gives the class's own games as a description
+        await expect(panel).toContainText("the pooled test of the five classes favoured them");
+        await expect(panel).toContainText(
+          `in the ${v.pairedGames.toLocaleString("en-US")} held-out games of ${s.label} alone the pilot that follows them got past the Act-1 boss in ${(v.passRate * 100).toFixed(1)}% against ${(v.passRateBase * 100).toFixed(1)}% (${signed} percentage points`,
+        );
+      } else {
+        await expect(panel).toContainText(
+          `${signed} percentage points past the Act-1 boss on ${v.pairedGames.toLocaleString("en-US")} held-out seeds`,
+        );
+      }
     });
   }
 
