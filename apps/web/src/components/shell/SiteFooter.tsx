@@ -28,7 +28,7 @@ export function SiteFooter() {
             Route Lab
           </Link>
           <Link href="/codex" className="min-h-8 hover:text-parchment">
-            Card codex
+            Codex
           </Link>
           <Link href="/methods" className="min-h-8 hover:text-parchment">
             Evidence &amp; methods

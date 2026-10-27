@@ -13,8 +13,8 @@ async function pickClass(page: Page, name: string): Promise<void> {
 test.describe("card codex", () => {
   test("lists a class, finds a card by name, and says what it will not show", async ({ page }) => {
     await page.goto("/codex");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Card codex");
-    await expect(page.getByText(/never the\s+game.s card text/i)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Codex");
+    await expect(page.getByText(/never the\s+game.s card or\s+relic text/i)).toBeVisible();
     const list = page.getByRole("list", { name: "Cards" });
     await expect(list.getByRole("listitem").first()).toBeVisible();
 
@@ -82,5 +82,55 @@ test.describe("card codex", () => {
     await page.goto("/codex");
     await expectNoHorizontalOverflow(page);
     await expectNoSeriousA11yViolations(page, "codex");
+  });
+});
+
+/** The first click can race hydration, so retry until the relic list is showing. */
+async function showRelics(page: Page): Promise<void> {
+  await expect(async () => {
+    await page
+      .locator("label")
+      .filter({ hasText: /^Relics\s*\d+$/ })
+      .click({ timeout: 1000 });
+    await expect(page.getByRole("list", { name: "Relics" })).toBeVisible({ timeout: 1000 });
+  }).toPass();
+}
+
+test.describe("relic codex", () => {
+  test("lists the relics as facts, finds one by name and narrows by pool and rarity", async ({
+    page,
+  }) => {
+    await page.goto("/codex");
+    await showRelics(page);
+    const status = page.getByRole("status");
+    await expect(status).toContainText("296 relics in All");
+    await expect(page.getByText(/What a relic does is the game.s own text/)).toBeVisible();
+    const list = page.getByRole("list", { name: "Relics" });
+
+    await page.getByRole("searchbox", { name: "Search relics" }).fill("anchor");
+    await expect(list.getByRole("listitem").first()).toContainText("Anchor");
+    await expect(status).toContainText(/\d+ relics? match in All/);
+
+    await page.getByRole("searchbox", { name: "Search relics" }).fill("");
+    await page
+      .locator("label")
+      .filter({ hasText: /^Ironclad\s*\d+$/ })
+      .click();
+    await expect(status).toContainText("8 relics in Ironclad");
+    await page.getByLabel("Relic rarity").selectOption("starter");
+    await expect(status).toContainText("1 relic match in Ironclad");
+    await expect(list.getByRole("listitem").first()).toContainText("Starter");
+
+    await page.getByRole("searchbox", { name: "Search relics" }).fill("zzzzqqqq");
+    await expect(status).toHaveText("No relic matches.");
+    await page.getByRole("button", { name: "Clear filters" }).click();
+    await expect(list.getByRole("listitem").first()).toBeVisible();
+  });
+
+  test("the relic view meets layout and accessibility basics", async ({ page }) => {
+    await page.goto("/codex");
+    await showRelics(page);
+    await expectNoHorizontalOverflow(page);
+    await expectNoSeriousA11yViolations(page, "codex-relics");
   });
 });

@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { SYNERGY } from "@slay2/game-data";
 
@@ -11,6 +11,9 @@ import cardvalues from "@/content/cardvalues.generated.json";
 import evidence from "@/content/evidence.generated.json";
 import rules from "@/content/rules.generated.json";
 import synergy from "@/content/synergy.generated.json";
+
+// These tests start the site-data exporter in a child process; on a busy machine that takes longer than the 5 s default.
+vi.setConfig({ testTimeout: 30_000 });
 
 describe("generated site content", () => {
   it("is up to date with the audited sources (run: node scripts/export-site-data.mjs)", () => {

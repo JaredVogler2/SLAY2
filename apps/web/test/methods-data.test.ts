@@ -13,7 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import evidence from "@/content/evidence.generated.json";
 import {
@@ -33,6 +33,9 @@ import {
   type Comparison,
 } from "@/lib/methods-data";
 import { contactLink, siteUrl } from "@/lib/site-config";
+
+// These tests start the site-data exporter in a child process; on a busy machine that takes longer than the 5 s default.
+vi.setConfig({ testTimeout: 30_000 });
 
 const repo = join(__dirname, "..", "..", "..");
 

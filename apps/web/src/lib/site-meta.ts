@@ -2,6 +2,7 @@ import {
   CATALOG,
   CHARACTER_FACTS,
   PLAYABLE_CLASSES,
+  RELIC_CATALOG,
   SYNERGY,
   hasWrittenTags,
   rewardPool,
@@ -143,6 +144,13 @@ export function manifest() {
         kind: CATALOG.provenance.kind,
         derivedBy: CATALOG.provenance.derivedBy,
         sources: CATALOG.provenance.sources,
+      },
+      relicCatalog: {
+        sha256: RELIC_CATALOG.sha256,
+        relics: RELIC_CATALOG.relics.length,
+        kind: RELIC_CATALOG.provenance.kind,
+        derivedBy: RELIC_CATALOG.provenance.derivedBy,
+        sources: RELIC_CATALOG.provenance.sources,
       },
       ruleRegister: { rules: rules.rules.length, source: rules.generatedFrom },
       synergyTable: {

@@ -25,7 +25,7 @@ function isSubsequence(needle: string, hay: string): boolean {
 }
 
 /** Score in [0, 100]; 0 = no match. Exact > prefix > word-prefix > substring > subsequence. */
-export function matchScore(query: string, card: CardEntry): number {
+export function matchScore(query: string, card: Pick<CardEntry, "id" | "name">): number {
   const q = normalize(query);
   if (q.length === 0) {
     return 1;

@@ -6,6 +6,7 @@ import { CardTile } from "@/components/cards/CardTile";
 import { MeasuredForCard } from "@/components/codex/MeasuredValue";
 import { Button } from "@/components/ui/Button";
 import { Segmented } from "@/components/ui/Segmented";
+import { SelectField as Select, selectClass } from "@/components/ui/SelectField";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
@@ -43,47 +44,6 @@ const SORT_LABEL: Record<CodexSort, string> = {
   rarity: "Rarity",
   value: "Simulated value",
 };
-
-const selectClass =
-  "min-h-11 w-full rounded-lg border border-line-strong bg-charcoal px-3 text-parchment focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal";
-
-function Select<T extends string>({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: T;
-  onChange: (v: T) => void;
-  options: readonly { value: T; label: string }[];
-}) {
-  const id = useId();
-  return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-parchment">
-        {label}
-      </label>
-      <select
-        id={id}
-        className={selectClass}
-        value={value}
-        onChange={(e) => {
-          const next = options.find((o) => o.value === e.target.value);
-          if (next) {
-            onChange(next.value);
-          }
-        }}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 

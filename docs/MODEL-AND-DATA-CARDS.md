@@ -26,6 +26,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D8 | Combat libraries and demonstrations | training data | no | local only |
 | D9 | Withdrawn data (`experiments/void/`) | **not evidence** | no | invalid, kept so the failure can be inspected |
 | D10 | Synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement, read against simulated runs (M8) |
+| D11 | Relic catalog | facts | yes: `/codex` | every relic has a model class and a pool in the decompiled build of the same version |
 | M1 | Exact calculators | mathematics | yes | 739 golden cases, published tables, brute force, properties |
 | M2 | Draft advisor v1 (the deck index) | heuristic | yes | **uncalibrated**, never a probability; its synergy term is M8 |
 | M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class |
@@ -217,6 +218,16 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Intended use:** the advisor's synergy term and the sentences that name the cards behind a number. **Not for:** saying how strong a card is, or what wins: the weights are hand-set judgements (partly calibrated against simulated runs, M8), not measurements.
 * **Limits:** a weight of 1 to 3 is coarse; the vocabulary is SLAY2's reading, not the game's; cards without an entry are read from the catalog alone (a plain attack or block needs nothing); the Silent's Sly cards want a way to discard (counted from the keyword); only four classes have an innate supply; the table is for build `sts2-main-0.107.1` and is not carried to another.
 * **Kept true by:** a strict schema (an unknown mechanic or a zero weight fails the build), the hash test, a test that every mechanic has a source and a payoff, spot facts per class (`packages/game-data/test/synergy.test.ts`), scenario tests an experienced player can judge (`packages/decision/test/synergy-scenarios.test.ts`), and the golden file that ties the Python port to the TypeScript.
+
+## D11. Relic catalog
+
+* **What:** the 296 relics of v0.107.1: id, display name, rarity tier and the relic pools that list the relic. **No relic text, art or effect numbers**; the archive's one-line description is read by nothing in the derivation.
+* **Where:** `packages/game-data/data/relics.sts2-main-0.107.1.json`, SHA-256 `4febf1f299f6a2dbb69a1491094d09513a20af8a561fae413784c638b15f9803` (the content hash of the file's body; `sim/tests/test_catalog.py` recomputes it, and the Codex shows its first twelve characters).
+* **Composition:** by tier 100 ancient, 50 rare, 40 uncommon, 35 event, 30 common, 30 shop, 10 starter and one placeholder (the fallback pool's Circlet); by pool 8 relics for each class, 118 shared, 140 event (three relics are in both) and the fallback. The archive has no boss tier in this build.
+* **Provenance:** derived by `sim/slay2_sim/catalog.py` on 2026-10-27 from the same two local, pinned, git-ignored, unlicensed references as D2: `nkhoit/spire-archive` @ `4e6b0e0` (ids, names, tiers) and `zhiyue/sts2-rl-agent` @ `5d874e8` (the pools of `Models.RelicPools`, and that each of the 296 ids has a model class in `Models.Relics`). The derivation refuses a relic that has no class or no pool.
+* **Cross-check:** all 296 relic ids have a model class in the decompiled build (two classes more are not relics: the removed-relic placeholder and a card-selector helper); each class's starting relic is a starter in its own pool and matches `characters.sts2-main-0.107.1.json`. Two extractions of the same build agreeing is a consistency check on the extraction, **not** independent proof about the live game.
+* **Rights:** ids, names and tiers are factual identifiers, kept minimal with attribution (`docs/IP-COMPLIANCE.md`); what a relic does is the game's text and is not stored. A takedown request would mean removing the E1-derived parts.
+* **Limits:** one build; the catalog says where the game can offer a relic, not how likely it is; the advisor does not read it yet (the relics of a run are not an input of the draft index, and the index says so).
 
 ---
 

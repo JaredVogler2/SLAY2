@@ -25,6 +25,7 @@ from .manifest import canonical_json, sha256_hex
 BUILD_ID = "sts2-main-0.107.1"
 OUT_PATH = external.REPO_ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json"
 CHARACTERS_PATH = external.REPO_ROOT / "packages" / "game-data" / "data" / "characters.sts2-main-0.107.1.json"
+RELICS_PATH = external.REPO_ROOT / "packages" / "game-data" / "data" / "relics.sts2-main-0.107.1.json"
 
 CLASSES = ("ironclad", "silent", "regent", "necrobinder", "defect")
 COLOR_TO_CLASS = {c: c for c in CLASSES} | {"colorless": "colorless", "curse": "curse", "status": "status", "token": "token", "event": "event", "quest": "quest"}
@@ -32,6 +33,7 @@ RARITY_MAP = {"Basic": "basic", "Common": "common", "Uncommon": "uncommon", "Rar
               "Curse": "curse", "Status": "status", "Token": "token", "Quest": "quest"}
 TYPE_MAP = {"Attack": "attack", "Skill": "skill", "Power": "power", "Curse": "curse", "Status": "status", "Quest": "quest"}
 REWARD_RARITIES = ("common", "uncommon", "rare")
+RELIC_TIER_MAP = {"Starter": "starter", "Common": "common", "Uncommon": "uncommon", "Rare": "rare", "Shop": "shop", "Ancient": "ancient", "Event": "event", "None": "none"}
 
 
 def snake(pascal: str) -> str:
@@ -234,6 +236,63 @@ def pool_sizes(catalog: dict) -> dict:
             row[r] = {"allUnlocked": len(members), "noEpochs": len([c for c in members if c["epochGate"] is None])}
         out[cls] = row
     return out
+
+
+# ----------------------------------------------------------------------------- relics (facts only)
+def read_relic_pools(decompiled: Path) -> dict[str, list[str]]:
+    """relic id -> the relic pools that list it, from ``Models.RelicPools/<Pool>RelicPool.cs`` (GenerateAllRelics)."""
+    pools: dict[str, list[str]] = {}
+    for f in sorted((decompiled / "MegaCrit.Sts2.Core.Models.RelicPools").glob("*RelicPool.cs")):
+        pool = f.stem.replace("RelicPool", "").lower()
+        if pool == "deprecated":
+            continue  # the placeholder of removed relics; no relic of the build's list is in it
+        for rid in re.findall(r"ModelDb\.Relic<(\w+)>\(\)", f.read_text(encoding="utf-8", errors="ignore")):
+            pools.setdefault(snake(rid), []).append(pool)
+    return {rid: sorted(set(p)) for rid, p in pools.items()}
+
+
+def build_relics(*, write: bool = True) -> dict:
+    """The relics of the build as facts only: id, display name, rarity tier and the pools that list the relic. No relic text, art or
+    numbers (the archive's description is read by nothing here), so the catalog says what a player can read off the relic's name and
+    where the game can offer it, not what it does."""
+    archive = external.locate("spire-archive", require_clean=True)
+    sim = external.locate("sts2-rl-agent", require_clean=True)
+    decompiled = sim.root / "decompiled"
+    raw = json.loads((archive.root / "data" / "sts2" / "relics.json").read_text(encoding="utf-8"))
+    versions = json.loads((archive.root / "data" / "sts2" / "history" / "versions.json").read_text(encoding="utf-8"))
+    if versions[0]["version"] != "0.107.1":
+        raise external.ExternalError(f"spire-archive newest data is {versions[0]['version']}, expected 0.107.1")
+    pools = read_relic_pools(decompiled)
+    classes = {snake(f.stem) for f in (decompiled / "MegaCrit.Sts2.Core.Models.Relics").glob("*.cs")}
+    no_class = sorted(r["id"] for r in raw if r["id"] not in classes)
+    no_pool = sorted(r["id"] for r in raw if r["id"] not in pools)
+    if no_class or no_pool:
+        raise external.ExternalError(f"relics without a model class {no_class[:5]} or without a pool {no_pool[:5]}")
+    relics = [{"id": r["id"], "name": r["name"], "rarity": RELIC_TIER_MAP[r["tier"]], "pools": pools[r["id"]]} for r in raw]
+    relics.sort(key=lambda e: e["id"])
+    body = {
+        "schema": 1,
+        "build": BUILD_ID,
+        "provenance": {
+            "kind": "facts-only catalog derived locally from rights-restricted references (ADR-011); no relic text, art or effect numbers",
+            "sources": [
+                {"id": "spire-archive", "sha": archive.head, "gameVersion": versions[0]["version"], "used": "identifiers, display names and rarity tiers (facts)"},
+                {"id": "sts2-rl-agent", "sha": sim.head, "gameVersion": "0.107.1", "evidence": "E1", "used": "the relic pools that list each relic, and that every relic has a model class"},
+            ],
+            "derivedBy": "sim/slay2_sim/catalog.py",
+            "retrieved": "2026-10-27",
+            "notes": [
+                "`rarity` is the archive's tier; the archive has no boss tier in this build, and `none` is the one placeholder (the fallback pool's Circlet).",
+                "`pools` are the relic pools of the decompiled build that list the relic (three relics are in both the shared and the event pool).",
+            ],
+        },
+        "relics": relics,
+    }
+    body["sha256"] = sha256_hex(canonical_json({k: v for k, v in body.items() if k != "sha256"}))
+    if write:
+        RELICS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        RELICS_PATH.write_text(json.dumps(body, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    return body
 
 
 # ----------------------------------------------------------------------------- characters (E1 facts)

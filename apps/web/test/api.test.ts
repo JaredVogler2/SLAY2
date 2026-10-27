@@ -75,6 +75,8 @@ describe("GET endpoints", () => {
     expect(body.build.steamBuildId).toBe("23811903");
     expect(body.data.cardCatalog.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(body.data.cardCatalog.cards).toBe(577);
+    expect(body.data.relicCatalog.sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(body.data.relicCatalog.relics).toBe(296);
     expect(body.updateFlags.betaBuild.support).toBe("unsupported");
   });
 
