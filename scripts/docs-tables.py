@@ -40,6 +40,7 @@ REGISTERED = {
     "rules_v1-vs-random_legal-ironclad-a0-veteran-val": "baseline, not a registered test",
 }
 NEOW_REGISTRATION = "ADR-049 (descriptive; the registered test is pooled)"
+NEOW_KEEP_REGISTRATION = "ADR-055 (descriptive; the registered test is pooled)"
 
 
 def load(path: str | Path):
@@ -127,21 +128,30 @@ def table_comparisons() -> str:
         rows.append(comparison_row(name, load(p), REGISTERED.get(name, "")))
     for p in sorted(glob.glob(str(ROOT / "experiments" / "neow" / "per-class" / "*.json"))):
         name = Path(p).stem
-        rows.append(comparison_row(name, load(p), NEOW_REGISTRATION))
-    pooled = load(ROOT / "experiments" / "neow" / "pooled-neow-values-v2-vs-rules_v2-val.json")
-    r1, t = pooled["reachedAct2"], pooled["reachedAct2"]["pairedTable"]
-    fd = pooled["floorDifference"]
-    rows.append(
-        (
-            -1,
-            "",
-            "pooled",
-            "| `pooled-neow-values-v2-vs-rules_v2-val` | ADR-049, **the registered test** | all five classes · val | "
-            f"{pooled['policies']['a']} | {pooled['policies']['b']} | {pooled['bothCompleted']} | "
-            f"{100 * r1['a']['rate']:.2f} % · {100 * r1['b']['rate']:.2f} % | {t['a_only']} · {t['b_only']} | {pval(t['mcnemar_p'])} | "
-            f"{fd['meanAMinusB']:+.2f} ({fd['ci95'][0]:+.2f} to {fd['ci95'][1]:+.2f}, resampling pairs) | {pooled['wins']['a']} · {pooled['wins']['b']} |",
+        rows.append(comparison_row(name, load(p), NEOW_KEEP_REGISTRATION if "keeprelics" in name else NEOW_REGISTRATION))
+    # the pooled tests of the opening-relic study (ADR-049) and of its repetition with the relics kept (ADR-055; the second is the secondary arm)
+    for stem, status, order in (
+        ("pooled-neow-values-v2-vs-rules_v2-val", "ADR-049, **the registered test**", "0"),
+        ("pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val", "ADR-055, **the registered test**", "1"),
+        ("pooled-neow-values-v2-vs-rules_v2-keeprelics-val", "ADR-055, secondary arm (decides nothing)", "2"),
+    ):
+        path = ROOT / "experiments" / "neow" / f"{stem}.json"
+        if not path.exists():
+            continue
+        pooled = load(path)
+        r1, t = pooled["reachedAct2"], pooled["reachedAct2"]["pairedTable"]
+        fd = pooled["floorDifference"]
+        rows.append(
+            (
+                -1,
+                "",
+                f"pooled{order}",
+                f"| `{stem}` | {status} | all five classes · val | "
+                f"{pooled['policies']['a']} | {pooled['policies']['b']} | {pooled['bothCompleted']} | "
+                f"{100 * r1['a']['rate']:.2f} % · {100 * r1['b']['rate']:.2f} % | {t['a_only']} · {t['b_only']} | {pval(t['mcnemar_p'])} | "
+                f"{fd['meanAMinusB']:+.2f} ({fd['ci95'][0]:+.2f} to {fd['ci95'][1]:+.2f}, resampling pairs) | {pooled['wins']['a']} · {pooled['wins']['b']} |",
+            )
         )
-    )
     rows.sort(key=lambda r: (r[0], r[2]))
     head = [
         "| Comparison file | Status | Class · seeds | A | B | Pairs completed by both | Past the Act-1 boss A · B | Pairs only A · only B | Exact McNemar p | Mean floors A − B (95 % bootstrap) | Wins A · B |",
@@ -178,18 +188,26 @@ def table_cardvalues() -> str:
 
 # ------------------------------------------------------------------------------------------------------------------ relics
 def table_relics() -> str:
-    d = load(ROOT / "experiments" / "neow" / "neow-values-v2.json")
+    """Every measured opening relic with its value in the study repeated with the relics kept (the values the site follows once that
+    study's test exists, ADR-055) beside the first study's (relics dropped, ADR-049); the repeated fit is absent before it is made."""
+    first = {r["label"]: r for r in load(ROOT / "experiments" / "neow" / "neow-values-v2.json")["relics"]}
+    keep_path = ROOT / "experiments" / "neow" / "neow-values-keep-v1.json"
+    keep = {r["label"]: r for r in load(keep_path)["relics"]} if keep_path.exists() else {}
     head = [
-        "| Relic | Kind | Value β (log-odds, 95 % bootstrap by seed) | Offered | Taken | Past the Act-1 boss when taken · when offered and not taken | Flag |",
-        "|---|---|---|---|---|---|---|",
+        "| Relic | Kind | Repeated study, relics kept: value β (95 % bootstrap by seed) · taken | First study, relics dropped: value β (95 %) · taken | Flag |",
+        "|---|---|---|---|---|",
     ]
+
+    def cell(r) -> str:
+        return "–" if r is None else f"{r['beta']:+.2f} ({r['ci95'][0]:+.2f} to {r['ci95'][1]:+.2f}) · {r['taken']}"
+
+    labels = sorted(set(first) | set(keep), key=lambda k: (-(keep.get(k) or first[k])["beta"], k))
     rows = []
-    for r in sorted(d["relics"], key=lambda r: -r["beta"]):
-        flag = "more simulator errors and timeouts than chance explains" if r["exclusion_flag"] else ""
-        rows.append(
-            f"| {r['label']} | {r['kind']} | {r['beta']:+.2f} ({r['ci95'][0]:+.2f} to {r['ci95'][1]:+.2f}) | {r['offered']} | {r['taken']} | "
-            f"{100 * r['pass_rate_taken']:.1f} % · {100 * r['pass_rate_offered_not_taken']:.1f} % | {flag} |"
-        )
+    for k in labels:
+        flags = [name for name, r in (("repeated study", keep.get(k)), ("first study", first.get(k))) if r and r["exclusion_flag"]]
+        flag = ("more simulator errors and timeouts than chance explains (" + " and ".join(flags) + ")") if flags else ""
+        kind = (keep.get(k) or first[k])["kind"]
+        rows.append(f"| {k} | {kind} | {cell(keep.get(k))} | {cell(first.get(k))} | {flag} |")
     return "\n".join(head + rows)
 
 

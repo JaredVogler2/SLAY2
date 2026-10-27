@@ -29,8 +29,9 @@ function need<T>(x: T | null | undefined): T {
   return x;
 }
 
-const FIRST_VALUES = need(NEOW.values);
-const FIRST_TEST = need(NEOW.test);
+// the first study stays in the site data beside the repetition (`first`), whichever study the pages follow
+const FIRST_VALUES = need(NEOW.first?.values);
+const FIRST_TEST = need(NEOW.first?.test);
 const SHA = "e".repeat(64);
 
 const KEPT_VALUES: NeowValues = {
@@ -67,8 +68,10 @@ function keptTest(
   };
 }
 
-const best = need(relicValues()[0]);
-const second = need(relicValues()[1]);
+// the first study's ranking: its table stays on the page when the repetition is the study shown
+const firstRanking = relicValues({ values: FIRST_VALUES, test: null });
+const best = need(firstRanking[0]);
+const second = need(firstRanking[1]);
 const COMPARISON: NeowComparison = {
   file: "experiments/neow/compare-v2-keep-v1.json",
   relicsInBoth: 27,
