@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { deckSynergy, type DeckEntry } from "@slay2/decision";
@@ -25,7 +25,7 @@ import {
   type AscensionVerdict,
 } from "@/lib/ascension";
 import { setFor } from "@/lib/cardvalues";
-import { NEOW, relicValues } from "@/lib/neow";
+import { NEOW } from "@/lib/neow";
 import { newRun, withAscension } from "@/lib/run-state";
 
 /**
@@ -170,6 +170,19 @@ function tested(
 
 const NOT_REGISTERED: AscensionData = { registered: false };
 
+/** The two arms of each test as a note names them to a player. */
+const ARMS: Record<AscensionFinding, { first: string; second: string }> = {
+  synergy: { first: "the pilot with the synergy term", second: "the pilot without it" },
+  values: {
+    first: "the pilot that follows the card values shown here",
+    second: "the hand-written rules",
+  },
+  neow: {
+    first: "the pilot that takes the best-measured opening relic",
+    second: "the pilot that takes the first helpful relic",
+  },
+};
+
 describe("where a run's Ascension lies against what was tested", () => {
   it("is zero at 0, between for 1 to 8, the level tested at 9 and beyond at 10 (whose second boss is never played)", () => {
     expect(standingOf(0)).toBe("zero");
@@ -195,7 +208,8 @@ describe("the note under a finding", () => {
       expect(mid?.text).toContain("measured at Ascension 0 only");
       expect(mid?.text).toContain("Your run is at Ascension 5");
       expect(mid?.text).toContain("registered (ADR-058) and has not been run");
-      expect(mid?.text).toContain("the levels between 0 and 9 will not be tested either");
+      expect(mid?.text).toContain("the levels between 0 and 9 are not tested in this study");
+      expect(mid?.text).not.toContain("will not be tested");
       const nine = ascensionNote(f, 9, true, REGISTERED);
       expect(nine?.text).toContain("Your run is at Ascension 9");
       expect(nine?.text).not.toContain("levels between");
@@ -212,20 +226,24 @@ describe("the note under a finding", () => {
       expect(passed?.text).toContain("Tested in simulation at Ascension 0 and at Ascension 9");
       expect(passed?.text).toContain("30.0 %");
       expect(passed?.text).toContain("20.0 %");
-      expect(passed?.text).toContain("9,800 paired held-out games");
+      expect(passed?.text).toContain("9,800 paired held-out games in the simulator");
+      expect(passed?.text).toContain("a simulated pilot");
+      expect(passed?.text).toContain(
+        "The other figures on this panel were measured at Ascension 0.",
+      );
       expect(passed?.text).toContain("the level that was tested");
     }
     for (const f of ["synergy", "values", "neow"] as const) {
       const notShown = ascensionNote(f, 5, true, tested({ [f]: "not-shown" }));
       expect(notShown?.kind).toBe("not-shown");
-      expect(notShown?.text).toContain("did not show it ahead");
+      expect(notShown?.text).toContain(`did not show ${ARMS[f].first} ahead of ${ARMS[f].second}`);
       expect(notShown?.text).toContain("not the same as showing that it does not help");
       expect(notShown?.text).toContain("between the two levels tested");
       expect(notShown?.text).not.toContain("Tested in simulation at Ascension 0 and");
 
       const reversed = ascensionNote(f, 10, true, tested({ [f]: "reversed" }));
       expect(reversed?.kind).toBe("reversed");
-      expect(reversed?.text).toContain("the other arm ahead");
+      expect(reversed?.text).toContain(`had ${ARMS[f].second} ahead of ${ARMS[f].first}`);
       expect(reversed?.text).toContain("30.0 %");
       expect(reversed?.text).toContain("beyond anything tested here");
     }
@@ -236,7 +254,8 @@ describe("the note under a finding", () => {
     expect(passed?.text).toContain(
       "The pair behind this panel was tested in simulation at Ascension 9",
     );
-    expect(passed?.text).toContain("and at Ascension 0 with the relics kept");
+    expect(passed?.text).toContain("and played at Ascension 0 with the relics kept");
+    expect(passed?.text).not.toContain("tested in simulation at Ascension 0");
     expect(passed?.text).toContain(
       "had not been played against the hand-written rules in that game before",
     );
@@ -255,17 +274,18 @@ describe("the note under a finding", () => {
 
   it("says how big a passed result is beside the same arms at Ascension 0, and never says that it 'holds' without a size", () => {
     const sizes: [AscensionSize, string][] = [
-      ["smaller", "smaller than the gain at Ascension 0 with the relics kept (+7.1 points)"],
+      ["smaller", "smaller than the difference at Ascension 0 with the relics kept (+7.1 points)"],
       [
         "about-the-same",
-        "about the same as the gain at Ascension 0 with the relics kept (+7.1 points)",
+        "about the same as the difference at Ascension 0 with the relics kept (+7.1 points)",
       ],
-      ["larger", "larger than the gain at Ascension 0 with the relics kept (+7.1 points)"],
+      ["larger", "larger than the difference at Ascension 0 with the relics kept (+7.1 points)"],
     ];
     for (const [size, words] of sizes) {
       const text = ascensionNote("synergy", 9, true, tested({}, { synergy: { size } }))?.text;
       expect(text).toContain(`That is ${words}`);
       expect(text).not.toContain(" holds");
+      expect(text).not.toContain("the gain");
     }
     // no size words for a test that did not pass; the Ascension 0 difference is only stated
     const notShown = ascensionNote("synergy", 9, true, tested({ synergy: "not-shown" }))?.text;
@@ -292,8 +312,9 @@ describe("the note under a finding", () => {
     for (const f of ["synergy", "values"] as const) {
       const silent = ascensionNote(f, 9, true, data, "silent")?.text;
       expect(silent).toContain(
-        "In the games of your own class alone at Ascension 9 the other arm was ahead (120 pairs only with the other arm against 80 only with the first",
+        `In the simulated games of your own class alone at Ascension 9, ${ARMS[f].second} came out ahead: 120 pairs got past the Act 1 boss only with ${ARMS[f].second} against 80 only with ${ARMS[f].first}`,
       );
+      expect(silent).not.toContain("the other arm");
       expect(ascensionNote(f, 9, true, data, "ironclad")?.text).not.toContain("your own class");
       expect(ascensionNote(f, 9, true, data)?.text).not.toContain("your own class");
     }
@@ -385,7 +406,92 @@ describe("the three panels", () => {
     expect(container.querySelector("[data-ascension-note]")).toBeNull();
   });
 
+  it("each panel carries the note of its own finding, from the data it is given", () => {
+    const data = tested();
+    const own = (container: HTMLElement) => container.querySelector("[data-ascension-note]");
+    const synergy = render(
+      <SynergyPanel
+        synergy={deck()}
+        ascension={{ level: 9, confirmed: true }}
+        ascensionData={data}
+      />,
+    );
+    expect(own(synergy.container)).toHaveTextContent("the index with the synergy term");
+    expect(own(synergy.container)).not.toHaveTextContent("card values shown here");
+    expect(own(synergy.container)).not.toHaveTextContent("opening relic");
+    synergy.unmount();
+
+    const set = setFor("ironclad");
+    const offered = (set?.cards ?? []).slice(0, 3).map((c) => c.id);
+    const run = withAscension({ ...newRun("ironclad"), ascensionConfirmed: true }, 9);
+    const values = render(
+      <SimulationOpinion
+        run={run}
+        offered={offered}
+        heuristic={{ kind: "skip" }}
+        ascensionData={data}
+      />,
+    );
+    expect(own(values.container)).toHaveTextContent("follows the card values shown here");
+    expect(own(values.container)).not.toHaveTextContent("synergy term");
+    expect(own(values.container)).not.toHaveTextContent("opening relic");
+    values.unmount();
+
+    const neow = render(
+      <NeowOffer
+        run={run}
+        disabled={false}
+        recorded={[]}
+        onRecord={() => undefined}
+        data={NEOW}
+        ascensionData={data}
+      />,
+    );
+    expect(own(neow.container)).toHaveTextContent("takes the best-measured opening relic");
+    expect(own(neow.container)).not.toHaveTextContent("synergy term");
+    expect(own(neow.container)).not.toHaveTextContent("card values shown here");
+  });
+
+  it("each panel tells the run's own class when its own games went the other way, in its own words", () => {
+    const data = tested(
+      {},
+      {
+        synergy: { own: { silent: "behind" } },
+        values: { own: { silent: "behind" } },
+        neow: { own: { silent: "behind" } },
+      },
+    );
+    const synergy = render(
+      <SynergyPanel
+        synergy={deck()}
+        ascension={{ level: 9, confirmed: true, character: "silent" }}
+        ascensionData={data}
+      />,
+    );
+    expect(synergy.container).toHaveTextContent(
+      `${ARMS.synergy.second} came out ahead: 120 pairs got past the Act 1 boss only with ${ARMS.synergy.second}`,
+    );
+    synergy.unmount();
+    const set = setFor("silent");
+    const offered = (set?.cards ?? []).slice(0, 3).map((c) => c.id);
+    const run = withAscension({ ...newRun("silent"), ascensionConfirmed: true }, 9);
+    const values = render(
+      <SimulationOpinion
+        run={run}
+        offered={offered}
+        heuristic={{ kind: "skip" }}
+        ascensionData={data}
+      />,
+    );
+    expect(values.container).toHaveTextContent(
+      `${ARMS.values.second} came out ahead: 120 pairs got past the Act 1 boss only with ${ARMS.values.second}`,
+    );
+  });
+
   describe("What did Neow offer?", () => {
+    // two helpful relics that the site's data separate clearly, so that the simulated pilot's pick is on screen whenever the advice is
+    // allowed (without that, a test that the pick is gone could not fail)
+    const PAIR = ["PRECISE_SCISSORS", "STONE_HUMIDIFIER"] as const;
     function setup(level: number, character: "silent" | "ironclad", ascensionData: AscensionData) {
       const run = withAscension({ ...newRun(character), ascensionConfirmed: true }, level);
       render(
@@ -398,21 +504,19 @@ describe("the three panels", () => {
           ascensionData={ascensionData}
         />,
       );
-      const helpful = relicValues(NEOW).filter((r) => r.optionKind === "positive");
-      const one = helpful[0];
-      const two = helpful[1];
-      if (!one || !two) throw new Error("the site's data have fewer than two helpful relics");
       fireEvent.change(screen.getByLabelText("First helpful option"), {
-        target: { value: one.id },
+        target: { value: PAIR[0] },
       });
       fireEvent.change(screen.getByLabelText("Second helpful option"), {
-        target: { value: two.id },
+        target: { value: PAIR[1] },
       });
     }
+    const PICK = "Simulated pilot’s pick";
 
     it("names the relic at Ascension 0 as before, whatever the Ascension 9 test found", () => {
       setup(0, "silent", tested({ neow: "reversed" }));
       expect(document.body.textContent).toContain("would take");
+      expect(screen.getByText(PICK)).toBeInTheDocument();
       expect(document.body.textContent).not.toContain(
         "SLAY2 does not say which relic to take at Ascension",
       );
@@ -422,40 +526,57 @@ describe("the three panels", () => {
     it("keeps naming the relic at a higher Ascension while the test is only registered, with the note", () => {
       setup(5, "silent", REGISTERED);
       expect(document.body.textContent).toContain("would take");
+      expect(screen.getByText(PICK)).toBeInTheDocument();
       expect(document.body.querySelector("[data-ascension-note='registered']")).not.toBeNull();
     });
 
-    it("names the relic at a higher Ascension when the test passed and licensed the class", () => {
+    it("names the relic at a higher Ascension when the test passed and the class's own games had the rule ahead", () => {
       setup(5, "silent", tested());
       expect(document.body.textContent).toContain("would take");
+      expect(screen.getByText(PICK)).toBeInTheDocument();
       expect(document.body.querySelector("[data-ascension-note='passed']")).not.toBeNull();
     });
 
-    it("withholds the relic at a higher Ascension when the class's own games did not licence it, and says so", () => {
+    it("withholds the relic at a higher Ascension when the class's own games did not show the rule ahead, and says so", () => {
       setup(5, "silent", tested({ neow: "passed" }, { neow: { own: { silent: "none" } } }));
       expect(document.body.textContent).not.toContain("would take");
       expect(document.body.textContent).toContain(
         "SLAY2 does not say which relic to take at Ascension 5",
       );
-      expect(document.body.textContent).toContain("did not license the rule for");
-      expect(screen.queryByText("Simulated pilot’s pick")).toBeNull();
+      expect(document.body.textContent).toContain(
+        "it has no tested advice for Silent there, because Silent's own Ascension 9 games did not show the rule ahead",
+      );
+      expect(document.body.textContent).not.toContain("license");
+      // the same two relics show the pick when the advice is allowed (the test above), so its absence here is the withholding's doing
+      expect(screen.queryByText(PICK)).toBeNull();
     });
 
     it("tells the class when its own games went the other way, as well as withholding the relic", () => {
       setup(5, "silent", tested({ neow: "passed" }, { neow: { own: { silent: "behind" } } }));
       expect(document.body.textContent).not.toContain("would take");
       expect(document.body.textContent).toContain(
-        "In the games of your own class alone at Ascension 9",
+        "In the simulated games of your own class alone at Ascension 9",
       );
+      expect(screen.queryByText(PICK)).toBeNull();
     });
 
-    it("withholds the relic for every class when the test was not shown ahead", () => {
+    it("withholds the relic for every class when the test was not shown ahead, or had the baseline ahead, and says which", () => {
       setup(9, "ironclad", tested({ neow: "not-shown" }));
       expect(document.body.textContent).not.toContain("would take");
       expect(document.body.textContent).toContain(
         "SLAY2 does not say which relic to take at Ascension 9",
       );
+      expect(document.body.textContent).toContain(
+        "because the Ascension 9 test did not show the rule ahead",
+      );
       expect(document.body.querySelector("[data-ascension-note='not-shown']")).not.toBeNull();
+      expect(screen.queryByText(PICK)).toBeNull();
+      cleanup();
+      setup(9, "ironclad", tested({ neow: "reversed" }));
+      expect(document.body.textContent).toContain(
+        "because at Ascension 9 the test had the first helpful relic ahead of the rule",
+      );
+      expect(screen.queryByText(PICK)).toBeNull();
     });
   });
 });
@@ -497,7 +618,7 @@ describe("the /methods section", () => {
     expect(synergy).toHaveTextContent("larger than at Ascension 0");
     expect(synergy).toHaveTextContent("+7.1 points");
     expect(synergy).toHaveTextContent(
-      "the lower end of its interval is above the Ascension 0 difference",
+      "the lower end of its interval at the level of the test is above the Ascension 0 difference",
     );
     expect(container.querySelector("#ascension-values")).toHaveTextContent(
       "not shown ahead at Ascension 9",
@@ -510,7 +631,7 @@ describe("the /methods section", () => {
     expect(container.querySelectorAll("table")).toHaveLength(3);
   });
 
-  it("says which classes the advice is licensed for, and no class when the pooled test did not pass", () => {
+  it("says which classes have tested advice, and none when the pooled test did not pass", () => {
     const some = render(
       <AscensionPanel
         data={tested(
@@ -529,7 +650,8 @@ describe("the /methods section", () => {
         )}
       />,
     );
-    expect(some.container).toHaveTextContent("Licensed: Ironclad, Necrobinder.");
+    expect(some.container).toHaveTextContent("Classes with tested advice: Ironclad, Necrobinder.");
+    expect(some.container.textContent).not.toContain("icense");
     some.unmount();
     const none = render(
       <AscensionPanel
@@ -539,7 +661,37 @@ describe("the /methods section", () => {
         )}
       />,
     );
-    expect(none.container).toHaveTextContent("Licensed: no class.");
+    expect(none.container).toHaveTextContent("Classes with tested advice: none.");
+  });
+
+  it("titles the section for the level that was tested, and says 'until this study' only once the study has been run", () => {
+    const registered = render(<AscensionPanel data={REGISTERED} />);
+    expect(registered.container.querySelector("h2")?.textContent).toBe(
+      "Do these results carry over to Ascension 9?",
+    );
+    expect(registered.container).toHaveTextContent(
+      "Every result on this page was measured at Ascension 0",
+    );
+    expect(registered.container).not.toHaveTextContent("Until this study");
+    registered.unmount();
+    // with the results in, the paragraph above them cannot say that every result on the page was measured at Ascension 0
+    const done = render(<AscensionPanel data={tested()} />);
+    expect(done.container).toHaveTextContent(
+      "Until this study, every result on this page was measured at Ascension 0",
+    );
+    expect(done.container.textContent).not.toMatch(
+      /(^|\. )Every result on this page was measured at Ascension 0/,
+    );
+  });
+
+  it("shows the secondary endpoints it registered: the Act-2 boss and the wins, and gives each class table its own caption", () => {
+    const { container } = render(<AscensionPanel data={tested()} />);
+    const synergy = container.querySelector("#ascension-synergy");
+    expect(synergy).toHaveTextContent("Past the Act-2 boss (secondary)");
+    expect(synergy).toHaveTextContent("Wins");
+    const captions = [...container.querySelectorAll("caption")].map((c) => c.textContent);
+    expect(captions).toHaveLength(3);
+    expect(new Set(captions).size).toBe(3);
   });
 
   it("says all three are ahead when they all passed, and never that they 'hold'", () => {

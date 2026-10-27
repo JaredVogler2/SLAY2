@@ -12,7 +12,7 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import { Select } from "@/components/ui/Field";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { AscensionNote } from "@/components/advisor/AscensionNote";
-import { ASCENSION, neowAdviceAllowed, type AscensionData } from "@/lib/ascension";
+import { ASCENSION, ascensionTest, neowAdviceAllowed, type AscensionData } from "@/lib/ascension";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier, valueSign } from "@/lib/cardvalues";
 import {
@@ -228,10 +228,17 @@ export function NeowOffer({
   const chosen = slots.filter(Boolean);
   const assessment = assessOffer(chosen, data);
   const verdict = offerVerdict(assessment, character, data);
-  // at Ascension 1 to 10 the rule names a relic only if the Ascension 9 test licensed it for this class (ADR-058 item 5 iii)
+  // at Ascension 1 to 10 the rule names a relic only if the Ascension 9 test passed and this class's own games had it ahead (ADR-058 item 5 iii)
   const withheld =
     verdict.kind === "take" &&
     !neowAdviceAllowed(character, run.ascension, run.ascensionConfirmed, ascensionData);
+  const neowResult = ascensionTest("neow", ascensionData);
+  const withheldBecause =
+    neowResult?.verdict === "reversed"
+      ? "at Ascension 9 the test had the first helpful relic ahead of the rule"
+      : neowResult?.verdict === "passed"
+        ? `${label}'s own Ascension 9 games did not show the rule ahead (the bar is p below 0.01; a class whose games rarely get past the boss can show nothing even when the rule helps it)`
+        : "the Ascension 9 test did not show the rule ahead";
   const set = (i: 0 | 1 | 2, id: string): void => {
     setSlots((prev) => {
       const next: [string, string, string] = [prev[0], prev[1], prev[2]];
@@ -303,9 +310,9 @@ export function NeowOffer({
         <div aria-live="polite" className="space-y-3">
           {withheld ? (
             <p className="rounded-lg border border-copper-deep/70 bg-copper/10 p-3 text-sm text-copper">
-              SLAY2 does not say which relic to take at Ascension {run.ascension}: the Ascension 9
-              test did not license the rule for {label}. The numbers below are measurements, not
-              advice.
+              SLAY2 does not say which relic to take at Ascension {run.ascension}: it has no tested
+              advice for {label} there, because {withheldBecause}. The numbers below are
+              measurements, not advice.
             </p>
           ) : (
             <VerdictText verdict={verdict} label={label} data={data} />

@@ -60,6 +60,7 @@ const SHOWN: Record<string, string> = {
 };
 const FIRST = (cls: string): string => `${cls}-a0-v1.json`;
 const NEOW_VALUES = "experiments/neow/neow-values-keep-v1.json";
+const SEEDS_FILE = "experiments/seeds/ironclad-a0-v2.json";
 
 const ARMS: Record<Key, [string, string]> = {
   synergy: ["advisor_v1-astar", "advisor_v1-d0star"],
@@ -183,6 +184,8 @@ interface Options {
   registered?: boolean;
   /** the SHA-256 of every file an arm reads is quoted in the registration */
   quoted?: boolean;
+  /** ... but only in a record that comes after it (ADR-059), not in the registration itself */
+  quotedLater?: boolean;
   /** the precondition passed */
   precondition?: boolean;
   /** the pooled results: per test, the discordant pairs of each class; absent = not run */
@@ -203,10 +206,21 @@ interface World {
   path: (...parts: string[]) => string;
   /** rewrite the manifest (and, when it changes what the report says, the report) of one batch */
   amend: (batch: string, change: (manifest: Json, report: Json) => void) => void;
+  /** a second batch with the content of the first under another name (it passes every check the first does) */
+  copy: (from: string, to: string) => void;
   parse: Parse;
 }
 
 const CHOICE = { config: { needs: 1, scalers: 0.7, engines: 0 }, margin: 0 };
+/** What both arms of the synergy test carry in their effective parameters besides the term itself (the real manifests list them all). */
+const ADVISOR_EFFECTIVE = {
+  explore: 0.0,
+  relics: false,
+  replicate: 0,
+  risk: "balanced",
+  scalers: 0.7,
+  tune: { elite_value: 0.5, heal_below: 0.7, max_deck: 32 },
+};
 
 async function buildWorld(options: Options = {}): Promise<World> {
   const o = {
@@ -237,6 +251,8 @@ async function buildWorld(options: Options = {}): Promise<World> {
   });
   mkdirSync(path("experiments", "neow"), { recursive: true });
   cpSync(join(repo, NEOW_VALUES), path(NEOW_VALUES));
+  write(path(SEEDS_FILE), { kind: "fixture", seeds: "the val seeds" });
+  const seedsSha = sha(path(SEEDS_FILE));
   const quotes = [
     ...valueFiles.map((f) => sha(path("experiments", "cardvalue", f))),
     sha(path(NEOW_VALUES)),
@@ -245,7 +261,10 @@ async function buildWorld(options: Options = {}): Promise<World> {
     mkdirSync(path("docs"), { recursive: true });
     writeFileSync(
       path("docs", "DECISIONS.md"),
-      `## 2026-10-27 — ADR-058: do the three results that hold at Ascension 0 hold at Ascension 9?\n\n${o.quoted ? quotes.join("\n") : "no hashes"}\n`,
+      `## 2026-10-27 — ADR-058: do the three results that hold at Ascension 0 hold at Ascension 9?\n\n${o.quoted ? quotes.join("\n") : "no hashes"}\n` +
+        (options.quotedLater
+          ? `\n## 2026-10-28 — ADR-059: something else\n\n${quotes.join("\n")}\n`
+          : ""),
     );
   } else {
     mkdirSync(path("docs"), { recursive: true });
@@ -283,27 +302,25 @@ async function buildWorld(options: Options = {}): Promise<World> {
     // Ironclad's baseline names no file: it follows the policy's default one, the first set
     const baseParams: Json =
       cls === "ironclad" ? { threshold: 0 } : { threshold: 0, values: first };
-    const baseEffective: Json = { threshold: 0, values: first, values_sha256: fileSha(FIRST(cls)) };
+    const baseEffective: Json = {
+      threshold: 0,
+      tune: { elite_value: 2.0, heal_below: 0.7 },
+      values: first,
+      values_sha256: fileSha(FIRST(cls)),
+    };
     switch (arm) {
       case "advisor_v1-astar":
         return {
           name: "advisor_v1",
           params: { engines: 0, margin: 0, needs: 1, scalers: 0.7 },
-          effective: {
-            engines: 0,
-            explore: 0,
-            margin: 0,
-            needs: 1,
-            relics: false,
-            scalers: 0.7,
-            synergy: 1,
-          },
+          effective: { ...ADVISOR_EFFECTIVE, margin: 0.0, needs: 1, engines: 0, synergy: 1.0 },
         };
       case "advisor_v1-d0star":
+        // the real manifest writes the defaults of the term's parameters as numbers of another type (0.0, 1.0): the same numbers
         return {
           name: "advisor_v1",
           params: { synergy: 0, margin: 0 },
-          effective: { explore: 0, margin: 0, needs: 1, relics: false, synergy: 0 },
+          effective: { ...ADVISOR_EFFECTIVE, margin: 0, needs: 1.0, engines: 0.0, synergy: 0 },
         };
       case "rules_v2-shownvals": {
         const f = valuesFile(SHOWN[cls] ?? "");
@@ -332,8 +349,24 @@ async function buildWorld(options: Options = {}): Promise<World> {
     const policy = policyOf(arm, cls);
     const manifest: Json = {
       batch_id: bid,
+      config: {
+        ascension,
+        character: EXACT[cls],
+        keep_relics: true,
+        max_steps: 20000,
+        profile: "veteran",
+        wall_seconds: 900.0,
+      },
       environment: { slay2: { head: HEAD, dirty: false } },
       policy: { name: policy.name, params: policy.params, effective: { params: policy.effective } },
+      seeds: {
+        file: SEEDS_FILE,
+        file_sha256: seedsSha,
+        n: 2000,
+        partition: "val",
+        sealed_partition_used: false,
+      },
+      simulator: { dirty: false, head: "5".repeat(40), pin_ok: true, pinned: "5".repeat(40) },
     };
     const report: Json = {
       id: bid,
@@ -348,6 +381,16 @@ async function buildWorld(options: Options = {}): Promise<World> {
       classStartVerified: true,
       canonicalProcessState: true,
       completed: 1960,
+      counts: {
+        aborted: 0,
+        harness_error: 0,
+        invalid_action: 0,
+        policy_error: 0,
+        simulator_error: 30,
+        step_limit: 10,
+        death: 1960,
+        win: 0,
+      },
       contentSha256: hex(bid),
       sampleAudit: { ledgerOk: true, verified: 40, drawn: 40 },
     };
@@ -403,6 +446,15 @@ async function buildWorld(options: Options = {}): Promise<World> {
       if (!b) throw new Error(`no batch ${batch}`);
       change(b.manifest, b.report);
       write(path("experiments", "batches", batch, "manifest.json"), b.manifest);
+    },
+    copy: (from, to) => {
+      const b = batches.get(from);
+      if (!b) throw new Error(`no batch ${from}`);
+      const manifest = { ...b.manifest, batch_id: to };
+      const report = { ...b.report, id: to, contentSha256: hex(to) };
+      batches.set(to, { manifest, report });
+      write(path("experiments", "batches", to, "manifest.json"), manifest);
+      reports.push(report);
     },
     parse: await loadParser(),
   };
@@ -471,6 +523,34 @@ describe("the exporter reads the Ascension 9 study only when it belongs together
     expect(out.tests.synergy.verdict).toBe("not-shown");
   });
 
+  it("reads the level to the count: a pooled p just below 0.05 / 3 passes, one just above does not", async () => {
+    // pooled 1,311 against 1,189 (exact p 0.0155) and 1,310 against 1,190 (0.0173); the seed interval at the level is the mean plus and
+    // minus 0.8 points, which excludes zero in both, so the exact p alone decides
+    const just = async (discordant: readonly (readonly [number, number])[]) => {
+      const out = read(
+        await buildWorld({ results: { ...all(250, 250), synergy: discordant } }),
+      ) as {
+        tests: Record<
+          Key,
+          { verdict: Verdict; reachedAct2: { pairedTable: { mcnemar_p: number } } }
+        >;
+      };
+      return out.tests.synergy;
+    };
+    const below = await just([
+      [262, 238],
+      [262, 238],
+      [262, 238],
+      [262, 238],
+      [263, 237],
+    ]);
+    expect(below.reachedAct2.pairedTable.mcnemar_p).toBeLessThan(0.05 / 3);
+    expect(below.verdict).toBe("passed");
+    const above = await just(everyClass(262, 238));
+    expect(above.reachedAct2.pairedTable.mcnemar_p).toBeGreaterThan(0.05 / 3);
+    expect(above.verdict).toBe("not-shown");
+  });
+
   it("flags each class's own games at the class level: the first arm ahead at p below 0.01, or the other arm", async () => {
     const w = await buildWorld({
       results: {
@@ -480,8 +560,8 @@ describe("the exporter reads the Ascension 9 study only when it belongs together
           [300, 200], // clearly ahead
           [210, 190], // ahead, p about 0.3
           [200, 300], // behind, p tiny
-          [260, 200], // ahead, p about 0.005 (below 0.01)
-          [240, 200], // ahead, p about 0.056 (not below 0.01)
+          [256, 200], // ahead, exact p 0.0099: just below the class level
+          [255, 200], // ahead, exact p 0.0113: just above it, so not clear
         ],
       },
     });
@@ -519,6 +599,15 @@ describe("the exporter reads the Ascension 9 study only when it belongs together
       }),
     ) as { tests: Record<Key, { verdict: Verdict }> };
     expect(behind.tests.neow.verdict).toBe("not-shown");
+    // an interval that ends exactly at zero does not exclude it; one just off zero does
+    const verdictOf = async (key: Key, o: Options) =>
+      (read(await buildWorld(o)) as { tests: Record<Key, { verdict: Verdict }> }).tests[key]
+        .verdict;
+    expect(await verdictOf("synergy", { ...base, ci: { synergy: [0, 0.1] } })).toBe("not-shown");
+    expect(await verdictOf("synergy", { ...base, ci: { synergy: [1e-9, 0.1] } })).toBe("passed");
+    const other = { results: { ...all(300, 200), neow: everyClass(200, 300) } };
+    expect(await verdictOf("neow", { ...other, ci: { neow: [-0.1, 0] } })).toBe("not-shown");
+    expect(await verdictOf("neow", { ...other, ci: { neow: [-0.1, -1e-9] } })).toBe("reversed");
     // the interval has to be there, at the registered level, around the mean
     const noInterval = await buildWorld({ ...base, ci: { synergy: null } });
     expect(() => read(noInterval)).toThrow(/no whole-seed interval at level 0\.98/);
@@ -548,16 +637,31 @@ describe("the exporter reads the Ascension 9 study only when it belongs together
     expect(twin.a0?.mean).toBeCloseTo(1000 / 9500, 6);
     // the Ascension 9 interval (4.2 to 5.8 points) lies below the twin's +10.5 points
     expect(twin.size).toBe("smaller");
-    // no Ascension 0 difference, no size words
-    const none = await size(false);
-    expect(none.synergy.size).toBeNull();
-    expect(none.synergy.a0).toBeNull();
+    // a result is not shipped without the Ascension 0 test it is set beside: the size words are part of what a passed result says (item 4)
+    await expect(size(false)).rejects.toThrow(
+      /the Ascension 0 test ADR-054 that synergy is set beside is missing/,
+    );
     // a test that did not pass has the Ascension 0 difference but no size
     const w = await buildWorld({ results: { ...all(300, 200), synergy: everyClass(250, 250) } });
     const notShown = (read(w) as { tests: Record<Key, { size: string | null; a0: unknown }> }).tests
       .synergy;
     expect(notShown.size).toBeNull();
     expect(notShown.a0).not.toBeNull();
+  });
+
+  it("counts the ends of the interval as inside it when the size words are chosen", async () => {
+    // the Ascension 9 difference is +5.0 points, the interval at the level written out as 4.2 to 5.8
+    const ci = { synergy: [0.042, 0.058] as const, neow: [0.042, 0.058] as const };
+    const sizeAt = async (a0Mean: number) =>
+      (
+        read(await buildWorld({ results: all(300, 200), ci, a0Mean })) as {
+          tests: Record<Key, { size: string | null }>;
+        }
+      ).tests.synergy.size;
+    expect(await sizeAt(0.0581)).toBe("smaller");
+    expect(await sizeAt(0.058)).toBe("about-the-same");
+    expect(await sizeAt(0.042)).toBe("about-the-same");
+    expect(await sizeAt(0.0419)).toBe("larger");
   });
 
   it("reads the twin of the card-value test at Ascension 0 beside the test, and refuses it played anywhere else", async () => {
@@ -759,6 +863,221 @@ describe("the exporter reads the Ascension 9 study only when it belongs together
     it("a file an arm reads whose hash the registration does not quote", async () => {
       const w = await run({ quoted: false });
       expect(() => read(w)).toThrow(/is not quoted in ADR-058/);
+    });
+
+    it("a file whose hash only a later record quotes", async () => {
+      const w = await run({ quoted: false, quotedLater: true });
+      expect(() => read(w)).toThrow(/is not quoted in ADR-058/);
+    });
+
+    it("a pooled file that names a copy of a batch instead of the batch the script's name gives", async () => {
+      const w = await run();
+      const original = id("rules_v1", "ironclad");
+      const copy = `${original}-copy`;
+      w.copy(original, copy);
+      const file = w.path("experiments", "ascension9", FILES.values);
+      const body = JSON.parse(readFileSync(file, "utf8")) as {
+        members: { b: { batchId: string; contentSha256: string } }[];
+      };
+      const first = body.members[0];
+      if (first) {
+        first.b.batchId = copy;
+        first.b.contentSha256 = hex(copy);
+      }
+      writeFileSync(file, JSON.stringify(body));
+      expect(() => read(w)).toThrow(
+        /ironclad rules_v1 is rules_v1-ironclad-a9-veteran-keeprelics-val-n2000-copy, not rules_v1-ironclad-a9-veteran-keeprelics-val-n2000/,
+      );
+    });
+  });
+
+  describe("and refuses arms that differ in more than the one thing under test, and batches that fail the checks of item 9", () => {
+    const run = async (options: Options = {}) => buildWorld({ results: all(300, 200), ...options });
+    const effectiveOf = (m: Json) => (m.policy as { effective: { params: Json } }).effective.params;
+
+    it("synergy arms that differ in a parameter besides the term", async () => {
+      const a = await run();
+      a.amend(id("advisor_v1-astar", "silent"), (m) => {
+        effectiveOf(m).risk = "bold";
+      });
+      expect(() => read(a)).toThrow(/silent: the two arms differ in risk, not only in synergy/);
+      // a nested one too
+      const b = await run();
+      b.amend(id("advisor_v1-d0star", "defect"), (m) => {
+        (effectiveOf(m).tune as Json).heal_below = 0.5;
+      });
+      expect(() => read(b)).toThrow(/defect: the two arms differ in tune, not only in synergy/);
+    });
+
+    it("opening-relic arms that differ in more than the fit", async () => {
+      const w = await run();
+      w.amend(id("rules_v2_neow_values-keepvals", "regent"), (m) => {
+        (effectiveOf(m).tune as Json).elite_value = 3;
+      });
+      expect(() => read(w)).toThrow(
+        /regent: the two arms differ in tune, not only in neow_values and neow_values_sha256/,
+      );
+    });
+
+    it("two arms played in another game, from other seeds or with another simulator", async () => {
+      const cases: [string, (m: Json) => void, RegExp][] = [
+        [
+          "game",
+          (m) => {
+            (m.config as Json).max_steps = 100;
+          },
+          /silent: the two arms differ in their config/,
+        ],
+        [
+          "seeds",
+          (m) => {
+            (m.seeds as Json).manifest_sha256 = "1".repeat(64);
+          },
+          /silent: the two arms differ in their seeds/,
+        ],
+        [
+          "simulator",
+          (m) => {
+            (m.simulator as Json).head = "6".repeat(40);
+          },
+          /silent: the two arms differ in their simulator/,
+        ],
+      ];
+      for (const [, change, pattern] of cases) {
+        const w = await run();
+        w.amend(id("rules_v1", "silent"), change);
+        expect(() => read(w)).toThrow(pattern);
+      }
+    });
+
+    it("an A* arm that counts relics or has another margin, and a values arm at another threshold", async () => {
+      const relics = await run();
+      relics.amend(id("advisor_v1-astar", "ironclad"), (m) => {
+        effectiveOf(m).relics = true;
+      });
+      expect(() => read(relics)).toThrow(/not those of A\*/);
+      const margin = await run();
+      margin.amend(id("advisor_v1-astar", "ironclad"), (m) => {
+        effectiveOf(m).margin = 0.5;
+      });
+      expect(() => read(margin)).toThrow(/not those of A\*/);
+      // the margin the site's own choice of A* carries is read too
+      const w = await run();
+      expect(() =>
+        w.parse({
+          root: w.root,
+          reports: w.reports,
+          synergyChoice: () => ({ config: CHOICE.config, margin: 0.5 }),
+        }),
+      ).toThrow(/not those of A\*/);
+      const threshold = await run();
+      threshold.amend(id("rules_v2-shownvals", "silent"), (m) => {
+        effectiveOf(m).threshold = 0.5;
+      });
+      expect(() => read(threshold)).toThrow(/does not follow .* at threshold 0/);
+      const asked = await run();
+      asked.amend(id("rules_v2-shownvals", "silent"), (m, r) => {
+        const p = m.policy as { params: Json };
+        p.params.threshold = 0.5;
+        r.policyParams = { ...(r.policyParams as Json), threshold: 0.5 };
+      });
+      expect(() => read(asked)).toThrow(/does not follow .* at threshold 0/);
+    });
+
+    it("a batch with a game that ended in an abort, a harness error, a policy error or an invalid action", async () => {
+      for (const kind of ["aborted", "harness_error", "policy_error", "invalid_action"]) {
+        const w = await run();
+        w.amend(id("rules_v1", "regent"), (_m, r) => {
+          (r.counts as Json)[kind] = 1;
+        });
+        expect(() => read(w)).toThrow(
+          /ended in an abort, a harness error, a policy error or an invalid action \(ADR-058 item 9\)/,
+        );
+      }
+    });
+
+    it("a batch of which fewer than 90 % of the games completed, or whose report has no counts", async () => {
+      const edge = await run();
+      edge.amend(id("rules_v1", "regent"), (_m, r) => {
+        r.completed = 1800;
+      });
+      expect(() => read(edge)).not.toThrow();
+      const few = await run();
+      few.amend(id("rules_v1", "regent"), (_m, r) => {
+        r.completed = 1799;
+      });
+      expect(() => read(few)).toThrow(/only 1799 of its 2000 games completed/);
+      const none = await run();
+      none.amend(id("rules_v1", "regent"), (_m, r) => {
+        delete r.counts;
+      });
+      expect(() => read(none)).toThrow(/report has no counts/);
+    });
+
+    it("a batch played with a simulator that is not the pinned, clean one, or from other seeds than the registered file", async () => {
+      const cases: [(m: Json) => void, RegExp][] = [
+        [
+          (m) => {
+            (m.simulator as Json).pin_ok = false;
+          },
+          /not played with the pinned, clean simulator/,
+        ],
+        [
+          (m) => {
+            (m.simulator as Json).dirty = true;
+          },
+          /not played with the pinned, clean simulator/,
+        ],
+        [
+          (m) => {
+            (m.seeds as Json).file_sha256 = "0".repeat(64);
+          },
+          /its seeds are not those of experiments\/seeds\/ironclad-a0-v2.json/,
+        ],
+        [
+          (m) => {
+            (m.seeds as Json).file = "experiments/seeds/other.json";
+          },
+          /its seeds are not those of experiments\/seeds\/ironclad-a0-v2.json/,
+        ],
+        [
+          (m) => {
+            (m.seeds as Json).sealed_partition_used = true;
+          },
+          /its seeds are not those of experiments\/seeds\/ironclad-a0-v2.json/,
+        ],
+      ];
+      for (const [change, pattern] of cases) {
+        const w = await run();
+        w.amend(id("advisor_v1-astar", "necrobinder"), change);
+        expect(() => read(w)).toThrow(pattern);
+      }
+    });
+
+    it("a pooled difference that is not the one its table of pairs gives", async () => {
+      const w = await run();
+      const file = w.path("experiments", "ascension9", FILES.synergy);
+      const body = JSON.parse(readFileSync(file, "utf8")) as {
+        clusteredDifference: { meanAMinusB: number; ciAtLevel: { ci: number[] } };
+      };
+      // +50 points with an interval around it, over counts that give +5 points
+      body.clusteredDifference.meanAMinusB = 0.5;
+      body.clusteredDifference.ciAtLevel.ci = [0.4, 0.6];
+      writeFileSync(file, JSON.stringify(body));
+      expect(() => read(w)).toThrow(/is not the one its table of pairs gives/);
+    });
+
+    it("an interval that is not two numbers in order", async () => {
+      for (const ci95 of [["0.01", "0.09"], [0.09, 0.01], [0.01], null]) {
+        const w = await run();
+        const file = w.path("experiments", "ascension9", FILES.synergy);
+        const body = JSON.parse(readFileSync(file, "utf8")) as {
+          clusteredDifference: { ci95: unknown };
+        };
+        body.clusteredDifference.ci95 = ci95;
+        writeFileSync(file, JSON.stringify(body));
+        expect(() => read(w)).toThrow(/not a number, or an interval is not one/);
+      }
     });
   });
 });

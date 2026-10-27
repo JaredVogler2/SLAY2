@@ -67,16 +67,25 @@ function ResultTiles({
   test,
   label,
 }: {
-  test: Pick<AscensionTest, "reachedAct2" | "bothCompleted" | "pairedSeeds" | "wins">;
+  test: Pick<
+    AscensionTest,
+    "reachedAct2" | "reachedAct3" | "bothCompleted" | "pairedSeeds" | "wins"
+  >;
   label: string;
 }) {
   const e = test.reachedAct2;
+  const e3 = test.reachedAct3;
   return (
-    <ul className="mt-3 grid gap-3 sm:grid-cols-3" aria-label={label}>
+    <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label={label}>
       <Tile
         k="Past the Act-1 boss"
         value={`${pct(e.b.rate, 1)} → ${pct(e.a.rate, 1)}`}
         note={formatP(e.pairedTable.mcnemar_p)}
+      />
+      <Tile
+        k="Past the Act-2 boss (secondary)"
+        value={`${pct(e3.b.rate, 1)} → ${pct(e3.a.rate, 1)}`}
+        note={formatP(e3.pairedTable.mcnemar_p)}
       />
       <Tile
         k="Pairs completed by both"
@@ -96,7 +105,9 @@ function ClassTable({ test, title }: { test: AscensionTest; title: string }) {
   return (
     <ScrollRegion label={`${title}, by class`}>
       <table className="mt-3 w-full min-w-[34rem] text-left text-sm">
-        <caption className="pb-2 text-left font-display text-base text-gold">By class</caption>
+        <caption className="pb-2 text-left font-display text-base text-gold">
+          {title}: each class on its own
+        </caption>
         <thead>
           <tr className="border-b border-line text-muted">
             <th scope="col" className="py-2 pr-3 font-medium">
@@ -197,10 +208,10 @@ function TestBlock({
             {test.size
               ? `The result at Ascension 9 is ${SIZE_TEXT[test.size]}: ${
                   test.size === "smaller"
-                    ? "the upper end of its interval is below the Ascension 0 difference"
+                    ? "the upper end of its interval at the level of the test is below the Ascension 0 difference"
                     : test.size === "larger"
-                      ? "the lower end of its interval is above the Ascension 0 difference"
-                      : "the Ascension 0 difference lies inside its interval"
+                      ? "the lower end of its interval at the level of the test is above the Ascension 0 difference"
+                      : "the Ascension 0 difference lies inside its interval at the level of the test"
                 }.`
               : ""}
           </>
@@ -266,7 +277,7 @@ export function AscensionPanel({ data = ASCENSION }: { data?: AscensionData } = 
   return (
     <Panel
       eyebrow="Ascension"
-      title="Do these results hold above Ascension 0?"
+      title="Do these results carry over to Ascension 9?"
       headingLevel={2}
       id="ascension"
       aside={
@@ -279,10 +290,11 @@ export function AscensionPanel({ data = ASCENSION }: { data?: AscensionData } = 
     >
       <div className="space-y-3 text-sm text-muted">
         <p>
-          Every result on this page was measured at Ascension 0, and the advisor takes runs from
-          Ascension 0 to 10. The simulator plays Ascensions 0 to 9; at 10 it never enters the second
-          boss (gap G1). Ascension 9 is the hardest level it plays, and one where a deck needs
-          different things, so a result at Ascension 0 could shrink, hold or reverse there.
+          {tested ? "Until this study, every" : "Every"} result on this page was measured at
+          Ascension 0, and the advisor takes runs from Ascension 0 to 10. The simulator plays
+          Ascensions 0 to 9; at 10 it never enters the second boss (gap G1). Ascension 9 is the
+          hardest level it plays, and one where a deck needs different things, so a result at
+          Ascension 0 could shrink, hold or reverse there.
         </p>
         <p>
           <strong className="text-parchment">The study.</strong> Three results are tested once at
@@ -340,11 +352,15 @@ export function AscensionPanel({ data = ASCENSION }: { data?: AscensionData } = 
               <li>
                 The opening-relic advice at Ascension 1 to 10 names a relic for a class only if the
                 Ascension 9 test passed and that class&rsquo;s own Ascension 9 games had the rule
-                ahead at p below {data.classLevel}. Licensed:{" "}
+                ahead at p below {data.classLevel}; for any other class the advisor shows the
+                measurements and says it has no tested advice at that Ascension. Classes with tested
+                advice:{" "}
                 {data.tests.neow.verdict === "passed" && licensed.length > 0
                   ? licensed.join(", ")
-                  : "no class"}
-                .
+                  : "none"}
+                . A class can be left out because the rule did not help it there or because too few
+                of its pairs differ to show it (a class whose games rarely get past the boss, as
+                Silent&rsquo;s, can show nothing even when the rule helps it).
               </li>
               <li>
                 A test that was not shown ahead does not withdraw its panel: the ranking and the
