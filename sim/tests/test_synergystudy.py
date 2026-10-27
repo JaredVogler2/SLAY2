@@ -24,6 +24,19 @@ def test_the_features_are_the_advisors_index_parts():
     assert study.deck_features({"FEEL_NO_PAIN_CARD+": 1})["quality"] == study.deck_features({"FEEL_NO_PAIN": 1})["quality"]
 
 
+def test_the_parts_are_read_at_the_hand_set_strengths_whatever_the_index_keeps():
+    deck = advisor.deck_from_ids(k for k, n in DECK.items() for _ in range(n))
+    f = study.deck_features(DECK)
+    first = advisor.synergy_components(deck, 0, advisor.Model(needs=1.0, scalers=1.0, engines=1.0))
+    assert (f["unmet"], f["scaler"], f["engines"]) == pytest.approx(first)
+    assert f["unmet"] < 0 < f["scaler"] and f["engines"] > 0  # a deck on which the two readings below can differ
+    assert study.FIRST_JUDGEMENT == advisor.Model(needs=1.0, scalers=1.0, engines=1.0)
+    for part, strength in (("unmet", "needs"), ("scaler", "scalers"), ("engines", "engines")):
+        half = study.deck_features(DECK, model=advisor.Model(**{strength: 0.5}))
+        assert half[part] == pytest.approx(0.5 * f[part])  # so a change to the website's strengths would show here
+        assert half["quality"] == f["quality"] and half["coverage"] == f["coverage"] and half["curve"] == f["curve"]
+
+
 def test_the_weight_a_part_keeps_is_its_slope_relative_to_quality_within_zero_and_one():
     assert study.calibrated_weight(0.66) == 0.65
     assert study.calibrated_weight(0.77) == 0.75

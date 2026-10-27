@@ -4,19 +4,113 @@ import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { Tile } from "@/components/ui/Tile";
+import { SynergyTestPanel } from "@/components/methods/SynergyTestPanel";
 import { pct } from "@/lib/methods-data";
-import { SYNERGY_EVIDENCE, change, num, range } from "@/lib/synergy-evidence";
+import {
+  SYNERGY_EVIDENCE,
+  change,
+  num,
+  range,
+  type MechanicReading,
+  type SynergyEvidence,
+} from "@/lib/synergy-evidence";
 
 const games = (n: number): string => n.toLocaleString("en-US");
 
 const SEEDS: Record<string, string> = { train: "training seeds", dev: "development seeds" };
 
+/** The unmet-need part read one mechanic at a time: a description of where the pooled slope comes from, not a result. */
+function MechanicsDisclosure({
+  reading,
+  bossFights,
+}: {
+  reading: MechanicReading;
+  bossFights: number;
+}) {
+  return (
+    <Disclosure summary="Which needs the runs support, one mechanic at a time" className="mt-5">
+      <div className="space-y-3">
+        <p>
+          The single slope for unmet needs above hides which mechanics carry it. The same runs and
+          the same model, with one column for each mechanic&rsquo;s unmet need instead of their sum,
+          give the slopes below, per index point and relative to a point of the average card rating
+          as above. Read this as a description, not a result: the {reading.rows.length} intervals
+          are read together and not corrected for it, the tags were not changed because of it, and
+          the runs are the ones the tags were audited against. A mechanic that few decks left unmet
+          has an interval too wide to read, and a slope far below the pooled one says only that
+          random drafts do not reward meeting that need at the weight the tags give it.
+        </p>
+        <ScrollRegion label="Unmet needs by mechanic">
+          <table className="w-full min-w-[32rem] text-left text-sm">
+            <caption className="pb-2 text-left font-display text-base text-gold">
+              Worth of a point of each mechanic&rsquo;s unmet need, relative to a point of average
+              card rating
+            </caption>
+            <thead>
+              <tr className="border-b border-line text-muted">
+                <th scope="col" className="py-2 pr-3 font-medium">
+                  Mechanic
+                </th>
+                <th scope="col" className="py-2 pr-3 font-medium">
+                  Decks that need it
+                </th>
+                <th scope="col" className="py-2 pr-3 font-medium">
+                  Mean points held back
+                </th>
+                <th scope="col" className="py-2 font-medium">
+                  Worth of a point (95 %)
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              <tr className="align-top">
+                <th scope="row" className="py-2 pr-3 font-medium text-parchment">
+                  All needs together
+                </th>
+                <td className="num py-2 pr-3 text-muted">all {games(bossFights)} runs</td>
+                <td className="py-2 pr-3 text-muted">–</td>
+                <td className="num py-2">
+                  {num(reading.pooled.toQuality, 2)} ({range(reading.pooled.ci95, 2)})
+                </td>
+              </tr>
+              {reading.rows.map((r) => (
+                <tr key={r.mechanic} className="align-top">
+                  <th scope="row" className="py-2 pr-3 font-medium text-parchment">
+                    {r.label}
+                  </th>
+                  <td className="num py-2 pr-3 text-muted">{games(r.decks)}</td>
+                  <td className="num py-2 pr-3 text-muted">{num(r.meanPoints, 3)}</td>
+                  <td className="num py-2">
+                    {num(r.ratio.toQuality, 2)} ({range(r.ratio.ci95, 2)})
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollRegion>
+        <p>
+          The first row is the single slope of stage B1 fitted again on the same resamples as the
+          rows below it, so that the rows can be compared with it; its interval differs a little
+          from the one above.
+        </p>
+        <p>
+          Data and code: <code className="font-mono text-xs text-parchment">{reading.file}</code>{" "}
+          (sha {reading.sha256.slice(0, 12)}…, {reading.bootstrapDraws} resamples of whole seeds).
+        </p>
+      </div>
+    </Disclosure>
+  );
+}
+
 /**
  * What simulated runs say about the synergy term of the advisor's deck index (ADR-050): the exploratory reading (stage B1) with its
- * limits, and the state of the one registered test. Every figure is read from the study's own report through the exporter.
+ * limits, and the one registered test (stage B2) once it has been run. Every figure is read from the study's own report through the
+ * exporter; tests pass their own `evidence`.
  */
-export function SynergyStudyPanel() {
-  const { table, b1 } = SYNERGY_EVIDENCE;
+export function SynergyStudyPanel({
+  evidence = SYNERGY_EVIDENCE,
+}: { evidence?: SynergyEvidence } = {}) {
+  const { table, b1, b2 } = evidence;
   if (!b1) {
     return null;
   }
@@ -139,7 +233,11 @@ export function SynergyStudyPanel() {
         </table>
       </ScrollRegion>
 
-      <Disclosure summary="How the first reading changed the tags" className="mt-5">
+      {b1.mechanics ? (
+        <MechanicsDisclosure reading={b1.mechanics} bossFights={b1.bossFights} />
+      ) : null}
+
+      <Disclosure summary="How the readings changed the tags" className="mt-5">
         <div className="space-y-3">
           <p>
             The first reading showed three needs whose slope ran the wrong way: decks with more of
@@ -152,25 +250,38 @@ export function SynergyStudyPanel() {
             create.
           </p>
           <p>
-            The table was corrected twice, before any held-out game was played (the changes are
-            listed in ADR-050), and the figures above come from the corrected table. The tags were
-            read against these very runs, so the figures flatter them: the test below is on other
-            seeds.
+            The table was corrected twice on that evidence, before any held-out game was played. The
+            tags were read against these very runs, so the figures flatter them: the test below is
+            on other seeds.
+          </p>
+          <p>
+            An independent second reading then tagged every card again, blind, from the game&rsquo;s
+            own card data (six readers, one for each class and one for the colorless cards). It
+            found the table wrong in more than thirty places that mattered: a card&rsquo;s second
+            effect not written, a need the card meets by itself or its class cannot meet, and the
+            Defect&rsquo;s Status payoffs, which trigger on Statuses the player creates. All were
+            corrected before any held-out game, the figures above come from the corrected table, and
+            the test run that had started on the old table was thrown away unread (ADR-050, addenda
+            A and B).
           </p>
         </div>
       </Disclosure>
 
-      <section className="mt-5 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
-        <h3 className="mb-2 font-display text-lg text-parchment">The registered test</h3>
-        <p>
-          It has not been run on its held-out seeds. A pilot that picks each card reward by this
-          index plays the same seeds as the same pilot with the synergy term switched off; the
-          measure is the share of runs that get past the Act-1 boss, paired by seed, the five
-          classes pooled, one exact McNemar test at level 0.05 (ADR-050, fixed before any of these
-          games). It is published here as it comes out, whichever way it goes. Until then the
-          synergy panel on the advisor stays a judgement, partly checked.
-        </p>
-      </section>
+      {b2 ? (
+        <SynergyTestPanel test={b2} />
+      ) : (
+        <section className="mt-5 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
+          <h3 className="mb-2 font-display text-lg text-parchment">The registered test</h3>
+          <p>
+            It has not been run on its held-out seeds. A pilot that picks each card reward by this
+            index plays the same seeds as the same pilot with the synergy term switched off; the
+            measure is the share of runs that get past the Act-1 boss, paired by seed, the five
+            classes pooled, one exact McNemar test at level 0.05 (ADR-050, fixed before any of these
+            games). It is published here as it comes out, whichever way it goes. Until then the
+            synergy panel on the advisor stays a judgement, partly checked.
+          </p>
+        </section>
+      )}
 
       <ul className="mt-5 list-disc space-y-1.5 pl-5 text-sm text-muted">
         <li>
@@ -178,13 +289,13 @@ export function SynergyStudyPanel() {
           running STS2 build, and it only plays Overgrowth, at Ascension 0, with one rules pilot.
         </li>
         <li>
-          Exploratory: the runs are the training and development seeds on which the measured card
-          values were fitted, and the tags were corrected against them. Decks were put together by
-          random card picks, not built on purpose.
+          The exploratory readings above, not the registered test, use the training and development
+          seeds on which the measured card values were fitted, and the tags were corrected against
+          them. Their decks were put together by random card picks, not built on purpose.
         </li>
         <li>
-          The reading is about getting past the first boss, not about winning (wins are rare), and
-          not about the card-by-card strength of any card: the synergy table is a judgement of
+          Both are about getting past the first boss, not about winning (wins are rare), and not
+          about the card-by-card strength of any card: the synergy table is a judgement of
           mechanics.
         </li>
         <li>

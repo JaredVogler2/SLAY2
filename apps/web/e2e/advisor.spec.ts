@@ -279,18 +279,29 @@ test.describe("advisor journey", () => {
     await addOffered(page, "pommel");
     await addOffered(page, "inflame");
     const panel = page.getByRole("region", { name: "Synergy of your deck" });
-    await expect(panel).toContainText("Judgement, partly checked");
     // the measured part is quoted from the study's own report, with its limits one click away
     const study = JSON.parse(
       await readFile(join(__dirname, "..", "src", "content", "synergy.generated.json"), "utf8"),
-    ) as { b1: { bossFights: number } };
+    ) as { b1: { bossFights: number }; b2: { verdict: string } | null };
+    const label = study.b2
+      ? ({
+          ahead: "Judgement, tested in simulation",
+          "not-shown": "Judgement, not shown to help",
+          behind: "Judgement, worse in simulation",
+        }[study.b2.verdict] ?? "no such verdict")
+      : "Judgement, partly checked";
+    await expect(panel).toContainText(label);
     await expect(panel).toContainText(
       `${study.b1.bossFights.toLocaleString("en-US")} simulated runs`,
     );
     await expect(panel).toContainText("the engine credit got no such support");
     await panel.getByText("What the simulated runs show, and what they do not").click();
     await expect(panel).toContainText("Not the live game");
-    await expect(panel).toContainText("registered before any of its games");
+    await expect(panel).toContainText(
+      study.b2
+        ? "tested before any of its games were played"
+        : "registered before any of its games",
+    );
     await expectNoHorizontalOverflow(page);
     await expectNoSeriousA11yViolations(page, "advisor with the synergy panel");
     // the study itself, with its figures by class, is one link away

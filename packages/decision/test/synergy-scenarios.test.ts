@@ -514,3 +514,39 @@ describe("synergy: what a starting relic already gives", () => {
     expect(bare).toBeGreaterThan(-0.05);
   });
 });
+
+describe("synergy: what the independent second reading of the table corrected (ADR-050 addendum B)", () => {
+  it("does not hold a Silent attack back by much for a Strength the class has almost no way to get", () => {
+    const waiting = rank("silent", { DAGGER_SPRAY: 1 }, ["BLADE_DANCE"]).response.deckSynergy
+      .waiting;
+    const card = waiting.find((w) => w.name === "Dagger Spray");
+    // before the correction a bare Silent deck held it back by about 40 % of its rating; a bonus need holds back at most a quarter
+    expect(card?.heldBack ?? 0).toBeLessThanOrEqual(0.26);
+  });
+
+  it("does not make Sleight of Flesh wait for Poison in a Necrobinder deck (only the Silent applies Poison)", () => {
+    const waiting = rank("necrobinder", { SLEIGHT_OF_FLESH: 1 }, ["POKE"]).response.deckSynergy
+      .waiting;
+    const card = waiting.find((w) => w.name === "Sleight of Flesh");
+    expect(card, "it still waits for Doom, the class's debuff").toBeDefined();
+    expect(card?.lacking.map((l) => l.label)).not.toContain("Poison");
+    expect(card?.lacking.map((l) => l.label)).toContain("Doom");
+  });
+
+  it("holds Smokestack back until the deck makes Statuses, and the Defect's makers lift it", () => {
+    const bare = worth("defect", {}, "SMOKESTACK");
+    const fed = worth("defect", { BOOST_AWAY: 1, FIGHT_THROUGH: 1, GUNK_UP: 1 }, "SMOKESTACK");
+    expect(bare).toBeLessThan(-0.1);
+    expect(fed).toBeGreaterThan(bare + 0.1);
+  });
+
+  it("does not hold Bombardment back for an Exhaust it brings itself", () => {
+    expect(worth("regent", {}, "BOMBARDMENT")).toBeGreaterThan(-0.05);
+  });
+
+  it("lets Comet's Weak and Vulnerable feed a card that wants them (Rend), as Gamma Blast's do", () => {
+    const bare = worth("regent", {}, "REND");
+    const fed = worth("regent", { COMET: 1 }, "REND");
+    expect(fed).toBeGreaterThan(bare + 0.05);
+  });
+});

@@ -330,6 +330,10 @@ def interval(ci: list[float], places: int = 4) -> str:
     return f"{signed(ci[0], places)} to {signed(ci[1], places)}".replace("+", "")
 
 
+def minus(x: float, places: int = 2) -> str:
+    return f"{x:.{places}f}".replace("-", "−")
+
+
 def table_synergy_b1() -> str:
     d = load(ROOT / "experiments" / "synergy" / "b1-calibration.json")
     p = d["pooled"]["all_cohorts"]
@@ -363,6 +367,61 @@ def table_synergy_cohorts() -> str:
     return "\n".join(head + rows)
 
 
+def table_synergy_mechanics() -> str:
+    d = load(ROOT / "experiments" / "synergy" / "b1-mechanics.json")
+
+    def worth(r: dict) -> str:
+        return f"**{minus(r['to_quality'])}** ({minus(r['ci95'][0])} to {minus(r['ci95'][1])})"
+
+    head = [
+        "| Mechanic whose unmet need is read | Decks that need it | Mean index points held back | Worth of a point of it, relative to a point of average card rating (95 % interval) |",
+        "|---|---|---|---|",
+        f"| All needs together, one slope (stage B1) | all {d['rows']:,} runs | | {worth(d['pooled_unmet_ratio'])} |",
+    ]
+    rows = []
+    for r in d["mechanics"]:
+        mean = minus(r["mean_points"], 3)
+        rows.append(f"| {r['label']} | {r['decks_with_the_need']:,} | {mean} | {worth({'to_quality': r['ratio_to_quality'], 'ci95': r['ratio_ci95']})} |")
+    return "\n".join(head + rows)
+
+
+def fmt_p(p: float) -> str:
+    if p == 0:
+        return "p < 1e-300"
+    return f"p = {p:.1e}" if p < 1e-4 else f"p = {p:.2g}"
+
+
+DEV_KEEPS = {
+    "d1": "needs 1, scalers 0.7, no engine credit",
+    "d2": "needs 1, scalers 0.7, engines 0.25",
+    "d3": "needs 1, scalers 0.7, engines 0.5",
+    "d4": "every part at its first judgement (1, 1, 1)",
+    "m1": "the chosen configuration, a card must add 1.5 index points",
+    "m2": "the chosen configuration, a card must add 3 index points",
+}
+
+
+def table_synergy_dev() -> str:
+    """The development stage's two selection files (ADR-050 item 3): tuning numbers, not evidence."""
+    d1 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase1.json")
+    d2 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase2.json")
+    head = [
+        "| Arm | What it keeps | Against | Past the Act-1 boss, against → arm | Difference (95 %, whole seeds resampled) | Exact McNemar | Pairs |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    rows = []
+    for phase, against, chosen in ((d1, "d0, no synergy term", d1["chosen"]), (d2, f"{d2['baseline']}, margin 0", None)):
+        for arm, r in phase["differences"].items():
+            mark = " (chosen)" if arm == chosen else ""
+            ci = r["ci95"]
+            rows.append(
+                f"| {arm}{mark} | {DEV_KEEPS[arm]} | {against} | {100 * r['b_rate']:.1f} % → {100 * r['a_rate']:.1f} % | "
+                f"{signed(100 * r['difference'], 2)} points ({signed(100 * ci[0], 2)} to {signed(100 * ci[1], 2)}) | {fmt_p(r['mcnemar_p'])} | {r['pairs']:,} |"
+            )
+    rows.append(f"| margin chosen | | | | {d2['chosen_margin']} | | |")
+    return "\n".join(head + rows)
+
+
 def table_synergy_coverage() -> str:
     cat = load(ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json")["cards"]
     syn = load(ROOT / "packages" / "game-data" / "data" / "synergy.sts2-main-0.107.1.json")
@@ -383,7 +442,7 @@ def table_synergy_coverage() -> str:
 
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
 }
@@ -400,6 +459,7 @@ BLOCKS = {
     "synergy_coverage": table_synergy_coverage,
     "synergy_b1": table_synergy_b1,
     "synergy_cohorts": table_synergy_cohorts,
+    "synergy_mechanics": table_synergy_mechanics,
 }
 
 

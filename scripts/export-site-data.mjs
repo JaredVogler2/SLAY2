@@ -15,7 +15,9 @@ import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
 // SLAY2_ROOT lets the tests point the exporter at a tampered copy of the inputs; production always uses the repository.
-const root = process.env.SLAY2_ROOT ? resolve(process.env.SLAY2_ROOT) : resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = process.env.SLAY2_ROOT
+  ? resolve(process.env.SLAY2_ROOT)
+  : resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "apps", "web", "src", "content");
 const check = process.argv.includes("--check");
 
@@ -41,7 +43,10 @@ function parseRules() {
       inTable = false;
       continue;
     }
-    const cells = line.split("|").slice(1, -1).map((c) => c.trim());
+    const cells = line
+      .split("|")
+      .slice(1, -1)
+      .map((c) => c.trim());
     if (!inTable) {
       inTable = true;
       ruleTable = cells[0] === "ID";
@@ -49,8 +54,17 @@ function parseRules() {
     }
     if (!ruleTable) continue;
     if (cells.length < 3 || !/^[A-Z]+-\d+$/.test(cells[0])) continue;
-    const status = cells[3] && /(VERIFIED|CORROBORATED|SECONDARY|UNVERIFIED)/.test(cells[3]) ? plain(cells[3]) : null;
-    rules.push({ id: cells[0], section: section.replace(/^\d+\.\s*/, ""), text: plain(cells[1]), evidence: plain(cells[2]), status });
+    const status =
+      cells[3] && /(VERIFIED|CORROBORATED|SECONDARY|UNVERIFIED)/.test(cells[3])
+        ? plain(cells[3])
+        : null;
+    rules.push({
+      id: cells[0],
+      section: section.replace(/^\d+\.\s*/, ""),
+      text: plain(cells[1]),
+      evidence: plain(cells[2]),
+      status,
+    });
   }
   return rules;
 }
@@ -58,12 +72,20 @@ function parseRules() {
 function readEpisodes(dir) {
   const gz = join(dir, "episodes.jsonl.gz");
   const plainFile = join(dir, "episodes.jsonl");
-  const text = existsSync(gz) ? gunzipSync(readFileSync(gz)).toString("utf8") : readFileSync(plainFile, "utf8");
-  return text.split("\n").filter(Boolean).map((l) => JSON.parse(l));
+  const text = existsSync(gz)
+    ? gunzipSync(readFileSync(gz)).toString("utf8")
+    : readFileSync(plainFile, "utf8");
+  return text
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => JSON.parse(l));
 }
 
 // The 10- and 100-game batches are prefixes of the 2,000-game seed set, not additional games: do not list them twice.
-const SKIP = new Set(["smoke-random_legal-ironclad-a0-veteran-n10", "ladder-random_legal-ironclad-a0-veteran-train-n100"]);
+const SKIP = new Set([
+  "smoke-random_legal-ironclad-a0-veteran-n10",
+  "ladder-random_legal-ironclad-a0-veteran-train-n100",
+]);
 
 function parseEvidence() {
   const dir = join(root, "experiments", "batches");
@@ -77,27 +99,50 @@ function parseEvidence() {
     const wins = m.summary.counts.win;
     const auditFile = join(dir, name, "wins-audit.json");
     const audit = existsSync(auditFile) ? JSON.parse(readFileSync(auditFile, "utf8")) : null;
-    if (wins > 0 && !(audit && audit.all_verified === true && audit.wins_audited === wins && audit.batch_id === m.batch_id)) {
-      throw new Error(`${name}: ${wins} win(s) without a passing wins-audit.json (run: slay2_sim audit wins --batch experiments/batches/${name})`);
+    if (
+      wins > 0 &&
+      !(
+        audit &&
+        audit.all_verified === true &&
+        audit.wins_audited === wins &&
+        audit.batch_id === m.batch_id
+      )
+    ) {
+      throw new Error(
+        `${name}: ${wins} win(s) without a passing wins-audit.json (run: slay2_sim audit wins --batch experiments/batches/${name})`,
+      );
     }
     // The sample audit (slay2_sim audit sample: ledger check + replay-verified random sample of completed games) belongs to one
     // exact batch; an audit of other content is refused rather than shown against this batch.
     const sampleFile = join(dir, name, "sample-audit.json");
     const sample = existsSync(sampleFile) ? JSON.parse(readFileSync(sampleFile, "utf8")) : null;
-    if (sample && !(sample.batch_id === m.batch_id && sample.batch_content_sha256 === m.content_sha256)) {
-      throw new Error(`${name}: sample-audit.json was written for other content; rerun slay2_sim audit sample --batch experiments/batches/${name}`);
+    if (
+      sample &&
+      !(sample.batch_id === m.batch_id && sample.batch_content_sha256 === m.content_sha256)
+    ) {
+      throw new Error(
+        `${name}: sample-audit.json was written for other content; rerun slay2_sim audit sample --batch experiments/batches/${name}`,
+      );
     }
     // The complete re-derivation (slay2_sim audit rederive: every game re-run and compared) is held to the same rule.
     const rederiveFile = join(dir, name, "rederivation-audit.json");
-    const rederive = existsSync(rederiveFile) ? JSON.parse(readFileSync(rederiveFile, "utf8")) : null;
-    if (rederive && !(rederive.batch_id === m.batch_id && rederive.batch_content_sha256 === m.content_sha256)) {
-      throw new Error(`${name}: rederivation-audit.json was written for other content; rerun slay2_sim audit rederive --batch experiments/batches/${name}`);
+    const rederive = existsSync(rederiveFile)
+      ? JSON.parse(readFileSync(rederiveFile, "utf8"))
+      : null;
+    if (
+      rederive &&
+      !(rederive.batch_id === m.batch_id && rederive.batch_content_sha256 === m.content_sha256)
+    ) {
+      throw new Error(
+        `${name}: rederivation-audit.json was written for other content; rerun slay2_sim audit rederive --batch experiments/batches/${name}`,
+      );
     }
     const completed = eps.filter((e) => e.outcome === "win" || e.outcome === "death");
     const floors = completed.map((e) => e.floor).sort((a, b) => a - b);
     const mean = floors.reduce((a, b) => a + b, 0) / Math.max(1, floors.length);
     const killers = {};
-    for (const e of completed) if (e.killed_by) killers[e.killed_by] = (killers[e.killed_by] ?? 0) + 1;
+    for (const e of completed)
+      if (e.killed_by) killers[e.killed_by] = (killers[e.killed_by] ?? 0) + 1;
     const wall = eps.reduce((a, e) => a + (e.wall_seconds ?? 0), 0) / Math.max(1, eps.length);
     reports.push({
       id: m.batch_id,
@@ -123,13 +168,26 @@ function parseEvidence() {
       meanFloor: Math.round(mean * 100) / 100,
       medianFloor: floors[Math.floor(floors.length / 2)] ?? 0,
       deathsByAct: completed.reduce((acc, e) => ({ ...acc, [e.act]: (acc[e.act] ?? 0) + 1 }), {}),
-      topKillers: Object.entries(killers).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, 5).map(([id, n]) => ({ id, n })),
+      topKillers: Object.entries(killers)
+        .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+        .slice(0, 5)
+        .map(([id, n]) => ({ id, n })),
       meanWallSecondsPerEpisode: Math.round(wall * 100) / 100,
       winsAudit: audit
-        ? { audited: audit.wins_audited, verified: audit.wins_verified, seeds: audit.wins.map((w) => w.seed), criteria: audit.criteria }
+        ? {
+            audited: audit.wins_audited,
+            verified: audit.wins_verified,
+            seeds: audit.wins.map((w) => w.seed),
+            criteria: audit.criteria,
+          }
         : null,
       rederivationAudit: rederive
-        ? { games: rederive.games, exact: rederive.rederived_exactly, differing: rederive.differing.map((d) => d.seed), criteria: rederive.criteria }
+        ? {
+            games: rederive.games,
+            exact: rederive.rederived_exactly,
+            differing: rederive.differing.map((d) => d.seed),
+            criteria: rederive.criteria,
+          }
         : null,
       canonicalProcessState: m.canonical_process_state === true,
       // every game's starting HP and deck were checked against the class asked for (classes.py, ADR-049)
@@ -144,13 +202,21 @@ function parseEvidence() {
             criteria: sample.criteria,
           }
         : null,
-      simulator: { id: m.simulator.id, sha: m.simulator.pinned, parityWithLiveGame: m.simulator.parity_with_live_game },
+      simulator: {
+        id: m.simulator.id,
+        sha: m.simulator.pinned,
+        parityWithLiveGame: m.simulator.parity_with_live_game,
+      },
       gapsRecordedInManifest: Array.isArray(m.known_simulator_gaps),
-      knownGaps: (m.known_simulator_gaps ?? []).filter((g) => g.affects === "results").map((g) => g.id),
+      knownGaps: (m.known_simulator_gaps ?? [])
+        .filter((g) => g.affects === "results")
+        .map((g) => g.id),
       contentSha256: m.content_sha256,
       episodesGzSha256: m.episodes_gz.sha256,
       finished: m.finished,
-      role: ["train", "dev"].includes(m.seeds.partition) ? `development (${m.seeds.partition} partition): not a held-out result` : "held-out",
+      role: ["train", "dev"].includes(m.seeds.partition)
+        ? `development (${m.seeds.partition} partition): not a held-out result`
+        : "held-out",
     });
   }
   return reports;
@@ -162,13 +228,17 @@ function parseComparisons(reports) {
   if (!existsSync(dir)) return [];
   const byId = new Map(reports.map((r) => [r.id, r]));
   const out = [];
-  for (const name of readdirSync(dir).filter((f) => f.endsWith(".json")).sort()) {
+  for (const name of readdirSync(dir)
+    .filter((f) => f.endsWith(".json"))
+    .sort()) {
     const c = JSON.parse(readFileSync(join(dir, name), "utf8"));
     for (const side of [c.a, c.b]) {
       const current = byId.get(side.batchId);
       if (!current) throw new Error(`${name}: batch ${side.batchId} is not an evidence batch`);
       if (current.contentSha256 !== side.contentSha256) {
-        throw new Error(`${name}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim compare --out`);
+        throw new Error(
+          `${name}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim compare --out`,
+        );
       }
     }
     out.push({
@@ -184,7 +254,9 @@ function parseComparisons(reports) {
       floorDifference: c.floorDifference,
       wallTimeRatioBOverA: c.wallTimeRatioBOverA,
       role: c.role,
-      preIsolation: Boolean(byId.get(c.a.batchId)?.preIsolation || byId.get(c.b.batchId)?.preIsolation),
+      preIsolation: Boolean(
+        byId.get(c.a.batchId)?.preIsolation || byId.get(c.b.batchId)?.preIsolation,
+      ),
       contentSha256: c.contentSha256,
     });
   }
@@ -195,7 +267,13 @@ function parseComparisons(reports) {
 // catalog uses the plain id, so the value is attached to the catalog card. A measured id that maps to nothing is an error.
 const CLASSES = ["ironclad", "silent", "regent", "necrobinder", "defect"];
 // Significance level of the pre-registered intervention test per class (ADR-031: Ironclad alone, 0.05; ADR-034: the other four share 0.05, Bonferroni).
-const ALPHA = { ironclad: 0.05, silent: 0.0125, regent: 0.0125, necrobinder: 0.0125, defect: 0.0125 };
+const ALPHA = {
+  ironclad: 0.05,
+  silent: 0.0125,
+  regent: 0.0125,
+  necrobinder: 0.0125,
+  defect: 0.0125,
+};
 
 // Which value files the site shows is a decision, not a side effect of a file existing (ADR-046): experiments/cardvalue/
 // site-sets.json lists them, and the golden cases of the simulation panel (sim/slay2_sim/pickgolden.py) read the same list.
@@ -203,10 +281,19 @@ const ALPHA = { ironclad: 0.05, silent: 0.0125, regent: 0.0125, necrobinder: 0.0
 function parseCardValues(comparisons) {
   const dir = join(root, "experiments", "cardvalue");
   if (!existsSync(dir)) return [];
-  if (!existsSync(join(dir, "site-sets.json"))) throw new Error("experiments/cardvalue/site-sets.json is missing: it lists the value files the site shows");
+  if (!existsSync(join(dir, "site-sets.json")))
+    throw new Error(
+      "experiments/cardvalue/site-sets.json is missing: it lists the value files the site shows",
+    );
   const SITE_SETS = JSON.parse(readFileSync(join(dir, "site-sets.json"), "utf8"));
-  if (SITE_SETS.schema !== 1) throw new Error("experiments/cardvalue/site-sets.json: unknown schema");
-  const catalog = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"), "utf8"));
+  if (SITE_SETS.schema !== 1)
+    throw new Error("experiments/cardvalue/site-sets.json: unknown schema");
+  const catalog = JSON.parse(
+    readFileSync(
+      join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"),
+      "utf8",
+    ),
+  );
   const known = new Set(catalog.cards.map((c) => c.id));
   const canonical = (id) => {
     const plain = id.replace(/_CARD$/, "");
@@ -215,9 +302,12 @@ function parseCardValues(comparisons) {
   const out = [];
   const listed = new Map(SITE_SETS.sets.map((entry) => [entry.file, entry]));
   for (const file of listed.keys()) {
-    if (!existsSync(join(dir, file))) throw new Error(`site-sets.json lists ${file}, which does not exist`);
+    if (!existsSync(join(dir, file)))
+      throw new Error(`site-sets.json lists ${file}, which does not exist`);
   }
-  for (const name of readdirSync(dir).filter((f) => listed.has(f)).sort()) {
+  for (const name of readdirSync(dir)
+    .filter((f) => listed.has(f))
+    .sort()) {
     const entry = listed.get(name);
     const raw = readFileSync(join(dir, name));
     const v = JSON.parse(raw.toString("utf8"));
@@ -229,9 +319,16 @@ function parseCardValues(comparisons) {
     const test = entry.test
       ? comparisons.find((c) => c.id === entry.test.comparison && c.role === "held-out")
       : comparisons.find(
-          (c) => c.a.policy === "rules_v2" && c.b.policy === "rules_v1" && c.role === "held-out" && String(c.cohort.character).toLowerCase() === character,
+          (c) =>
+            c.a.policy === "rules_v2" &&
+            c.b.policy === "rules_v1" &&
+            c.role === "held-out" &&
+            String(c.cohort.character).toLowerCase() === character,
         );
-    if (entry.test && !test) throw new Error(`${name}: its test ${entry.test.comparison} is not a held-out comparison in experiments/comparisons`);
+    if (entry.test && !test)
+      throw new Error(
+        `${name}: its test ${entry.test.comparison} is not a held-out comparison in experiments/comparisons`,
+      );
     const validation = test
       ? {
           comparison: test.id,
@@ -243,7 +340,9 @@ function parseCardValues(comparisons) {
           // what the pilot that followed these values was compared with
           against: entry.test?.against ?? "ratings",
           // improved the primary endpoint at the pre-registered level
-          passed: test.reachedAct2.a.rate > test.reachedAct2.b.rate && test.reachedAct2.pairedTable.mcnemar_p < ALPHA[character],
+          passed:
+            test.reachedAct2.a.rate > test.reachedAct2.b.rate &&
+            test.reachedAct2.pairedTable.mcnemar_p < ALPHA[character],
         }
       : null;
     // how far a set that replaces an earlier one moved from it (a descriptive comparison, not a test)
@@ -251,9 +350,11 @@ function parseCardValues(comparisons) {
     if (entry.drift) {
       const d = JSON.parse(readFileSync(join(dir, entry.drift), "utf8"));
       const sha = createHash("sha256").update(raw).digest("hex");
-      if (d.kind !== "card-value-comparison" || d.b.sha256 !== sha) throw new Error(`${name}: ${entry.drift} does not describe this version of the file`);
+      if (d.kind !== "card-value-comparison" || d.b.sha256 !== sha)
+        throw new Error(`${name}: ${entry.drift} does not describe this version of the file`);
       const previous = readFileSync(join(dir, entry.supersedes));
-      if (d.a.sha256 !== createHash("sha256").update(previous).digest("hex")) throw new Error(`${name}: ${entry.drift} compares another version of ${entry.supersedes}`);
+      if (d.a.sha256 !== createHash("sha256").update(previous).digest("hex"))
+        throw new Error(`${name}: ${entry.drift} compares another version of ${entry.supersedes}`);
       drift = {
         previous: entry.supersedes.replace(/\.json$/, ""),
         previousSha256: d.a.sha256,
@@ -272,14 +373,22 @@ function parseCardValues(comparisons) {
     }
     const cv = v.model.cross_validation;
     const best = Object.entries(cv.l2).find(([k]) => Number(k) === cv.best_l2)?.[1];
-    if (!best) throw new Error(`${name}: no cross-validation entry for the chosen penalty ${cv.best_l2}`);
+    if (!best)
+      throw new Error(`${name}: no cross-validation entry for the chosen penalty ${cv.best_l2}`);
     const seen = new Set();
     const cards = v.cards.map((c) => {
       const id = canonical(c.id);
       if (!id) throw new Error(`${name}: measured card ${c.id} is not in the catalog`);
       if (seen.has(id)) throw new Error(`${name}: ${id} is measured twice`);
       seen.add(id);
-      return { id, simId: c.id, beta: c.beta, ci95: c.ci95, gamesWithCard: c.games_with_card, staticRating: c.static_rating };
+      return {
+        id,
+        simId: c.id,
+        beta: c.beta,
+        ci95: c.ci95,
+        gamesWithCard: c.games_with_card,
+        staticRating: c.static_rating,
+      };
     });
     cards.sort((a, b) => b.beta - a.beta || (a.id < b.id ? -1 : 1));
     out.push({
@@ -304,7 +413,12 @@ function parseCardValues(comparisons) {
         baselineLogLoss: cv.baseline_log_loss,
       },
       spearmanWithStaticRating: v.spearman_with_static_rating ?? null,
-      batches: v.batches.map((b) => ({ id: b.batch_id, contentSha256: b.content_sha256, policy: b.policy, simulator: b.simulator.id })),
+      batches: v.batches.map((b) => ({
+        id: b.batch_id,
+        contentSha256: b.content_sha256,
+        policy: b.policy,
+        simulator: b.simulator.id,
+      })),
       cards,
     });
   }
@@ -319,7 +433,13 @@ function parseCardValues(comparisons) {
 // policy and seed count the pooled file claims for it. Anything that does not belong together stops the export.
 const NEOW_ALPHA = 0.05;
 const NEOW_POLICIES = { a: "rules_v2_neow_values", b: "rules_v2" };
-const EXACT = { ironclad: "Ironclad", silent: "Silent", regent: "Regent", necrobinder: "Necrobinder", defect: "Defect" };
+const EXACT = {
+  ironclad: "Ironclad",
+  silent: "Silent",
+  regent: "Regent",
+  necrobinder: "Necrobinder",
+  defect: "Defect",
+};
 const NEOW_EXPLORE_SEEDS = 3000;
 const NEOW_VAL_SEEDS = 2000;
 const NEOW_VALUES_FILE = "neow-values-v2.json";
@@ -332,9 +452,14 @@ function parseNeow(reports) {
   const here = `experiments/neow/${NEOW_VALUES_FILE}`;
   const raw = readFileSync(valuesFile);
   const v = JSON.parse(raw.toString("utf8"));
-  if (v.kind !== "neow-values" || v.schema !== 1) throw new Error(`${here}: not a neow-values file of schema 1`);
-  if (!String(v.model?.resampling_unit ?? "").startsWith("seed")) throw new Error(`${here}: the fit must resample and cross-validate by seed (ADR-049)`);
-  if (v.model.seeds !== NEOW_EXPLORE_SEEDS) throw new Error(`${here}: fitted on ${v.model.seeds} seeds, the registration says ${NEOW_EXPLORE_SEEDS}`);
+  if (v.kind !== "neow-values" || v.schema !== 1)
+    throw new Error(`${here}: not a neow-values file of schema 1`);
+  if (!String(v.model?.resampling_unit ?? "").startsWith("seed"))
+    throw new Error(`${here}: the fit must resample and cross-validate by seed (ADR-049)`);
+  if (v.model.seeds !== NEOW_EXPLORE_SEEDS)
+    throw new Error(
+      `${here}: fitted on ${v.model.seeds} seeds, the registration says ${NEOW_EXPLORE_SEEDS}`,
+    );
   const sha256 = createHash("sha256").update(raw).digest("hex");
   const cv = v.model.cross_validation;
   const best = Object.entries(cv.l2).find(([k]) => Number(k) === cv.best_l2)?.[1];
@@ -345,20 +470,36 @@ function parseNeow(reports) {
     // defect is the reference class of the fit; the others carry an offset from it
     const offset = character === "defect" ? 0 : v.covariates[`class:${character}`];
     if (typeof offset !== "number") throw new Error(`${here}: no offset for class ${character}`);
-    return { character, games: c.games, passRate: c.pass_rate, baselineLogOdds: Math.round((v.covariates.intercept + offset) * 1e4) / 1e4 };
+    return {
+      character,
+      games: c.games,
+      passRate: c.pass_rate,
+      baselineLogOdds: Math.round((v.covariates.intercept + offset) * 1e4) / 1e4,
+    };
   });
   // the batches the values were fitted on are in the repository, are the ones the file names, and are what the registration says
-  if (v.batches.length !== CLASSES.length) throw new Error(`${here}: it must name one exploration batch per class`);
+  if (v.batches.length !== CLASSES.length)
+    throw new Error(`${here}: it must name one exploration batch per class`);
   const fitted = new Set();
   for (const b of v.batches) {
-    const manifestFile = join(dir, b.batch_id.replace(/^neow-explore-/, "explore-"), "manifest.json");
-    if (!existsSync(manifestFile)) throw new Error(`${here}: its exploration batch ${b.batch_id} is not in experiments/neow`);
+    const manifestFile = join(
+      dir,
+      b.batch_id.replace(/^neow-explore-/, "explore-"),
+      "manifest.json",
+    );
+    if (!existsSync(manifestFile))
+      throw new Error(`${here}: its exploration batch ${b.batch_id} is not in experiments/neow`);
     const m = JSON.parse(readFileSync(manifestFile, "utf8"));
     if (m.batch_id !== b.batch_id || m.content_sha256 !== b.content_sha256) {
-      throw new Error(`${here}: exploration batch ${b.batch_id} changed after the values were fitted`);
+      throw new Error(
+        `${here}: exploration batch ${b.batch_id} changed after the values were fitted`,
+      );
     }
     const cls = CLASSES.find((c) => EXACT[c] === m.config?.character);
-    if (!cls) throw new Error(`${here}: exploration batch ${b.batch_id} was played as "${m.config?.character}", which is not one of the simulator's exact class ids`);
+    if (!cls)
+      throw new Error(
+        `${here}: exploration batch ${b.batch_id} was played as "${m.config?.character}", which is not one of the simulator's exact class ids`,
+      );
     fitted.add(cls);
     const bad =
       m.policy?.name !== "rules_v2_neow" || m.policy?.params?.neow_explore !== 1
@@ -372,7 +513,8 @@ function parseNeow(reports) {
               : null;
     if (bad) throw new Error(`${here}: exploration batch ${b.batch_id}: ${bad}`);
   }
-  if (fitted.size !== CLASSES.length) throw new Error(`${here}: its exploration batches must be one per class`);
+  if (fitted.size !== CLASSES.length)
+    throw new Error(`${here}: its exploration batches must be one per class`);
   const seen = new Set();
   const relics = v.relics.map((r) => {
     if (seen.has(r.label)) throw new Error(`${here}: ${r.label} is measured twice`);
@@ -418,25 +560,42 @@ function parseNeow(reports) {
   if (!existsSync(testFile)) return { values, test: null };
   const t = JSON.parse(readFileSync(testFile, "utf8"));
   const where = `experiments/neow/${NEOW_TEST_FILE}`;
-  if (t.kind !== "pooled-paired-comparison" || t.policies?.a !== NEOW_POLICIES.a || t.policies?.b !== NEOW_POLICIES.b) {
-    throw new Error(`${where}: not the pooled comparison of ${NEOW_POLICIES.a} against ${NEOW_POLICIES.b}`);
+  if (
+    t.kind !== "pooled-paired-comparison" ||
+    t.policies?.a !== NEOW_POLICIES.a ||
+    t.policies?.b !== NEOW_POLICIES.b
+  ) {
+    throw new Error(
+      `${where}: not the pooled comparison of ${NEOW_POLICIES.a} against ${NEOW_POLICIES.b}`,
+    );
   }
-  if (t.cohort?.partition !== "val" || t.role !== "held-out") throw new Error(`${where}: not a held-out comparison`);
-  if (t.cohort.ascension !== v.ascension || t.cohort.profile !== v.profile) throw new Error(`${where}: played at another ascension or profile than the values were measured at`);
+  if (t.cohort?.partition !== "val" || t.role !== "held-out")
+    throw new Error(`${where}: not a held-out comparison`);
+  if (t.cohort.ascension !== v.ascension || t.cohort.profile !== v.profile)
+    throw new Error(
+      `${where}: played at another ascension or profile than the values were measured at`,
+    );
   const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
   const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
-  const everyClassOnce = (list) => list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+  const everyClassOnce = (list) =>
+    list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
   // the members carry the numbers and the cohort names the classes: both must be the five classes, once each
-  if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed)) throw new Error(`${where}: it must pool all five classes, once each`);
+  if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed))
+    throw new Error(`${where}: it must pool all five classes, once each`);
   const byId = new Map(reports.map((r) => [r.id, r]));
   const sums = { a_only: 0, b_only: 0, both: 0, neither: 0, pairedSeeds: 0, bothCompleted: 0 };
   for (const m of t.members) {
     const cls = String(m.character).toLowerCase();
-    for (const [side, policy] of [[m.a, NEOW_POLICIES.a], [m.b, NEOW_POLICIES.b]]) {
+    for (const [side, policy] of [
+      [m.a, NEOW_POLICIES.a],
+      [m.b, NEOW_POLICIES.b],
+    ]) {
       const current = byId.get(side.batchId);
       if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
       if (current.contentSha256 !== side.contentSha256) {
-        throw new Error(`${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`);
+        throw new Error(
+          `${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`,
+        );
       }
       // what the batch is, from its own manifest, not from what the pooled file says about it
       const bad =
@@ -451,11 +610,19 @@ function parseNeow(reports) {
                 : null;
       if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}): ${bad}`);
     }
-    if (m.pairedSeeds !== NEOW_VAL_SEEDS) throw new Error(`${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${NEOW_VAL_SEEDS}`);
-    if (!byId.get(m.a.batchId).classStartVerified) throw new Error(`${where}: ${m.a.batchId} was not played with the per-game class check`);
-    const manifest = JSON.parse(readFileSync(join(root, "experiments", "batches", m.a.batchId, "manifest.json"), "utf8"));
+    if (m.pairedSeeds !== NEOW_VAL_SEEDS)
+      throw new Error(
+        `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${NEOW_VAL_SEEDS}`,
+      );
+    if (!byId.get(m.a.batchId).classStartVerified)
+      throw new Error(`${where}: ${m.a.batchId} was not played with the per-game class check`);
+    const manifest = JSON.parse(
+      readFileSync(join(root, "experiments", "batches", m.a.batchId, "manifest.json"), "utf8"),
+    );
     if (manifest.policy?.effective?.params?.neow_values_sha256 !== sha256) {
-      throw new Error(`${where}: ${m.a.batchId} was played with another version of ${NEOW_VALUES_FILE}`);
+      throw new Error(
+        `${where}: ${m.a.batchId} was played with another version of ${NEOW_VALUES_FILE}`,
+      );
     }
     const tab = m.reachedAct2.pairedTable;
     for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
@@ -465,9 +632,13 @@ function parseNeow(reports) {
   const r1 = t.reachedAct2;
   // the pooled numbers are the sum of the classes' own, and the file says what it adds up to
   for (const k of ["a_only", "b_only", "both", "neither"]) {
-    if (r1.pairedTable[k] !== sums[k]) throw new Error(`${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`);
+    if (r1.pairedTable[k] !== sums[k])
+      throw new Error(
+        `${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`,
+      );
   }
-  if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted) throw new Error(`${where}: its totals are not the sum of the classes'`);
+  if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted)
+    throw new Error(`${where}: its totals are not the sum of the classes'`);
   const test = {
     id: NEOW_TEST_FILE.replace(/\.json$/, ""),
     contentSha256: t.contentSha256,
@@ -501,20 +672,30 @@ function parseNeow(reports) {
 
 // What the simulated runs say about the advisor's synergy term (ADR-050). The page's panel quotes these numbers, so they are read from
 // the study's own reports and refused when the study was made on another table than the one the page computes with.
-function parseSynergy() {
-  const table = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "synergy.sts2-main-0.107.1.json"), "utf8"));
-  const out = { table: { sha256: table.sha256, cards: Object.keys(table.cards).length, mechanics: Object.keys(table.mechanics).length }, b1: null };
+function parseSynergy(reports) {
+  const table = JSON.parse(
+    readFileSync(
+      join(root, "packages", "game-data", "data", "synergy.sts2-main-0.107.1.json"),
+      "utf8",
+    ),
+  );
+  const out = {
+    table: {
+      sha256: table.sha256,
+      cards: Object.keys(table.cards).length,
+      mechanics: Object.keys(table.mechanics).length,
+    },
+    b1: null,
+    b2: null,
+  };
   const b1File = join(root, "experiments", "synergy", "b1-calibration.json");
   if (!existsSync(b1File)) return out;
   const rawB1 = readFileSync(b1File);
   const b1 = JSON.parse(rawB1.toString("utf8"));
   if (b1.advisor.synergy_table_sha256 !== table.sha256) {
-    throw new Error("experiments/synergy/b1-calibration.json was made on another synergy table than the page uses: run python -m slay2_sim.synergystudy");
-  }
-  // The one registered test (stage B2-val) is not read yet. When its pooled result is committed this exporter has to read it, or the
-  // /methods panel would still say that the test has not been run.
-  if (existsSync(join(root, "experiments", "synergy", "val", "pooled-astar-vs-d0star.json"))) {
-    throw new Error("experiments/synergy/val holds the B2 result, which parseSynergy does not read yet: add it, and the panel's account of it, before committing the result");
+    throw new Error(
+      "experiments/synergy/b1-calibration.json was made on another synergy table than the page uses: run python -m slay2_sim.synergystudy",
+    );
   }
   const pooled = b1.pooled.all_cohorts;
   const gap = (g) => ({ mean: g.mean, ci95: g.ci95 });
@@ -526,27 +707,493 @@ function parseSynergy() {
     outcome: b1.outcome,
     bossFights: pooled.rows,
     passRate: pooled.pass_rate,
-    cohorts: b1.cohorts.map((c) => ({ name: c.name, character: c.character, partition: c.partition, bossFights: c.boss_fights })),
-    logLoss: { index: pooled.cross_validation.index.log_loss, indexAndSynergy: pooled.cross_validation["index+synergy"].log_loss },
-    auc: { index: pooled.cross_validation.index.auc, indexAndSynergy: pooled.cross_validation["index+synergy"].auc },
+    cohorts: b1.cohorts.map((c) => ({
+      name: c.name,
+      character: c.character,
+      partition: c.partition,
+      bossFights: c.boss_fights,
+    })),
+    logLoss: {
+      index: pooled.cross_validation.index.log_loss,
+      indexAndSynergy: pooled.cross_validation["index+synergy"].log_loss,
+    },
+    auc: {
+      index: pooled.cross_validation.index.auc,
+      indexAndSynergy: pooled.cross_validation["index+synergy"].auc,
+    },
     synergyAdded: gap(pooled.loss_gaps.synergy_added_to_index),
     enginesAdded: gap(pooled.loss_gaps.engines_added_to_needs_and_scalers),
-    ratios: { needs: ratio(pooled.ratios.unmet), scalers: ratio(pooled.ratios.scaler), engines: ratio(pooled.ratios.engines), coverage: ratio(pooled.ratios.coverage) },
+    ratios: {
+      needs: ratio(pooled.ratios.unmet),
+      scalers: ratio(pooled.ratios.scaler),
+      engines: ratio(pooled.ratios.engines),
+      coverage: ratio(pooled.ratios.coverage),
+    },
     beyondCards: {
       logLossCards: b1.beyond_additive_card_values.pooled.log_loss_cards,
       logLossCardsAndParts: b1.beyond_additive_card_values.pooled.log_loss_cards_and_parts,
       gap: gap(b1.beyond_additive_card_values.pooled.gap),
     },
-    perCohortGain: Object.fromEntries(Object.entries(b1.per_cohort).map(([name, a]) => [name, gap(a.loss_gaps.synergy_added_to_index)])),
+    perCohortGain: Object.fromEntries(
+      Object.entries(b1.per_cohort).map(([name, a]) => [
+        name,
+        gap(a.loss_gaps.synergy_added_to_index),
+      ]),
+    ),
     calibratedWeights: b1.calibration.weights,
+    mechanics: null,
   };
+  // The same runs read one mechanic's unmet need at a time (descriptive; it changes no tag). It is optional, but when it is there it has to
+  // be about the table and the runs the page quotes, or it would say something about other ones.
+  const mechanicsFile = join(root, "experiments", "synergy", "b1-mechanics.json");
+  if (existsSync(mechanicsFile)) {
+    const rawMechanics = readFileSync(mechanicsFile);
+    const m = JSON.parse(rawMechanics.toString("utf8"));
+    if (m.advisor.synergy_table_sha256 !== table.sha256) {
+      throw new Error(
+        "experiments/synergy/b1-mechanics.json was made on another synergy table than the page uses: run python -m slay2_sim.synergymechanics",
+      );
+    }
+    if (m.rows !== pooled.rows) {
+      throw new Error(
+        "experiments/synergy/b1-mechanics.json reads other runs than b1-calibration.json: run both again",
+      );
+    }
+    out.b1.mechanics = {
+      file: "experiments/synergy/b1-mechanics.json",
+      sha256: createHash("sha256").update(rawMechanics).digest("hex"),
+      bootstrapDraws: m.bootstrap_draws,
+      pooled: ratio(m.pooled_unmet_ratio),
+      rows: m.mechanics.map((r) => ({
+        mechanic: r.mechanic,
+        label: r.label,
+        decks: r.decks_with_the_need,
+        meanPoints: r.mean_points,
+        ratio: { toQuality: r.ratio_to_quality, ci95: r.ratio_ci95 },
+      })),
+    };
+  }
+  // The one registered test (stage B2-val). When its pooled result exists it is read, with everything it rests on, or the export stops:
+  // the /methods panel must never say that the test has not been run when it has.
+  out.b2 = parseSynergyTest(reports, table.sha256);
   return out;
 }
 
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Stage B2 of the synergy study (ADR-050): the one registered held-out test of a pilot that picks card rewards by the deck index with the
+// synergy term (A*) against the same pilot without it at the same skip margin (d0*), on the 2,000 val seeds of each class, the five
+// classes pooled. Nothing here is taken on trust. The arms are read from the batches' own manifests (the parameters each pilot ran with,
+// not the names the files give them); A* has to be the configuration the development stage chose, by the selection rule applied again to
+// the numbers in its selection files; every batch must be the class, partition, policy and seed count the pooled file claims for it,
+// with the per-game class check; and both primary arms carry a passing sample audit. Anything that does not belong together stops the
+// export, so a result that was not the registered one cannot reach the page.
+const SYN_ALPHA = 0.05;
+const SYN_VAL_SEEDS = 2000;
+const SYN_TIE = 0.005; // 0.5 percentage points, the tie of ADR-050 item 3
+const SYN_CONFIGS = {
+  d1: { needs: 1, scalers: 0.7, engines: 0 },
+  d2: { needs: 1, scalers: 0.7, engines: 0.25 },
+  d3: { needs: 1, scalers: 0.7, engines: 0.5 },
+  d4: { needs: 1, scalers: 1, engines: 1 },
+};
+const SYN_MARGINS = { m1: 1.5, m2: 3 };
+const SYN_POLICY = "advisor_v1";
+
+// The exact two-sided McNemar p-value of the discordant counts, as slay2_sim.stats.mcnemar_exact computes it (2 x the lower binomial tail at
+// 1/2, capped at 1), in exact integers: the exporter does not take a p-value from a file without checking it against the counts.
+function mcnemarExact(aOnly, bOnly) {
+  const n = aOnly + bOnly;
+  if (n === 0) return 1;
+  const k = Math.min(aOnly, bOnly);
+  let term = 1n;
+  let tail = 1n;
+  for (let i = 1; i <= k; i++) {
+    term = (term * BigInt(n - i + 1)) / BigInt(i);
+    tail += term;
+  }
+  const scaled = (2n * tail * 10n ** 40n) / 2n ** BigInt(n);
+  return Math.min(1, Number(scaled) / 1e40);
+}
+const closeP = (x, y) => Math.abs(x - y) <= 1e-9 * Math.max(x, y) + 1e-35;
+
+// What the development stage chose, read from its two selection files and checked by applying the rule again.
+function parseSynergySelection() {
+  const dir = join(root, "experiments", "synergy", "dev");
+  const files = ["selection-phase1.json", "selection-phase2.json"].map((f) => join(dir, f));
+  for (const f of files) {
+    if (!existsSync(f))
+      throw new Error(
+        `experiments/synergy/val holds a result, but the development stage's ${f.slice(root.length + 1)} is missing`,
+      );
+  }
+  const raws = files.map((f) => readFileSync(f));
+  const [p1, p2] = raws.map((r) => JSON.parse(r.toString("utf8")));
+  const arms = Object.keys(SYN_CONFIGS);
+  if (
+    p1.phase !== 1 ||
+    p1.baseline !== "d0" ||
+    arms.some((a) => typeof p1.differences?.[a]?.difference !== "number")
+  ) {
+    throw new Error(
+      "experiments/synergy/dev/selection-phase1.json: not the phase-1 comparison of d1 to d4 with d0",
+    );
+  }
+  const best = Math.max(...arms.map((a) => p1.differences[a].difference));
+  const chosen =
+    best <= 0 ? "d1" : arms.find((a) => p1.differences[a].difference >= best - SYN_TIE);
+  if (p1.chosen !== chosen)
+    throw new Error(
+      `experiments/synergy/dev/selection-phase1.json chooses ${p1.chosen}; the rule of ADR-050 chooses ${chosen} from its numbers`,
+    );
+  if (
+    p2.phase !== 2 ||
+    p2.baseline !== chosen ||
+    Object.keys(SYN_MARGINS).some((a) => typeof p2.differences?.[a]?.difference !== "number")
+  ) {
+    throw new Error(
+      "experiments/synergy/dev/selection-phase2.json: not the phase-2 comparison of the two skip margins with the chosen configuration",
+    );
+  }
+  const options = [
+    [0, 0],
+    ...Object.entries(SYN_MARGINS).map(([a, m]) => [m, p2.differences[a].difference]),
+  ];
+  const bestMargin = Math.max(...options.map(([, d]) => d));
+  const margin = options.find(([, d]) => d >= bestMargin - SYN_TIE)[0];
+  if (p2.chosen_margin !== margin)
+    throw new Error(
+      `experiments/synergy/dev/selection-phase2.json chooses margin ${p2.chosen_margin}; the rule of ADR-050 chooses ${margin} from its numbers`,
+    );
+  // The record of A* is public before the test: the decision log has an Addendum D and quotes the hash of both selection files, so a
+  // result cannot follow selection files other than the ones that were announced.
+  const hashes = raws.map((r) => createHash("sha256").update(r).digest("hex"));
+  const decisionsFile = join(root, "docs", "DECISIONS.md");
+  const decisions = existsSync(decisionsFile) ? readFileSync(decisionsFile, "utf8") : "";
+  if (!decisions.includes("Addendum D"))
+    throw new Error(
+      "docs/DECISIONS.md has no Addendum D, the record of A* that the registered test follows (ADR-050)",
+    );
+  ["selection-phase1.json", "selection-phase2.json"].forEach((name, i) => {
+    if (!decisions.includes(hashes[i].slice(0, 12)))
+      throw new Error(
+        `docs/DECISIONS.md does not quote the hash (${hashes[i].slice(0, 12)}) of ${name}: the test must follow the selection files Addendum D records`,
+      );
+  });
+  const read = (d) => ({
+    difference: d.difference,
+    ci95: d.ci95,
+    pairs: d.pairs,
+    mcnemarP: d.mcnemar_p,
+  });
+  return {
+    arm: chosen,
+    config: SYN_CONFIGS[chosen],
+    margin,
+    phase1: {
+      sha256: hashes[0],
+      differences: Object.fromEntries(arms.map((a) => [a, read(p1.differences[a])])),
+    },
+    phase2: {
+      sha256: hashes[1],
+      differences: Object.fromEntries(
+        Object.keys(SYN_MARGINS).map((a) => [a, read(p2.differences[a])]),
+      ),
+    },
+  };
+}
+
+function parseSynergyTest(reports, tableSha256) {
+  const valDir = join(root, "experiments", "synergy", "val");
+  const primaryFile = join(valDir, "pooled-astar-vs-d0star.json");
+  if (!existsSync(primaryFile)) return null;
+  const choice = parseSynergySelection();
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const manifests = new Map();
+  const manifestOf = (id) => {
+    if (!manifests.has(id))
+      manifests.set(
+        id,
+        JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8")),
+      );
+    return manifests.get(id);
+  };
+  const effective = (id) => manifestOf(id).policy?.effective?.params ?? {};
+  // The arms of the test were played from a clean checkout (the manifest records `dirty`), and all from one commit: the one that carries
+  // the addendum that records A* (ADR-050 item 4). The second part is checked once every comparison has been read.
+  const heads = new Set();
+  const played = (r) => {
+    const env = manifestOf(r.id).environment?.slay2 ?? {};
+    heads.add(env.head);
+    return env.dirty === false
+      ? null
+      : "it was played from a working tree with uncommitted changes (ADR-050 asks for a clean checkout)";
+  };
+  const isAstar = (p) =>
+    p.synergy === 1 &&
+    p.margin === choice.margin &&
+    ["needs", "scalers", "engines"].every((k) => p[k] === choice.config[k]);
+  const isNoTerm = (margin) => (p) => p.synergy === 0 && p.margin === margin;
+  const measuredValues = (r) =>
+    r.policy === "rules_v3" &&
+    String(r.policyParams?.values ?? "").endsWith(
+      `${r.character.toLowerCase()}-a0-${r.character === "Ironclad" ? "v2" : "v1"}.json`,
+    );
+  // The per-game class check (ADR-049) was added after the Ironclad batches of rules_v3 with measured values were played; Ironclad is the
+  // class a run starts as when nothing is asked, so that one reference batch is the only exception to the check.
+  // an arm: what the manifest of each of its five batches has to show; null when it does
+  const arm = {
+    astar: (r) =>
+      r.policy !== SYN_POLICY
+        ? `its policy is ${r.policy}`
+        : !isAstar(effective(r.id))
+          ? "its parameters are not the configuration the development stage chose"
+          : played(r),
+    d0star: (r) =>
+      r.policy !== SYN_POLICY
+        ? `its policy is ${r.policy}`
+        : !isNoTerm(choice.margin)(effective(r.id))
+          ? "it is not the index without the synergy term at A*'s margin"
+          : played(r),
+    d0: (r) =>
+      r.policy !== SYN_POLICY
+        ? `its policy is ${r.policy}`
+        : !isNoTerm(0)(effective(r.id))
+          ? "it is not the index without the synergy term at margin 0"
+          : played(r),
+    // the Ironclad reference batch is older than the rules above (it was played from a working tree with changes, before the class check)
+    rules_v3: (r) =>
+      !measuredValues(r)
+        ? "it is not rules_v3 with the class's measured card values"
+        : r.character === "Ironclad"
+          ? null
+          : played(r),
+  };
+
+  function pooled(file, a, b) {
+    const where = `experiments/synergy/val/${file}`;
+    const t = JSON.parse(readFileSync(join(valDir, file), "utf8"));
+    if (t.kind !== "pooled-paired-comparison" || t.schema !== 1)
+      throw new Error(`${where}: not a pooled paired comparison of schema 1`);
+    if (t.cohort?.partition !== "val" || t.role !== "held-out")
+      throw new Error(`${where}: not a held-out comparison`);
+    if (t.cohort.ascension !== 0 || t.cohort.profile !== "veteran")
+      throw new Error(`${where}: not played at Ascension 0 with the veteran profile`);
+    const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
+    const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
+    const everyClassOnce = (list) =>
+      list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+    if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed))
+      throw new Error(`${where}: it must pool all five classes, once each`);
+    const sums = {
+      a_only: 0,
+      b_only: 0,
+      both: 0,
+      neither: 0,
+      pairedSeeds: 0,
+      bothCompleted: 0,
+      winsA: 0,
+      winsB: 0,
+    };
+    for (const m of t.members) {
+      const cls = String(m.character).toLowerCase();
+      for (const [side, name] of [
+        [m.a, a],
+        [m.b, b],
+      ]) {
+        const current = byId.get(side.batchId);
+        if (!current) throw new Error(`${where}: batch ${side.batchId} is not an evidence batch`);
+        if (current.contentSha256 !== side.contentSha256)
+          throw new Error(
+            `${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`,
+          );
+        const bad =
+          current.character !== EXACT[cls]
+            ? `it was played as "${current.character}", not as ${EXACT[cls]}`
+            : current.partition !== "val" || current.seeds !== SYN_VAL_SEEDS
+              ? `it is not the ${SYN_VAL_SEEDS} val seeds`
+              : current.ascension !== 0 || current.profile !== "veteran"
+                ? "it is not Ascension 0 with the veteran profile"
+                : !current.classStartVerified && !(name === "rules_v3" && cls === "ironclad")
+                  ? "its games were not checked against the class they were played as"
+                  : !current.canonicalProcessState
+                    ? "it was not played in the harness's canonical process state"
+                    : arm[name](current);
+        if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}, ${name}): ${bad}`);
+        const audit = current.sampleAudit;
+        if (!audit || !audit.ledgerOk || audit.verified !== audit.drawn || audit.drawn < 40)
+          throw new Error(
+            `${where}: ${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`,
+          );
+      }
+      if (m.pairedSeeds !== SYN_VAL_SEEDS)
+        throw new Error(
+          `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${SYN_VAL_SEEDS}`,
+        );
+      const tab = m.reachedAct2.pairedTable;
+      for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
+      sums.pairedSeeds += m.pairedSeeds;
+      sums.bothCompleted += m.bothCompleted;
+      sums.winsA += m.a.wins;
+      sums.winsB += m.b.wins;
+    }
+    const r1 = t.reachedAct2;
+    for (const k of ["a_only", "b_only", "both", "neither"]) {
+      if (r1.pairedTable[k] !== sums[k])
+        throw new Error(
+          `${where}: the pooled ${k} (${r1.pairedTable[k]}) is not the sum of the classes' (${sums[k]})`,
+        );
+    }
+    if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted)
+      throw new Error(`${where}: its totals are not the sum of the classes'`);
+    if (t.wins.a !== sums.winsA || t.wins.b !== sums.winsB)
+      throw new Error(`${where}: its wins are not the sum of the classes'`);
+    // every table adds up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts
+    if (t.bothCompleted + t.excludedNotCompleted !== t.pairedSeeds)
+      throw new Error(`${where}: completed and excluded pairs do not add up to the paired seeds`);
+    const table = (label, tab, total) => {
+      const n = tab.a_only + tab.b_only + tab.both + tab.neither;
+      if (n !== total)
+        throw new Error(`${where}: the ${label} table adds up to ${n}, not the ${total} pairs both arms completed`);
+      const exact = mcnemarExact(tab.a_only, tab.b_only);
+      if (!closeP(exact, tab.mcnemar_p))
+        throw new Error(
+          `${where}: the ${label} p-value (${tab.mcnemar_p}) is not the exact McNemar p-value of its counts (${exact})`,
+        );
+    };
+    for (const [label, e] of [
+      ["Act-1", r1],
+      ["Act-2", t.reachedAct3],
+    ]) {
+      table(label, e.pairedTable, t.bothCompleted);
+      if (
+        e.a.games !== e.pairedTable.a_only + e.pairedTable.both ||
+        e.b.games !== e.pairedTable.b_only + e.pairedTable.both ||
+        Math.abs(e.a.rate - e.a.games / t.bothCompleted) > 1e-9 ||
+        Math.abs(e.b.rate - e.b.games / t.bothCompleted) > 1e-9
+      )
+        throw new Error(`${where}: the ${label} rates are not the counts of its table`);
+    }
+    table("wins", t.wins.pairedTable, t.bothCompleted);
+    for (const m of t.members) table(`${m.character} Act-1`, m.reachedAct2.pairedTable, m.bothCompleted);
+    return {
+      id: file.replace(/\.json$/, ""),
+      contentSha256: t.contentSha256,
+      pairedSeeds: t.pairedSeeds,
+      bothCompleted: t.bothCompleted,
+      excludedNotCompleted: t.excludedNotCompleted,
+      // games of each arm that ended in a simulator error or a timeout (never counted as losses); the pairs they were in are left out
+      notFinished: {
+        a: t.members.reduce((n, m) => n + SYN_VAL_SEEDS - byId.get(m.a.batchId).completed, 0),
+        b: t.members.reduce((n, m) => n + SYN_VAL_SEEDS - byId.get(m.b.batchId).completed, 0),
+      },
+      reachedAct2: r1,
+      reachedAct3: t.reachedAct3,
+      wins: t.wins,
+      floorDifference: t.floorDifference,
+      clusteredDifference: t.clusteredDifference,
+      members: t.members.map((m) => ({
+        character: String(m.character).toLowerCase(),
+        a: m.a,
+        b: m.b,
+        pairedSeeds: m.pairedSeeds,
+        bothCompleted: m.bothCompleted,
+        reachedAct2: m.reachedAct2,
+        meanFloorDifference: m.meanFloorDifference,
+      })),
+    };
+  }
+
+  const primary = pooled("pooled-astar-vs-d0star.json", "astar", "d0star");
+  const optional = (file, a, b) => (existsSync(join(valDir, file)) ? pooled(file, a, b) : null);
+  const noTermAtZero = optional("pooled-astar-vs-d0.json", "astar", "d0");
+  if (choice.margin !== 0 && !noTermAtZero)
+    throw new Error(
+      "the margin is not 0, so the comparison with the index without the term at margin 0 (pooled-astar-vs-d0.json) is part of the result",
+    );
+  if (choice.margin === 0 && noTermAtZero)
+    throw new Error(
+      "pooled-astar-vs-d0.json exists, but at margin 0 it is the primary comparison: remove it",
+    );
+  const measured = optional("pooled-astar-vs-rules_v3.json", "astar", "rules_v3");
+  if (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h))))
+    throw new Error(
+      `the arms of the test were not all played from one commit (heads: ${[...heads].join(", ")})`,
+    );
+  if (!measured)
+    throw new Error(
+      "the comparison with the measured-values pilot (pooled-astar-vs-rules_v3.json) is part of the registered result",
+    );
+
+  // how often each arm skipped and what its decks at the boss held (slay2_sim.synergyreport), tied to the very batches of the test
+  let profile = null;
+  const profileFile = join(valDir, "arm-profile.json");
+  if (existsSync(profileFile)) {
+    const pr = JSON.parse(readFileSync(profileFile, "utf8"));
+    if (pr.kind !== "arm-profile" || pr.schema !== 1)
+      throw new Error("experiments/synergy/val/arm-profile.json: not an arm profile of schema 1");
+    for (const [name, side] of [
+      ["astar", "a"],
+      ["d0star", "b"],
+    ]) {
+      for (const m of primary.members) {
+        const mine = pr.arms?.[name]?.batches?.[m.character];
+        const current = byId.get(m[side].batchId);
+        if (
+          !mine ||
+          mine.batch_id !== current.id ||
+          mine.episodes_gz_sha256 !== current.episodesGzSha256
+        ) {
+          throw new Error(
+            `experiments/synergy/val/arm-profile.json: its ${name} ${m.character} batch is not the one the test used`,
+          );
+        }
+      }
+    }
+    const summary = (a) => ({
+      games: a.pooled.games,
+      offers: a.pooled.offers,
+      skipped: a.pooled.skipped,
+      skipRate: a.pooled.skip_rate,
+      bossDecks: a.pooled.boss_decks,
+      atBoss: a.pooled.at_boss,
+    });
+    profile = {
+      sha256: createHash("sha256").update(readFileSync(profileFile)).digest("hex"),
+      astar: summary(pr.arms.astar),
+      d0star: summary(pr.arms.d0star),
+      difference: pr.differences["astar-vs-d0star"].pooled,
+    };
+  }
+
+  const t = primary.reachedAct2.pairedTable;
+  const significant = t.mcnemar_p < SYN_ALPHA;
+  return {
+    tableSha256,
+    alpha: SYN_ALPHA,
+    astar: { arm: choice.arm, ...choice.config, margin: choice.margin },
+    selection: { phase1: choice.phase1, phase2: choice.phase2 },
+    primary,
+    // the reading rule of ADR-050 item 7, from the numbers alone
+    verdict: significant ? (t.a_only > t.b_only ? "ahead" : "behind") : "not-shown",
+    noTermAtZero,
+    measured,
+    profile,
+  };
+}
+
 function parseVerification() {
-  const golden = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "golden-python.json"), "utf8"));
-  const published = JSON.parse(readFileSync(join(root, "packages", "odds", "test", "fixtures", "published.json"), "utf8"));
-  const catalog = JSON.parse(readFileSync(join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"), "utf8"));
+  const golden = JSON.parse(
+    readFileSync(join(root, "packages", "odds", "test", "fixtures", "golden-python.json"), "utf8"),
+  );
+  const published = JSON.parse(
+    readFileSync(join(root, "packages", "odds", "test", "fixtures", "published.json"), "utf8"),
+  );
+  const catalog = JSON.parse(
+    readFileSync(
+      join(root, "packages", "game-data", "data", "cards.sts2-main-0.107.1.json"),
+      "utf8",
+    ),
+  );
   return {
     goldenCases: golden.cases.length,
     goldenKinds: [...new Set(golden.cases.map((c) => c.kind))].sort(),
@@ -567,7 +1214,12 @@ function parseStartHpGaps() {
   const out = {};
   for (const c of comparisons) {
     if (byId.get(c.a.batchId)?.gameHp === true && byId.get(c.b.batchId)?.gameHp === false) {
-      out[String(c.cohort.character).toLowerCase()] = { simulator: c.reachedAct2.b.rate, game: c.reachedAct2.a.rate, pairs: c.bothCompleted, comparison: c.id };
+      out[String(c.cohort.character).toLowerCase()] = {
+        simulator: c.reachedAct2.b.rate,
+        game: c.reachedAct2.a.rate,
+        pairs: c.bothCompleted,
+        comparison: c.id,
+      };
     }
   }
   return out;
@@ -581,24 +1233,29 @@ const outputs = {
   },
   "evidence.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/batches/*/manifest.json + experiments/comparisons/*.json + sim/slay2_sim/gaps.json",
-    simulatorGaps: JSON.parse(readFileSync(join(root, "sim", "slay2_sim", "gaps.json"), "utf8")).gaps,
+    generatedFrom:
+      "experiments/batches/*/manifest.json + experiments/comparisons/*.json + sim/slay2_sim/gaps.json",
+    simulatorGaps: JSON.parse(readFileSync(join(root, "sim", "slay2_sim", "gaps.json"), "utf8"))
+      .gaps,
     reports,
     comparisons,
   },
   "cardvalues.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
+    generatedFrom:
+      "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
     sets: parseCardValues(comparisons),
   },
   "synergy.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/synergy/b1-calibration.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
-    ...parseSynergy(),
+    generatedFrom:
+      "experiments/synergy/b1-calibration.json + experiments/synergy/b1-mechanics.json + packages/game-data/data/synergy.sts2-main-0.107.1.json",
+    ...parseSynergy(reports),
   },
   "neow.generated.json": {
     schema: 1,
-    generatedFrom: "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
+    generatedFrom:
+      "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
     ...parseNeow(reports),
     startHpGaps: parseStartHpGaps(),
   },

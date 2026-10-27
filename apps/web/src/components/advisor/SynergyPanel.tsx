@@ -5,7 +5,17 @@ import { PART_WEIGHT, type DeckSynergy } from "@slay2/decision";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
-import { SYNERGY_EVIDENCE, change, num, part } from "@/lib/synergy-evidence";
+import { formatP, pct } from "@/lib/stat-format";
+import {
+  SYNERGY_EVIDENCE,
+  change,
+  num,
+  part,
+  verdictOf,
+  type SynergyEvidence,
+  type SynergyTest,
+  type Verdict,
+} from "@/lib/synergy-evidence";
 
 function names(list: readonly string[]): string {
   if (list.length <= 1) return list[0] ?? "";
@@ -16,12 +26,63 @@ function kept(weight: number): string {
   return weight >= 1 ? "at its first judgement" : `at ${num(weight, 2)} of its first judgement`;
 }
 
+/** What the page's label says the synergy term has been through, by how the registered test came out (none yet: partly checked). */
+const LABEL: Record<Verdict, string> = {
+  ahead: "Judgement, tested in simulation",
+  "not-shown": "Judgement, not shown to help",
+  behind: "Judgement, worse in simulation",
+};
+
+/** The registered test in a few words, with its numbers: the part of the evidence that is about picking cards, not about predicting. */
+function TestResult({ test }: { test: SynergyTest }) {
+  const verdict = verdictOf(test);
+  const e = test.primary.reachedAct2;
+  const figures = (
+    <>
+      <span className="num">{pct(e.a.rate, 1)}</span> of simulated runs got past the Act&nbsp;1 boss
+      against <span className="num">{pct(e.b.rate, 1)}</span> for the same pilot without the synergy
+      term (held-out seeds, five classes, {formatP(e.pairedTable.mcnemar_p)})
+    </>
+  );
+  return (
+    <p>
+      <strong className="text-parchment">The registered test.</strong> A simulated pilot that picks
+      card rewards by this index, tested before any of its games were played:{" "}
+      {verdict === "ahead" ? (
+        <>
+          {figures}. In simulation, adding the term improved what the index picks; that says nothing
+          about the live game or about winning.
+        </>
+      ) : verdict === "behind" ? (
+        <>
+          {figures}. Adding the term made the simulated picks worse, so its strengths are a
+          judgement the simulation did not support.
+        </>
+      ) : (
+        <>
+          {figures}. The test did not show that the term improves the picks, which is not the same
+          as showing that it does not.
+        </>
+      )}{" "}
+      The result and its limits are in{" "}
+      <Link
+        className="text-teal underline decoration-dotted underline-offset-4"
+        href="/methods#synergy"
+      >
+        Evidence &amp; methods
+      </Link>
+      .
+    </p>
+  );
+}
+
 /**
  * What the simulated runs say about the synergy term, read from the study's own report (ADR-050): a measured claim and its
  * limits, beside a heuristic that stays a judgement.
  */
-function Evidence() {
-  const b1 = SYNERGY_EVIDENCE.b1;
+function Evidence({ evidence }: { evidence: SynergyEvidence }) {
+  const b1 = evidence.b1;
+  const b2 = evidence.b2;
   if (!b1) {
     return (
       <p className="mt-4 text-xs text-muted">
@@ -83,14 +144,18 @@ function Evidence() {
               ? `The gain is clear for ${names(classes)}; for the other classes the data cannot tell.`
               : "The data cannot tell for any single class."}
           </p>
+          {b2 ? <TestResult test={b2} /> : null}
           <p>
             <strong className="text-parchment">What it is not.</strong> Not the live game, not
             winning (wins are rare), and not people who build engines on purpose: random decks
             seldom hold a whole engine, and the pilot does not build around one. The tags were read
             against these same runs (a flaw in the Necrobinder&rsquo;s Osty was found and fixed that
-            way), so the figures flatter them. A held-out test of a pilot that picks cards by this
-            index is registered before any of its games (ADR-050); its result is not in yet. The
-            study, with its figures by class, is in{" "}
+            way), and a second, independent reading of every card corrected more, so the figures
+            flatter them.{" "}
+            {b2
+              ? null
+              : "A held-out test of a pilot that picks cards by this index is registered before any of its games (ADR-050); its result is not in yet. "}
+            The study, with its figures by class, is in{" "}
             <Link
               className="text-teal underline decoration-dotted underline-offset-4"
               href="/methods#synergy"
@@ -110,14 +175,21 @@ function Evidence() {
  * they supply (SLAY2's judgement of mechanics, `@slay2/game-data` synergy tags); this panel shows that reading of the
  * deck the recommendation above was made against.
  */
-export function SynergyPanel({ synergy }: { synergy: DeckSynergy }) {
+export function SynergyPanel({
+  synergy,
+  evidence = SYNERGY_EVIDENCE,
+}: {
+  synergy: DeckSynergy;
+  evidence?: SynergyEvidence;
+}) {
+  const label = evidence.b2 ? LABEL[verdictOf(evidence.b2)] : "Judgement, partly checked";
   const top = Math.max(...synergy.engines.map((e) => e.value), 1);
   return (
     <Panel
       eyebrow="Synergy · how your cards work together"
       title="What your deck is building"
       headingLevel={3}
-      aside={<Badge tone="heuristic">Judgement, partly checked</Badge>}
+      aside={<Badge tone="heuristic">{label}</Badge>}
       aria-label="Synergy of your deck"
     >
       {synergy.engines.length === 0 && synergy.waiting.length === 0 ? (
@@ -178,7 +250,7 @@ export function SynergyPanel({ synergy }: { synergy: DeckSynergy }) {
           </ul>
         </div>
       ) : null}
-      <Evidence />
+      <Evidence evidence={evidence} />
     </Panel>
   );
 }

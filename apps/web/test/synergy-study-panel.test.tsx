@@ -62,7 +62,7 @@ describe("the /methods synergy section", () => {
     render(<SynergyStudyPanel />);
     const limits = document.getElementById("synergy");
     expect(limits).toHaveTextContent("Simulated, not measured in the live game");
-    expect(limits).toHaveTextContent("Exploratory");
+    expect(limits).toHaveTextContent("The exploratory readings above, not the registered test");
     expect(limits).toHaveTextContent("not about winning");
     expect(limits).toHaveTextContent("Parity with the live game unverified");
   });
@@ -77,9 +77,51 @@ describe("the /methods synergy section", () => {
   it("explains the audit that changed the tags and why the figures flatter them", () => {
     render(<SynergyStudyPanel />);
     const audit = screen
-      .getByText("How the first reading changed the tags")
+      .getByText("How the readings changed the tags")
       .closest("details") as HTMLElement;
     expect(audit).toHaveTextContent("Bound Phylactery");
     expect(audit).toHaveTextContent("the figures flatter them");
+    expect(audit).toHaveTextContent("independent second reading");
+    expect(audit).toHaveTextContent("thrown away unread");
+  });
+
+  it("lists the unmet needs mechanic by mechanic, as a description and with the report's own figures", () => {
+    const mech = b1?.mechanics;
+    if (!mech) throw new Error("no per-mechanic report");
+    render(<SynergyStudyPanel />);
+    const disclosure = screen
+      .getByText("Which needs the runs support, one mechanic at a time")
+      .closest("details") as HTMLElement;
+    const table = within(disclosure).getByRole("table", {
+      name: /Worth of a point of each mechanic/,
+    });
+    const rows = within(table).getAllByRole("row").slice(1);
+    expect(rows).toHaveLength(mech.rows.length + 1);
+    expect(rows[0]).toHaveTextContent("All needs together");
+    expect(rows[0]).toHaveTextContent(
+      `${num(mech.pooled.toQuality, 2)} (${range(mech.pooled.ci95, 2)})`,
+    );
+    for (const r of mech.rows) {
+      const row = rows.find((x) => x.querySelector("th")?.textContent === r.label);
+      expect(row, `a row for ${r.label}`).toBeDefined();
+      expect(row).toHaveTextContent(`${num(r.ratio.toQuality, 2)} (${range(r.ratio.ci95, 2)})`);
+      expect(row).toHaveTextContent(r.decks.toLocaleString("en-US"));
+    }
+    // it is a description: nothing here claims a mechanic is mis-tagged, and the table is not changed by it
+    expect(disclosure).toHaveTextContent("not corrected for it");
+    expect(disclosure).toHaveTextContent("the tags were not changed because of it");
+    expect(disclosure).toHaveTextContent(mech.sha256.slice(0, 12));
+  });
+
+  it("sorts the mechanics the way the report does, by how much their unmet need varies", () => {
+    const mech = b1?.mechanics;
+    if (!mech) throw new Error("no per-mechanic report");
+    render(<SynergyStudyPanel />);
+    const table = screen.getByRole("table", { name: /Worth of a point of each mechanic/ });
+    const labels = within(table)
+      .getAllByRole("row")
+      .slice(2)
+      .map((row) => row.querySelector("th")?.textContent);
+    expect(labels).toEqual(mech.rows.map((r) => r.label));
   });
 });

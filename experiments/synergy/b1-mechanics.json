@@ -1,0 +1,524 @@
+{
+  "schema": 1,
+  "kind": "synergy-mechanics",
+  "stage": "B1 of ADR-050 (exploratory, descriptive: training and development seeds)",
+  "outcome": "the run gets past the Act-1 boss",
+  "act_index": 0,
+  "risk": "balanced",
+  "model_strengths": {
+    "needs": 1.0,
+    "scalers": 1.0,
+    "engines": 1.0
+  },
+  "advisor": {
+    "synergy_table_sha256": "bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a",
+    "catalog_sha256": "6717e3d5d311588dda139d2c5dde1f5fe8493be3f9628ff013ac675f9608b147"
+  },
+  "model": "logistic regression: the controls of each cohort, quality, coverage, curve, scalers, engines, and one unmet-need column per mechanic",
+  "bootstrap_draws": 200,
+  "bootstrap_seed": 0,
+  "resampling": "whole seeds",
+  "cohorts": [
+    {
+      "name": "ironclad-train",
+      "character": "Ironclad",
+      "partition": "train",
+      "batch_id": "explore-ironclad-a0-train-rep0",
+      "episodes_gz_sha256": "60f218fa516bbd54754577a69a0250904c358ef529181e6e1c7189af29d46dac",
+      "boss_fights": 3812,
+      "pass_rate": 0.4095,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "silent-train",
+      "character": "Silent",
+      "partition": "train",
+      "batch_id": "explore-silent-a0-train-rep0",
+      "episodes_gz_sha256": "e9c24dcd8c4517756818258f8ef1fb3899605208370da1b269c458ccf4cd0fe4",
+      "boss_fights": 2332,
+      "pass_rate": 0.1068,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "regent-train",
+      "character": "Regent",
+      "partition": "train",
+      "batch_id": "explore-regent-a0-train-rep0",
+      "episodes_gz_sha256": "8a1f4d2b9f93a63c2f53cd755d02540038abd427ca7c0696d8d63a594d768234",
+      "boss_fights": 2703,
+      "pass_rate": 0.2238,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "necrobinder-train",
+      "character": "Necrobinder",
+      "partition": "train",
+      "batch_id": "explore-necrobinder-a0-train-rep0",
+      "episodes_gz_sha256": "cb3dc9e631f5ddf51cd47ec1c9bbcb8072152002031bbf3cc36dba25c89b87a8",
+      "boss_fights": 3389,
+      "pass_rate": 0.44,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "defect-train",
+      "character": "Defect",
+      "partition": "train",
+      "batch_id": "explore-defect-a0-train-rep0",
+      "episodes_gz_sha256": "721c3ab99b1e9b3159ce419c476dacfa1d16d9015be8830528170df347341d18",
+      "boss_fights": 3212,
+      "pass_rate": 0.4026,
+      "policy": "rules_explore"
+    },
+    {
+      "name": "ironclad-dev",
+      "character": "Ironclad",
+      "partition": "dev",
+      "batch_id": "explore3-ironclad-a0-dev-o5000-n5000",
+      "episodes_gz_sha256": "5505c9409f81517e6f6dbe6e4a11d30095af564cff5dae253e15d8be60a66be4",
+      "boss_fights": 4269,
+      "pass_rate": 0.5488,
+      "policy": "rules_explore_v3"
+    }
+  ],
+  "rows": 19717,
+  "pass_rate": 0.3825,
+  "mechanics_in_the_vocabulary": 27,
+  "mechanics_in_the_model": 25,
+  "min_sd_points": 0.001,
+  "pooled_unmet_ratio": {
+    "to_quality": 1.109,
+    "ci95": [
+      0.917,
+      1.352
+    ]
+  },
+  "quality_per_point": 0.1816,
+  "mechanics": [
+    {
+      "mechanic": "exhaust",
+      "label": "Exhaust",
+      "decks_with_the_need": 3356,
+      "mean_points": -0.2421,
+      "sd_points": 0.655,
+      "per_point": 0.1931,
+      "ci95": [
+        0.1387,
+        0.2603
+      ],
+      "ratio_to_quality": 1.063,
+      "ratio_ci95": [
+        0.741,
+        1.475
+      ]
+    },
+    {
+      "mechanic": "star",
+      "label": "Stars",
+      "decks_with_the_need": 2789,
+      "mean_points": -0.1776,
+      "sd_points": 0.582,
+      "per_point": 0.4311,
+      "ci95": [
+        0.3143,
+        0.5473
+      ],
+      "ratio_to_quality": 2.373,
+      "ratio_ci95": [
+        1.712,
+        3.055
+      ]
+    },
+    {
+      "mechanic": "hp_loss",
+      "label": "Losing HP",
+      "decks_with_the_need": 2521,
+      "mean_points": -0.1684,
+      "sd_points": 0.549,
+      "per_point": 0.0929,
+      "ci95": [
+        0.0222,
+        0.1535
+      ],
+      "ratio_to_quality": 0.511,
+      "ratio_ci95": [
+        0.127,
+        0.891
+      ]
+    },
+    {
+      "mechanic": "strength",
+      "label": "Strength",
+      "decks_with_the_need": 6838,
+      "mean_points": -0.2634,
+      "sd_points": 0.493,
+      "per_point": 0.1258,
+      "ci95": [
+        0.044,
+        0.2069
+      ],
+      "ratio_to_quality": 0.693,
+      "ratio_ci95": [
+        0.239,
+        1.156
+      ]
+    },
+    {
+      "mechanic": "orb",
+      "label": "Orbs",
+      "decks_with_the_need": 3169,
+      "mean_points": -0.1231,
+      "sd_points": 0.417,
+      "per_point": 0.4088,
+      "ci95": [
+        0.2872,
+        0.5561
+      ],
+      "ratio_to_quality": 2.251,
+      "ratio_ci95": [
+        1.588,
+        3.008
+      ]
+    },
+    {
+      "mechanic": "vulnerable",
+      "label": "Vulnerable",
+      "decks_with_the_need": 4594,
+      "mean_points": -0.1662,
+      "sd_points": 0.375,
+      "per_point": 0.2869,
+      "ci95": [
+        0.1809,
+        0.4071
+      ],
+      "ratio_to_quality": 1.58,
+      "ratio_ci95": [
+        0.992,
+        2.443
+      ]
+    },
+    {
+      "mechanic": "doom",
+      "label": "Doom",
+      "decks_with_the_need": 1073,
+      "mean_points": -0.0659,
+      "sd_points": 0.35,
+      "per_point": 0.2891,
+      "ci95": [
+        0.167,
+        0.4241
+      ],
+      "ratio_to_quality": 1.591,
+      "ratio_ci95": [
+        0.899,
+        2.293
+      ]
+    },
+    {
+      "mechanic": "create",
+      "label": "Card creation",
+      "decks_with_the_need": 1265,
+      "mean_points": -0.0723,
+      "sd_points": 0.337,
+      "per_point": -0.0254,
+      "ci95": [
+        -0.138,
+        0.1038
+      ],
+      "ratio_to_quality": -0.14,
+      "ratio_ci95": [
+        -0.76,
+        0.547
+      ]
+    },
+    {
+      "mechanic": "discard",
+      "label": "Discarding",
+      "decks_with_the_need": 1431,
+      "mean_points": -0.0748,
+      "sd_points": 0.324,
+      "per_point": 0.0661,
+      "ci95": [
+        -0.139,
+        0.2697
+      ],
+      "ratio_to_quality": 0.364,
+      "ratio_ci95": [
+        -0.708,
+        1.447
+      ]
+    },
+    {
+      "mechanic": "ethereal",
+      "label": "Ethereal cards",
+      "decks_with_the_need": 823,
+      "mean_points": -0.0585,
+      "sd_points": 0.318,
+      "per_point": 0.013,
+      "ci95": [
+        -0.104,
+        0.1465
+      ],
+      "ratio_to_quality": 0.072,
+      "ratio_ci95": [
+        -0.588,
+        0.805
+      ]
+    },
+    {
+      "mechanic": "draw",
+      "label": "Card draw",
+      "decks_with_the_need": 592,
+      "mean_points": -0.0479,
+      "sd_points": 0.289,
+      "per_point": 0.1499,
+      "ci95": [
+        0.0023,
+        0.2871
+      ],
+      "ratio_to_quality": 0.825,
+      "ratio_ci95": [
+        0.012,
+        1.556
+      ]
+    },
+    {
+      "mechanic": "energy",
+      "label": "Energy",
+      "decks_with_the_need": 1282,
+      "mean_points": -0.0647,
+      "sd_points": 0.279,
+      "per_point": 0.3086,
+      "ci95": [
+        0.1558,
+        0.4884
+      ],
+      "ratio_to_quality": 1.699,
+      "ratio_ci95": [
+        0.85,
+        2.616
+      ]
+    },
+    {
+      "mechanic": "block",
+      "label": "Block",
+      "decks_with_the_need": 954,
+      "mean_points": -0.0545,
+      "sd_points": 0.257,
+      "per_point": 0.3295,
+      "ci95": [
+        0.1819,
+        0.4997
+      ],
+      "ratio_to_quality": 1.814,
+      "ratio_ci95": [
+        0.982,
+        2.679
+      ]
+    },
+    {
+      "mechanic": "power",
+      "label": "Powers",
+      "decks_with_the_need": 548,
+      "mean_points": -0.0392,
+      "sd_points": 0.245,
+      "per_point": 0.2492,
+      "ci95": [
+        0.0953,
+        0.4009
+      ],
+      "ratio_to_quality": 1.372,
+      "ratio_ci95": [
+        0.534,
+        2.166
+      ]
+    },
+    {
+      "mechanic": "zero_cost",
+      "label": "Free cards",
+      "decks_with_the_need": 686,
+      "mean_points": -0.0374,
+      "sd_points": 0.224,
+      "per_point": 0.2793,
+      "ci95": [
+        0.127,
+        0.4507
+      ],
+      "ratio_to_quality": 1.538,
+      "ratio_ci95": [
+        0.645,
+        2.464
+      ]
+    },
+    {
+      "mechanic": "attack",
+      "label": "Attacks",
+      "decks_with_the_need": 2980,
+      "mean_points": -0.0695,
+      "sd_points": 0.191,
+      "per_point": 0.7043,
+      "ci95": [
+        0.52,
+        0.9284
+      ],
+      "ratio_to_quality": 3.878,
+      "ratio_ci95": [
+        2.789,
+        5.237
+      ]
+    },
+    {
+      "mechanic": "poison",
+      "label": "Poison",
+      "decks_with_the_need": 204,
+      "mean_points": -0.0173,
+      "sd_points": 0.186,
+      "per_point": 0.3442,
+      "ci95": [
+        0.0505,
+        0.7682
+      ],
+      "ratio_to_quality": 1.895,
+      "ratio_ci95": [
+        0.264,
+        4.015
+      ]
+    },
+    {
+      "mechanic": "weak",
+      "label": "Weak",
+      "decks_with_the_need": 612,
+      "mean_points": -0.0297,
+      "sd_points": 0.178,
+      "per_point": -0.1726,
+      "ci95": [
+        -0.4494,
+        0.0904
+      ],
+      "ratio_to_quality": -0.95,
+      "ratio_ci95": [
+        -2.542,
+        0.526
+      ]
+    },
+    {
+      "mechanic": "soul",
+      "label": "Souls",
+      "decks_with_the_need": 188,
+      "mean_points": -0.0155,
+      "sd_points": 0.168,
+      "per_point": 0.3392,
+      "ci95": [
+        0.0643,
+        0.6648
+      ],
+      "ratio_to_quality": 1.867,
+      "ratio_ci95": [
+        0.382,
+        3.519
+      ]
+    },
+    {
+      "mechanic": "skill",
+      "label": "Skills",
+      "decks_with_the_need": 1294,
+      "mean_points": -0.0344,
+      "sd_points": 0.158,
+      "per_point": 0.0918,
+      "ci95": [
+        -0.2589,
+        0.3467
+      ],
+      "ratio_to_quality": 0.505,
+      "ratio_ci95": [
+        -1.33,
+        2.056
+      ]
+    },
+    {
+      "mechanic": "shiv",
+      "label": "Shivs",
+      "decks_with_the_need": 191,
+      "mean_points": -0.0131,
+      "sd_points": 0.151,
+      "per_point": 0.1265,
+      "ci95": [
+        -0.2133,
+        0.54
+      ],
+      "ratio_to_quality": 0.697,
+      "ratio_ci95": [
+        -1.124,
+        2.918
+      ]
+    },
+    {
+      "mechanic": "forge",
+      "label": "Forge",
+      "decks_with_the_need": 229,
+      "mean_points": -0.0132,
+      "sd_points": 0.145,
+      "per_point": 0.2459,
+      "ci95": [
+        -0.0428,
+        0.5543
+      ],
+      "ratio_to_quality": 1.354,
+      "ratio_ci95": [
+        -0.258,
+        3.033
+      ]
+    },
+    {
+      "mechanic": "strike",
+      "label": "Strikes",
+      "decks_with_the_need": 736,
+      "mean_points": -0.0255,
+      "sd_points": 0.137,
+      "per_point": 0.3173,
+      "ci95": [
+        0.0789,
+        0.5831
+      ],
+      "ratio_to_quality": 1.747,
+      "ratio_ci95": [
+        0.425,
+        3.132
+      ]
+    },
+    {
+      "mechanic": "osty",
+      "label": "Osty",
+      "decks_with_the_need": 3442,
+      "mean_points": -0.021,
+      "sd_points": 0.105,
+      "per_point": -0.2438,
+      "ci95": [
+        -0.7281,
+        0.1761
+      ],
+      "ratio_to_quality": -1.342,
+      "ratio_ci95": [
+        -3.902,
+        0.888
+      ]
+    },
+    {
+      "mechanic": "cheap",
+      "label": "Cheap cards",
+      "decks_with_the_need": 733,
+      "mean_points": -0.0075,
+      "sd_points": 0.04,
+      "per_point": 0.6548,
+      "ci95": [
+        -0.4402,
+        1.9061
+      ],
+      "ratio_to_quality": 3.605,
+      "ratio_ci95": [
+        -2.52,
+        10.758
+      ]
+    }
+  ],
+  "reading": "descriptive; 25 intervals read together are not corrected for it; the tags were not tuned by this and the table is unchanged"
+}
