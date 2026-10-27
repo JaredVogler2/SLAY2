@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
 import { StartHpNote } from "@/components/ui/StartHpNote";
+import type { AscensionData } from "@/lib/ascension";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
   adoptedByPooledTest,
@@ -35,10 +36,13 @@ export function SimulationOpinion({
   run,
   offered,
   heuristic,
+  ascensionData,
 }: {
   run: RunState;
   offered: readonly string[];
   heuristic: DraftAction;
+  /** what the Ascension 9 study found (the exporter's file by default; tests pass their own) */
+  ascensionData?: AscensionData;
 }) {
   const deckSize = run.deck.reduce((n, d) => n + d.count, 0);
   const pick = simulationPick({ character: run.character ?? "", offered, deckSize });
@@ -93,6 +97,7 @@ export function SimulationOpinion({
         level={run.ascension}
         confirmed={run.ascensionConfirmed}
         character={run.character}
+        {...(ascensionData ? { data: ascensionData } : {})}
         className="mt-3"
       />
       <p className="mt-3 text-xs text-dim">

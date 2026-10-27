@@ -26,6 +26,7 @@ const A9_TWIN = {
   file: "pooled-a0keep-t2-values-shown-vs-rules_v1.json",
   names: ["shown", "rules_v1"],
   arms: ["rules_v2-shownvals", "rules_v1"],
+  differ: null,
 };
 const A9_TESTS = [
   {
@@ -33,20 +34,26 @@ const A9_TESTS = [
     file: "pooled-a9-t1-synergy-astar-vs-d0star.json",
     names: ["astar", "d0star"],
     arms: ["advisor_v1-astar", "advisor_v1-d0star"],
+    // the parameters of the one policy the two arms may differ in (nothing else in their effective parameters may)
+    differ: ["synergy"],
   },
   {
     key: "values",
     file: "pooled-a9-t2-values-shown-vs-rules_v1.json",
     names: ["shown", "rules_v1"],
     arms: ["rules_v2-shownvals", "rules_v1"],
+    // two policies: what they are is checked arm by arm, and the game they were played in below
+    differ: null,
   },
   {
     key: "neow",
     file: "pooled-a9-t3-neow-keep-v1-vs-rules_v2.json",
     names: ["neow", "base"],
     arms: ["rules_v2_neow_values-keepvals", "rules_v2"],
+    differ: ["neow_values", "neow_values_sha256"],
   },
 ];
+const A9_SEEDS_FILE = "experiments/seeds/ironclad-a0-v2.json";
 
 export function parseAscensionNine({ root, reports, synergyChoice }) {
   const dir = join(root, "experiments", "ascension9");
@@ -58,8 +65,10 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
       throw new Error(`experiments/ascension9 exists but docs/DECISIONS.md has no ${A9.adr}`);
     return { registered: false };
   }
-  // what the registration quotes: the hash of every file an arm reads (the text of the record, not the results that follow it)
-  const record = decisions.slice(at);
+  // what the registration quotes: the hash of every file an arm reads, in the text of this record (up to the next one: a hash quoted in a
+  // later record is not the registration's; the preflight reads the same stretch)
+  const next = decisions.indexOf("\n## ", at);
+  const record = decisions.slice(at, next < 0 ? undefined : next);
   const read = (name) => JSON.parse(readFileSync(join(dir, name), "utf8"));
   const shaOf = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
   const pre = read("precondition.json");
@@ -118,6 +127,13 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
     return manifests.get(id);
   };
   const effective = (id) => manifestOf(id).policy?.effective?.params ?? {};
+  // a value as one string with the keys of every object in order, so that two parameter sets are equal when they say the same
+  const canonical = (v) =>
+    JSON.stringify(v, (_k, x) =>
+      x && typeof x === "object" && !Array.isArray(x)
+        ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, x[k]]))
+        : x,
+    );
   const choice = synergyChoice();
   const heads = new Set();
   const clean = (r) => {
@@ -195,6 +211,32 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
     }
   };
   quoted(A9_NEOW_VALUES);
+  // what item 9 asks of every batch (the run checks it as it goes; it is read again from the batch's own manifest and the exporter's counts)
+  let seedsSha;
+  const validityProblem = (r) => {
+    if (!r.counts || typeof r.counts !== "object") return "its report has no counts of how its games ended";
+    const bad = ["aborted", "harness_error", "policy_error", "invalid_action"].reduce(
+      (n, k) => n + (r.counts[k] ?? 0),
+      0,
+    );
+    if (bad > 0)
+      return `${String(bad)} of its games ended in an abort, a harness error, a policy error or an invalid action (${A9.adr} item 9)`;
+    if (!(r.completed >= 0.9 * A9.seeds))
+      return `only ${String(r.completed)} of its ${String(A9.seeds)} games completed (${A9.adr} item 9 asks for 90 %)`;
+    const m = manifestOf(r.id);
+    const sim = m.simulator ?? {};
+    if (sim.pin_ok !== true || sim.dirty !== false)
+      return "it was not played with the pinned, clean simulator";
+    seedsSha ??= shaOf(join(root, A9_SEEDS_FILE));
+    const seeds = m.seeds ?? {};
+    if (
+      seeds.file !== A9_SEEDS_FILE ||
+      seeds.file_sha256 !== seedsSha ||
+      seeds.sealed_partition_used !== false
+    )
+      return `its seeds are not those of ${A9_SEEDS_FILE} (the val partition, the sealed one untouched)`;
+    return null;
+  };
   // the games of each pooled file are the ones the study's script names: <arm>-<class>-a<Ascension>-veteran-keeprelics-val-n2000
   const readTest = (spec, ascension, arms = spec.arms) => {
     const test = readPooledHeldOut({
@@ -210,7 +252,9 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
           keepRelics: true,
           adr: A9.adr,
           ascension,
-        }) ?? armProblem(current, name, cls),
+        }) ??
+        validityProblem(current) ??
+        armProblem(current, name, cls),
     });
     spec.names.forEach((name, i) => {
       for (const m of test.members) {
@@ -220,6 +264,32 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
           throw new Error(`experiments/ascension9/${spec.file}: ${m.character} ${name} is ${side}, not ${want}`);
       }
     });
+    // the two arms of a class differ in the one thing under test (ADR-058 items 1 and 8): the game they were played in, the seeds and the
+    // simulator are the same, and two arms of one policy have the same effective parameters but the ones the test is about
+    for (const m of test.members) {
+      const [a, b] = [manifestOf(m.a.batchId), manifestOf(m.b.batchId)];
+      for (const part of ["config", "seeds", "simulator"]) {
+        if (canonical(a[part]) !== canonical(b[part]))
+          throw new Error(
+            `experiments/ascension9/${spec.file}: ${m.character}: the two arms differ in their ${part}, and ${A9.adr} has them differ in one thing`,
+          );
+      }
+      if (spec.differ) {
+        const rest = (batchId) =>
+          Object.fromEntries(
+            Object.entries(effective(batchId)).filter(([k]) => !spec.differ.includes(k)),
+          );
+        const [pa, pb] = [rest(m.a.batchId), rest(m.b.batchId)];
+        if (canonical(pa) !== canonical(pb)) {
+          const keys = [...new Set([...Object.keys(pa), ...Object.keys(pb)])].filter(
+            (k) => canonical(pa[k]) !== canonical(pb[k]),
+          );
+          throw new Error(
+            `experiments/ascension9/${spec.file}: ${m.character}: the two arms differ in ${keys.join(", ")}, not only in ${spec.differ.join(" and ")} (${A9.adr} items 1 and 8)`,
+          );
+        }
+      }
+    }
     return { file: `experiments/ascension9/${spec.file}`, sha256: shaOf(join(dir, spec.file)), ...test };
   };
   // each class on its own at the class level (uncorrected): the rule ahead or the other arm ahead (ADR-058 item 5 iii and v)
@@ -257,10 +327,32 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
     return at.ci;
   };
 
+  // the numbers the pages print are numbers, the intervals are intervals, and the pooled difference is the one the table of pairs gives
+  const finite = (x) => typeof x === "number" && Number.isFinite(x);
+  const interval = (ci) =>
+    Array.isArray(ci) && ci.length === 2 && ci.every(finite) && ci[0] <= ci[1];
+  const soundNumbers = (test) => {
+    const d = test.clusteredDifference;
+    const tab = test.reachedAct2.pairedTable;
+    if (
+      !finite(d?.meanAMinusB) ||
+      !interval(d.ci95) ||
+      !finite(test.floorDifference?.meanAMinusB) ||
+      !interval(test.floorDifference?.ci95)
+    )
+      throw new Error(`${test.file}: a pooled difference is not a number, or an interval is not one`);
+    const fromTable = (tab.a_only - tab.b_only) / test.bothCompleted;
+    if (Math.abs(d.meanAMinusB - fromTable) > 1e-9)
+      throw new Error(
+        `${test.file}: the pooled difference (${String(d.meanAMinusB)}) is not the one its table of pairs gives (${String(fromTable)})`,
+      );
+  };
+
   const tests = {};
   for (const spec of A9_TESTS) {
     const test = readTest(spec, A9.ascension);
     const tab = test.reachedAct2.pairedTable;
+    soundNumbers(test);
     const [lo, hi] = levelInterval(test);
     const significant = tab.mcnemar_p < A9.level;
     // the reading rule of ADR-058 item 4, a partition of the outcomes
@@ -274,6 +366,7 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
   }
   // the twin of T2 at Ascension 0 with the relics kept (descriptive)
   const twin = readTest(A9_TWIN, 0);
+  soundNumbers(twin);
   if (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h))))
     throw new Error(
       `the arms of the tests and the twin were not all played from one commit (heads: ${[...heads].join(", ")})`,
@@ -295,7 +388,9 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
     }
     const spec = A0_REFERENCES[key];
     const path = join(root, spec.file);
-    if (!existsSync(path)) return null;
+    // a passed result is told how big it is beside the Ascension 0 one (item 4): without that file there is nothing to say it with
+    if (!existsSync(path))
+      throw new Error(`${spec.file}: the Ascension 0 test ${spec.adr} that ${key} is set beside is missing`);
     const r = JSON.parse(readFileSync(path, "utf8"));
     if (
       r.kind !== "pooled-paired-comparison" ||
@@ -323,9 +418,9 @@ export function parseAscensionNine({ root, reports, synergyChoice }) {
     const t9 = tests[key];
     const [lo, hi] = t9.clusteredDifference.ciAtLevel.ci;
     t9.a0 = a0;
-    // "smaller", "larger" or "about the same" than at Ascension 0, only for a test that passed and only when there is an Ascension 0 difference to set it beside
+    // "smaller", "larger" or "about the same" than at Ascension 0 (by the interval at the level of the test, item 4), only for a test that passed
     t9.size =
-      t9.verdict === "passed" && a0
+      t9.verdict === "passed"
         ? hi < a0.mean
           ? "smaller"
           : lo > a0.mean

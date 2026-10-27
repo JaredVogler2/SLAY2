@@ -6,6 +6,7 @@ import { AscensionNote } from "@/components/advisor/AscensionNote";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
+import type { AscensionData } from "@/lib/ascension";
 import { formatP, pct } from "@/lib/stat-format";
 import {
   SYNERGY_EVIDENCE,
@@ -225,6 +226,7 @@ export function SynergyPanel({
   relics,
   evidence = SYNERGY_EVIDENCE,
   ascension,
+  ascensionData,
 }: {
   synergy: DeckSynergy;
   /** The relics the ranking counted as suppliers (what the answer says it read from the relics the player listed). */
@@ -236,6 +238,8 @@ export function SynergyPanel({
     readonly confirmed: boolean;
     readonly character?: string | null | undefined;
   };
+  /** what the Ascension 9 study found (the exporter's file by default; tests pass their own) */
+  ascensionData?: AscensionData;
 }) {
   const label = labelOf(evidence);
   const top = Math.max(...synergy.engines.map((e) => e.value), 1);
@@ -253,6 +257,7 @@ export function SynergyPanel({
           level={ascension.level}
           confirmed={ascension.confirmed}
           character={ascension.character}
+          {...(ascensionData ? { data: ascensionData } : {})}
           className="mb-4"
         />
       ) : null}

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { expect, test } from "@playwright/test";
 
 import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, neowInfo } from "./helpers";
@@ -34,6 +37,28 @@ test.describe("landing", () => {
       await expect(relics).toContainText(
         held.passed ? "taking the best-measured relic:" : "did not beat the first helpful one",
       );
+    }
+  });
+
+  test("the coverage table says where the simulated evidence stands above Ascension 0, following the exported study", async ({
+    page,
+  }) => {
+    const study = JSON.parse(
+      readFileSync(join(__dirname, "..", "src", "content", "ascension.generated.json"), "utf8"),
+    ) as { registered: boolean; tests: unknown };
+    await page.goto("/");
+    const row = page.getByRole("row", { name: /^Simulated results above Ascension 0/ });
+    if (!study.registered) {
+      await expect(row).toHaveCount(0);
+      return;
+    }
+    await expect(row).toContainText("Research");
+    await expect(row).toContainText("Simulator unverified against the live game");
+    if (study.tests) {
+      await expect(row).toContainText("tested again at Ascension 9");
+      await expect(row).toContainText("are not tested");
+    } else {
+      await expect(row).toContainText("has not been run yet");
     }
   });
 

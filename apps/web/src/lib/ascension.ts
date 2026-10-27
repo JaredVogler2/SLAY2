@@ -198,6 +198,41 @@ export function neowAdviceAllowed(
   return test?.verdict === "passed" && test.classes[character.toLowerCase()]?.ahead === true;
 }
 
+/** How one test came out, in a few words, for the landing page's coverage table (a passed result with its size beside Ascension 0). */
+function verdictWords(t: AscensionTest): string {
+  switch (t.verdict) {
+    case "passed":
+      return t.size ? `ahead, ${SIZE_WORDS[t.size]} at Ascension 0` : "ahead";
+    case "not-shown":
+      return "not shown ahead";
+    case "reversed":
+      return "behind";
+  }
+}
+
+export type AscensionCoverageState = "registered" | "tested";
+
+/**
+ * Where the simulated evidence stands above Ascension 0, in words, read from the data: registered and not run, or how each of the three
+ * tests came out. Nothing (null) when the decision log carries no registration.
+ */
+export function ascensionCoverage(
+  data: AscensionData = ASCENSION,
+): { readonly state: AscensionCoverageState; readonly detail: string } | null {
+  if (!data.registered) return null;
+  const tests = data.tests;
+  if (!tests) {
+    return {
+      state: "registered",
+      detail: `Every simulated result on this page was measured at Ascension 0. A test at Ascension 9 of the synergy term, the card values and the opening-relic rule is registered (${data.adr ?? "ADR-058"}) and has not been run yet; a run at Ascension 1 to 10 is told on the advisor's panels that the finding was measured at Ascension 0 only`,
+    };
+  }
+  return {
+    state: "tested",
+    detail: `Each of three results was tested again at Ascension 9 with nothing refitted: the synergy term was ${verdictWords(tests.synergy)}, the card values ${verdictWords(tests.values)}, the opening-relic rule ${verdictWords(tests.neow)}. Ascension 10 and the levels from 1 to 8 are not tested`,
+  };
+}
+
 // ---- the note an Ascension 1 to 10 run gets on each of the three panels
 
 export interface AscensionNoteText {
@@ -211,7 +246,10 @@ const percent = (x: number): string => `${(x * 100).toFixed(1)} %`;
 const points = (x: number): string => `${x < 0 ? "−" : "+"}${Math.abs(x * 100).toFixed(1)} points`;
 
 function pText(p: number): string {
-  return p === 0 ? "p < 1e-300" : `p = ${p < 1e-4 ? p.toExponential(1) : p.toPrecision(2)}`;
+  if (p === 0) return "p < 1e-300";
+  if (p < 1e-4) return `p = ${p.toExponential(1)}`;
+  // three figures below 0.1, so that a p just under a level (0.0166 against 0.0167) does not print as the other side of it
+  return `p = ${p < 0.1 ? p.toPrecision(3) : p.toPrecision(2)}`;
 }
 
 const SIZE_WORDS: Record<AscensionSize, string> = {
@@ -225,14 +263,14 @@ function figures(finding: AscensionFinding, t: AscensionTest): string {
   const a = percent(t.reachedAct2.a.rate);
   const b = percent(t.reachedAct2.b.rate);
   const p = pText(t.reachedAct2.pairedTable.mcnemar_p);
-  const tail = `(${t.bothCompleted.toLocaleString("en-US")} paired held-out games, five classes, exact McNemar ${p})`;
+  const tail = `(${t.bothCompleted.toLocaleString("en-US")} paired held-out games in the simulator, five classes, exact McNemar ${p})`;
   switch (finding) {
     case "synergy":
-      return `a pilot that picks cards by the index with the synergy term got past the Act 1 boss in ${a} of games against ${b} without it ${tail}`;
+      return `a simulated pilot that picks cards by the index with the synergy term got past the Act 1 boss in ${a} of its games against ${b} without it ${tail}`;
     case "values":
-      return `a pilot that follows the card values shown here got past the Act 1 boss in ${a} of games against ${b} for the hand-written rules ${tail}`;
+      return `a simulated pilot that follows the card values shown here got past the Act 1 boss in ${a} of its games against ${b} for the hand-written rules ${tail}`;
     case "neow":
-      return `a pilot that takes the best-measured opening relic got past the Act 1 boss in ${a} of games against ${b} for one that takes the first helpful relic ${tail}`;
+      return `a simulated pilot that takes the best-measured opening relic got past the Act 1 boss in ${a} of its games against ${b} for one that takes the first helpful relic ${tail}`;
   }
 }
 
@@ -242,16 +280,34 @@ function beside(t: AscensionTest): string {
   if (!a0) return "";
   const where = "at Ascension 0 with the relics kept";
   if (t.size) {
-    return ` That is ${SIZE_WORDS[t.size]} the gain ${where} (${points(a0.mean)}).`;
+    return ` That is ${SIZE_WORDS[t.size]} the difference ${where} (${points(a0.mean)}).`;
   }
   return ` The same arms differ by ${points(a0.mean)} ${where}.`;
 }
 
-/** The class's own Ascension 9 games, when the other arm was ahead in them (ADR-058 item 5 v). */
-function classReversal(t: AscensionTest, character: string | undefined): string {
+/** The two arms of each test as a player would name them: the first (the one under test) and the second (what it was set against). */
+const ARM_NAMES: Record<AscensionFinding, { readonly first: string; readonly second: string }> = {
+  synergy: { first: "the pilot with the synergy term", second: "the pilot without it" },
+  values: {
+    first: "the pilot that follows the card values shown here",
+    second: "the hand-written rules",
+  },
+  neow: {
+    first: "the pilot that takes the best-measured opening relic",
+    second: "the pilot that takes the first helpful relic",
+  },
+};
+
+/** The class's own Ascension 9 games, when the second arm was ahead in them (ADR-058 item 5 v). */
+function classReversal(
+  finding: AscensionFinding,
+  t: AscensionTest,
+  character: string | undefined,
+): string {
   const c = character ? t.classes[character.toLowerCase()] : undefined;
   if (!c?.behind) return "";
-  return ` In the games of your own class alone at Ascension 9 the other arm was ahead (${String(c.bOnly)} pairs only with the other arm against ${String(c.aOnly)} only with the first, ${pText(c.p)}).`;
+  const arms = ARM_NAMES[finding];
+  return ` In the simulated games of your own class alone at Ascension 9, ${arms.second} came out ahead: ${String(c.bOnly)} pairs got past the Act 1 boss only with ${arms.second} against ${String(c.aOnly)} only with ${arms.first} (${pText(c.p)}).`;
 }
 
 function whereYouAre(level: number): string {
@@ -272,7 +328,7 @@ function registeredText(level: number, adr: string): string {
   const status = `A test at Ascension 9 is registered (${adr}) and has not been run`;
   switch (standingOf(level)) {
     case "between":
-      return `This was measured at Ascension 0 only. Your run is at Ascension ${String(level)}. ${status}, so none of this has been tested at your level, and the levels between 0 and 9 will not be tested either.`;
+      return `This was measured at Ascension 0 only. Your run is at Ascension ${String(level)}. ${status}, so none of this has been tested at your level, and the levels between 0 and 9 are not tested in this study.`;
     case "tested":
       return `This was measured at Ascension 0 only. Your run is at Ascension 9. ${status}, so none of this has been tested at your level.`;
     case "beyond":
@@ -300,28 +356,31 @@ export function ascensionNote(
   if (!test) {
     return { kind: "registered", text: registeredText(level, data.adr ?? "ADR-058") };
   }
-  const tail = `${beside(test)}${classReversal(test, character)} ${whereYouAre(level)}`;
+  const base = `${beside(test)}${classReversal(finding, test, character)}`;
+  const where = whereYouAre(level);
   switch (test.verdict) {
     case "passed": {
-      // the card values were never played against the hand-written rules with the relics kept at Ascension 0 before the twin
+      // the card values were never played against the hand-written rules with the relics kept at Ascension 0 before the twin, which is
+      // descriptive: it was played, not tested
       const lead =
         finding === "values"
-          ? "The pair behind this panel was tested in simulation at Ascension 9, and at Ascension 0 with the relics kept (the sets now shown had not been played against the hand-written rules in that game before)."
+          ? "The pair behind this panel was tested in simulation at Ascension 9, and played at Ascension 0 with the relics kept (the sets now shown had not been played against the hand-written rules in that game before)."
           : "Tested in simulation at Ascension 0 and at Ascension 9.";
       return {
         kind: "passed",
-        text: `${lead} At Ascension 9, ${figures(finding, test)}.${tail}`,
+        // the figures elsewhere on the panel (the ranking, the values, the relic measurements) are still the Ascension 0 ones
+        text: `${lead} At Ascension 9, ${figures(finding, test)}.${base} The other figures on this panel were measured at Ascension 0. ${where}`,
       };
     }
     case "not-shown":
       return {
         kind: "not-shown",
-        text: `Measured at Ascension 0. At Ascension 9 the held-out test did not show it ahead: ${figures(finding, test)}. That is not the same as showing that it does not help.${tail}`,
+        text: `Measured at Ascension 0. At Ascension 9 the held-out test did not show ${ARM_NAMES[finding].first} ahead of ${ARM_NAMES[finding].second}: ${figures(finding, test)}. That is not the same as showing that it does not help.${base} ${where}`,
       };
     case "reversed":
       return {
         kind: "reversed",
-        text: `Measured at Ascension 0. At Ascension 9 the held-out test had the other arm ahead: ${figures(finding, test)}.${tail}`,
+        text: `Measured at Ascension 0. At Ascension 9 the held-out test had ${ARM_NAMES[finding].second} ahead of ${ARM_NAMES[finding].first}: ${figures(finding, test)}.${base} ${where}`,
       };
   }
 }
