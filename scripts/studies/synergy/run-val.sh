@@ -2,6 +2,7 @@
 # Stage B2-val (ADR-050): the 2,000 val seeds of each class, A0, veteran profile. Start only after the addendum that records A*
 # is on the remote, from a clean checkout of the commit that carries it (the manifest records `dirty`), and only once.
 #   ASTAR='{"needs":1,"scalers":0.7,"engines":0,"margin":1.5}' MARGIN=1.5 run-val.sh <workers>
+#   RESUME=1 (same command) finishes a run that was interrupted: a batch with a manifest is never touched, an interrupted one continues from the games it wrote.
 # Arms for every class: A* (astar); d0* (d0star: no synergy term, A*'s margin: the primary contrast changes the term and nothing
 # else); d0 (no synergy term, margin 0) only when the margin is not 0; and the reference R (rules_v3 with the class's measured card
 # values) for the four classes that have no rules_v3 batch on these seeds (Ironclad's: rules_v3-values2-ironclad-a0-veteran-val-n2000).
@@ -12,6 +13,7 @@ MARGIN=${MARGIN:-0}
 source "$(dirname "${BASH_SOURCE[0]}")/preflight-val.sh" || exit 1   # stops here unless the addendum is public and A* is what it records
 [ -z "${PREFLIGHT_ONLY:-}" ] || exit 0
 run() { # <batch id> <policy> <params json> <ExactClass>
+  [ -f "experiments/batches/$1/manifest.json" ] && return 0   # finished: never touched (RESUME=1 finishes an interrupted run)
   nice -n 8 "$PY" -m slay2_sim run --policy "$2" --policy-params "$3" --character "$4" --ascension 0 --profile veteran \
     --seeds "$SEEDS" --partition val --n 2000 --workers "$W" --trace 0 --batch-id "$1" > "$OUT/val-$1.log" 2>&1
   echo "VAL_${1}_EXIT=$?" >> "$OUT/val-done.txt"   # exit code 2 means some episodes ended in a simulator error, which is normal

@@ -45,8 +45,9 @@ if not found or tuple(float(x) for x in found.groups()) != tuple(float(x) for x 
     raise SystemExit(f"PART_WEIGHT in packages/decision/src/synergy.ts is {found.groups() if found else 'unreadable'}, A* keeps {kept}")
 PYEOF
 
-# 4. the test has not been run before
+# 4. the test has not been run before: no result exists, and a val batch of these arms may exist only when an interrupted run is being finished
+[ ! -e experiments/synergy/val/pooled-astar-vs-d0star.json ] || fail "the pooled result of the registered test exists: the test is run once"
 if ls experiments/batches 2>/dev/null | grep -Eq '^advisor_v1-(astar|d0star|d0)-.*-val-n2000$'; then
-  fail "batches of the val arms already exist: the registered test is run once"
+  [ "${RESUME:-}" = 1 ] || fail "batches of the val arms already exist; if a run was interrupted, finish it with RESUME=1 (a finished batch is never touched)"
 fi
 echo "preflight-val: ok (A* $ASTAR, margin $MARGIN, commit $(git rev-parse --short=12 HEAD))"

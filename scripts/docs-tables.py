@@ -385,6 +385,43 @@ def table_synergy_mechanics() -> str:
     return "\n".join(head + rows)
 
 
+def fmt_p(p: float) -> str:
+    if p == 0:
+        return "p < 1e-300"
+    return f"p = {p:.1e}" if p < 1e-4 else f"p = {p:.2g}"
+
+
+DEV_KEEPS = {
+    "d1": "needs 1, scalers 0.7, no engine credit",
+    "d2": "needs 1, scalers 0.7, engines 0.25",
+    "d3": "needs 1, scalers 0.7, engines 0.5",
+    "d4": "every part at its first judgement (1, 1, 1)",
+    "m1": "the chosen configuration, a card must add 1.5 index points",
+    "m2": "the chosen configuration, a card must add 3 index points",
+}
+
+
+def table_synergy_dev() -> str:
+    """The development stage's two selection files (ADR-050 item 3): tuning numbers, not evidence."""
+    d1 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase1.json")
+    d2 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase2.json")
+    head = [
+        "| Arm | What it keeps | Against | Past the Act-1 boss, against → arm | Difference (95 %, whole seeds resampled) | Exact McNemar | Pairs |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    rows = []
+    for phase, against, chosen in ((d1, "d0, no synergy term", d1["chosen"]), (d2, f"{d2['baseline']}, margin 0", None)):
+        for arm, r in phase["differences"].items():
+            mark = " (chosen)" if arm == chosen else ""
+            ci = r["ci95"]
+            rows.append(
+                f"| {arm}{mark} | {DEV_KEEPS[arm]} | {against} | {100 * r['b_rate']:.1f} % → {100 * r['a_rate']:.1f} % | "
+                f"{signed(100 * r['difference'], 2)} points ({signed(100 * ci[0], 2)} to {signed(100 * ci[1], 2)}) | {fmt_p(r['mcnemar_p'])} | {r['pairs']:,} |"
+            )
+    rows.append(f"| margin chosen | | | | {d2['chosen_margin']} | | |")
+    return "\n".join(head + rows)
+
+
 def table_synergy_coverage() -> str:
     cat = load(ROOT / "packages" / "game-data" / "data" / "cards.sts2-main-0.107.1.json")["cards"]
     syn = load(ROOT / "packages" / "game-data" / "data" / "synergy.sts2-main-0.107.1.json")
