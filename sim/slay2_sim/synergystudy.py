@@ -42,7 +42,7 @@ RIDGE = 1e-3
 FEATURES = ("quality", "coverage", "curve", "unmet", "scaler", "engines")
 ACT_INDEX = 0  # the Act-1 boss: the advisor's act-1 weights
 # The parts are always read at the hand-set strengths: a study of what the parts predict must not move when the strengths the
-# website's index keeps are changed (ADR-050 addendum C), and the parts of two arms' decks must be read on one yardstick.
+# website's index keeps are changed (ADR-050 addendum D), and the parts of two arms' decks must be read on one yardstick.
 FIRST_JUDGEMENT = advisor.Model(needs=1.0, scalers=1.0, engines=1.0)
 
 

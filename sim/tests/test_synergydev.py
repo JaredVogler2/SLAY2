@@ -98,3 +98,11 @@ def test_the_arms_the_scripts_run_are_the_arms_the_program_chooses_among():
     common = (Path(__file__).resolve().parents[2] / "scripts" / "studies" / "synergy" / "common.sh").read_text(encoding="utf-8")
     shell = {arm: json.loads(body) for arm, body in re.findall(r"(d[1-4])\) echo '(\{.*?\})' ;;", common)}
     assert shell == dev.ARM_PARAMS
+
+
+def test_the_command_prints_an_arms_parameters_as_the_fragment_the_dev_script_takes(capsys):
+    assert dev.main(["--fragment", "d2"]) == 0
+    assert capsys.readouterr().out.strip() == '"needs":1,"scalers":0.7,"engines":0.25'
+    assert json.loads("{" + '"needs":1,"scalers":0.7,"engines":0.25' + "}") == dev.ARM_PARAMS["d2"]
+    with pytest.raises(SystemExit):
+        dev.main(["--fragment", "d9"])

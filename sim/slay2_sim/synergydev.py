@@ -9,6 +9,7 @@ same rule (a tie within 0.5 points goes to the lower margin; margin 0 if neither
     python -m slay2_sim.synergydev --phase 1 --dir experiments/synergy/dev --out experiments/synergy/dev/selection-phase1.json
     python -m slay2_sim.synergydev --phase 2 --chosen d2 --dir experiments/synergy/dev --out experiments/synergy/dev/selection-phase2.json
     python -m slay2_sim.synergydev --astar --dir experiments/synergy/dev      # A*, read back from the two selection files, as a JSON object
+    python -m slay2_sim.synergydev --fragment d2      # the arm's parameters as the JSON fragment run-dev.sh takes as CHOSEN for phase 2
 """
 
 from __future__ import annotations
@@ -80,11 +81,17 @@ def astar(directory: Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--phase", type=int, choices=(1, 2))
-    ap.add_argument("--dir", required=True, help="the folder compare-dev.sh wrote the pooled comparisons into")
+    ap.add_argument("--dir", help="the folder compare-dev.sh wrote the pooled comparisons into")
     ap.add_argument("--chosen", help="phase 2: the arm phase 1 chose (d1 to d4)")
     ap.add_argument("--out")
     ap.add_argument("--astar", action="store_true", help="print A*, read back from the two selection files in --dir")
+    ap.add_argument("--fragment", choices=PHASE1_ARMS, help="print an arm's parameters as the JSON fragment run-dev.sh takes as CHOSEN")
     args = ap.parse_args(argv)
+    if args.fragment:
+        print(json.dumps(ARM_PARAMS[args.fragment], separators=(",", ":"))[1:-1])
+        return 0
+    if args.dir is None:
+        ap.error("--dir is required unless --fragment is given")
     directory = Path(args.dir)
     if args.astar:
         print(json.dumps(astar(directory), separators=(",", ":")))

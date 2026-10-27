@@ -154,7 +154,7 @@ export interface TestProfile {
   };
 }
 
-/** The parameters of the pilot with the synergy term (ADR-050 addendum C): what the page's index keeps of each hand-set part. */
+/** The parameters of the pilot with the synergy term (ADR-050 addendum D): what the page's index keeps of each hand-set part. */
 export interface SynergyConfig {
   readonly arm: string;
   readonly needs: number;

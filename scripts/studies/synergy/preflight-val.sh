@@ -13,11 +13,11 @@ git fetch -q origin 2>/dev/null || fail "cannot reach the remote to check that t
 [ -n "$(git branch -r --contains HEAD 2>/dev/null)" ] || fail "HEAD is not on the remote: push the addendum before the first val game"
 
 # 2. the addendum is in the decision log and quotes the hash of each selection file it rests on
-grep -q "Addendum C" docs/DECISIONS.md || fail "docs/DECISIONS.md has no Addendum C"
+grep -q "Addendum D" docs/DECISIONS.md || fail "docs/DECISIONS.md has no Addendum D"
 for f in selection-phase1 selection-phase2; do
   [ -f "experiments/synergy/dev/$f.json" ] || fail "experiments/synergy/dev/$f.json is missing"
   sha=$(sha256sum "experiments/synergy/dev/$f.json" | cut -c1-12)
-  grep -q "$sha" docs/DECISIONS.md || fail "Addendum C does not quote the hash ($sha) of $f.json"
+  grep -q "$sha" docs/DECISIONS.md || fail "Addendum D does not quote the hash ($sha) of $f.json"
 done
 
 # 3. A* and its margin are what the selection files choose, and both the port and the page keep what A* keeps
