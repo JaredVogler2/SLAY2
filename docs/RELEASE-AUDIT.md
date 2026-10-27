@@ -64,17 +64,17 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
+| Defect | held-out (val) | 8 | 16,000 | 15,950 | 33 | 50 | 0 |
 | Defect | development (train, dev) | 14 | 22,000 | 21,912 | 54 | 88 | 0 |
-| Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
+| Ironclad | held-out (val) | 11 | 20,300 | 20,186 | 55 | 114 | 0 |
 | Ironclad | development (train, dev) | 26 | 31,910 | 31,768 | 109 | 132 | 10 |
-| Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
+| Necrobinder | held-out (val) | 8 | 16,000 | 15,941 | 1 | 59 | 0 |
 | Necrobinder | development (train, dev) | 16 | 23,000 | 22,909 | 0 | 86 | 5 |
-| Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
+| Regent | held-out (val) | 8 | 16,000 | 15,888 | 2 | 23 | 89 |
 | Regent | development (train, dev) | 14 | 22,000 | 21,781 | 1 | 60 | 159 |
-| Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
+| Silent | held-out (val) | 8 | 16,000 | 15,988 | 0 | 12 | 0 |
 | Silent | development (train, dev) | 14 | 22,000 | 21,989 | 0 | 11 | 0 |
-| **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
+| **All classes** | **held-out (val)** | **43** | **84,300** | **83,953** | **91** | **258** | **89** |
 | **All classes** | **development (train, dev)** | **84** | **120,910** | **120,359** | **164** | **377** | **174** |
 <!-- table:games:end -->
 
@@ -118,7 +118,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Not done, and why
 
 * No network is deployed or claimed: three combat networks were trained and judged on 796 held-out combats and none improved on the rules baseline; a fourth run is paused with only a monitor-set number.
-* Pilots are weak: about 0.3 % of simulated Ironclad games are won, and Silent and Necrobinder won none of their held-out games. The evidence is about surviving the first boss. **That level belongs to a simulator that drops every relic a run gains after its first fight (G14, ADR-052):** with the relics kept, the same pilot got past the Act-1 boss in 63.1 % of 2,444 paired development games instead of 52.5 %, went 3.04 floors further and won 34 games against 2 (Ironclad 25 of 482 against 0 of 499).
+* Pilots are weak: about 0.3 % of simulated Ironclad games are won, and Silent and Necrobinder won none of their held-out games in that simulator (with the relics kept, the held-out games of ADR-054 have 13 Ironclad wins in 1,959 games, one Necrobinder win in 1,983 and none for the other three classes). The evidence is about surviving the first boss. **That level belongs to a simulator that drops every relic a run gains after its first fight (G14, ADR-052):** with the relics kept, the same pilot got past the Act-1 boss in 63.1 % of 2,444 paired development games instead of 52.5 %, went 3.04 floors further and won 34 games against 2 (Ironclad 25 of 482 against 0 of 499).
 * The simulator plays Overgrowth only, at Ascension 0, with no Ancients in acts two and three, a Necrobinder at 75 HP, and, the largest of its known gaps, **no relic kept after a run's first fight (G14)**. No registered result is withdrawn (each compared two arms inside the simulator as it is), but none is evidence that its ordering holds with relics kept; the replications are queued as new registrations (STATUS, Next steps 0b).
 * No local companion or bridge to the running game, so nothing reads a live run and no game-control surface exists.
 * No re-verification against a newer main build: a patch needs the rules, the catalog and the simulations redone; `patch-watch` only tells when to.

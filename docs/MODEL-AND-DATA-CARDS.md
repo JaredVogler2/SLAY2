@@ -35,7 +35,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | M5 | Simulated pilots and searchers | policies | summaries only | paired held-out comparisons |
 | M6 | Combat networks (BC v1, PPO v1, PPO v2) | neural networks | **no** | no improvement over the baseline |
 | M7 | What does not exist | | | co-op, map, shop, rest, combat and Ancient-boon advisors; a live bridge |
-| M8 | The synergy term and its evidence | heuristic, read against simulated runs and tested once on held-out seeds | yes | stage B1 read; the registered held-out stage B2 ran once and the term improves what a rules pilot picks in simulation (33.0 % against 26.0 % past the Act-1 boss, ADR-050) |
+| M8 | The synergy term and its evidence | heuristic, read against simulated runs and tested twice on held-out seeds | yes | stage B1 read; the registered held-out stage B2 ran once and the term improves what a rules pilot picks in simulation (33.0 % against 26.0 % past the Act-1 boss, ADR-050); the same test repeated with the relics kept gives 40.4 % against 33.3 % (ADR-054) |
 
 ---
 
@@ -91,17 +91,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 6 | 12,000 | 11,981 | 33 | 19 | 0 |
+| Defect | held-out (val) | 8 | 16,000 | 15,950 | 33 | 50 | 0 |
 | Defect | development (train, dev) | 14 | 22,000 | 21,912 | 54 | 88 | 0 |
-| Ironclad | held-out (val) | 9 | 16,300 | 16,258 | 30 | 42 | 0 |
+| Ironclad | held-out (val) | 11 | 20,300 | 20,186 | 55 | 114 | 0 |
 | Ironclad | development (train, dev) | 26 | 31,910 | 31,768 | 109 | 132 | 10 |
-| Necrobinder | held-out (val) | 6 | 12,000 | 11,980 | 0 | 20 | 0 |
+| Necrobinder | held-out (val) | 8 | 16,000 | 15,941 | 1 | 59 | 0 |
 | Necrobinder | development (train, dev) | 16 | 23,000 | 22,909 | 0 | 86 | 5 |
-| Regent | held-out (val) | 6 | 12,000 | 11,918 | 2 | 10 | 72 |
+| Regent | held-out (val) | 8 | 16,000 | 15,888 | 2 | 23 | 89 |
 | Regent | development (train, dev) | 14 | 22,000 | 21,781 | 1 | 60 | 159 |
-| Silent | held-out (val) | 6 | 12,000 | 11,999 | 0 | 1 | 0 |
+| Silent | held-out (val) | 8 | 16,000 | 15,988 | 0 | 12 | 0 |
 | Silent | development (train, dev) | 14 | 22,000 | 21,989 | 0 | 11 | 0 |
-| **All classes** | **held-out (val)** | **33** | **64,300** | **64,136** | **65** | **92** | **72** |
+| **All classes** | **held-out (val)** | **43** | **84,300** | **83,953** | **91** | **258** | **89** |
 | **All classes** | **development (train, dev)** | **84** | **120,910** | **120,359** | **164** | **377** | **174** |
 <!-- table:games:end -->
 
@@ -334,15 +334,25 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v2_neow_values | Regent | 2000 | 1976 | 1 | 0.01 to 0.29 % | 19.29 | 6 · 18 |
 | rules_v2_neow_values | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.53 | 0 · 0 |
 | search_v3 (every fight) | Ironclad | 300 | 300 | 2 | 0.18 to 2.40 % | 24.45 | 0 · 0 |
+| advisor_v1 | Defect | 2000 | 1983 | 0 | 0.00 to 0.19 % | 17.94 | 17 · 0 |
 | advisor_v1 | Defect | 2000 | 2000 | 0 | 0.00 to 0.19 % | 16.18 | 0 · 0 |
+| advisor_v1 | Defect | 2000 | 1986 | 0 | 0.00 to 0.19 % | 16.58 | 14 · 0 |
 | advisor_v1 | Defect | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.23 | 2 · 0 |
+| advisor_v1 | Ironclad | 2000 | 1959 | 13 | 0.39 to 1.13 % | 21.70 | 41 · 0 |
 | advisor_v1 | Ironclad | 2000 | 1997 | 2 | 0.03 to 0.36 % | 18.66 | 3 · 0 |
+| advisor_v1 | Ironclad | 2000 | 1969 | 12 | 0.35 to 1.06 % | 19.70 | 31 · 0 |
 | advisor_v1 | Ironclad | 2000 | 1998 | 0 | 0.00 to 0.19 % | 17.18 | 2 · 0 |
+| advisor_v1 | Necrobinder | 2000 | 1978 | 0 | 0.00 to 0.19 % | 18.09 | 22 · 0 |
 | advisor_v1 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 16.44 | 3 · 0 |
+| advisor_v1 | Necrobinder | 2000 | 1983 | 1 | 0.01 to 0.29 % | 17.30 | 17 · 0 |
 | advisor_v1 | Necrobinder | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.88 | 2 · 0 |
+| advisor_v1 | Regent | 2000 | 1982 | 0 | 0.00 to 0.19 % | 15.24 | 7 · 11 |
 | advisor_v1 | Regent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 14.31 | 1 · 9 |
+| advisor_v1 | Regent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.74 | 6 · 6 |
 | advisor_v1 | Regent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.04 | 1 · 11 |
+| advisor_v1 | Silent | 2000 | 1994 | 0 | 0.00 to 0.19 % | 13.41 | 6 · 0 |
 | advisor_v1 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.61 | 0 · 0 |
+| advisor_v1 | Silent | 2000 | 1995 | 0 | 0.00 to 0.19 % | 12.88 | 5 · 0 |
 | advisor_v1 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.31 | 0 · 0 |
 <!-- table:policies:end -->
 
@@ -352,6 +362,11 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | Comparison file | Status | Class · seeds | A | B | Pairs completed by both | Past the Act-1 boss A · B | Pairs only A · only B | Exact McNemar p | Mean floors A − B (95 % bootstrap) | Wins A · B |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `pooled-neow-values-v2-vs-rules_v2-val` | ADR-049, **the registered test** | all five classes · val | rules_v2_neow_values | rules_v2 | 9932 | 61.05 % · 54.30 % | 1487 · 817 | 9.1e-45 | +1.27 (+1.13 to +1.41, resampling pairs) | 29 · 14 |
+| `advisor_v1-astar-vs-d0star-defect-a0-veteran-keeprelics-val` |  | Defect · val | advisor_v1 | advisor_v1 | 1978 | 49.2 % · 40.8 % | 328 · 162 | 5.2e-14 | +1.32 (+1.04 to +1.61) | 0 · 0 |
+| `advisor_v1-astar-vs-d0star-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | advisor_v1 | advisor_v1 | 1946 | 60.0 % · 48.8 % | 373 · 154 | 5.5e-22 | +2.05 (+1.67 to +2.45) | 13 · 11 |
+| `advisor_v1-astar-vs-d0star-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | advisor_v1 | advisor_v1 | 1972 | 47.6 % · 43.9 % | 193 · 120 | 4.4e-05 | +0.78 (+0.54 to +1.03) | 0 · 1 |
+| `advisor_v1-astar-vs-d0star-regent-a0-veteran-keeprelics-val` |  | Regent · val | advisor_v1 | advisor_v1 | 1978 | 27.5 % · 18.6 % | 259 · 84 | 6.9e-22 | +1.51 (+1.29 to +1.74) | 0 · 0 |
+| `advisor_v1-astar-vs-d0star-silent-a0-veteran-keeprelics-val` |  | Silent · val | advisor_v1 | advisor_v1 | 1991 | 18.1 % · 14.6 % | 172 · 102 | 2.8e-05 | +0.54 (+0.34 to +0.74) | 0 · 0 |
 | `defect-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1989 | 80.0 % · 76.2 % | 232 · 156 | 1.3e-04 | +1.08 (+0.74 to +1.42) | 16 · 7 |
 | `ironclad-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1982 | 71.2 % · 65.1 % | 301 · 181 | 5.1e-08 | +1.63 (+1.26 to +2.01) | 12 · 6 |
 | `necrobinder-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1992 | 67.5 % · 62.1 % | 301 · 195 | 2.2e-06 | +0.99 (+0.68 to +1.30) | 0 · 0 |
@@ -496,6 +511,8 @@ Co-op (declared `unsupported` by the capability endpoint, and no team or ally mo
 | &nbsp;&nbsp;Defect | 1,998 | 32.1 % → 40.6 % | 324 / 154 | p = 5.6e-15 | | 0 → 0 | +0.94 |
 | `A*` against `R`, `rules_v3` with the class's measured card values, five classes pooled (secondary) | 9,967 | 61.8 % → 33.0 % | 424 / 3,294 | p < 1e-300 | 2.9 % → 0.4 % (p = 4.9e-56) | 12 → 2 | −4.12 (−4.26 to −3.98) |
 <!-- table:synergy_val:end -->
+
+* **The same test repeated with the relics kept (the one registered held-out test of ADR-054, run on 2026-10-27, published as it came out):** the arms are exactly those of stage B2-val, each played with `--keep-relics` (the pinned simulator drops every relic a run gains after its first fight, gap G14), the pilot reads the class alone (the relic reading is not tested here), the 2,000 `val` seeds of each class, from a clean worktree of `dafcf1f`, five classes pooled into one exact McNemar test at level 0.05, paired by seed: 20,000 games, 9,865 pairs completed by both. **`A*` got past the Act-1 boss in 40.4 % of games against 33.3 %** (1,325 pairs only with the term, 622 only without, p = 3.0e-58; +7.1 points, 95 % +6.3 to +8.0 with a bootstrap that resamples whole seeds; the first test found +7.0; every class ahead: Ironclad 60.0 against 48.8 %, Silent 18.1 against 14.6 %, Regent 27.5 against 18.6 %, Necrobinder 47.6 against 43.9 %, Defect 49.2 against 40.8 %). Mean floors +1.24 (95 % +1.12 to +1.36). Not claims: the second boss (2.4 against 1.7 %, carried by Ironclad) and winning (13 wins against 12, p = 1). All 26 wins re-derived by `audit wins`; the 40-game sample audit of each of the ten batches verified 40 of 40 (`experiments/synergy/keep-val/pooled-astar-vs-d0star.json`, SHA-256 `78a6af75…`). By the registered reading rule the label stays *Judgement, tested in simulation*, and the page names both tests.
 
 * **What each arm's decks held at the Act-1 boss (a profile, descriptive; the parts are read at their first judgement for both arms, `slay2_sim.synergyreport`):**
 

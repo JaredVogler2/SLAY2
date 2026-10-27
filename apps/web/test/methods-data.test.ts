@@ -251,7 +251,10 @@ describe("comparison wording is derived from the data", () => {
     expect(variants.length).toBeGreaterThan(0);
     for (const v of variants) {
       expect(v.id).toContain("keeprelics");
-      expect(v.role).toContain("development");
+      // the variant has development batches (ADR-052) and the held-out batches of the tests registered with it (ADR-053 to ADR-055)
+      const held = v.role === "held-out";
+      expect(held || v.role.includes("development"), v.id).toBe(true);
+      expect(held, v.id).toBe(v.partition === "val");
       expect(largestReport(v.policy, v.character)?.keepRelics).toBe(false);
     }
     expect(evidence.reports.filter((r) => !r.keepRelics && r.id.includes("keeprelics"))).toEqual(
