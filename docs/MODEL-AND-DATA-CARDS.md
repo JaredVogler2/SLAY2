@@ -22,7 +22,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D4 | Seed manifests | experiment design | no | hashed; the sealed partition is unread |
 | D5 | Simulation batches | measurements | summaries on `/methods` | counts, audits and hashes below |
 | D6 | Card-value sets (five classes) | fitted tables | yes: `/advisor`, `/codex` | each passed its registered held-out test |
-| D7 | Opening-relic values | fitted table | yes: `/advisor`, `/methods` | the one pooled test passed |
+| D7 | Opening-relic values | fitted table | yes: `/advisor`, `/methods` | two pooled tests passed (relics dropped, ADR-049; relics kept, ADR-055) |
 | D8 | Combat libraries and demonstrations | training data | no | local only |
 | D9 | Withdrawn data (`experiments/void/`) | **not evidence** | no | invalid, kept so the failure can be inspected |
 | D10 | Synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement, read against simulated runs (M8) |
@@ -91,17 +91,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 10 | 20,000 | 19,830 | 125 | 170 | 0 |
+| Defect | held-out (val) | 13 | 26,000 | 25,641 | 313 | 359 | 0 |
 | Defect | development (train, dev) | 15 | 25,000 | 24,825 | 160 | 175 | 0 |
-| Ironclad | held-out (val) | 13 | 24,300 | 24,044 | 132 | 256 | 0 |
+| Ironclad | held-out (val) | 16 | 30,300 | 29,834 | 444 | 466 | 0 |
 | Ironclad | development (train, dev) | 27 | 34,910 | 34,647 | 282 | 253 | 10 |
-| Necrobinder | held-out (val) | 10 | 20,000 | 19,865 | 2 | 134 | 1 |
+| Necrobinder | held-out (val) | 13 | 26,000 | 25,733 | 5 | 259 | 8 |
 | Necrobinder | development (train, dev) | 17 | 26,000 | 25,840 | 0 | 154 | 6 |
-| Regent | held-out (val) | 10 | 20,000 | 19,806 | 11 | 80 | 114 |
+| Regent | held-out (val) | 13 | 26,000 | 25,647 | 28 | 188 | 165 |
 | Regent | development (train, dev) | 15 | 25,000 | 24,688 | 11 | 115 | 197 |
-| Silent | held-out (val) | 10 | 20,000 | 19,969 | 0 | 31 | 0 |
+| Silent | held-out (val) | 13 | 26,000 | 25,928 | 0 | 72 | 0 |
 | Silent | development (train, dev) | 15 | 25,000 | 24,970 | 0 | 30 | 0 |
-| **All classes** | **held-out (val)** | **53** | **104,300** | **103,514** | **270** | **671** | **115** |
+| **All classes** | **held-out (val)** | **68** | **134,300** | **132,783** | **790** | **1,344** | **173** |
 | **All classes** | **development (train, dev)** | **89** | **135,910** | **134,970** | **453** | **727** | **213** |
 <!-- table:games:end -->
 
@@ -125,10 +125,10 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | G11 | results | 0 | The game opens every act with an Ancient event that first heals the player (all the missing HP, 80 % of it from Ascension 2) and then offers a boon. The pinned simulator plays the opening event of a run (Neow) but has none in acts two and three: its runs start those acts on the map with the HP the previous boss left, and the boons are not modelled. A harness variant (`ancient_heal`, off in every other batch) restores the heal. On 498 paired development games of `rules_v2` (Ironclad, A0) it removes most deaths in the first five rooms of Act 2 (135 to 53) but the games end a little later instead of not at all: 25 to 28 games reach Act 3, mean floors +0.96 (95 % bootstrap +0.53 to +1.39), wins 2 against 0 (p = 0.5). Simulated results here are therefore from a simulator that is harsher than the game at the start of acts two and three, by an amount measured to be small for this pilot (ADR-039). |
 | G12 | coverage | 0 | Act 1 of the game comes in two versions, Overgrowth and Underdocks, with different elites, bosses and ordinary fights. The pinned simulator's three-act run is Overgrowth, Hive, Glory; Underdocks exists in it only as the simulator's 'extra act' (an act index beyond the third) and the harness never plays it, so every simulated game, and every card value measured from them, is an Overgrowth game. This is not a fourth act: the game has three (ADR-048). |
 | G13 | results (Necrobinder) | 0 | The pinned simulator starts a Necrobinder run with 75 HP; the game's own source (CharacterModel.StartingHp of the Necrobinder) says 66. Every simulated Necrobinder result, the card values and the held-out tests among them, starts 9 HP (14 %) above the game and makes the class look sturdier than it is. A harness variant (`game_hp`, off in every other batch) starts the class with the game's number. On 499 paired development games of `rules_v2` (Necrobinder, A0) it lowers the share of runs that get past the Act-1 boss from 63.5 % to 51.5 % (86 pairs one way, 26 the other, exact McNemar p = 1.1e-8) and the mean floors reached from 19.7 to 18.1 (difference -1.63, 95 % bootstrap -2.10 to -1.16); no game is won either way. So the level of every simulated Necrobinder number is too high, by an amount measured for this one pilot; whether the order of choices (cards, relics) holds at 66 HP has not been measured (ADR-049). Found on 2026-10-26 by comparing the simulator's starting state with the repository's class facts (the other four classes' starting HP and every class's starter deck match the game). |
-| G14 | results | 0 | A run in the pinned simulator keeps the relics it holds when its first fight starts (the starting relic and the opening Ancient's pick) and loses every relic it gains afterwards: relics from chests, shops, elites, events and bosses are dropped when the next fight starts. The cause is in the simulator: `RunState.relics` is an alias of the player's relic list, the setup of the first fight gives the player a new list, the alias goes stale, and every later fight rebuilds the player's relics from it. So 97.05 % of the 19,717 Act-1 boss decks of the exploration batches hold exactly two relics, 2.95 % three, none more, and every simulated result played without the variant below comes from a game whose runs never keep a boss, elite, chest or shop relic. A harness variant (`keep_relics`, off in every other batch) points the alias back at the player's list after every action. On 2,444 paired development games of `rules_v2` (500 seeds per class, A0) it lifts the share of runs that get past the Act-1 boss from 52.5 % to 63.1 % (325 pairs one way, 67 the other, exact McNemar p = 9.6e-42; every class, from Ironclad 63.2 to 77.1 % to Necrobinder 62.8 to 69.3 %), past the Act-2 boss from 2.1 % to 9.1 %, the mean floors reached by 3.04 (95 % bootstrap 2.81 to 3.28; Ironclad 5.40), and wins from 2 to 34 (Ironclad 0 to 25 of 481, Defect 2 to 9; every win re-derived). The simulator as it is is therefore much harsher than the game on this one point, by more than any pilot difference measured in this project. Whether the order of choices holds with the relics kept was measured afterwards for the synergy term (it still helps, ADR-054) and for the card values (a small gain for the values measured again, ADR-053), and the opening-relic study has a registered repetition (ADR-055); the tuned thresholds, the search policy and the earlier baselines were not played again with the relics kept (ADR-052). |
+| G14 | results | 0 | A run in the pinned simulator keeps the relics it holds when its first fight starts (the starting relic and the opening Ancient's pick) and loses every relic it gains afterwards: relics from chests, shops, elites, events and bosses are dropped when the next fight starts. The cause is in the simulator: `RunState.relics` is an alias of the player's relic list, the setup of the first fight gives the player a new list, the alias goes stale, and every later fight rebuilds the player's relics from it. So 97.05 % of the 19,717 Act-1 boss decks of the exploration batches hold exactly two relics, 2.95 % three, none more, and every simulated result played without the variant below comes from a game whose runs never keep a boss, elite, chest or shop relic. A harness variant (`keep_relics`, off in every other batch) points the alias back at the player's list after every action. On 2,444 paired development games of `rules_v2` (500 seeds per class, A0) it lifts the share of runs that get past the Act-1 boss from 52.5 % to 63.1 % (325 pairs one way, 67 the other, exact McNemar p = 9.6e-42; every class, from Ironclad 63.2 to 77.1 % to Necrobinder 62.8 to 69.3 %), past the Act-2 boss from 2.1 % to 9.1 %, the mean floors reached by 3.04 (95 % bootstrap 2.81 to 3.28; Ironclad 5.40), and wins from 2 to 34 (Ironclad 0 to 25 of 481, Defect 2 to 9; every win re-derived). The simulator as it is is therefore much harsher than the game on this one point, by more than any pilot difference measured in this project. Whether the order of choices holds with the relics kept was measured afterwards for the synergy term (it still helps, ADR-054) and for the card values (a small gain for the values measured again, ADR-053), and the opening-relic study was played again with them (the rule still helps, ADR-055); the tuned thresholds, the search policy and the earlier baselines were not played again with the relics kept (ADR-052). |
 <!-- table:gaps:end -->
 
-* **G14 changes every level (ADR-052).** The simulator drops every relic a run gains after its first fight, so every batch above except the ten `g14-*` development batches and the batches with `keeprelics` in their names (ADR-053, ADR-054 and ADR-055) was played in a game whose runs hold two relics (the starting relic and the opening Ancient's pick). The ten `g14-<class>-{base,keeprelics}-dev-n500` batches are `rules_v2` on development seeds 0 to 499 of each class with and without the harness variant that keeps them (`keep_relics` in the manifest's config, absent otherwise): past the Act-1 boss 52.5 % to 63.1 % over 2,444 pairs, mean floors +3.04, wins 2 to 34. They are sensitivity evidence, never a headline report; the registered results that were not played again compared two arms inside the simulator as it is and are not evidence that their orderings hold with relics kept; the synergy test (ADR-054) and the card-value test (ADR-053) were played again with the relics kept, and the opening-relic study has a registered repetition (ADR-055).
+* **G14 changes every level (ADR-052).** The simulator drops every relic a run gains after its first fight, so every batch above except the ten `g14-*` development batches and the batches with `keeprelics` in their names (ADR-053, ADR-054 and ADR-055) was played in a game whose runs hold two relics (the starting relic and the opening Ancient's pick). The ten `g14-<class>-{base,keeprelics}-dev-n500` batches are `rules_v2` on development seeds 0 to 499 of each class with and without the harness variant that keeps them (`keep_relics` in the manifest's config, absent otherwise): past the Act-1 boss 52.5 % to 63.1 % over 2,444 pairs, mean floors +3.04, wins 2 to 34. They are sensitivity evidence, never a headline report; the registered results that were not played again compared two arms inside the simulator as it is and are not evidence that their orderings hold with relics kept; the synergy test (ADR-054), the card-value test (ADR-053) and the opening-relic study (ADR-055) were played again with the relics kept.
 
 * **Rights:** the games are produced by running a third-party simulator locally; only our own records of them (outcomes, floors, decks as card ids, counts, hashes) are committed. No simulator code, no decompiled text and no card text is committed (`scripts/guard-third-party.sh` runs before every commit and in CI).
 
@@ -157,37 +157,38 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Data:** 15,000 exploration games on `train` seeds (3,000 per class, exact class ids, each game's start checked against its class), the relic taken at random among the three offered; 14,933 analysed, 67 not counted (32 simulator errors, 35 timeouts: never losses). The unit of resampling and of cross-validation is the seed, because the five classes' games of one seed share the offer.
 * **Model:** ridge logistic regression, penalty 10 chosen by 5-fold seed-grouped cross-validation, 200 bootstrap draws; cross-validated AUC 0.724 and log-loss 0.600 against 0.611 for the class-only model, so the relic terms add a modest but real predictive signal beyond the class: a predictor that knows only the class scores an AUC of about 0.71 on the same games (computed from the per-class pass rates of the file), so the relics add about 0.02 of AUC and 0.011 of log-loss.
 * **Held-out test** (ADR-049, one pooled exact McNemar test, level 0.05, per-class rule written in advance): the pilot taking the largest-valued relic got past the Act-1 boss in 61.05 % of 9,932 pairs completed by both against 54.30 % for the same pilot taking the first helpful relic (1,487 pairs only with the rule, 817 only with the baseline, p = 9.1e-45; +6.75 points, 95 % +5.75 to +7.77 resampling whole seeds). The secondary mean-floor difference, +1.27 (+1.13 to +1.41), resamples pairs and not seeds, so its interval is narrower than a seed-clustered one would be; wins were 29 against 14 (24 pairs only with the rule, 9 only with the baseline, p = 0.014). Every class was ahead on its own (the per-class rows of the comparison table in M5), so the site shows the rule's choice for all five classes, labelled as a simulated, unverified second opinion.
+* **Repeated with the relics kept (ADR-055).** `experiments/neow/neow-values-keep-v1.json`, SHA-256 `cb9f166754f410558eb33bbb79a35152ff1e69f595dfb3729ad2435c7ef496d8`, frozen and pushed before any held-out game of the repetition: 15,000 exploration games on `train` seeds with `--keep-relics` (14,611 analysed; 389 not counted, 350 simulator errors and 39 at the step limit, never read as losses), the same design and the same 27 relics; cross-validated log-loss 0.573 against 0.585 for the class alone (AUC 0.724). Held-out test (one pooled exact McNemar test, the per-class rule of ADR-055 item 6 written in advance): the pilot taking the largest-valued relic got past the Act-1 boss in 69.2 % of 9,629 pairs completed by both against 64.5 % for the first helpful relic (1,258 pairs only with the rule, 805 only with the baseline, p = 1.7e-23; +4.70 points, 95 % +3.69 to +5.71 resampling whole seeds); every class ahead on its own at p below 0.01; wins 174 against 158 (p = 0.24, nothing shown). The secondary arm (the first study's values played with the relics kept) gave 69.1 % against 64.5 % (p = 1.7e-22). The two sets of values were not tested against each other. The site follows the repetition's values; the table below lists both fits.
 
 <!-- table:relics:begin -->
-| Relic | Kind | Value β (log-odds, 95 % bootstrap by seed) | Offered | Taken | Past the Act-1 boss when taken · when offered and not taken | Flag |
-|---|---|---|---|---|---|---|
-| Silver Crucible | cursed | +0.90 (+0.66 to +1.16) | 1824 | 533 | 73.6 % · 54.5 % |  |
-| Large Capsule | cursed | +0.50 (+0.32 to +0.67) | 1935 | 723 | 65.3 % · 53.0 % | more simulator errors and timeouts than chance explains |
-| Silken Tress | cursed | +0.49 (+0.34 to +0.69) | 1917 | 605 | 65.5 % · 53.1 % |  |
-| Nutritious Oyster | positive | +0.47 (+0.27 to +0.72) | 962 | 318 | 65.7 % · 54.4 % |  |
-| Neows Talisman | positive | +0.35 (+0.14 to +0.61) | 923 | 348 | 62.9 % · 55.6 % |  |
-| Fishing Rod | positive | +0.31 (+0.12 to +0.49) | 1849 | 603 | 61.5 % · 53.9 % |  |
-| Pomander | positive | +0.18 (-0.07 to +0.47) | 870 | 295 | 59.0 % · 57.2 % |  |
-| Small Capsule | positive | +0.17 (-0.06 to +0.45) | 738 | 210 | 59.1 % · 55.9 % |  |
-| Lost Coffer | positive | +0.16 (-0.02 to +0.30) | 1980 | 647 | 58.3 % · 55.4 % |  |
-| Stone Humidifier | positive | +0.12 (-0.13 to +0.45) | 1103 | 319 | 57.7 % · 53.2 % |  |
-| Lead Paperweight | positive | +0.10 (-0.06 to +0.29) | 1888 | 695 | 57.1 % · 55.6 % |  |
-| Scroll Boxes | positive | +0.07 (-0.08 to +0.23) | 1923 | 668 | 56.3 % · 54.4 % |  |
-| Winged Boots | positive | +0.05 (-0.12 to +0.22) | 1988 | 647 | 55.8 % · 52.6 % |  |
-| Neows Torment | positive | -0.02 (-0.25 to +0.15) | 1914 | 644 | 54.2 % · 56.3 % |  |
-| Phial Holster | positive | -0.03 (-0.21 to +0.11) | 2120 | 729 | 54.0 % · 54.4 % |  |
-| Golden Pearl | positive | -0.23 (-0.42 to -0.01) | 1628 | 529 | 49.5 % · 55.9 % |  |
-| Cursed Pearl | cursed | -0.25 (-0.43 to -0.09) | 1793 | 639 | 49.1 % · 50.9 % |  |
-| Booming Conch | positive | -0.26 (-0.45 to -0.09) | 1995 | 629 | 49.0 % · 55.0 % |  |
-| Hefty Tablet | cursed | -0.27 (-0.44 to -0.11) | 1870 | 587 | 48.7 % · 55.0 % |  |
-| Kaleidoscope | positive | -0.28 (-0.45 to -0.10) | 1763 | 635 | 48.4 % · 52.0 % |  |
-| Neows Bones | cursed | -0.29 (-0.45 to -0.12) | 1968 | 644 | 48.1 % · 53.4 % |  |
-| Precarious Shears | cursed | -0.31 (-0.47 to -0.16) | 1834 | 594 | 47.6 % · 55.1 % |  |
-| Arcane Scroll | positive | -0.34 (-0.51 to -0.16) | 1744 | 628 | 47.1 % · 56.2 % |  |
-| Lava Rock | positive | -0.34 (-0.59 to -0.06) | 900 | 295 | 46.4 % · 47.6 % |  |
-| Leafy Poultice | cursed | -0.35 (-0.50 to -0.17) | 1792 | 595 | 46.9 % · 53.2 % |  |
-| New Leaf | positive | -0.40 (-0.62 to -0.22) | 1852 | 584 | 45.6 % · 56.8 % |  |
-| Precise Scissors | positive | -0.51 (-0.68 to -0.36) | 1726 | 590 | 43.0 % · 52.5 % |  |
+| Relic | Kind | Repeated study, relics kept: value β (95 % bootstrap by seed) · taken | First study, relics dropped: value β (95 %) · taken | Flag |
+|---|---|---|---|---|
+| Nutritious Oyster | positive | +0.57 (+0.34 to +0.86) · 311 | +0.47 (+0.27 to +0.72) · 318 |  |
+| Large Capsule | cursed | +0.53 (+0.36 to +0.70) · 718 | +0.50 (+0.32 to +0.67) · 723 | more simulator errors and timeouts than chance explains (first study) |
+| Silver Crucible | cursed | +0.42 (+0.21 to +0.67) · 528 | +0.90 (+0.66 to +1.16) · 533 |  |
+| Neows Talisman | positive | +0.40 (+0.16 to +0.58) · 333 | +0.35 (+0.14 to +0.61) · 348 |  |
+| Fishing Rod | positive | +0.36 (+0.15 to +0.57) · 579 | +0.31 (+0.12 to +0.49) · 603 |  |
+| Cursed Pearl | cursed | +0.30 (+0.10 to +0.48) · 608 | -0.25 (-0.43 to -0.09) · 639 | more simulator errors and timeouts than chance explains (repeated study) |
+| Golden Pearl | positive | +0.25 (+0.07 to +0.49) · 516 | -0.23 (-0.42 to -0.01) · 529 |  |
+| Stone Humidifier | positive | +0.21 (-0.04 to +0.46) · 315 | +0.12 (-0.13 to +0.45) · 319 |  |
+| Silken Tress | cursed | +0.21 (+0.04 to +0.39) · 591 | +0.49 (+0.34 to +0.69) · 605 |  |
+| Lost Coffer | positive | +0.20 (+0.02 to +0.38) · 630 | +0.16 (-0.02 to +0.30) · 647 |  |
+| Scroll Boxes | positive | +0.14 (-0.05 to +0.32) · 651 | +0.07 (-0.08 to +0.23) · 668 |  |
+| Lead Paperweight | positive | +0.13 (-0.06 to +0.32) · 677 | +0.10 (-0.06 to +0.29) · 695 |  |
+| Small Capsule | positive | +0.12 (-0.16 to +0.38) · 207 | +0.17 (-0.06 to +0.45) · 210 |  |
+| Phial Holster | positive | +0.07 (-0.09 to +0.28) · 719 | -0.03 (-0.21 to +0.11) · 729 |  |
+| Neows Torment | positive | +0.01 (-0.18 to +0.18) · 630 | -0.02 (-0.25 to +0.15) · 644 |  |
+| Pomander | positive | -0.01 (-0.27 to +0.26) · 289 | +0.18 (-0.07 to +0.47) · 295 |  |
+| Winged Boots | positive | -0.01 (-0.21 to +0.16) · 637 | +0.05 (-0.12 to +0.22) · 647 |  |
+| Booming Conch | positive | -0.17 (-0.37 to +0.01) · 620 | -0.26 (-0.45 to -0.09) · 629 |  |
+| Arcane Scroll | positive | -0.23 (-0.37 to -0.03) · 614 | -0.34 (-0.51 to -0.16) · 628 |  |
+| Lava Rock | positive | -0.24 (-0.50 to +0.00) · 282 | -0.34 (-0.59 to -0.06) · 295 |  |
+| Hefty Tablet | cursed | -0.27 (-0.49 to -0.07) · 575 | -0.27 (-0.44 to -0.11) · 587 |  |
+| Kaleidoscope | positive | -0.29 (-0.45 to -0.11) · 624 | -0.28 (-0.45 to -0.10) · 635 |  |
+| Neows Bones | cursed | -0.30 (-0.46 to -0.12) · 633 | -0.29 (-0.45 to -0.12) · 644 |  |
+| Leafy Poultice | cursed | -0.47 (-0.64 to -0.30) · 585 | -0.35 (-0.50 to -0.17) · 595 |  |
+| New Leaf | positive | -0.59 (-0.76 to -0.39) · 571 | -0.40 (-0.62 to -0.22) · 584 |  |
+| Precarious Shears | cursed | -0.65 (-0.82 to -0.51) · 586 | -0.31 (-0.47 to -0.16) · 594 |  |
+| Precise Scissors | positive | -0.69 (-0.84 to -0.52) · 582 | -0.51 (-0.68 to -0.36) · 590 |  |
 <!-- table:relics:end -->
 
 * **Reading the table:** the values are estimates from 3,000 draws of a relic per class and 27 relics, with shrinkage toward the average (relics taken in fewer than 30 games count as 0). The last two columns are raw pass rates and are confounded by the class mix of the offers; the value column is the adjusted one. Large Capsule is flagged: 12 of its 735 games ended in a simulator error or a timeout, more often than chance explains, so its value is the least certain.
@@ -288,7 +289,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 
 * **What:** the model of D7 and its rule: among the three relics offered, the one with the largest value (a relic not in the file counts as 0). The site compares the three offered relics with each one's estimated chance for the player's class (95 % interval, games behind it) and names the rule's choice, labelled simulated and unverified.
 * **Intended use:** a comparison to think with. **Not for:** deciding a run: a player's plan matters more than one number, and the values come from a pilot that cannot use every effect.
-* **Evaluation:** the pooled held-out test of D7. The rule takes a costly relic in 41 % of games, which it is allowed to.
+* **Evaluation:** the pooled held-out tests of D7 (the repetition's, with the relics kept, is the one the site follows). The rule takes a costly relic in 41 % of games, which it is allowed to.
 * **Limits:** see D7.
 
 ## M5. Simulated pilots and searchers
@@ -317,10 +318,15 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v1 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 17.63 | 3 · 0 |
 | rules_v1 | Regent | 2000 | 1987 | 0 | 0.00 to 0.19 % | 13.54 | 0 · 13 |
 | rules_v1 | Silent | 2000 | 1999 | 0 | 0.00 to 0.19 % | 13.36 | 1 · 0 |
+| rules_v2 | Defect | 2000 | 1934 | 62 | 2.51 to 4.09 % | 25.01 | 66 · 0 |
 | rules_v2 | Defect | 2000 | 1996 | 7 | 0.17 to 0.72 % | 21.30 | 4 · 0 |
+| rules_v2 | Ironclad | 2000 | 1936 | 91 | 3.84 to 5.74 % | 26.65 | 64 · 0 |
 | rules_v2 | Ironclad | 2000 | 1994 | 6 | 0.14 to 0.65 % | 21.07 | 6 · 0 |
+| rules_v2 | Necrobinder | 2000 | 1961 | 2 | 0.03 to 0.37 % | 22.60 | 37 · 2 |
 | rules_v2 | Necrobinder | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
+| rules_v2 | Regent | 2000 | 1956 | 6 | 0.14 to 0.67 % | 20.37 | 33 · 11 |
 | rules_v2 | Regent | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
+| rules_v2 | Silent | 2000 | 1987 | 0 | 0.00 to 0.19 % | 15.84 | 13 · 0 |
 | rules_v2 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
 | rules_v3 | Defect | 2000 | 1945 | 46 | 1.78 to 3.14 % | 25.01 | 55 · 0 |
 | rules_v3 | Defect | 2000 | 1998 | 10 | 0.27 to 0.92 % | 21.86 | 2 · 0 |
@@ -339,9 +345,19 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v3 | Silent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 16.23 | 10 · 0 |
 | rules_v3 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.01 | 0 · 0 |
 | rules_v2_neow_values | Defect | 2000 | 1990 | 16 | 0.50 to 1.30 % | 22.39 | 10 · 0 |
+| rules_v2_neow_values | Defect | 2000 | 1936 | 65 | 2.64 to 4.26 % | 26.01 | 64 · 0 |
+| rules_v2_neow_values | Defect | 2000 | 1941 | 61 | 2.45 to 4.02 % | 25.90 | 59 · 0 |
 | rules_v2_neow_values | Ironclad | 2000 | 1984 | 12 | 0.35 to 1.05 % | 22.69 | 16 · 0 |
+| rules_v2_neow_values | Ironclad | 2000 | 1924 | 106 | 4.58 to 6.62 % | 27.83 | 76 · 0 |
+| rules_v2_neow_values | Ironclad | 2000 | 1930 | 115 | 4.99 to 7.10 % | 27.71 | 70 · 0 |
+| rules_v2_neow_values | Necrobinder | 2000 | 1951 | 0 | 0.00 to 0.20 % | 23.35 | 46 · 3 |
 | rules_v2_neow_values | Necrobinder | 2000 | 1992 | 0 | 0.00 to 0.19 % | 20.62 | 8 · 0 |
+| rules_v2_neow_values | Necrobinder | 2000 | 1956 | 1 | 0.01 to 0.29 % | 23.18 | 42 · 2 |
+| rules_v2_neow_values | Regent | 2000 | 1937 | 5 | 0.11 to 0.60 % | 21.86 | 41 · 22 |
+| rules_v2_neow_values | Regent | 2000 | 1948 | 6 | 0.14 to 0.67 % | 21.72 | 34 · 18 |
 | rules_v2_neow_values | Regent | 2000 | 1976 | 1 | 0.01 to 0.29 % | 19.29 | 6 · 18 |
+| rules_v2_neow_values | Silent | 2000 | 1984 | 0 | 0.00 to 0.19 % | 17.28 | 16 · 0 |
+| rules_v2_neow_values | Silent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 17.23 | 12 · 0 |
 | rules_v2_neow_values | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.53 | 0 · 0 |
 | search_v3 (every fight) | Ironclad | 300 | 300 | 2 | 0.18 to 2.40 % | 24.45 | 0 · 0 |
 | advisor_v1 | Defect | 2000 | 1983 | 0 | 0.00 to 0.19 % | 17.94 | 17 · 0 |
@@ -372,14 +388,24 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | Comparison file | Status | Class · seeds | A | B | Pairs completed by both | Past the Act-1 boss A · B | Pairs only A · only B | Exact McNemar p | Mean floors A − B (95 % bootstrap) | Wins A · B |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `pooled-neow-values-v2-vs-rules_v2-val` | ADR-049, **the registered test** | all five classes · val | rules_v2_neow_values | rules_v2 | 9932 | 61.05 % · 54.30 % | 1487 · 817 | 9.1e-45 | +1.27 (+1.13 to +1.41, resampling pairs) | 29 · 14 |
+| `pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val` | ADR-055, **the registered test** | all five classes · val | rules_v2_neow_values | rules_v2 | 9629 | 69.16 % · 64.45 % | 1258 · 805 | 1.7e-23 | +1.15 (+0.98 to +1.33, resampling pairs) | 174 · 158 |
+| `pooled-neow-values-v2-vs-rules_v2-keeprelics-val` | ADR-055, secondary arm (decides nothing) | all five classes · val | rules_v2_neow_values | rules_v2 | 9648 | 69.08 % · 64.51 % | 1245 · 804 | 1.7e-22 | +1.03 (+0.85 to +1.21, resampling pairs) | 181 · 158 |
 | `advisor_v1-astar-vs-d0star-defect-a0-veteran-keeprelics-val` |  | Defect · val | advisor_v1 | advisor_v1 | 1978 | 49.2 % · 40.8 % | 328 · 162 | 5.2e-14 | +1.32 (+1.04 to +1.61) | 0 · 0 |
 | `advisor_v1-astar-vs-d0star-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | advisor_v1 | advisor_v1 | 1946 | 60.0 % · 48.8 % | 373 · 154 | 5.5e-22 | +2.05 (+1.67 to +2.45) | 13 · 11 |
 | `advisor_v1-astar-vs-d0star-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | advisor_v1 | advisor_v1 | 1972 | 47.6 % · 43.9 % | 193 · 120 | 4.4e-05 | +0.78 (+0.54 to +1.03) | 0 · 1 |
 | `advisor_v1-astar-vs-d0star-regent-a0-veteran-keeprelics-val` |  | Regent · val | advisor_v1 | advisor_v1 | 1978 | 27.5 % · 18.6 % | 259 · 84 | 6.9e-22 | +1.51 (+1.29 to +1.74) | 0 · 0 |
 | `advisor_v1-astar-vs-d0star-silent-a0-veteran-keeprelics-val` |  | Silent · val | advisor_v1 | advisor_v1 | 1991 | 18.1 % · 14.6 % | 172 · 102 | 2.8e-05 | +0.54 (+0.34 to +0.74) | 0 · 0 |
+| `defect-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1906 | 85.0 % · 82.5 % | 172 · 123 | 0.0051 | +0.93 (+0.50 to +1.35) | 64 · 62 |
+| `defect-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1909 | 86.0 % · 82.6 % | 181 · 116 | 1.9e-04 | +0.78 (+0.35 to +1.20) | 60 · 62 |
 | `defect-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1989 | 80.0 % · 76.2 % | 232 · 156 | 1.3e-04 | +1.08 (+0.74 to +1.42) | 16 · 7 |
+| `ironclad-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1899 | 80.2 % · 77.3 % | 202 · 146 | 0.0031 | +1.26 (+0.79 to +1.74) | 105 · 88 |
+| `ironclad-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1901 | 79.9 % · 77.4 % | 200 · 152 | 0.012 | +1.09 (+0.62 to +1.57) | 114 · 88 |
 | `ironclad-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1982 | 71.2 % · 65.1 % | 301 · 181 | 5.1e-08 | +1.63 (+1.26 to +2.01) | 12 · 6 |
+| `necrobinder-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1934 | 74.5 % · 71.4 % | 248 · 189 | 0.0055 | +0.71 (+0.32 to +1.10) | 0 · 2 |
+| `necrobinder-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1937 | 74.2 % · 71.4 % | 248 · 193 | 0.01 | +0.53 (+0.16 to +0.92) | 1 · 2 |
 | `necrobinder-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1992 | 67.5 % · 62.1 % | 301 · 195 | 2.2e-06 | +0.99 (+0.68 to +1.30) | 0 · 0 |
+| `regent-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values | rules_v2 | 1912 | 65.9 % · 60.0 % | 286 · 173 | 1.5e-07 | +1.42 (+1.06 to +1.80) | 5 · 6 |
+| `regent-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values | rules_v2 | 1920 | 65.8 % · 60.1 % | 280 · 171 | 3.2e-07 | +1.32 (+0.96 to +1.69) | 6 · 6 |
 | `regent-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values | rules_v2 | 1969 | 58.6 % · 49.7 % | 346 · 172 | 1.7e-14 | +1.43 (+1.15 to +1.72) | 1 · 1 |
 | `rules_v1-vs-random_legal-ironclad-a0-veteran-val` | baseline, not a registered test | Ironclad · val | rules_v1 | random_legal | 1997 | 43.3 % · 0.0 % | 865 · 0 | 8.1e-261 | +13.60 (+13.31 to +13.90) | 0 · 0 |
 | `rules_v2-vs-rules_v1-defect-a0-veteran-val` | ADR-034 | Defect · val | rules_v2 | rules_v1 | 1996 | 76.2 % · 34.5 % | 937 · 106 | 7.2e-167 | +5.37 (+5.00 to +5.75) | 7 · 0 |
@@ -395,6 +421,8 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | `rules_v3-values2-vs-rules_v3-ironclad-a0-veteran-val` | ADR-046 | Ironclad · val | rules_v3 + Ironclad values v2 | rules_v3 | 1990 | 79.4 % · 74.8 % | 276 · 185 | 2.6e-05 | +0.72 (+0.40 to +1.04) | 2 · 6 |
 | `rules_v3-vs-rules_v2-ironclad-a0-veteran-val` | ADR-045 | Ironclad · val | rules_v3 | rules_v2 | 1991 | 74.8 % · 65.1 % | 292 · 99 | 3.3e-23 | +1.39 (+1.10 to +1.68) | 6 · 5 |
 | `search_v3-all-vs-rules_v2-ironclad-a0-veteran-val` | ADR-040 | Ironclad · val | search_v3 (every fight) | rules_v2 | 300 | 74.3 % · 64.7 % | 59 · 30 | 0.0028 | +3.93 (+2.90 to +5.01) | 2 · 1 |
+| `silent-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values | rules_v2 | 1978 | 41.2 % · 32.3 % | 350 · 174 | 1.2e-14 | +1.44 (+1.16 to +1.72) | 0 · 0 |
+| `silent-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values | rules_v2 | 1981 | 40.5 % · 32.3 % | 336 · 172 | 3.0e-13 | +1.40 (+1.12 to +1.67) | 0 · 0 |
 | `silent-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values | rules_v2 | 2000 | 28.2 % · 18.5 % | 307 · 113 | 8.4e-22 | +1.19 (+0.98 to +1.40) | 0 · 0 |
 | `g13-gamehp-vs-base-necrobinder-a0-veteran-dev` | development, not held-out | Necrobinder · dev | rules_v2 [the game's start HP] | rules_v2 | 499 | 51.5 % · 63.5 % | 26 · 86 | 1.1e-08 | -1.63 (-2.10 to -1.16) | 0 · 0 |
 | `g14-keeprelics-vs-base-defect-a0-veteran-dev` | development, not held-out | Defect · dev | rules_v2 | rules_v2 | 488 | 81.8 % · 76.8 % | 40 · 16 | 0.0018 | +3.17 (+2.61 to +3.76) | 9 · 2 |

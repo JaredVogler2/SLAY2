@@ -64,17 +64,17 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 10 | 20,000 | 19,830 | 125 | 170 | 0 |
+| Defect | held-out (val) | 13 | 26,000 | 25,641 | 313 | 359 | 0 |
 | Defect | development (train, dev) | 15 | 25,000 | 24,825 | 160 | 175 | 0 |
-| Ironclad | held-out (val) | 13 | 24,300 | 24,044 | 132 | 256 | 0 |
+| Ironclad | held-out (val) | 16 | 30,300 | 29,834 | 444 | 466 | 0 |
 | Ironclad | development (train, dev) | 27 | 34,910 | 34,647 | 282 | 253 | 10 |
-| Necrobinder | held-out (val) | 10 | 20,000 | 19,865 | 2 | 134 | 1 |
+| Necrobinder | held-out (val) | 13 | 26,000 | 25,733 | 5 | 259 | 8 |
 | Necrobinder | development (train, dev) | 17 | 26,000 | 25,840 | 0 | 154 | 6 |
-| Regent | held-out (val) | 10 | 20,000 | 19,806 | 11 | 80 | 114 |
+| Regent | held-out (val) | 13 | 26,000 | 25,647 | 28 | 188 | 165 |
 | Regent | development (train, dev) | 15 | 25,000 | 24,688 | 11 | 115 | 197 |
-| Silent | held-out (val) | 10 | 20,000 | 19,969 | 0 | 31 | 0 |
+| Silent | held-out (val) | 13 | 26,000 | 25,928 | 0 | 72 | 0 |
 | Silent | development (train, dev) | 15 | 25,000 | 24,970 | 0 | 30 | 0 |
-| **All classes** | **held-out (val)** | **53** | **104,300** | **103,514** | **270** | **671** | **115** |
+| **All classes** | **held-out (val)** | **68** | **134,300** | **132,783** | **790** | **1,344** | **173** |
 | **All classes** | **development (train, dev)** | **89** | **135,910** | **134,970** | **453** | **727** | **213** |
 <!-- table:games:end -->
 
@@ -119,7 +119,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 
 * No network is deployed or claimed: three combat networks were trained and judged on 796 held-out combats and none improved on the rules baseline; a fourth run is paused with only a monitor-set number.
 * Pilots are weak: about 0.3 % of simulated Ironclad games are won, and Silent and Necrobinder won none of their held-out games in that simulator (with the relics kept, the held-out games of ADR-054 have 13 Ironclad wins in 1,959 games, one Necrobinder win in 1,983 and none for the other three classes). The evidence is about surviving the first boss. **That level belongs to a simulator that drops every relic a run gains after its first fight (G14, ADR-052):** with the relics kept, the same pilot got past the Act-1 boss in 63.1 % of 2,444 paired development games instead of 52.5 %, went 3.04 floors further and won 34 games against 2 (Ironclad 25 of 482 against 0 of 499).
-* The simulator plays Overgrowth only, at Ascension 0, with no Ancients in acts two and three, a Necrobinder at 75 HP, and, the largest of its known gaps, **no relic kept after a run's first fight (G14)**. No registered result is withdrawn (each compared two arms inside the simulator as it is), but none that was not played again is evidence that its ordering holds with relics kept: the synergy test was played again with them (ADR-054: the term still helps) and so was the card-value test (ADR-053: four classes adopt the values measured again), the opening-relic study's repetition is registered and its held-out games are running (ADR-055), and the tuned thresholds and the search policy were not played again (STATUS, Next steps 0b).
+* The simulator plays Overgrowth only, at Ascension 0, with no Ancients in acts two and three, a Necrobinder at 75 HP, and, the largest of its known gaps, **no relic kept after a run's first fight (G14)**. No registered result is withdrawn (each compared two arms inside the simulator as it is), but none that was not played again is evidence that its ordering holds with relics kept: the synergy test was played again with them (ADR-054: the term still helps) and so was the card-value test (ADR-053: four classes adopt the values measured again), the opening-relic study was played again with them (ADR-055: the rule of taking the best-measured relic still helps, 69.2 % against 64.5 % past the Act-1 boss), and the tuned thresholds and the search policy were not played again (STATUS, Next steps 0b).
 * No local companion or bridge to the running game, so nothing reads a live run and no game-control surface exists.
 * No re-verification against a newer main build: a patch needs the rules, the catalog and the simulations redone; `patch-watch` only tells when to.
 

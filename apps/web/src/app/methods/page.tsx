@@ -54,7 +54,7 @@ const NOT_EVALUATED = [
   ],
   [
     "Relics gained after a run's first fight (gap G14)",
-    "The simulator drops every relic a run gains after its first fight, so a simulated level on this page (win rates, shares past a boss, mean floors) describes a game whose runs hold two relics, except where a block says its games kept the relics: the synergy test repeated (ADR-054), the card values measured again and their test (ADR-053), and the repetition of the opening-relic study (ADR-055) once its test has been run. The known gaps below give the measured effect of keeping them. The comparisons that were not played again (the tuned thresholds, the search policy and the first opening-relic study) were made inside the simulator as it is; whether their orderings hold with relics kept has not been measured.",
+    "The simulator drops every relic a run gains after its first fight, so a simulated level on this page (win rates, shares past a boss, mean floors) describes a game whose runs hold two relics, except where a block says its games kept the relics: the synergy test repeated (ADR-054), the card values measured again and their test (ADR-053), and the repetition of the opening-relic study (ADR-055). The known gaps below give the measured effect of keeping them. The comparisons that were not played again (the tuned thresholds and the search policy) were made inside the simulator as it is; whether their orderings hold with relics kept has not been measured.",
   ],
   [
     "Beta build v0.111.0",
