@@ -1,16 +1,21 @@
+import { PART_WEIGHT } from "@slay2/decision";
+
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { Tile } from "@/components/ui/Tile";
-import { SynergyTestPanel } from "@/components/methods/SynergyTestPanel";
+import { SynergyKeepTestPanel, SynergyTestPanel } from "@/components/methods/SynergyTestPanel";
 import { pct } from "@/lib/methods-data";
 import {
   SYNERGY_EVIDENCE,
   change,
+  kept,
   num,
   range,
+  type KeepArm,
+  type KeepReading,
   type MechanicReading,
   type SynergyEvidence,
 } from "@/lib/synergy-evidence";
@@ -102,6 +107,93 @@ function MechanicsDisclosure({
   );
 }
 
+/** The stage-B1 reading repeated on random drafts played with the relics kept, with the relics counted and not (ADR-053 item 6). */
+function KeepReadingBlock({ keep }: { keep: KeepReading }) {
+  const classes = Object.entries(keep.perClass);
+  const sameWay = classes.filter(([, c]) => c.mean < 0).length;
+  const clear = classes.filter(([, c]) => (c.ci95[1] ?? 0) < 0).length;
+  const arms: readonly (readonly [string, KeepArm])[] = [
+    ["The class alone, as stage B1 read it", keep.classAlone],
+    ["The relics each run held counted as suppliers", keep.relicsCounted],
+  ];
+  return (
+    <section
+      className="mt-5 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted"
+      aria-labelledby="synergy-keep"
+    >
+      <h3 id="synergy-keep" className="mb-2 font-display text-lg text-parchment">
+        Read again with the relics kept, and the relics counted
+      </h3>
+      <p>
+        The simulator drops the relics a run gains after its first fight (gap G14), so the runs
+        above held two relics and a relic could not matter. The same reading was repeated on{" "}
+        {games(keep.bossFights)} random-draft runs played with the relics kept (ADR-053, development
+        seeds, exploratory like stage B1): {pct(keep.passRate, 1)} got past the Act-1 boss,{" "}
+        {games(keep.withTaggedRelic)} of the decks hold a relic that SLAY2&rsquo;s relic table reads
+        as supplying a mechanic, and counting the relics changes the index parts of{" "}
+        {games(keep.partsDiffer)}.
+      </p>
+      <ScrollRegion label="The synergy term read with and without the relics counted">
+        <table className="mt-3 w-full min-w-[34rem] text-left text-sm">
+          <caption className="pb-2 text-left font-display text-base text-gold">
+            Held-out prediction of getting past the Act-1 boss, by what the index parts count
+          </caption>
+          <thead>
+            <tr className="border-b border-line text-muted">
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Index parts read from
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Log loss with the term
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Change when the term is added
+              </th>
+              <th scope="col" className="py-2 font-medium">
+                Needs · lifts · engines
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {arms.map(([label, arm]) => (
+              <tr key={label} className="align-top">
+                <th scope="row" className="py-2 pr-3 font-medium text-parchment">
+                  {label}
+                </th>
+                <td className="num py-2 pr-3">{num(arm.logLoss, 5)}</td>
+                <td className="num py-2 pr-3">{change(arm.synergyAdded)}</td>
+                <td className="num py-2">
+                  {num(arm.ratios.needs.toQuality, 2)} · {num(arm.ratios.scalers.toQuality, 2)} ·{" "}
+                  {num(arm.ratios.engines.toQuality, 2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollRegion>
+      <p className="mt-3">
+        <strong className="font-medium text-parchment">Reading.</strong> With the relics kept the
+        card term predicts as it did in stage B1: unmet needs in full, the lifts at about half to
+        two thirds of their first judgement, and no support for an engine credit. Counting the
+        relics a run held as suppliers lowers the held-out log loss by a further{" "}
+        {num(-keep.relicGain.mean, 5)} (95 %{" "}
+        {range(keep.relicGain.ci95.map((x) => -x).reverse(), 5)}
+        ): a small gain, in the same direction in {sameWay} of {classes.length} classes and clear of
+        zero in {clear}. The relic table was written before these runs existed and has not been
+        changed by them.
+      </p>
+      <p className="mt-3">
+        This is the same kind of evidence stage B1 gave the card term before its test: exploratory,
+        on development seeds, random decks, one pilot, an unverified simulator. A held-out test with
+        the advisor&rsquo;s own pilot could not see the relic term, because it changes that
+        pilot&rsquo;s decks in very few games (ADR-051, addendum A). Data:{" "}
+        <code className="font-mono text-xs text-parchment">{keep.file}</code> (sha{" "}
+        {keep.sha256.slice(0, 12)}…, {keep.bootstrapDraws} resamples of whole seeds).
+      </p>
+    </section>
+  );
+}
+
 /**
  * What simulated runs say about the synergy term of the advisor's deck index (ADR-050): the exploratory reading (stage B1) with its
  * limits, and the one registered test (stage B2) once it has been run. Every figure is read from the study's own report through the
@@ -110,7 +202,7 @@ function MechanicsDisclosure({
 export function SynergyStudyPanel({
   evidence = SYNERGY_EVIDENCE,
 }: { evidence?: SynergyEvidence } = {}) {
-  const { table, b1, b2 } = evidence;
+  const { table, b1, keep, b2, b2keep } = evidence;
   if (!b1) {
     return null;
   }
@@ -192,7 +284,10 @@ export function SynergyStudyPanel({
         at about {num(b1.calibratedWeights.scaler, 1)} of it, and give an engine credit no more than
         weak support (its interval includes 0). Random decks rarely hold a whole engine and the
         pilot does not build around one, so little for engines here is not evidence about players
-        who build them on purpose.
+        who build them on purpose. The index the advisor page uses keeps unmet needs{" "}
+        {kept(PART_WEIGHT.needs)}, the lifts {kept(PART_WEIGHT.scalers)} and engines{" "}
+        {kept(PART_WEIGHT.engines)}: the strengths a development stage chose between on separate
+        simulated seeds (ADR-050 addendum D).
       </p>
 
       <ScrollRegion label="Synergy reading by class and seed set">
@@ -267,6 +362,8 @@ export function SynergyStudyPanel({
         </div>
       </Disclosure>
 
+      {keep ? <KeepReadingBlock keep={keep} /> : null}
+
       {b2 ? (
         <SynergyTestPanel test={b2} />
       ) : (
@@ -282,6 +379,23 @@ export function SynergyStudyPanel({
           </p>
         </section>
       )}
+
+      {b2keep ? (
+        <SynergyKeepTestPanel test={b2keep} first={b2} />
+      ) : b2 ? (
+        <section className="mt-5 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted">
+          <h3 className="mb-2 font-display text-lg text-parchment">
+            The same test with the relics kept
+          </h3>
+          <p>
+            Registered (ADR-054) before any of its games, and not on this page yet: the test above
+            was played in a simulator that drops the relics a run gains after its first fight (gap
+            G14), and the same two pilots are to play the same kind of held-out seeds with the
+            relics kept, once, at the same level. It is published here as it comes out, whichever
+            way it goes.
+          </p>
+        </section>
+      ) : null}
 
       <ul className="mt-5 list-disc space-y-1.5 pl-5 text-sm text-muted">
         <li>

@@ -40,6 +40,9 @@ class RunConfig:
     # A harness variant for gap G13, never the simulator's own behaviour and off in every other batch: start the class with the
     # maximum HP the game's source gives it (Necrobinder 66, the simulator says 75; the other four classes are equal).
     game_hp: bool = False
+    # A harness variant for gap G14, never the simulator's own behaviour and off in every other batch: keep the relics a run gains
+    # after its first fight (the pinned simulator drops them when the next fight starts; see ``_keep_relics_manager_cls``).
+    keep_relics: bool = False
 
     def __post_init__(self) -> None:
         # the simulator silently plays any class id it does not know exactly as Ironclad (classes.py, ADR-049)
@@ -50,7 +53,7 @@ class RunConfig:
 
     def describe(self) -> dict:
         d = dict(self.__dict__)
-        for variant in ("ancient_heal", "game_hp"):
+        for variant in ("ancient_heal", "game_hp", "keep_relics"):
             if not d[variant]:
                 del d[variant]  # the fingerprint of every earlier batch stays what it was
         return d
@@ -109,6 +112,29 @@ def _ancient_heal_manager_cls():
     return _HEAL_MANAGER_CLS
 
 
+_KEEP_RELICS_CLS: dict[type, type] = {}
+
+
+def _keep_relics_manager_cls(base: type) -> type:
+    """``base`` with gap G14 repaired (a harness variant, never the simulator's own behaviour).
+
+    ``RunState.relics`` is an alias of the player's relic list. The setup of a run's first fight (``CombatState`` building the
+    player's state) gives the player a new list, so from then on the alias is stale: a relic gained afterwards (a chest, a shop,
+    an elite, a boss, an event) is appended to the new list, and the next fight's setup rebuilds the player's relics from the
+    stale alias and drops it. Pointing the alias back at the player's list after every action keeps one list. A method, not a
+    closure: ``clone_manager`` keeps the class."""
+    if base not in _KEEP_RELICS_CLS:
+
+        class KeepRelicsRunManager(base):  # type: ignore[misc, valid-type]
+            def take_action(self, action):
+                result = super().take_action(action)
+                self.run_state.relics = self.run_state.player.relics
+                return result
+
+        _KEEP_RELICS_CLS[base] = KeepRelicsRunManager
+    return _KEEP_RELICS_CLS[base]
+
+
 def new_run(cfg: "RunConfig", seed: int):
     """Construct a run for ``cfg`` (profile applied before the opening Ancient event)."""
     if cfg.profile not in PROFILES:
@@ -122,6 +148,8 @@ def new_run(cfg: "RunConfig", seed: int):
     if cfg.profile == "veteran":
         rm.RunState = _veteran_run_state_cls()
     manager_cls = _ancient_heal_manager_cls() if cfg.ancient_heal else rm.RunManager
+    if cfg.keep_relics:
+        manager_cls = _keep_relics_manager_cls(manager_cls)
     try:
         mgr = manager_cls(seed=seed, character_id=cfg.character, ascension_level=cfg.ascension, start_with_neow=cfg.start_with_neow)
     finally:

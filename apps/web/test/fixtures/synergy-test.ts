@@ -3,6 +3,7 @@ import {
   verdictOf,
   type PooledTest,
   type SynergyEvidence,
+  type SynergyKeepTest,
   type SynergyTest,
   type TestProfile,
 } from "../../src/lib/synergy-evidence";
@@ -27,7 +28,7 @@ export function mcnemarP(a: number, b: number): number {
 }
 
 /** A pooled comparison whose five classes each contribute a fifth of the discordant pairs. */
-function pooled(
+export function fixturePooled(
   id: string,
   aOnly: number,
   bOnly: number,
@@ -120,7 +121,7 @@ const PROFILE: TestProfile = {
 };
 
 export function fixtureTest(aOnly: number, bOnly: number, margin = 0): SynergyTest {
-  const primary = pooled("pooled-astar-vs-d0star", aOnly, bOnly);
+  const primary = fixturePooled("pooled-astar-vs-d0star", aOnly, bOnly);
   const test: SynergyTest = {
     tableSha256: SYNERGY_EVIDENCE.table.sha256,
     alpha: 0.05,
@@ -142,13 +143,36 @@ export function fixtureTest(aOnly: number, bOnly: number, margin = 0): SynergyTe
     },
     primary,
     verdict: "x",
-    noTermAtZero: margin === 0 ? null : pooled("pooled-astar-vs-d0", 560, 500),
-    measured: pooled("pooled-astar-vs-rules_v3", 300, 700),
+    noTermAtZero: margin === 0 ? null : fixturePooled("pooled-astar-vs-d0", 560, 500),
+    measured: fixturePooled("pooled-astar-vs-rules_v3", 300, 700),
     profile: PROFILE,
   };
   return { ...test, verdict: verdictOf(test) };
 }
 
+/** A made-up result of the same test repeated with the relics kept (ADR-054): one pooled comparison, nothing else. */
+export function fixtureKeepTest(aOnly: number, bOnly: number): SynergyKeepTest {
+  const primary = fixturePooled("pooled-astar-vs-d0star-keep", aOnly, bOnly);
+  const test: SynergyKeepTest = {
+    tableSha256: SYNERGY_EVIDENCE.table.sha256,
+    alpha: 0.05,
+    astar: { arm: "d2", needs: 1, scalers: 0.7, engines: 0, margin: 0 },
+    primary,
+    verdict: "x",
+    profile: null,
+  };
+  return { ...test, verdict: verdictOf(test) };
+}
+
+/** The evidence with the first test as given and the repeated test not run (whatever the real files hold). */
 export function withTest(test: SynergyTest | null): SynergyEvidence {
-  return { ...SYNERGY_EVIDENCE, b2: test };
+  return { ...SYNERGY_EVIDENCE, b2: test, b2keep: null };
+}
+
+/** The evidence with both registered tests as given. */
+export function withTests(
+  first: SynergyTest | null,
+  keep: SynergyKeepTest | null,
+): SynergyEvidence {
+  return { ...SYNERGY_EVIDENCE, b2: first, b2keep: keep };
 }

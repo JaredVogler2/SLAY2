@@ -14,6 +14,7 @@ import {
 import {
   FUTURE_SUPPORT,
   MAX_DEPENDENCE,
+  PART_WEIGHT,
   engineValue,
   enginesOf,
   explainAddition,
@@ -113,12 +114,31 @@ describe("synergy: the parts", () => {
     expect(held(1)).toBeLessThan(held(2));
   });
 
+  // the formula is tested as first judged (`weighted` false): the page's index keeps `PART_WEIGHT.engines` of it, which is 0 (ADR-050
+  // addendum D), so the weighted value would be 0 everywhere and the test would say nothing about the formula (addendum C, rule 2)
   it("an engine needs both sides: sources alone and payoffs alone are worth nothing", () => {
-    expect(engineValue("exhaust", 6, 0)).toBe(0);
-    expect(engineValue("exhaust", 0, 6)).toBe(0);
-    expect(engineValue("exhaust", 4, 3)).toBeGreaterThan(0);
-    expect(engineValue("exhaust", 4, 6)).toBeGreaterThan(engineValue("exhaust", 4, 3));
-    expect(engineValue("exhaust", 8, 6)).toBeGreaterThan(engineValue("exhaust", 4, 6));
+    expect(engineValue("exhaust", 6, 0, false)).toBe(0);
+    expect(engineValue("exhaust", 0, 6, false)).toBe(0);
+    expect(engineValue("exhaust", 4, 3, false)).toBeGreaterThan(0);
+    expect(engineValue("exhaust", 4, 6, false)).toBeGreaterThan(
+      engineValue("exhaust", 4, 3, false),
+    );
+    expect(engineValue("exhaust", 8, 6, false)).toBeGreaterThan(
+      engineValue("exhaust", 4, 6, false),
+    );
+  });
+
+  it("the index counts what it keeps of the first-judged engine, no more: PART_WEIGHT.engines of it", () => {
+    for (const [supply, payoff] of [
+      [4, 3],
+      [4, 6],
+      [8, 6],
+    ] as const) {
+      expect(engineValue("exhaust", supply, payoff)).toBeCloseTo(
+        PART_WEIGHT.engines * engineValue("exhaust", supply, payoff, false),
+        12,
+      );
+    }
   });
 });
 

@@ -22,10 +22,19 @@ const pages = [
   { name: "advisor", path: "/advisor", before: async (page) => {
     await page.getByRole("button", { name: "Try an example" }).click();
     await page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ }).waitFor();
+    // a relic held: the run counts it as a supplier of what it provides (ADR-051)
+    const relic = page.getByRole("combobox", { name: "Add a relic you hold" });
+    await relic.fill("Vajra");
+    await relic.press("Enter");
+    await page.getByText(/Counted as a supplier of/).first().waitFor();
   } },
   { name: "routes", path: "/routes?a=M%3FMER&b=M%3F%3FRE&c=ESRT" },
   // the two long pages are shown from the top only: a full-page image of them is several megabytes in git
   { name: "codex", path: "/codex", fullPage: false },
+  { name: "codex-relics", path: "/codex", fullPage: false, before: async (page) => {
+    await page.locator("label").filter({ hasText: /^Relics\s*\d+$/ }).click();
+    await page.getByRole("list", { name: "Relics" }).waitFor();
+  } },
   { name: "methods", path: "/methods", fullPage: false },
   { name: "about", path: "/about" },
 ];

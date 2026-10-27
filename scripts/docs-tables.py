@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Regenerates the tables of docs/MODEL-AND-DATA-CARDS.md, docs/RELEASE-AUDIT.md and docs/STATUS.md from the committed experiment
-files and the findings table (standard library only).
+"""Regenerates the tables of docs/MODEL-AND-DATA-CARDS.md, docs/RELEASE-AUDIT.md, docs/STATUS.md and docs/REPRODUCIBILITY.md from the
+committed experiment files and the findings table (standard library only).
 
     python3 scripts/docs-tables.py --write    rewrite every block between <!-- table:NAME:begin --> and <!-- table:NAME:end -->
     python3 scripts/docs-tables.py --check    exit 1 and name the stale blocks (sim/tests/test_docs_tables.py runs this in CI)
@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CARDS = ROOT / "docs" / "MODEL-AND-DATA-CARDS.md"
 AUDIT = ROOT / "docs" / "RELEASE-AUDIT.md"
 STATUS = ROOT / "docs" / "STATUS.md"
+REPRO = ROOT / "docs" / "REPRODUCIBILITY.md"
 FINDINGS = ROOT / "docs" / "ADVERSARIAL-AUDIT.md"
 
 # Which registration (docs/DECISIONS.md) a comparison belongs to. A comparison that is not listed here is development evidence
@@ -266,13 +267,19 @@ def table_gaps() -> str:
 
 
 # ------------------------------------------------------------------------------------------------------------ completed games
-def table_games() -> str:
-    """Games actually played and completed (a win or a death), by class and by what the seeds were for. Void batches are not here."""
-    manifests = (
+def manifest_paths() -> list[str]:
+    """Every committed batch that counts as evidence: the batches, the opening-relic exploration and the card-value exploration. Void
+    batches (experiments/void) are not among them."""
+    return sorted(
         glob.glob(str(ROOT / "experiments" / "batches" / "*" / "manifest.json"))
         + glob.glob(str(ROOT / "experiments" / "neow" / "explore-*" / "manifest.json"))
         + glob.glob(str(ROOT / "experiments" / "cardvalue" / "explore*" / "manifest.json"))
     )
+
+
+def table_games() -> str:
+    """Games actually played and completed (a win or a death), by class and by what the seeds were for. Void batches are not here."""
+    manifests = manifest_paths()
     cols = ("batches", "games", "completed", "wins", "errors", "timeouts")
     acc: dict[tuple[str, str], dict[str, int]] = {}
     for p in manifests:
@@ -298,6 +305,37 @@ def table_games() -> str:
     return "\n".join(
         ["| Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |", "|---|---|---|---|---|---|---|---|"] + rows
     )
+
+
+# ----------------------------------------------------------------------------------------------------------------- every batch
+def table_batches() -> str:
+    """One row per committed batch (the same set as the games table), read from its manifest and its folder: what was played, how many
+    games ended, the content hash of the records, whether the tracked files were modified when it started, which audits exist."""
+    rows = []
+    for path in manifest_paths():
+        folder = Path(path).parent
+        m = load(path)
+        counts = m["summary"]["counts"]
+        slay2 = (m.get("environment") or {}).get("slay2") or {}
+        tree = "not recorded" if "dirty" not in slay2 else ("dirty" if slay2["dirty"] else "clean")
+        audits = ",".join(
+            label
+            for name, label in (("wins-audit.json", "wins"), ("sample-audit.json", "sample"), ("rederivation-audit.json", "rederivation"))
+            if (folder / name).exists()
+        )
+        rows.append(
+            (
+                m["batch_id"],
+                f"| `{m['batch_id']}` | {m['policy']['name']} | {m['config']['character']} | {m['seeds']['partition']} · {m['seeds']['n']} "
+                f"| {m['summary']['completed']} | {counts['win']} | `{m['content_sha256'][:12]}…` | {tree} | {audits or '–'} "
+                f"| {'yes' if m.get('class_start_verified') else 'predates'} |",
+            )
+        )
+    head = [
+        "| Batch id | Policy | Class | Partition · n | Completed | Wins | Content sha256 | Tree | Audits | Class check |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    return "\n".join(head + [row for _, row in sorted(rows)])
 
 
 # ---------------------------------------------------------------------------------------------------------------- findings
@@ -396,29 +434,91 @@ DEV_KEEPS = {
     "d2": "needs 1, scalers 0.7, engines 0.25",
     "d3": "needs 1, scalers 0.7, engines 0.5",
     "d4": "every part at its first judgement (1, 1, 1)",
-    "m1": "the chosen configuration, a card must add 1.5 index points",
-    "m2": "the chosen configuration, a card must add 3 index points",
+    "m1": "the chosen configuration, a card has to add 1.5 index points",
+    "m2": "the chosen configuration, a card has to add 3 index points",
 }
 
 
 def table_synergy_dev() -> str:
-    """The development stage's two selection files (ADR-050 item 3): tuning numbers, not evidence."""
-    d1 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase1.json")
-    d2 = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase2.json")
+    """The development stage's two selection files (ADR-050 item 3 and addendum D): tuning numbers on development seeds, not evidence."""
+    first = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase1.json")
+    second = load(ROOT / "experiments" / "synergy" / "dev" / "selection-phase2.json")
     head = [
-        "| Arm | What it keeps | Against | Past the Act-1 boss, against → arm | Difference (95 %, whole seeds resampled) | Exact McNemar | Pairs |",
+        "| Phase | Arm | What it keeps | Past the Act-1 boss, against → arm | Difference in points (95 %, whole seeds resampled) | Exact McNemar | Pairs |",
         "|---|---|---|---|---|---|---|",
     ]
     rows = []
-    for phase, against, chosen in ((d1, "d0, no synergy term", d1["chosen"]), (d2, f"{d2['baseline']}, margin 0", None)):
+    for number, phase, against, chosen in (
+        (1, first, "`d0`, no synergy term", first["chosen"]),
+        (2, second, f"`{second['baseline']}` at margin 0", None),
+    ):
         for arm, r in phase["differences"].items():
             mark = " (chosen)" if arm == chosen else ""
             ci = r["ci95"]
             rows.append(
-                f"| {arm}{mark} | {DEV_KEEPS[arm]} | {against} | {100 * r['b_rate']:.1f} % → {100 * r['a_rate']:.1f} % | "
-                f"{signed(100 * r['difference'], 2)} points ({signed(100 * ci[0], 2)} to {signed(100 * ci[1], 2)}) | {fmt_p(r['mcnemar_p'])} | {r['pairs']:,} |"
+                f"| {number} | `{arm}`{mark} | {DEV_KEEPS[arm]} | {against}: {100 * r['b_rate']:.1f} % → {100 * r['a_rate']:.1f} % | "
+                f"{signed(100 * r['difference'], 1)} ({signed(100 * ci[0], 1)} to {signed(100 * ci[1], 1)}) | {fmt_p(r['mcnemar_p'])} | {r['pairs']:,} |"
             )
-    rows.append(f"| margin chosen | | | | {d2['chosen_margin']} | | |")
+    rows.append(f"| 2 | margin 0 (chosen) | no skip margin: a card is skipped only when no card raises the index | | | | |" if second["chosen_margin"] == 0 else
+                f"| 2 | margin {second['chosen_margin']:g} (chosen) | | | | | |")
+    return "\n".join(head + rows)
+
+
+def table_synergy_val() -> str:
+    """The one registered held-out test of the synergy term (ADR-050 stage B2-val) and its secondary comparisons, from the pooled files."""
+    base = ROOT / "experiments" / "synergy" / "val"
+    primary = load(base / "pooled-astar-vs-d0star.json")
+    measured = load(base / "pooled-astar-vs-rules_v3.json")
+    head = [
+        "| Comparison (paired by seed, held-out `val` seeds, A0, `veteran`) | Pairs with both games completed | Past the Act-1 boss, other → A* | Only A* / only the other | Exact McNemar | Past the Act-2 boss, other → A* | Wins, other → A* | Mean floors, A* minus other (95 %) |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+
+    def row(label: str, d: dict, other: str) -> str:
+        e, e3, w, f = d["reachedAct2"], d["reachedAct3"], d["wins"], d["floorDifference"]
+        t = e["pairedTable"]
+        return (
+            f"| {label} | {d['bothCompleted']:,} | {100 * e['b']['rate']:.1f} % → {100 * e['a']['rate']:.1f} % | {t['a_only']:,} / {t['b_only']:,} | {fmt_p(t['mcnemar_p'])} | "
+            f"{100 * e3['b']['rate']:.1f} % → {100 * e3['a']['rate']:.1f} % ({fmt_p(e3['pairedTable']['mcnemar_p'])}) | {w['b']} → {w['a']} | "
+            f"{signed(f['meanAMinusB'], 2)} ({signed(f['ci95'][0], 2)} to {signed(f['ci95'][1], 2)}) |"
+        )
+
+    rows = [row(f"**`A*` against `d0*`, the index without the term, five classes pooled (the registered test)**", primary, "d0*")]
+    for m in primary["members"]:
+        t = m["reachedAct2"]["pairedTable"]
+        rows.append(
+            f"| &nbsp;&nbsp;{m['character']} | {m['bothCompleted']:,} | {100 * m['reachedAct2']['b']:.1f} % → {100 * m['reachedAct2']['a']:.1f} % | {t['a_only']:,} / {t['b_only']:,} | {fmt_p(t['mcnemar_p'])} | | {m['b']['wins']} → {m['a']['wins']} | {signed(m['meanFloorDifference'], 2)} |"
+        )
+    rows.append(row("`A*` against `R`, `rules_v3` with the class's measured card values, five classes pooled (secondary)", measured, "R"))
+    return "\n".join(head + rows)
+
+
+def table_synergy_val_profile() -> str:
+    """What each arm of the held-out test skipped and what its decks held at the Act-1 boss (slay2_sim.synergyreport; descriptive)."""
+    pr = load(ROOT / "experiments" / "synergy" / "val" / "arm-profile.json")
+    a, b = pr["arms"]["astar"]["pooled"], pr["arms"]["d0star"]["pooled"]
+    diff = pr["differences"]["astar-vs-d0star"]["pooled"]
+    head = [
+        "| Measure (decks that reached the Act-1 boss) | `A*` | `d0*` | `A*` minus `d0*`, paired by class and seed (95 %) |",
+        "|---|---|---|---|",
+    ]
+    rows = [
+        f"| Card rewards skipped | {a['skipped']:,} of {a['offers']:,} ({100 * a['skip_rate']['value']:.2f} %) | {b['skipped']:,} of {b['offers']:,} ({100 * b['skip_rate']['value']:.2f} %) | |",
+    ]
+    labels = [
+        ("unmet", "Index points held back by unmet needs", 2),
+        ("scaler", "Index points added by Strength, Dexterity and Focus", 2),
+        ("engines", "Index points the engines would add at their first judgement (`A*` does not count them)", 2),
+        ("quality", "Index points from the average card rating", 2),
+        ("deck_size", "Deck size (cards)", 2),
+    ]
+    for key, label, places in labels:
+        m = diff["measures"][key]
+        rows.append(
+            f"| {label} | {minus(a['at_boss'][key]['mean'], places)} | {minus(b['at_boss'][key]['mean'], places)} | "
+            f"{signed(m['mean'], places)} ({signed(m['ci95'][0], places)} to {signed(m['ci95'][1], places)}) |"
+        )
+    rows.append(f"| Decks at the boss | {a['boss_decks']:,} | {b['boss_decks']:,} | {diff['pairs']:,} pairs |")
     return "\n".join(head + rows)
 
 
@@ -440,16 +540,44 @@ def table_synergy_coverage() -> str:
     return "\n".join(head + rows)
 
 
+def table_relic_reading() -> str:
+    """How the two blind readings of the relics (ADR-051) became the relic synergy table: what each reader wrote, where they agreed, and
+    what the reconciliation rule kept and left out. Read from the committed readings and from the table's own record."""
+    a = load(ROOT / "experiments" / "synergy" / "relics" / "reading-a.json")
+    b = load(ROOT / "experiments" / "synergy" / "relics" / "reading-b.json")
+    table = load(ROOT / "packages" / "game-data" / "data" / "relic-synergy.sts2-main-0.107.1.json")
+    st = table["provenance"]["reconciliation"]
+    both = sorted(set(a["tagged"]) & set(b["tagged"]))
+    only_a, only_b = set(a["tagged"]) - set(b["tagged"]), set(b["tagged"]) - set(a["tagged"])
+    same = sum(1 for i in both if a["tagged"][i] == b["tagged"][i])
+    same_g = sum(1 for i in both if set(a["tagged"][i].get("g", {})) == set(b["tagged"][i].get("g", {})))
+    rows = [
+        ("Relics in the catalog", st["relics"]),
+        ("Tagged by reader A / by reader B", f"{len(a['tagged'])} / {len(b['tagged'])}"),
+        ("Tagged by both / by A only / by B only / by neither", f"{len(both)} / {len(only_a)} / {len(only_b)} / {st['relics'] - len(both) - len(only_a) - len(only_b)}"),
+        ("Of those tagged by both: identical in what they provide and depend on", f"{same} of {len(both)}"),
+        ("Of those tagged by both: the same mechanics provided", f"{same_g} of {len(both)}"),
+        ("Marked unsure by A / by B", f"{len(a['unsure'])} / {len(b['unsure'])}"),
+        ("Mechanics both readers wrote, same magnitude / one step apart (the lower is kept)", f"{st['agreed_exactly']} / {st['lower_magnitude_taken']}"),
+        ("Mechanics only one reader wrote, kept / left out (each with its reason)", f"{st['one_reader_kept']} / {st['one_reader_dropped']}"),
+        ("Starting relics and their upgrades (counted by the card table's innate supply)", st["starters_skipped"]),
+        ("**Relics with an entry in the table**", f"**{st['tagged']}**"),
+    ]
+    return "\n".join(["| Reading | Count |", "|---|---|"] + [f"| {k} | {v} |" for k, v in rows])
+
+
 # Which blocks each document carries.
 DOCS = {
-    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics"),
+    CARDS: ("rules", "gaps", "games", "policies", "comparisons", "cardvalues", "relics", "networks", "synergy_coverage", "synergy_b1", "synergy_cohorts", "synergy_mechanics", "synergy_dev", "synergy_val", "synergy_val_profile", "relic_reading"),
     AUDIT: ("games", "findings"),
     STATUS: ("games",),
+    REPRO: ("batches",),
 }
 BLOCKS = {
     "rules": table_rules,
     "gaps": table_gaps,
     "games": table_games,
+    "batches": table_batches,
     "findings": table_findings,
     "policies": table_policies,
     "comparisons": table_comparisons,
@@ -460,6 +588,10 @@ BLOCKS = {
     "synergy_b1": table_synergy_b1,
     "synergy_cohorts": table_synergy_cohorts,
     "synergy_mechanics": table_synergy_mechanics,
+    "synergy_dev": table_synergy_dev,
+    "synergy_val": table_synergy_val,
+    "synergy_val_profile": table_synergy_val_profile,
+    "relic_reading": table_relic_reading,
 }
 
 

@@ -95,8 +95,9 @@ export function largestReport(policy: string, character = "Ironclad"): EvidenceR
       r.policy === policy &&
       r.profile === "veteran" &&
       r.character === character &&
-      !r.ancientHeal && // a variant of the game (gaps G11, G13) is evidence about the variant, never the headline
-      !r.gameHp,
+      !r.ancientHeal && // a variant of the game (gaps G11, G13, G14) is evidence about the variant, never the headline
+      !r.gameHp &&
+      !r.keepRelics,
   );
   const heldOut = mine.filter((r) => r.role === "held-out");
   return [...(heldOut.length > 0 ? heldOut : mine)].sort((x, y) => y.completed - x.completed)[0];
@@ -132,7 +133,8 @@ export function policyLabel(side: { policy: string; params?: Record<string, unkn
 
 /**
  * A side of a comparison: the policy with its parameters, and the variant of the game it was played in, if it was one (gap G11:
- * acts two and three start healed; gap G13: the class starts with the game's own maximum HP). Both sides are the same policy
+ * acts two and three start healed; gap G13: the class starts with the game's own maximum HP; gap G14: the relics gained after
+ * the first fight are kept). Both sides are the same policy
  * in a comparison of a variant with the game as the simulator plays it, so the variant is what tells them apart.
  */
 export function sideLabel(side: {
@@ -145,7 +147,9 @@ export function sideLabel(side: {
     ? "acts 2 and 3 start healed"
     : report?.gameHp
       ? "the game's start HP"
-      : "";
+      : report?.keepRelics
+        ? "relics kept after the first fight"
+        : "";
   return variant ? `${policyLabel(side)} [${variant}]` : policyLabel(side);
 }
 

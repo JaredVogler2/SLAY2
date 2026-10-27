@@ -17,6 +17,12 @@ async function addOffered(page: Page, name: string): Promise<void> {
   await box.press("Enter");
 }
 
+async function addRelic(page: Page, name: string): Promise<void> {
+  const box = page.getByRole("combobox", { name: "Add a relic you hold" });
+  await box.fill(name);
+  await box.press("Enter");
+}
+
 async function addToDeck(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: "Add a card to your deck" });
   await box.fill(name);
@@ -235,6 +241,8 @@ test.describe("advisor journey", () => {
     await addToDeck(page, "true grit");
     const supported = await openOption(page, "Feel No Pain");
     await expect(supported).toContainText("Builds your Exhaust engine");
+    // the index does not count engines (ADR-050 addendum D): the reason is there, with no points, and says so
+    await expect(supported).toContainText("The index does not count engines");
     await expect(supported).toContainText("Burning Pact");
     await expect(supported).not.toContainText("nothing in your deck yet");
     expect(await indexChange(supported)).toBeGreaterThan(heldBack + 0.5);
@@ -246,6 +254,7 @@ test.describe("advisor journey", () => {
     await expect(engines).toContainText("Burning Pact");
     await expect(engines).toContainText("True Grit");
     await expect(engines).toContainText("used by Feel No Pain");
+    await expect(panel).toContainText("the ranking above does not count engines");
   });
 
   test("synergy: a payoff the deck cannot feed is listed as waiting for support, a payoff it can feed is not", async ({
@@ -303,11 +312,85 @@ test.describe("advisor journey", () => {
         : "registered before any of its games",
     );
     await expectNoHorizontalOverflow(page);
+    // opening the disclosure scrolls the page, and the sticky header can then cover the top of a button further up the page for a
+    // moment (axe reports that as a target too small to hit); the scan is of the page, so it is taken from the top
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
     await expectNoSeriousA11yViolations(page, "advisor with the synergy panel");
     // the study itself, with its figures by class, is one link away
-    await panel.getByRole("link", { name: "Evidence & methods" }).click();
+    // (with a held-out result the panel names the study twice, in the result and in the limits: the same link)
+    await panel.getByRole("link", { name: "Evidence & methods" }).first().click();
     await expect(page).toHaveURL(/\/methods#synergy$/);
     await expect(page.locator("#synergy")).toBeVisible();
+  });
+
+  test("relics: a relic that provides Strength supplies it to the cards that lean on it, is named in the reasons, survives a reload and can be removed", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addOffered(page, "sword boomerang");
+    await addOffered(page, "shrug");
+    const without = await indexChange(await openOption(page, "Sword Boomerang"));
+    await expect(page.getByText("No relics listed")).toBeVisible();
+
+    await addRelic(page, "vajra");
+    const relics = page.getByRole("list", { name: "Your relics" });
+    await expect(relics).toContainText("Vajra");
+    await expect(relics).toContainText("Counted as a supplier of Strength");
+    const held = await openOption(page, "Sword Boomerang");
+    expect(await indexChange(held)).toBeGreaterThan(without);
+    await expect(held).toContainText("Vajra");
+
+    // the run keeps the relic (the offer is for this visit only)
+    await page.reload();
+    await expect(page.getByRole("list", { name: "Your relics" })).toContainText("Vajra");
+    await page.getByRole("button", { name: "Remove Vajra" }).click();
+    await expect(page.getByRole("list", { name: "Your relics" })).toHaveCount(0);
+    await expect(page.getByText("No relics listed")).toBeVisible();
+  });
+
+  test("relics: a relic the table has nothing to say about is listed and read as nothing, and the panel says how far the reading is checked", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addOffered(page, "sword boomerang");
+    await addOffered(page, "shrug");
+    const without = await indexChange(await openOption(page, "Sword Boomerang"));
+    await addRelic(page, "amethyst aubergine");
+    const relics = page.getByRole("list", { name: "Your relics" });
+    await expect(relics).toContainText("Amethyst Aubergine");
+    await expect(relics).toContainText("Provides no mechanic in SLAY2's reading");
+    expect(await indexChange(await openOption(page, "Sword Boomerang"))).toBe(without);
+    await expect(page.getByText(/no registered test/).first()).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.evaluate(() => {
+      window.scrollTo(0, 0);
+    });
+    await expectNoSeriousA11yViolations(page, "advisor with relics");
+  });
+
+  test("relics: one that takes a mechanic away is counted against it, removing one keeps the keyboard in the list, and the search says when nothing matches", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await addRelic(page, "big mushroom");
+    const relics = page.getByRole("list", { name: "Your relics" });
+    await expect(relics).toContainText("Big Mushroom");
+    await expect(relics).toContainText("counted against the cards that need it");
+    await expect(relics).not.toContainText("reads nothing");
+    await addRelic(page, "vajra");
+    await page.getByRole("button", { name: "Remove Big Mushroom" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Remove Vajra" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    const box = page.getByRole("combobox", { name: "Add a relic you hold" });
+    await expect(box).toBeFocused();
+    await box.fill("zzzzqx");
+    await expect(
+      page.locator('[aria-live="polite"]').filter({ hasText: "No relic matches" }),
+    ).toHaveText(/zzzzqx/);
+    await expectNoSeriousA11yViolations(page, "advisor relic search with no match");
   });
 
   // Every other class whose held-out test passed gives the same second opinion as Ironclad, from its own values.

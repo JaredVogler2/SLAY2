@@ -53,6 +53,10 @@ const NOT_EVALUATED = [
     "Not verified: no owned game copy was available. Simulator win rates are model output.",
   ],
   [
+    "Relics gained after a run's first fight (gap G14)",
+    "The simulator drops every relic a run gains after its first fight, so every simulated level on this page (win rates, shares past a boss, mean floors) describes a game whose runs hold two relics. The known gaps below give the measured effect of keeping them. The registered comparisons here were made inside the simulator as it is; whether their orderings hold with relics kept has not been measured.",
+  ],
+  [
     "Beta build v0.111.0",
     "Unsupported: rules not verified (card rarities and the White Beast Statue potion interaction already differ).",
   ],
@@ -314,6 +318,11 @@ export default function MethodsPage() {
                     {r.gameHp ? (
                       <span className="block text-xs text-copper">
                         variant: starts with the game&apos;s own maximum HP (gap G13)
+                      </span>
+                    ) : null}
+                    {r.keepRelics ? (
+                      <span className="block text-xs text-copper">
+                        variant: keeps the relics gained after the first fight (gap G14)
                       </span>
                     ) : null}
                   </td>

@@ -1,11 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { deckSynergy, type DeckEntry } from "@slay2/decision";
+import { PART_WEIGHT, deckSynergy, type DeckEntry } from "@slay2/decision";
 import { getCard } from "@slay2/game-data";
 
-import { SynergyPanel } from "../src/components/advisor/SynergyPanel";
-import { SYNERGY_EVIDENCE } from "../src/lib/synergy-evidence";
+import { SynergyPanel, labelOf } from "../src/components/advisor/SynergyPanel";
+import { SYNERGY_EVIDENCE, kept } from "../src/lib/synergy-evidence";
 
 import { fixtureTest, withTest } from "./fixtures/synergy-test";
 
@@ -19,6 +19,46 @@ function deck(character: "ironclad" | "necrobinder", ...rows: [string, number][]
 }
 
 describe("the synergy panel", () => {
+  it("names the relics it counted and says that their reading has no registered test, only when there are some", () => {
+    const synergy = deck("ironclad", ["STRIKE_IRONCLAD", 5]);
+    const { rerender } = render(<SynergyPanel synergy={synergy} />);
+    expect(screen.queryByText(/Counted as suppliers here/)).toBeNull();
+    rerender(
+      <SynergyPanel
+        synergy={synergy}
+        relics={{
+          supplying: [{ id: "VAJRA", name: "Vajra", mechanics: ["Strength"] }],
+          taking: [],
+          unread: [],
+        }}
+      />,
+    );
+    const note = screen.getByText(/Counted as suppliers here/);
+    expect(note).toHaveTextContent("Vajra (Strength)");
+    expect(note).toHaveTextContent("a separate judgement with no registered test");
+    expect(note).toHaveTextContent("simulated runs that keep their relics");
+    rerender(
+      <SynergyPanel synergy={synergy} relics={{ supplying: [], taking: [], unread: ["Anchor"] }} />,
+    );
+    expect(screen.queryByText(/Counted as suppliers here/)).toBeNull();
+    expect(screen.queryByText(/Counted against here/)).toBeNull();
+    // a relic that takes a mechanic away is named, as counted against and not as a supplier
+    rerender(
+      <SynergyPanel
+        synergy={synergy}
+        relics={{
+          supplying: [],
+          taking: [{ id: "BIG_MUSHROOM", name: "Big Mushroom", mechanics: ["Card draw"] }],
+          unread: [],
+        }}
+      />,
+    );
+    const against = screen.getByText(/Counted against here/);
+    expect(against).toHaveTextContent("Big Mushroom (Card draw)");
+    expect(against).not.toHaveTextContent("Counted as suppliers here");
+    expect(against).toHaveTextContent("no registered test");
+  });
+
   it("lists the engines the deck has, who supplies them and who uses them", () => {
     render(
       <SynergyPanel
@@ -37,6 +77,34 @@ describe("the synergy panel", () => {
     expect(engines).toHaveTextContent("Burning Pact");
     expect(engines).toHaveTextContent("used by Feel No Pain");
     expect(screen.queryByRole("list", { name: "Cards waiting for support" })).toBeNull();
+  });
+
+  it("names the engines but says that the ranking does not count them (the page keeps none of an engine's strength, ADR-050 addendum D)", () => {
+    expect(PART_WEIGHT.engines).toBe(0);
+    render(
+      <SynergyPanel
+        synergy={deck(
+          "ironclad",
+          ["STRIKE_IRONCLAD", 5],
+          ["BURNING_PACT", 2],
+          ["TRUE_GRIT", 1],
+          ["FEEL_NO_PAIN", 1],
+        )}
+      />,
+    );
+    expect(screen.getByRole("list", { name: "Engines in your deck" })).toHaveTextContent(
+      "used by Feel No Pain",
+    );
+    expect(screen.getByText(/the ranking above does not count engines/)).toBeInTheDocument();
+  });
+
+  it("says what the index keeps of each part, in words", () => {
+    render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
+    expect(
+      screen.getByText(
+        /The index counts unmet needs in full, the lift from Strength, Dexterity and Focus at 0\.70 of its first judgement and engines not at all/,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("lists a payoff that nothing feeds as waiting, with how much of its rating is held back", () => {
@@ -58,8 +126,10 @@ describe("the synergy panel", () => {
     );
   });
 
-  it("says what it is: a judgement, with the study's own numbers and its limits", () => {
-    render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
+  it("says what it is before any held-out result: a judgement, with the study's own numbers and its limits", () => {
+    render(
+      <SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} evidence={withTest(null)} />,
+    );
     expect(screen.getByText("Judgement, partly checked")).toBeInTheDocument();
     const b1 = SYNERGY_EVIDENCE.b1;
     expect(b1).not.toBeNull();
@@ -85,6 +155,36 @@ describe("the synergy panel", () => {
   });
 });
 
+const shipped = SYNERGY_EVIDENCE.b2;
+
+describe.runIf(shipped !== null)("the synergy panel with the shipped held-out result", () => {
+  it("is labelled by what the registered test showed, and quotes its own figures", () => {
+    if (!shipped) throw new Error("no B2 result");
+    render(<SynergyPanel synergy={deck("ironclad", ["STRIKE_IRONCLAD", 5])} />);
+    // the label follows from the tests that have been read (the repeated test with the relics kept too, once it is in)
+    expect(screen.getByText(labelOf(SYNERGY_EVIDENCE))).toBeInTheDocument();
+    expect(screen.queryByText("Judgement, partly checked")).toBeNull();
+    const e = shipped.primary.reachedAct2;
+    const text = screen.getByText(/The registered test\./).closest("p")?.textContent ?? "";
+    expect(text).toContain(`${(e.a.rate * 100).toFixed(1)}%`);
+    expect(text).toContain(`${(e.b.rate * 100).toFixed(1)}%`);
+    expect(text).toContain("same pilot without the synergy term");
+    expect(
+      screen.queryByText(/A held-out test of a pilot that picks cards by this index/),
+    ).toBeNull();
+  });
+});
+
+describe("what the index keeps, in words", () => {
+  it("says in full, not at all, or how much of the first judgement", () => {
+    expect(kept(1)).toBe("in full");
+    expect(kept(1.2)).toBe("in full");
+    expect(kept(0)).toBe("not at all");
+    expect(kept(0.7)).toBe("at 0.70 of its first judgement");
+    expect(kept(0.25)).toBe("at 0.25 of its first judgement");
+  });
+});
+
 describe("the synergy panel once the registered test has been run", () => {
   const ironclad = () => deck("ironclad", ["STRIKE_IRONCLAD", 5]);
 
@@ -99,8 +199,14 @@ describe("the synergy panel once the registered test has been run", () => {
       expect(screen.getByText(label)).toBeInTheDocument();
       expect(screen.queryByText("Judgement, partly checked")).toBeNull();
       expect(screen.getByText(sentence)).toBeInTheDocument();
-      // the test is no longer "not in yet", and the claim is limited to the simulator
-      expect(screen.queryByText(/its result is not in yet/)).toBeNull();
+      // the first test is no longer "not in yet" (the repeated one, with the relics kept, is registered and says so), and the claim is
+      // limited to the simulator
+      expect(
+        screen.queryByText(/A held-out test of a pilot that picks cards by this index/),
+      ).toBeNull();
+      expect(
+        screen.getByText(/The same test with the relics kept is registered/),
+      ).toBeInTheDocument();
       expect(screen.getByText(/Not the live game/)).toBeInTheDocument();
     },
   );
@@ -119,7 +225,9 @@ describe("the synergy panel once the registered test has been run", () => {
   it("keeps saying the test is registered but not in while it has not been run", () => {
     render(<SynergyPanel synergy={ironclad()} evidence={withTest(null)} />);
     expect(screen.getByText("Judgement, partly checked")).toBeInTheDocument();
-    expect(screen.getByText(/its result is not in yet/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/A held-out test of a pilot that picks cards by this index is registered/),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/The registered test\./)).toBeNull();
   });
 });

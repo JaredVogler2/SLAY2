@@ -379,6 +379,21 @@ describe("What did Neow offer?", () => {
     ).toBeInTheDocument();
   });
 
+  it("says that a simulated run keeps no relic gained after its first fight (gap G14)", () => {
+    render(
+      <NeowOffer
+        run={newRun("silent")}
+        disabled={false}
+        recorded={[]}
+        onRecord={() => undefined}
+        data={withTest(test(true))}
+      />,
+    );
+    expect(
+      screen.getByText(/a simulated run keeps no relic it gains after its first fight \(gap G14\)/),
+    ).toBeInTheDocument();
+  });
+
   it("disables its controls until the page is interactive", () => {
     render(
       <NeowOffer

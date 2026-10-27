@@ -203,6 +203,10 @@ test.describe("where your run starts", () => {
     await expect(options).toContainText("Act 1 context (Overgrowth)");
     await expect(page.getByText("You said you are in Underdocks.")).toHaveCount(0);
     await expect(page.getByText(/Every simulated run was played in Overgrowth/)).toBeVisible();
+    // and a simulated run keeps only the relics it has when its first fight starts (gap G14): said beside the simulated values
+    await expect(
+      page.getByText(/keeps only the relics it has when its first fight starts \(gap G14\)/),
+    ).toBeVisible();
   });
 
   test("the ascension sets how the run starts: Neow heals 80 % from A2, and Ascender's Bane joins the deck at A5 and cannot be removed", async ({

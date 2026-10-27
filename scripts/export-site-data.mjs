@@ -158,6 +158,8 @@ function parseEvidence() {
       ancientHeal: m.config.ancient_heal === true,
       // a harness variant (gap G13: a class started with the maximum HP of the game's source instead of the simulator's); never a headline
       gameHp: m.config.game_hp === true,
+      // a harness variant (gap G14: the relics a run gains after its first fight are kept instead of dropped at the next fight); never a headline
+      keepRelics: m.config.keep_relics === true,
       partition: m.seeds.partition,
       sealedPartitionUsed: m.seeds.sealed_partition_used,
       seeds: m.seeds.n,
@@ -274,6 +276,16 @@ const ALPHA = {
   necrobinder: 0.0125,
   defect: 0.0125,
 };
+
+// Whether a batch was played with the relics kept (gap G14), from its own manifest: exploration batches live beside the value files,
+// the rest under experiments/batches. A batch that is not on disk is read as not kept.
+function batchKeptRelics(batchId) {
+  for (const where of [join(root, "experiments", "cardvalue"), join(root, "experiments", "batches")]) {
+    const file = join(where, batchId, "manifest.json");
+    if (existsSync(file)) return JSON.parse(readFileSync(file, "utf8")).config?.keep_relics === true;
+  }
+  return false;
+}
 
 // Which value files the site shows is a decision, not a side effect of a file existing (ADR-046): experiments/cardvalue/
 // site-sets.json lists them, and the golden cases of the simulation panel (sim/slay2_sim/pickgolden.py) read the same list.
@@ -397,6 +409,8 @@ function parseCardValues(comparisons) {
       validation,
       supersedes: entry.supersedes ? entry.supersedes.replace(/\.json$/, "") : null,
       drift,
+      // whether the games the values were fitted from kept the relics a run gains (gap G14: the pinned simulator drops them)
+      relicsKept: v.batches.length > 0 && v.batches.every((b) => batchKeptRelics(b.batch_id)),
       file: `experiments/cardvalue/${name}`,
       sha256: createHash("sha256").update(raw).digest("hex"),
       outcome: v.outcome,
@@ -686,7 +700,9 @@ function parseSynergy(reports) {
       mechanics: Object.keys(table.mechanics).length,
     },
     b1: null,
+    keep: null,
     b2: null,
+    b2keep: null,
   };
   const b1File = join(root, "experiments", "synergy", "b1-calibration.json");
   if (!existsSync(b1File)) return out;
@@ -773,10 +789,75 @@ function parseSynergy(reports) {
       })),
     };
   }
+  // Stage B1 read again on random drafts played with the relics kept (ADR-053 item 6; exploratory). Optional, but when it is there it has to
+  // be about the two tables the page computes with and the exploration batches that are in the repository.
+  out.keep = parseKeepReading(table.sha256);
   // The one registered test (stage B2-val). When its pooled result exists it is read, with everything it rests on, or the export stops:
   // the /methods panel must never say that the test has not been run when it has.
   out.b2 = parseSynergyTest(reports, table.sha256);
+  out.b2keep = parseSynergyTest(reports, table.sha256, SYN_TEST_KEEP);
   return out;
+}
+
+function parseKeepReading(cardTableSha) {
+  const file = join(root, "experiments", "synergy", "keep-b1.json");
+  if (!existsSync(file)) return null;
+  const raw = readFileSync(file);
+  const r = JSON.parse(raw.toString("utf8"));
+  if (r.kind !== "synergy-calibration-relics-kept" || r.schema !== 1)
+    throw new Error("experiments/synergy/keep-b1.json: not a relics-kept reading of schema 1");
+  const relicTable = JSON.parse(
+    readFileSync(
+      join(root, "packages", "game-data", "data", "relic-synergy.sts2-main-0.107.1.json"),
+      "utf8",
+    ),
+  );
+  if (r.synergy_table_sha256 !== cardTableSha || r.relic_synergy_table_sha256 !== relicTable.sha256)
+    throw new Error(
+      "experiments/synergy/keep-b1.json was made on other tag tables than the page uses: run python -m slay2_sim.synergykeep",
+    );
+  for (const c of r.cohorts) {
+    const manifest = JSON.parse(
+      readFileSync(join(root, "experiments", "cardvalue", c.batch_id, "manifest.json"), "utf8"),
+    );
+    if (
+      manifest.episodes_gz.sha256 !== c.episodes_gz_sha256 ||
+      manifest.config.keep_relics !== true
+    )
+      throw new Error(
+        `experiments/synergy/keep-b1.json reads ${c.batch_id}, which is not the batch in the repository with the relics kept`,
+      );
+  }
+  const gap = (g) => ({ mean: g.mean, ci95: g.ci95 });
+  const ratio = (x) => ({ toQuality: x.to_quality, ci95: x.ci95 });
+  const reading = (a) => ({
+    logLoss: a.cross_validation["index+synergy"].log_loss,
+    synergyAdded: gap(a.loss_gaps.synergy_added_to_index),
+    ratios: {
+      needs: ratio(a.ratios.unmet),
+      scalers: ratio(a.ratios.scaler),
+      engines: ratio(a.ratios.engines),
+    },
+  });
+  return {
+    file: "experiments/synergy/keep-b1.json",
+    sha256: createHash("sha256").update(raw).digest("hex"),
+    outcome: r.outcome,
+    bossFights: r.runs.runs,
+    withTaggedRelic: r.runs.with_a_tagged_relic,
+    partsDiffer: r.runs.parts_differ,
+    passRate: r.class_alone.pass_rate,
+    bootstrapDraws: r.bootstrap_draws,
+    classAlone: reading(r.class_alone),
+    relicsCounted: reading(r.relics_counted),
+    relicGain: gap(r.gap_relics_counted_minus_class_alone),
+    perClass: Object.fromEntries(
+      Object.entries(r.per_class).map(([name, v]) => [
+        name,
+        { rows: v.rows, ...gap(v.gap_relics_counted_minus_class_alone) },
+      ]),
+    ),
+  };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -902,76 +983,32 @@ function parseSynergySelection() {
   };
 }
 
-function parseSynergyTest(reports, tableSha256) {
-  const valDir = join(root, "experiments", "synergy", "val");
-  const primaryFile = join(valDir, "pooled-astar-vs-d0star.json");
-  if (!existsSync(primaryFile)) return null;
-  const choice = parseSynergySelection();
-  const byId = new Map(reports.map((r) => [r.id, r]));
-  const manifests = new Map();
-  const manifestOf = (id) => {
-    if (!manifests.has(id))
-      manifests.set(
-        id,
-        JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8")),
-      );
-    return manifests.get(id);
-  };
-  const effective = (id) => manifestOf(id).policy?.effective?.params ?? {};
-  // The arms of the test were played from a clean checkout (the manifest records `dirty`), and all from one commit: the one that carries
-  // the addendum that records A* (ADR-050 item 4). The second part is checked once every comparison has been read.
-  const heads = new Set();
-  const played = (r) => {
-    const env = manifestOf(r.id).environment?.slay2 ?? {};
-    heads.add(env.head);
-    return env.dirty === false
-      ? null
-      : "it was played from a working tree with uncommitted changes (ADR-050 asks for a clean checkout)";
-  };
-  const isAstar = (p) =>
-    p.synergy === 1 &&
-    p.margin === choice.margin &&
-    ["needs", "scalers", "engines"].every((k) => p[k] === choice.config[k]);
-  const isNoTerm = (margin) => (p) => p.synergy === 0 && p.margin === margin;
-  const measuredValues = (r) =>
-    r.policy === "rules_v3" &&
-    String(r.policyParams?.values ?? "").endsWith(
-      `${r.character.toLowerCase()}-a0-${r.character === "Ironclad" ? "v2" : "v1"}.json`,
-    );
-  // The per-game class check (ADR-049) was added after the Ironclad batches of rules_v3 with measured values were played; Ironclad is the
-  // class a run starts as when nothing is asked, so that one reference batch is the only exception to the check.
-  // an arm: what the manifest of each of its five batches has to show; null when it does
-  const arm = {
-    astar: (r) =>
-      r.policy !== SYN_POLICY
-        ? `its policy is ${r.policy}`
-        : !isAstar(effective(r.id))
-          ? "its parameters are not the configuration the development stage chose"
-          : played(r),
-    d0star: (r) =>
-      r.policy !== SYN_POLICY
-        ? `its policy is ${r.policy}`
-        : !isNoTerm(choice.margin)(effective(r.id))
-          ? "it is not the index without the synergy term at A*'s margin"
-          : played(r),
-    d0: (r) =>
-      r.policy !== SYN_POLICY
-        ? `its policy is ${r.policy}`
-        : !isNoTerm(0)(effective(r.id))
-          ? "it is not the index without the synergy term at margin 0"
-          : played(r),
-    // the Ironclad reference batch is older than the rules above (it was played from a working tree with changes, before the class check)
-    rules_v3: (r) =>
-      !measuredValues(r)
-        ? "it is not rules_v3 with the class's measured card values"
-        : r.character === "Ironclad"
-          ? null
-          : played(r),
-  };
+// What every batch of a registered held-out test on the val seeds has to be, whatever policy it ran: the class it was played as, the
+// seeds, Ascension 0 with the veteran profile, the relics kept or not (as the registration says), the class checked at the start of each
+// game, the harness's canonical process state. Returns what is wrong with it, or null.
+function commonBatchProblem(current, cls, { seeds, keepRelics, adr, classStartExempt = false }) {
+  if (current.character !== EXACT[cls])
+    return `it was played as "${current.character}", not as ${EXACT[cls]}`;
+  if (current.partition !== "val" || current.seeds !== seeds) return `it is not the ${seeds} val seeds`;
+  if (current.ascension !== 0 || current.profile !== "veteran")
+    return "it is not Ascension 0 with the veteran profile";
+  if (current.keepRelics !== keepRelics)
+    return keepRelics
+      ? `it was not played with the relics kept (${adr})`
+      : `it was played with the relics kept (${adr} was not)`;
+  if (!current.classStartVerified && !classStartExempt)
+    return "its games were not checked against the class they were played as";
+  if (!current.canonicalProcessState)
+    return "it was not played in the harness's canonical process state";
+  return null;
+}
 
-  function pooled(file, a, b) {
-    const where = `experiments/synergy/val/${file}`;
-    const t = JSON.parse(readFileSync(join(valDir, file), "utf8"));
+// Reads a pooled paired comparison written by `slay2_sim pool` and refuses it unless everything it rests on belongs together: it is a
+// held-out comparison of the five classes once each, every batch it names is the batch on disk (same content hash) and passes `check`
+// (the registration's own conditions) and carries a passing sample audit, the pooled counts are the sums of the classes', every table adds
+// up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts.
+function readPooledHeldOut({ where, path, names: [a, b], seeds, byId, check }) {
+    const t = JSON.parse(readFileSync(path, "utf8"));
     if (t.kind !== "pooled-paired-comparison" || t.schema !== 1)
       throw new Error(`${where}: not a pooled paired comparison of schema 1`);
     if (t.cohort?.partition !== "val" || t.role !== "held-out")
@@ -1006,18 +1043,7 @@ function parseSynergyTest(reports, tableSha256) {
           throw new Error(
             `${where}: batch ${side.batchId} changed after the comparison was written; rerun slay2_sim pool --out`,
           );
-        const bad =
-          current.character !== EXACT[cls]
-            ? `it was played as "${current.character}", not as ${EXACT[cls]}`
-            : current.partition !== "val" || current.seeds !== SYN_VAL_SEEDS
-              ? `it is not the ${SYN_VAL_SEEDS} val seeds`
-              : current.ascension !== 0 || current.profile !== "veteran"
-                ? "it is not Ascension 0 with the veteran profile"
-                : !current.classStartVerified && !(name === "rules_v3" && cls === "ironclad")
-                  ? "its games were not checked against the class they were played as"
-                  : !current.canonicalProcessState
-                    ? "it was not played in the harness's canonical process state"
-                    : arm[name](current);
+        const bad = check(current, name, cls);
         if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}, ${name}): ${bad}`);
         const audit = current.sampleAudit;
         if (!audit || !audit.ledgerOk || audit.verified !== audit.drawn || audit.drawn < 40)
@@ -1025,9 +1051,9 @@ function parseSynergyTest(reports, tableSha256) {
             `${where}: ${side.batchId}: no passing sample audit of at least 40 games (slay2_sim audit sample --limit 40)`,
           );
       }
-      if (m.pairedSeeds !== SYN_VAL_SEEDS)
+      if (m.pairedSeeds !== seeds)
         throw new Error(
-          `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${SYN_VAL_SEEDS}`,
+          `${where}: ${cls} paired ${m.pairedSeeds} seeds, the registration says ${seeds}`,
         );
       const tab = m.reachedAct2.pairedTable;
       for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
@@ -1076,15 +1102,15 @@ function parseSynergyTest(reports, tableSha256) {
     table("wins", t.wins.pairedTable, t.bothCompleted);
     for (const m of t.members) table(`${m.character} Act-1`, m.reachedAct2.pairedTable, m.bothCompleted);
     return {
-      id: file.replace(/\.json$/, ""),
+      id: where.split("/").pop().replace(/\.json$/, ""),
       contentSha256: t.contentSha256,
       pairedSeeds: t.pairedSeeds,
       bothCompleted: t.bothCompleted,
       excludedNotCompleted: t.excludedNotCompleted,
       // games of each arm that ended in a simulator error or a timeout (never counted as losses); the pairs they were in are left out
       notFinished: {
-        a: t.members.reduce((n, m) => n + SYN_VAL_SEEDS - byId.get(m.a.batchId).completed, 0),
-        b: t.members.reduce((n, m) => n + SYN_VAL_SEEDS - byId.get(m.b.batchId).completed, 0),
+        a: t.members.reduce((n, m) => n + seeds - byId.get(m.a.batchId).completed, 0),
+        b: t.members.reduce((n, m) => n + seeds - byId.get(m.b.batchId).completed, 0),
       },
       reachedAct2: r1,
       reachedAct3: t.reachedAct3,
@@ -1103,23 +1129,239 @@ function parseSynergyTest(reports, tableSha256) {
     };
   }
 
-  const primary = pooled("pooled-astar-vs-d0star.json", "astar", "d0star");
-  const optional = (file, a, b) => (existsSync(join(valDir, file)) ? pooled(file, a, b) : null);
-  const noTermAtZero = optional("pooled-astar-vs-d0.json", "astar", "d0");
-  if (choice.margin !== 0 && !noTermAtZero)
-    throw new Error(
-      "the margin is not 0, so the comparison with the index without the term at margin 0 (pooled-astar-vs-d0.json) is part of the result",
-    );
-  if (choice.margin === 0 && noTermAtZero)
-    throw new Error(
-      "pooled-astar-vs-d0.json exists, but at margin 0 it is the primary comparison: remove it",
-    );
-  const measured = optional("pooled-astar-vs-rules_v3.json", "astar", "rules_v3");
+// The one registered held-out test of ADR-053: `rules_v3` following the card values measured again with the relics kept, against
+// `rules_v3` following the values the site showed, both played with the relics kept on the 2,000 val seeds of each class; the five classes
+// pooled into one exact McNemar test at level 0.05. The reading rule (item 5) decides which value files the site shows, and the exporter
+// applies it to the numbers and refuses a site-sets.json that disagrees: the decision is the rule's, not the author's.
+const KEEP_VALUES_ALPHA = 0.05;
+const KEEP_VALUES_SEEDS = 2000;
+const currentValuesFile = (cls) => (cls === "ironclad" ? "ironclad-a0-v2.json" : `${cls}-a0-v1.json`);
+const keepValuesFile = (cls) => `${cls}-a0-keep-v1.json`;
+const keepValuesComparison = (cls) => `rules_v3-keepvals-vs-curvals-${cls}-a0-veteran-keeprelics-val`;
+
+function parseKeepValuesTest(reports) {
+  const dir = join(root, "experiments", "cardvalue");
+  const primaryFile = join(dir, "pooled-keepvals-vs-curvals-val.json");
+  if (!existsSync(primaryFile)) return null;
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const sha256 = (file) => createHash("sha256").update(readFileSync(join(dir, file))).digest("hex");
+  // the new files are the ones ADR-053 recorded before any held-out game: their hashes are in the decision log
+  const decisions = readFileSync(join(root, "docs", "DECISIONS.md"), "utf8");
+  for (const cls of CLASSES) {
+    if (!decisions.includes(sha256(keepValuesFile(cls))))
+      throw new Error(
+        `${keepValuesFile(cls)} is not the file ADR-053 recorded: its SHA-256 is not in docs/DECISIONS.md`,
+      );
+  }
+  const newFit = (cls) => JSON.parse(readFileSync(join(dir, keepValuesFile(cls)), "utf8"));
+  const heads = new Set();
+  const armProblem = (current, name, cls) => {
+    const want = `experiments/cardvalue/${name === "keepvals" ? keepValuesFile(cls) : currentValuesFile(cls)}`;
+    if (current.policy !== "rules_v3") return `its policy is ${current.policy}`;
+    if (current.policyParams?.values !== want || current.policyParams?.threshold !== 0)
+      return `it does not follow ${want} at threshold 0`;
+    const env =
+      JSON.parse(readFileSync(join(root, "experiments", "batches", current.id, "manifest.json"), "utf8"))
+        .environment?.slay2 ?? {};
+    heads.add(env.head);
+    return env.dirty === false
+      ? null
+      : "it was played from a working tree with uncommitted changes (ADR-053 asks for a clean checkout)";
+  };
+  const primary = readPooledHeldOut({
+    where: "experiments/cardvalue/pooled-keepvals-vs-curvals-val.json",
+    path: primaryFile,
+    names: ["keepvals", "curvals"],
+    seeds: KEEP_VALUES_SEEDS,
+    byId,
+    check: (current, name, cls) =>
+      commonBatchProblem(current, cls, {
+        seeds: KEEP_VALUES_SEEDS,
+        keepRelics: true,
+        adr: "ADR-053",
+      }) ?? armProblem(current, name, cls),
+  });
   if (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h))))
     throw new Error(
       `the arms of the test were not all played from one commit (heads: ${[...heads].join(", ")})`,
     );
-  if (!measured)
+
+  // the reading rule (ADR-053 item 5), from the numbers alone
+  const t = primary.reachedAct2.pairedTable;
+  const verdict = t.mcnemar_p < KEEP_VALUES_ALPHA ? (t.a_only > t.b_only ? "gain" : "loss") : "none";
+  const classes = {};
+  for (const m of primary.members) {
+    const own = m.reachedAct2.pairedTable;
+    // the class's own comparison shows the current values significantly ahead (two-sided exact McNemar, uncorrected)
+    const currentAhead = own.mcnemar_p < KEEP_VALUES_ALPHA && own.b_only > own.a_only;
+    classes[m.character] = {
+      new: {
+        file: `experiments/cardvalue/${keepValuesFile(m.character)}`,
+        sha256: sha256(keepValuesFile(m.character)),
+        // how much the new fit rests on: the games played, those that reached the Act-1 boss, the share that got past it
+        games: newFit(m.character).games,
+        bossFights: newFit(m.character).boss_fights,
+        passRate: newFit(m.character).pass_rate,
+      },
+      current: { file: `experiments/cardvalue/${currentValuesFile(m.character)}`, sha256: sha256(currentValuesFile(m.character)) },
+      own: { aOnly: own.a_only, bOnly: own.b_only, p: own.mcnemar_p },
+      currentSignificantlyAhead: currentAhead,
+      adopted: verdict === "gain" && !currentAhead,
+    };
+  }
+
+  // the value files the site shows are the rule's: the new set for a class that adopts, the current one for the rest
+  const listed = JSON.parse(readFileSync(join(dir, "site-sets.json"), "utf8")).sets;
+  for (const cls of CLASSES) {
+    const entries = listed.filter((e) => e.file.startsWith(`${cls}-a0-`));
+    const want = classes[cls].adopted ? keepValuesFile(cls) : currentValuesFile(cls);
+    if (entries.length !== 1 || entries[0].file !== want)
+      throw new Error(
+        `experiments/cardvalue/site-sets.json lists ${entries.map((e) => e.file).join(", ") || "nothing"} for ${cls}; the rule of ADR-053 item 5 applied to its numbers gives ${want}`,
+      );
+    if (classes[cls].adopted) {
+      const entry = entries[0];
+      if (
+        entry.supersedes !== currentValuesFile(cls) ||
+        entry.test?.comparison !== keepValuesComparison(cls) ||
+        entry.test?.against !== "current-values" ||
+        !entry.drift
+      )
+        throw new Error(
+          `experiments/cardvalue/site-sets.json: the entry for ${keepValuesFile(cls)} has to name what it supersedes (${currentValuesFile(cls)}), its test (${keepValuesComparison(cls)}, against current-values) and the descriptive comparison`,
+        );
+    }
+  }
+  return {
+    adr: "ADR-053",
+    alpha: KEEP_VALUES_ALPHA,
+    primary,
+    verdict,
+    adopted: CLASSES.filter((c) => classes[c].adopted),
+    classes,
+  };
+}
+
+// The two registered held-out tests of the synergy term: A* against the same pilot without it, five classes pooled. The first (ADR-050)
+// was played in the simulator as it is, which drops the relics a run gains after its first fight (G14); the second (ADR-054) repeats it
+// with the relics kept and has only the one comparison.
+const SYN_TEST_FIRST = { dir: "val", keepRelics: false, adr: "ADR-050" };
+const SYN_TEST_KEEP = { dir: "keep-val", keepRelics: true, adr: "ADR-054" };
+
+function parseSynergyTest(reports, tableSha256, spec = SYN_TEST_FIRST) {
+  const valDir = join(root, "experiments", "synergy", spec.dir);
+  const primaryFile = join(valDir, "pooled-astar-vs-d0star.json");
+  if (!existsSync(primaryFile)) return null;
+  const choice = parseSynergySelection();
+  const byId = new Map(reports.map((r) => [r.id, r]));
+  const manifests = new Map();
+  const manifestOf = (id) => {
+    if (!manifests.has(id))
+      manifests.set(
+        id,
+        JSON.parse(readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8")),
+      );
+    return manifests.get(id);
+  };
+  const effective = (id) => manifestOf(id).policy?.effective?.params ?? {};
+  // The arms of the test were played from a clean checkout (the manifest records `dirty`), and all from one commit: the one that carries
+  // the addendum that records A* (ADR-050 item 4). The second part is checked once every comparison has been read.
+  const heads = new Set();
+  const played = (r) => {
+    const env = manifestOf(r.id).environment?.slay2 ?? {};
+    heads.add(env.head);
+    return env.dirty === false
+      ? null
+      : `it was played from a working tree with uncommitted changes (${spec.adr} asks for a clean checkout)`;
+  };
+  const isAstar = (p) =>
+    p.synergy === 1 &&
+    p.margin === choice.margin &&
+    ["needs", "scalers", "engines"].every((k) => p[k] === choice.config[k]);
+  const isNoTerm = (margin) => (p) => p.synergy === 0 && p.margin === margin;
+  const measuredValues = (r) =>
+    r.policy === "rules_v3" &&
+    String(r.policyParams?.values ?? "").endsWith(
+      `${r.character.toLowerCase()}-a0-${r.character === "Ironclad" ? "v2" : "v1"}.json`,
+    );
+  // The per-game class check (ADR-049) was added after the Ironclad batches of rules_v3 with measured values were played; Ironclad is the
+  // class a run starts as when nothing is asked, so that one reference batch is the only exception to the check.
+  // an arm: what the manifest of each of its five batches has to show; null when it does
+  const arm = {
+    astar: (r) =>
+      r.policy !== SYN_POLICY
+        ? `its policy is ${r.policy}`
+        : !isAstar(effective(r.id))
+          ? "its parameters are not the configuration the development stage chose"
+          : played(r),
+    d0star: (r) =>
+      r.policy !== SYN_POLICY
+        ? `its policy is ${r.policy}`
+        : !isNoTerm(choice.margin)(effective(r.id))
+          ? "it is not the index without the synergy term at A*'s margin"
+          : played(r),
+    d0: (r) =>
+      r.policy !== SYN_POLICY
+        ? `its policy is ${r.policy}`
+        : !isNoTerm(0)(effective(r.id))
+          ? "it is not the index without the synergy term at margin 0"
+          : played(r),
+    // the Ironclad reference batch is older than the rules above (it was played from a working tree with changes, before the class check)
+    rules_v3: (r) =>
+      !measuredValues(r)
+        ? "it is not rules_v3 with the class's measured card values"
+        : r.character === "Ironclad"
+          ? null
+          : played(r),
+  };
+
+  function pooled(file, a, b) {
+    return readPooledHeldOut({
+      where: `experiments/synergy/${spec.dir}/${file}`,
+      path: join(valDir, file),
+      names: [a, b],
+      seeds: SYN_VAL_SEEDS,
+      byId,
+      check: (current, name, cls) =>
+        commonBatchProblem(current, cls, {
+          seeds: SYN_VAL_SEEDS,
+          keepRelics: spec.keepRelics,
+          adr: spec.adr,
+          // the Ironclad reference batch of the measured-values pilot is older than the class check (ADR-049)
+          classStartExempt: name === "rules_v3" && cls === "ironclad",
+        }) ?? arm[name](current),
+    });
+  }
+
+  const primary = pooled("pooled-astar-vs-d0star.json", "astar", "d0star");
+  const optional = (file, a, b) => (existsSync(join(valDir, file)) ? pooled(file, a, b) : null);
+  let noTermAtZero = null;
+  let measured = null;
+  if (spec.keepRelics) {
+    // ADR-054 registers one comparison; another file here would be a comparison nobody registered
+    for (const extra of ["pooled-astar-vs-d0.json", "pooled-astar-vs-rules_v3.json"]) {
+      if (existsSync(join(valDir, extra)))
+        throw new Error(
+          `experiments/synergy/${spec.dir}/${extra}: ${spec.adr} registers one comparison, A* against the same pilot without the term`,
+        );
+    }
+  } else {
+    noTermAtZero = optional("pooled-astar-vs-d0.json", "astar", "d0");
+    if (choice.margin !== 0 && !noTermAtZero)
+      throw new Error(
+        "the margin is not 0, so the comparison with the index without the term at margin 0 (pooled-astar-vs-d0.json) is part of the result",
+      );
+    if (choice.margin === 0 && noTermAtZero)
+      throw new Error(
+        "pooled-astar-vs-d0.json exists, but at margin 0 it is the primary comparison: remove it",
+      );
+    measured = optional("pooled-astar-vs-rules_v3.json", "astar", "rules_v3");
+  }
+  if (heads.size !== 1 || ![...heads].every((h) => /^[0-9a-f]{40}$/.test(String(h))))
+    throw new Error(
+      `the arms of the test were not all played from one commit (heads: ${[...heads].join(", ")})`,
+    );
+  if (!spec.keepRelics && !measured)
     throw new Error(
       "the comparison with the measured-values pilot (pooled-astar-vs-rules_v3.json) is part of the registered result",
     );
@@ -1167,14 +1409,17 @@ function parseSynergyTest(reports, tableSha256) {
 
   const t = primary.reachedAct2.pairedTable;
   const significant = t.mcnemar_p < SYN_ALPHA;
+  // the reading rule of ADR-050 item 7 (repeated in ADR-054 item 4), from the numbers alone
+  const verdict = significant ? (t.a_only > t.b_only ? "ahead" : "behind") : "not-shown";
+  const astar = { arm: choice.arm, ...choice.config, margin: choice.margin };
+  if (spec.keepRelics) return { tableSha256, alpha: SYN_ALPHA, astar, primary, verdict, profile };
   return {
     tableSha256,
     alpha: SYN_ALPHA,
-    astar: { arm: choice.arm, ...choice.config, margin: choice.margin },
+    astar,
     selection: { phase1: choice.phase1, phase2: choice.phase2 },
     primary,
-    // the reading rule of ADR-050 item 7, from the numbers alone
-    verdict: significant ? (t.a_only > t.b_only ? "ahead" : "behind") : "not-shown",
+    verdict,
     noTermAtZero,
     measured,
     profile,
@@ -1245,6 +1490,7 @@ const outputs = {
     generatedFrom:
       "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
     sets: parseCardValues(comparisons),
+    keepTest: parseKeepValuesTest(reports),
   },
   "synergy.generated.json": {
     schema: 1,

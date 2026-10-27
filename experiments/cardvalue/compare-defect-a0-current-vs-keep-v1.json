@@ -1,0 +1,50 @@
+{
+  "a": {
+    "boss_fights": 3212,
+    "file": "experiments/cardvalue/defect-a0-v1.json",
+    "games": 3212,
+    "pass_rate": 0.4026,
+    "sha256": "4e3cd46157383612784603c20dda99fc9d188402b108b71dd5ea2ceb1919ef58"
+  },
+  "b": {
+    "boss_fights": 3850,
+    "file": "experiments/cardvalue/defect-a0-keep-v1.json",
+    "games": 3850,
+    "pass_rate": 0.7151,
+    "sha256": "bf653d43aaa4840fe9ada645103732da3b804634f7ef367478879e2392646772"
+  },
+  "comparison": {
+    "best_k_in_both": 7,
+    "cards_in_both": 91,
+    "cards_only_in_a": [
+      "AUTOMATION"
+    ],
+    "cards_only_in_b": [
+      "BUFFER_CARD",
+      "ECHO_FORM_CARD",
+      "PRODUCTION",
+      "PURITY",
+      "RAINBOW",
+      "THRUMMING_HATCHET"
+    ],
+    "disjoint_ci95": 6,
+    "k": 10,
+    "spearman": 0.7060519190953973,
+    "worst_k_in_both": 2
+  },
+  "kind": "card-value-comparison",
+  "noise_reference": {
+    "best_k_in_both": 7,
+    "cards_in_both": 69,
+    "definition": "the second file's games split by the parity of the game seed, each half fitted like the full data, Spearman correlation of the two halves and the same corrected to the full number of games as 2r/(1+r)",
+    "games": [
+      1880,
+      1970
+    ],
+    "k": 10,
+    "spearman": 0.7300694190719766,
+    "spearman_brown": 0.8439770231458017,
+    "worst_k_in_both": 4
+  },
+  "schema": 1
+}

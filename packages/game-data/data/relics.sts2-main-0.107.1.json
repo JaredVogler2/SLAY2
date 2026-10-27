@@ -1,0 +1,2402 @@
+{
+ "schema": 1,
+ "build": "sts2-main-0.107.1",
+ "provenance": {
+  "kind": "facts-only catalog derived locally from rights-restricted references (ADR-011); no relic text, art or effect numbers",
+  "sources": [
+   {
+    "id": "spire-archive",
+    "sha": "4e6b0e040ccd00eb04fb1ab7fb0b298c222d2f29",
+    "gameVersion": "0.107.1",
+    "used": "identifiers, display names and rarity tiers (facts)"
+   },
+   {
+    "id": "sts2-rl-agent",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "gameVersion": "0.107.1",
+    "evidence": "E1",
+    "used": "the relic pools that list each relic, and that every relic has a model class"
+   }
+  ],
+  "derivedBy": "sim/slay2_sim/catalog.py",
+  "retrieved": "2026-10-27",
+  "notes": [
+   "`rarity` is the archive's tier; the archive has no boss tier in this build, and `none` is the one placeholder (the fallback pool's Circlet).",
+   "`pools` are the relic pools of the decompiled build that list the relic (three relics are in both the shared and the event pool)."
+  ]
+ },
+ "relics": [
+  {
+   "id": "AKABEKO",
+   "name": "Akabeko",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ALCHEMICAL_COFFER",
+   "name": "Alchemical Coffer",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "AMETHYST_AUBERGINE",
+   "name": "Amethyst Aubergine",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ANCHOR",
+   "name": "Anchor",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ARCANE_SCROLL",
+   "name": "Arcane Scroll",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ARCHAIC_TOOTH",
+   "name": "Archaic Tooth",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ART_OF_WAR",
+   "name": "Art of War",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ASTROLABE",
+   "name": "Astrolabe",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BAG_OF_MARBLES",
+   "name": "Bag of Marbles",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BAG_OF_PREPARATION",
+   "name": "Bag of Preparation",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BEATING_REMNANT",
+   "name": "Beating Remnant",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BEAUTIFUL_BRACELET",
+   "name": "Beautiful Bracelet",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BELLOWS",
+   "name": "Bellows",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BELT_BUCKLE",
+   "name": "Belt Buckle",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BIG_HAT",
+   "name": "Big Hat",
+   "rarity": "rare",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "BIG_MUSHROOM",
+   "name": "Big Mushroom",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BIIIG_HUG",
+   "name": "Biiig Hug",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BING_BONG",
+   "name": "Bing Bong",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BLACK_BLOOD",
+   "name": "Black Blood",
+   "rarity": "starter",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BLACK_STAR",
+   "name": "Black Star",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BLESSED_ANTLER",
+   "name": "Blessed Antler",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BLOOD_SOAKED_ROSE",
+   "name": "Blood-Soaked Rose",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BLOOD_VIAL",
+   "name": "Blood Vial",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BONE_FLUTE",
+   "name": "Bone Flute",
+   "rarity": "common",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "BONE_TEA",
+   "name": "Bone Tea",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BOOKMARK",
+   "name": "Bookmark",
+   "rarity": "rare",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "BOOK_OF_FIVE_RINGS",
+   "name": "Book of Five Rings",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BOOK_REPAIR_KNIFE",
+   "name": "Book Repair Knife",
+   "rarity": "uncommon",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "BOOMING_CONCH",
+   "name": "Booming Conch",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BOUND_PHYLACTERY",
+   "name": "Bound Phylactery",
+   "rarity": "starter",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "BOWLER_HAT",
+   "name": "Bowler Hat",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BREAD",
+   "name": "Bread",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BRILLIANT_SCARF",
+   "name": "Brilliant Scarf",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "BRIMSTONE",
+   "name": "Brimstone",
+   "rarity": "shop",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "BRONZE_SCALES",
+   "name": "Bronze Scales",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BURNING_BLOOD",
+   "name": "Burning Blood",
+   "rarity": "starter",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "BURNING_STICKS",
+   "name": "Burning Sticks",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "BYRDPIP",
+   "name": "Byrdpip",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "CALLING_BELL",
+   "name": "Calling Bell",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "CANDELABRA",
+   "name": "Candelabra",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CAPTAINS_WHEEL",
+   "name": "Captain's Wheel",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CAULDRON",
+   "name": "Cauldron",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CENTENNIAL_PUZZLE",
+   "name": "Centennial Puzzle",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CHANDELIER",
+   "name": "Chandelier",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CHARONS_ASHES",
+   "name": "Charon's Ashes",
+   "rarity": "rare",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "CHEMICAL_X",
+   "name": "Chemical X",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CHOICES_PARADOX",
+   "name": "Choices Paradox",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "CHOSEN_CHEESE",
+   "name": "The Chosen Cheese",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "CIRCLET",
+   "name": "Circlet",
+   "rarity": "none",
+   "pools": [
+    "fallback"
+   ]
+  },
+  {
+   "id": "CLAWS",
+   "name": "Claws",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "CLOAK_CLASP",
+   "name": "Cloak Clasp",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "CRACKED_CORE",
+   "name": "Cracked Core",
+   "rarity": "starter",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "CROSSBOW",
+   "name": "Crossbow",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "CURSED_PEARL",
+   "name": "Cursed Pearl",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DARKSTONE_PERIAPT",
+   "name": "Darkstone Periapt",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DATA_DISK",
+   "name": "Data Disk",
+   "rarity": "common",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "DAUGHTER_OF_THE_WIND",
+   "name": "Daughter of the Wind",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DELICATE_FROND",
+   "name": "Delicate Frond",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DEMON_TONGUE",
+   "name": "Demon Tongue",
+   "rarity": "rare",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "DIAMOND_DIADEM",
+   "name": "Diamond Diadem",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DINGY_RUG",
+   "name": "Dingy Rug",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "DISTINGUISHED_CAPE",
+   "name": "Distinguished Cape",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DIVINE_DESTINY",
+   "name": "Divine Destiny",
+   "rarity": "starter",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DIVINE_RIGHT",
+   "name": "Divine Right",
+   "rarity": "starter",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "DOLLYS_MIRROR",
+   "name": "Dolly's Mirror",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "DRAGON_FRUIT",
+   "name": "Dragon Fruit",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "DREAM_CATCHER",
+   "name": "Dream Catcher",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DRIFTWOOD",
+   "name": "Driftwood",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "DUSTY_TOME",
+   "name": "Dusty Tome",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ECTOPLASM",
+   "name": "Ectoplasm",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ELECTRIC_SHRYMP",
+   "name": "Electric Shrymp",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "EMBER_TEA",
+   "name": "Ember Tea",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "EMOTION_CHIP",
+   "name": "Emotion Chip",
+   "rarity": "rare",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "EMPTY_CAGE",
+   "name": "Empty Cage",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ETERNAL_FEATHER",
+   "name": "Eternal Feather",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "FAKE_ANCHOR",
+   "name": "Anchor???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_BLOOD_VIAL",
+   "name": "Blood Vial???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_HAPPY_FLOWER",
+   "name": "Happy Flower???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_LEES_WAFFLE",
+   "name": "Lee's Waffle???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_MANGO",
+   "name": "Mango???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_MERCHANTS_RUG",
+   "name": "The Merchant's Rug???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_ORICHALCUM",
+   "name": "Orichalcum???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_SNECKO_EYE",
+   "name": "Snecko Eye???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_STRIKE_DUMMY",
+   "name": "Strike Dummy???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FAKE_VENERABLE_TEA_SET",
+   "name": "Venerable Tea Set???",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FENCING_MANUAL",
+   "name": "Fencing Manual",
+   "rarity": "common",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "FESTIVE_POPPER",
+   "name": "Festive Popper",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "FIDDLE",
+   "name": "Fiddle",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FISHING_ROD",
+   "name": "Fishing Rod",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FORGOTTEN_SOUL",
+   "name": "Forgotten Soul",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FRAGRANT_MUSHROOM",
+   "name": "Fragrant Mushroom",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "FRESNEL_LENS",
+   "name": "Fresnel Lens",
+   "rarity": "event",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "FROZEN_EGG",
+   "name": "Frozen Egg",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "FUNERARY_MASK",
+   "name": "Funerary Mask",
+   "rarity": "uncommon",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "FUR_COAT",
+   "name": "Fur Coat",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "GALACTIC_DUST",
+   "name": "Galactic Dust",
+   "rarity": "uncommon",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "GAMBLING_CHIP",
+   "name": "Gambling Chip",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "GAME_PIECE",
+   "name": "Game Piece",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "GHOST_SEED",
+   "name": "Ghost Seed",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "GIRYA",
+   "name": "Girya",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "GLASS_EYE",
+   "name": "Glass Eye",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "GLITTER",
+   "name": "Glitter",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "GNARLED_HAMMER",
+   "name": "Gnarled Hammer",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "GOLDEN_COMPASS",
+   "name": "Golden Compass",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "GOLDEN_PEARL",
+   "name": "Golden Pearl",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "GOLD_PLATED_CABLES",
+   "name": "Gold-Plated Cables",
+   "rarity": "uncommon",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "GORGET",
+   "name": "Gorget",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "GREMLIN_HORN",
+   "name": "Gremlin Horn",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "HAND_DRILL",
+   "name": "Hand Drill",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "HAPPY_FLOWER",
+   "name": "Happy Flower",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "HEFTY_TABLET",
+   "name": "Hefty Tablet",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "HELICAL_DART",
+   "name": "Helical Dart",
+   "rarity": "rare",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "HISTORY_COURSE",
+   "name": "History Course",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "HORN_CLEAT",
+   "name": "Horn Cleat",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ICE_CREAM",
+   "name": "Ice Cream",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "INFUSED_CORE",
+   "name": "Infused Core",
+   "rarity": "starter",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "INTIMIDATING_HELMET",
+   "name": "Intimidating Helmet",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "IRON_CLUB",
+   "name": "Iron Club",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "IVORY_TILE",
+   "name": "Ivory Tile",
+   "rarity": "rare",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "JEWELED_MASK",
+   "name": "Jeweled Mask",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "JEWELRY_BOX",
+   "name": "Jewelry Box",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "JOSS_PAPER",
+   "name": "Joss Paper",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "JUZU_BRACELET",
+   "name": "Juzu Bracelet",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "KALEIDOSCOPE",
+   "name": "Kaleidoscope",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "KIFUDA",
+   "name": "Kifuda",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "KUNAI",
+   "name": "Kunai",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "KUSARIGAMA",
+   "name": "Kusarigama",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LANTERN",
+   "name": "Lantern",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LARGE_CAPSULE",
+   "name": "Large Capsule",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LASTING_CANDY",
+   "name": "Lasting Candy",
+   "rarity": "uncommon",
+   "pools": [
+    "event",
+    "shared"
+   ]
+  },
+  {
+   "id": "LAVA_LAMP",
+   "name": "Lava Lamp",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LAVA_ROCK",
+   "name": "Lava Rock",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LEAD_PAPERWEIGHT",
+   "name": "Lead Paperweight",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LEAFY_POULTICE",
+   "name": "Leafy Poultice",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LEES_WAFFLE",
+   "name": "Lee's Waffle",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LETTER_OPENER",
+   "name": "Letter Opener",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LIZARD_TAIL",
+   "name": "Lizard Tail",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LOOMING_FRUIT",
+   "name": "Looming Fruit",
+   "rarity": "ancient",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LORDS_PARASOL",
+   "name": "Lord's Parasol",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LOST_COFFER",
+   "name": "Lost Coffer",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LOST_WISP",
+   "name": "Lost Wisp",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "LUCKY_FYSH",
+   "name": "Lucky Fysh",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "LUNAR_PASTRY",
+   "name": "Lunar Pastry",
+   "rarity": "rare",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "MANGO",
+   "name": "Mango",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MASSIVE_SCROLL",
+   "name": "Massive Scroll",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "MAW_BANK",
+   "name": "Maw Bank",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "MEAL_TICKET",
+   "name": "Meal Ticket",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MEAT_CLEAVER",
+   "name": "Meat Cleaver",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "MEAT_ON_THE_BONE",
+   "name": "Meat on the Bone",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MEMBERSHIP_CARD",
+   "name": "Membership Card",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MERCURY_HOURGLASS",
+   "name": "Mercury Hourglass",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "METRONOME",
+   "name": "Metronome",
+   "rarity": "rare",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "MINIATURE_CANNON",
+   "name": "Miniature Cannon",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MINIATURE_TENT",
+   "name": "Miniature Tent",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MINI_REGENT",
+   "name": "Mini Regent",
+   "rarity": "rare",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "MOLTEN_EGG",
+   "name": "Molten Egg",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MR_STRUGGLES",
+   "name": "Mr. Struggles",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "MUMMIFIED_HAND",
+   "name": "Mummified Hand",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "MUSIC_BOX",
+   "name": "Music Box",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "MYSTIC_LIGHTER",
+   "name": "Mystic Lighter",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "NEOWS_BONES",
+   "name": "Neow's Bones",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "NEOWS_TALISMAN",
+   "name": "Neow's Talisman",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "NEOWS_TORMENT",
+   "name": "Neow's Torment",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "NEW_LEAF",
+   "name": "New Leaf",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "NINJA_SCROLL",
+   "name": "Ninja Scroll",
+   "rarity": "shop",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "NUNCHAKU",
+   "name": "Nunchaku",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "NUTRITIOUS_OYSTER",
+   "name": "Nutritious Oyster",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "NUTRITIOUS_SOUP",
+   "name": "Nutritious Soup",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ODDLY_SMOOTH_STONE",
+   "name": "Oddly Smooth Stone",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "OLD_COIN",
+   "name": "Old Coin",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ORANGE_DOUGH",
+   "name": "Orange Dough",
+   "rarity": "rare",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "ORICHALCUM",
+   "name": "Orichalcum",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ORNAMENTAL_FAN",
+   "name": "Ornamental Fan",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ORRERY",
+   "name": "Orrery",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PAELS_BLOOD",
+   "name": "Pael's Blood",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_CLAW",
+   "name": "Pael's Claw",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_EYE",
+   "name": "Pael's Eye",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_FLESH",
+   "name": "Pael's Flesh",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_GROWTH",
+   "name": "Pael's Growth",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_HORN",
+   "name": "Pael's Horn",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_LEGION",
+   "name": "Pael's Legion",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_TEARS",
+   "name": "Pael's Tears",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_TOOTH",
+   "name": "Pael's Tooth",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PAELS_WING",
+   "name": "Pael's Wing",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PANDORAS_BOX",
+   "name": "Pandora's Box",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PANTOGRAPH",
+   "name": "Pantograph",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PAPER_KRANE",
+   "name": "Paper Krane",
+   "rarity": "rare",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "PAPER_PHROG",
+   "name": "Paper Phrog",
+   "rarity": "uncommon",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "PARRYING_SHIELD",
+   "name": "Parrying Shield",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PEAR",
+   "name": "Pear",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PENDULUM",
+   "name": "Pendulum",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PEN_NIB",
+   "name": "Pen Nib",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PERMAFROST",
+   "name": "Permafrost",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PETRIFIED_TOAD",
+   "name": "Petrified Toad",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PHIAL_HOLSTER",
+   "name": "Phial Holster",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PHILOSOPHERS_STONE",
+   "name": "Philosopher's Stone",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PHYLACTERY_UNBOUND",
+   "name": "Phylactery Unbound",
+   "rarity": "starter",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PLANISPHERE",
+   "name": "Planisphere",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "POCKETWATCH",
+   "name": "Pocketwatch",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "POLLINOUS_CORE",
+   "name": "Pollinous Core",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "POMANDER",
+   "name": "Pomander",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "POTION_BELT",
+   "name": "Potion Belt",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "POWER_CELL",
+   "name": "Power Cell",
+   "rarity": "rare",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "PRAYER_WHEEL",
+   "name": "Prayer Wheel",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "PRECARIOUS_SHEARS",
+   "name": "Precarious Shears",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PRECISE_SCISSORS",
+   "name": "Precise Scissors",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PRESERVED_FOG",
+   "name": "Preserved Fog",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PRISMATIC_GEM",
+   "name": "Prismatic Gem",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PUMPKIN_CANDLE",
+   "name": "Pumpkin Candle",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "PUNCH_DAGGER",
+   "name": "Punch Dagger",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "RADIANT_PEARL",
+   "name": "Radiant Pearl",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "RAINBOW_RING",
+   "name": "Rainbow Ring",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "RAZOR_TOOTH",
+   "name": "Razor Tooth",
+   "rarity": "rare",
+   "pools": [
+    "event",
+    "shared"
+   ]
+  },
+  {
+   "id": "RED_MASK",
+   "name": "Red Mask",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "RED_SKULL",
+   "name": "Red Skull",
+   "rarity": "common",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "REGALITE",
+   "name": "Regalite",
+   "rarity": "uncommon",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "REGAL_PILLOW",
+   "name": "Regal Pillow",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "REPTILE_TRINKET",
+   "name": "Reptile Trinket",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "RINGING_TRIANGLE",
+   "name": "Ringing Triangle",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "RING_OF_THE_DRAKE",
+   "name": "Ring of the Drake",
+   "rarity": "starter",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "RING_OF_THE_SNAKE",
+   "name": "Ring of the Snake",
+   "rarity": "starter",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "RIPPLE_BASIN",
+   "name": "Ripple Basin",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "ROYAL_POISON",
+   "name": "Royal Poison",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "ROYAL_STAMP",
+   "name": "Royal Stamp",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "RUINED_HELMET",
+   "name": "Ruined Helmet",
+   "rarity": "rare",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "RUNIC_CAPACITOR",
+   "name": "Runic Capacitor",
+   "rarity": "shop",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "RUNIC_PYRAMID",
+   "name": "Runic Pyramid",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SAI",
+   "name": "Sai",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SAND_CASTLE",
+   "name": "Sand Castle",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SCREAMING_FLAGON",
+   "name": "Screaming Flagon",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "SCROLL_BOXES",
+   "name": "Scroll Boxes",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SEAL_OF_GOLD",
+   "name": "Seal of Gold",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SEA_GLASS",
+   "name": "Sea Glass",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SELF_FORMING_CLAY",
+   "name": "Self-Forming Clay",
+   "rarity": "uncommon",
+   "pools": [
+    "ironclad"
+   ]
+  },
+  {
+   "id": "SERE_TALON",
+   "name": "Sere Talon",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SHOVEL",
+   "name": "Shovel",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "SHURIKEN",
+   "name": "Shuriken",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "SIGNET_RING",
+   "name": "Signet Ring",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SILKEN_TRESS",
+   "name": "Silken Tress",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SILVER_CRUCIBLE",
+   "name": "Silver Crucible",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SLING_OF_COURAGE",
+   "name": "Sling of Courage",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "SMALL_CAPSULE",
+   "name": "Small Capsule",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SNECKO_EYE",
+   "name": "Snecko Eye",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SNECKO_SKULL",
+   "name": "Snecko Skull",
+   "rarity": "common",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "SOZU",
+   "name": "Sozu",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SPARKLING_ROUGE",
+   "name": "Sparkling Rouge",
+   "rarity": "uncommon",
+   "pools": [
+    "event",
+    "shared"
+   ]
+  },
+  {
+   "id": "SPIKED_GAUNTLETS",
+   "name": "Spiked Gauntlets",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "STONE_CALENDAR",
+   "name": "Stone Calendar",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "STONE_CRACKER",
+   "name": "Stone Cracker",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "STONE_HUMIDIFIER",
+   "name": "Stone Humidifier",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "STORYBOOK",
+   "name": "Storybook",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "STRAWBERRY",
+   "name": "Strawberry",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "STRIKE_DUMMY",
+   "name": "Strike Dummy",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "STURDY_CLAMP",
+   "name": "Sturdy Clamp",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "SWORD_OF_JADE",
+   "name": "Sword of Jade",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SWORD_OF_STONE",
+   "name": "Sword of Stone",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "SYMBIOTIC_VIRUS",
+   "name": "Symbiotic Virus",
+   "rarity": "uncommon",
+   "pools": [
+    "defect"
+   ]
+  },
+  {
+   "id": "TANXS_WHISTLE",
+   "name": "Tanx's Whistle",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "TEA_OF_DISCOURTESY",
+   "name": "Tea of Discourtesy",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "THE_ABACUS",
+   "name": "The Abacus",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "THE_BOOT",
+   "name": "The Boot",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "THE_COURIER",
+   "name": "The Courier",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "THROWING_AXE",
+   "name": "Throwing Axe",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "TINGSHA",
+   "name": "Tingsha",
+   "rarity": "uncommon",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "TINY_MAILBOX",
+   "name": "Tiny Mailbox",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "TOASTY_MITTENS",
+   "name": "Toasty Mittens",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "TOOLBOX",
+   "name": "Toolbox",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "TOUCH_OF_OROBAS",
+   "name": "Touch of Orobas",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "TOUGH_BANDAGES",
+   "name": "Tough Bandages",
+   "rarity": "rare",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "TOXIC_EGG",
+   "name": "Toxic Egg",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "TOY_BOX",
+   "name": "Toy Box",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "TRI_BOOMERANG",
+   "name": "Tri-Boomerang",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "TUNGSTEN_ROD",
+   "name": "Tungsten Rod",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "TUNING_FORK",
+   "name": "Tuning Fork",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "TWISTED_FUNNEL",
+   "name": "Twisted Funnel",
+   "rarity": "uncommon",
+   "pools": [
+    "silent"
+   ]
+  },
+  {
+   "id": "UNCEASING_TOP",
+   "name": "Unceasing Top",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "UNDYING_SIGIL",
+   "name": "Undying Sigil",
+   "rarity": "shop",
+   "pools": [
+    "necrobinder"
+   ]
+  },
+  {
+   "id": "UNSETTLING_LAMP",
+   "name": "Unsettling Lamp",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "VAJRA",
+   "name": "Vajra",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "VAMBRACE",
+   "name": "Vambrace",
+   "rarity": "uncommon",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "VELVET_CHOKER",
+   "name": "Velvet Choker",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "VENERABLE_TEA_SET",
+   "name": "Venerable Tea Set",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "VERY_HOT_COCOA",
+   "name": "Very Hot Cocoa",
+   "rarity": "ancient",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "VEXING_PUZZLEBOX",
+   "name": "Vexing Puzzlebox",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "VITRUVIAN_MINION",
+   "name": "Vitruvian Minion",
+   "rarity": "shop",
+   "pools": [
+    "regent"
+   ]
+  },
+  {
+   "id": "WAR_HAMMER",
+   "name": "War Hammer",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "WAR_PAINT",
+   "name": "War Paint",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "WHETSTONE",
+   "name": "Whetstone",
+   "rarity": "common",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "WHISPERING_EARRING",
+   "name": "Whispering Earring",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "WHITE_BEAST_STATUE",
+   "name": "White Beast Statue",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "WHITE_STAR",
+   "name": "White Star",
+   "rarity": "rare",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "WINGED_BOOTS",
+   "name": "Winged Boots",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "WING_CHARM",
+   "name": "Wing Charm",
+   "rarity": "shop",
+   "pools": [
+    "shared"
+   ]
+  },
+  {
+   "id": "WONGOS_MYSTERY_TICKET",
+   "name": "Wongo's Mystery Ticket",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "WONGO_CUSTOMER_APPRECIATION_BADGE",
+   "name": "Wongo Customer Appreciation Badge",
+   "rarity": "event",
+   "pools": [
+    "event"
+   ]
+  },
+  {
+   "id": "YUMMY_COOKIE",
+   "name": "Yummy Cookie",
+   "rarity": "ancient",
+   "pools": [
+    "event"
+   ]
+  }
+ ],
+ "sha256": "4febf1f299f6a2dbb69a1491094d09513a20af8a561fae413784c638b15f9803"
+}

@@ -3,16 +3,20 @@ import { getCard, type PlayableClass } from "@slay2/game-data";
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { Tile } from "@/components/ui/Tile";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
+  KEEP_VALUES_TEST,
   againstText,
   allSets,
   extremes,
   formatBeta,
   isValidated,
+  keepValuesVerdict,
   oddsMultiplier,
   signCounts,
   type CardValueSet,
+  type KeepValuesTest,
   type MeasuredCard,
 } from "@/lib/cardvalues";
 import {
@@ -75,6 +79,195 @@ function Table({ title, rows }: { title: string; rows: readonly MeasuredCard[] }
         </tbody>
       </table>
     </ScrollRegion>
+  );
+}
+
+const games = (n: number): string => n.toLocaleString("en-US");
+
+const KEEP_BADGE = {
+  gain: {
+    tone: "exact",
+    text: "new values ahead",
+    title:
+      "The pilot that follows the values measured with the relics kept got past the Act-1 boss more often at the registered level",
+  },
+  none: {
+    tone: "unverified",
+    text: "no difference shown",
+    title:
+      "The difference is within what chance explains at the registered level; that does not show the values make no difference",
+  },
+  loss: {
+    tone: "unverified",
+    text: "new values behind",
+    title:
+      "The pilot that follows the values the site showed got past the Act-1 boss more often at the registered level",
+  },
+} as const;
+
+/** The registration of the test, shown until its result exists: what the values were measured in, and that they change only by a rule. */
+function KeepValuesRegistered() {
+  return (
+    <section
+      aria-labelledby="cv-keep"
+      className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted"
+    >
+      <h3 id="cv-keep" className="mb-2 font-display text-lg text-parchment">
+        The values measured again with the relics kept
+      </h3>
+      <p>
+        Every value below was fitted from runs of a simulator that drops the relics a run gains
+        after its first fight (gap G14), so those runs held two relics. The values are being
+        measured again from random drafting with the relics kept and tested once against these
+        (ADR-053, registered before any of its games): the same pilot following the new values
+        against the same pilot following the values below, on held-out seeds, the five classes
+        pooled. This page shows the result when it exists, whichever way it goes, and the values
+        below change only if the test says so, by a rule fixed beforehand.
+      </p>
+    </section>
+  );
+}
+
+/**
+ * The one registered test of the card values measured again with the relics kept (ADR-053): the pooled result, the rule of item 5
+ * applied to it, and, class by class, which set the site shows. Every number is read from the exporter's file.
+ */
+function KeepValuesTestBlock({ test }: { test: KeepValuesTest }) {
+  const verdict = keepValuesVerdict(test);
+  const badge = KEEP_BADGE[verdict];
+  const p = test.primary;
+  const e = p.reachedAct2;
+  const t = e.pairedTable;
+  const adopted = test.adopted.map(classLabel);
+  const kept = Object.keys(test.classes)
+    .filter((c) => !test.classes[c]?.adopted)
+    .map(classLabel);
+  const list = (names: readonly string[]): string =>
+    names.length <= 1
+      ? (names[0] ?? "")
+      : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1] ?? ""}`;
+  return (
+    <section
+      aria-labelledby="cv-keep"
+      className="mt-6 rounded-xl border border-line bg-charcoal/40 p-4 text-sm text-muted"
+    >
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <h3 id="cv-keep" className="font-display text-lg text-parchment">
+          The values measured again with the relics kept
+        </h3>
+        <Badge tone={badge.tone} title={badge.title}>
+          {badge.text}
+        </Badge>
+      </div>
+      <ul
+        className="mb-4 grid gap-3 sm:grid-cols-3"
+        aria-label="Result of the test of the card values measured with the relics kept"
+      >
+        <Tile
+          k="Past the Act-1 boss"
+          value={`${pct(e.b.rate, 1)} → ${pct(e.a.rate, 1)}`}
+          note={`current → new values; ${formatP(t.mcnemar_p)}`}
+        />
+        <Tile
+          k="Mean floor reached"
+          value={signed(p.floorDifference.meanAMinusB)}
+          note={`${signed(p.floorDifference.ci95[0] ?? 0)} to ${signed(p.floorDifference.ci95[1] ?? 0)}`}
+        />
+        <Tile
+          k="Wins"
+          value={`${String(p.wins.b)} → ${String(p.wins.a)}`}
+          note={`${formatP(p.wins.pairedTable.mcnemar_p)}${p.wins.a + p.wins.b > 0 ? ", each re-derived" : ""}`}
+        />
+      </ul>
+      <p>
+        The values on this page were first fitted from runs of a simulator that drops the relics a
+        run gains after its first fight (gap G14). They were measured again from random drafting
+        with the relics kept and tested once, as registered before any of these games (ADR-053): the
+        pilot that follows the new values against the same pilot following the values the site
+        showed, both played with the relics kept on the same held-out seeds ({games(p.pairedSeeds)}{" "}
+        pairs, {games(p.bothCompleted)} completed by both; the others ended in a simulator error or
+        a timeout, which says nothing about play, and are left out of the pair). Primary endpoint,
+        fixed beforehand: the share of games that got past the Act-1 boss, paired by seed, the five
+        classes pooled, exact McNemar test, level {test.alpha}, one test. {pct(e.a.rate, 1)} with
+        the new values against {pct(e.b.rate, 1)} with the current ones ({games(t.a_only)} games
+        only with the new values, {games(t.b_only)} only with the current ones).{" "}
+        {verdict === "gain" ? (
+          <>
+            <strong className="font-medium text-parchment">New values ahead.</strong> By the rule
+            fixed before the test, the Codex, the advisor&rsquo;s second opinion and the pilots use
+            the new values for {list(adopted) || "no class"}
+            {kept.length > 0
+              ? `; ${list(kept)} keep${kept.length === 1 ? "s" : ""} the current set, because the class's own comparison shows the current values significantly ahead`
+              : ""}
+            .
+          </>
+        ) : verdict === "loss" ? (
+          <>
+            <strong className="font-medium text-parchment">New values behind.</strong> The pilot
+            that follows the values the site showed did better, so every current set stays.
+          </>
+        ) : (
+          <>
+            <strong className="font-medium text-parchment">No difference shown.</strong> The values
+            did not change enough to matter for this pilot, which is not proof that they never
+            would. The current sets stay, and they have now been compared with the relics kept.
+          </>
+        )}
+      </p>
+      <ScrollRegion label="Card values measured with the relics kept, by class">
+        <table className="mt-4 w-full min-w-[34rem] text-left text-sm">
+          <caption className="pb-2 text-left font-display text-base text-gold">
+            By class (descriptive: one pooled test was registered, not five)
+          </caption>
+          <thead>
+            <tr className="border-b border-line text-muted">
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Class
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Past the boss, current → new
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Only new / only current
+              </th>
+              <th scope="col" className="py-2 pr-3 font-medium">
+                Own test
+              </th>
+              <th scope="col" className="py-2 font-medium">
+                Shown
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {p.members.map((m) => {
+              const c = test.classes[m.character];
+              return (
+                <tr key={m.character} className="align-top">
+                  <th scope="row" className="py-2 pr-3 font-medium text-parchment">
+                    {classLabel(m.character)}
+                  </th>
+                  <td className="num py-2 pr-3">
+                    {pct(m.reachedAct2.b, 1)} → {pct(m.reachedAct2.a, 1)}
+                  </td>
+                  <td className="num py-2 pr-3 text-muted">
+                    {c?.own.aOnly} / {c?.own.bOnly}
+                  </td>
+                  <td className="num py-2 pr-3 text-muted">{c ? formatP(c.own.p) : ""}</td>
+                  <td className="py-2 text-muted">
+                    {c?.adopted ? "the new values" : "the current values"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </ScrollRegion>
+      <p className="mt-4 text-xs text-dim">
+        What this does not show: anything about the live game (the repaired simulator is not the
+        game either), a pilot that plays very differently, synergies (the model is additive), or the
+        effect of any single relic on the values.
+      </p>
+    </section>
   );
 }
 
@@ -219,7 +412,12 @@ function ClassBlock({ set }: { set: CardValueSet }) {
 }
 
 /** Measured card values and the intervention tests that check them. Every number is read from committed artifacts. */
-export function CardValuesPanel() {
+export function CardValuesPanel({
+  keepTest = KEEP_VALUES_TEST,
+}: {
+  /** the test of the values measured with the relics kept (ADR-053), once it has been run; the tests give their own */
+  keepTest?: KeepValuesTest | null;
+} = {}) {
   const sets = allSets();
   if (sets.length === 0) {
     return null;
@@ -241,6 +439,7 @@ export function CardValuesPanel() {
         beats playing by the hand-written ratings, written down before the held-out games were
         played) are the same for every class.
       </p>
+      {keepTest ? <KeepValuesTestBlock test={keepTest} /> : <KeepValuesRegistered />}
       {sets.map((set) => (
         <ClassBlock key={set.id} set={set} />
       ))}

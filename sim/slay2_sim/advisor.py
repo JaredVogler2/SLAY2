@@ -46,6 +46,12 @@ def synergy_table() -> dict:
     return json.loads((DATA / f"synergy.{BUILD_ID}.json").read_text(encoding="utf-8"))
 
 
+@lru_cache(maxsize=1)
+def relic_synergy_table() -> dict:
+    """The relics' own table (what each provides to a deck, SLAY2's judgement; ADR-051), a separate file from the cards' table."""
+    return json.loads((DATA / f"relic-synergy.{BUILD_ID}.json").read_text(encoding="utf-8"))
+
+
 def mechanic_ids() -> tuple[str, ...]:
     return tuple(synergy_table()["mechanics"])
 
@@ -140,15 +146,19 @@ Deck = Mapping[str, int]  # card id -> copies
 
 @dataclass(frozen=True)
 class Model:
-    """How much of each hand-set part of the synergy term the index keeps (1 is the first judgement; the website's constants are
-    ``DEFAULT_MODEL``). Studies vary these to ask which parts the simulated runs support (``slay2_sim.synergystudy``)."""
+    """How much of each hand-set part of the synergy term the index keeps (1 is the first judgement, which is what ``Model()`` is;
+    the website's constants are ``DEFAULT_MODEL``). Studies vary these to ask which parts the simulated runs support
+    (``slay2_sim.synergystudy``)."""
 
     needs: float = 1.0     # multiplies how much of a card's rating an unmet need holds back
     scalers: float = 1.0   # multiplies what Strength, Dexterity and Focus add to the cards they lift
     engines: float = 1.0   # multiplies what sources and payoffs together add
 
 
-DEFAULT_MODEL = Model()
+# What the website's index keeps of each part: the strengths of the pilot with the synergy term that the development stage chose
+# (ADR-050 addendum D). `packages/decision/src/synergy.ts` `PART_WEIGHT` holds the same three numbers; a test and the held-out
+# test's preflight compare them.
+DEFAULT_MODEL = Model(needs=1.0, scalers=0.7, engines=0.0)
 
 
 def saturation(mechanic: str, supply: float) -> float:
@@ -161,9 +171,37 @@ def innate_supply(character: str | None) -> dict[str, float]:
     return dict(entry["gives"]) if entry else {}
 
 
-def supply_of(deck: Deck, character: str | None = None) -> dict[str, float]:
+@dataclass(frozen=True)
+class Setting:
+    """What a run has besides the cards of its deck: its class and the relics it has taken since (the page's ``Setting``)."""
+
+    character: str | None = None
+    relics: tuple[str, ...] = ()
+
+
+def setting_of(character: "str | Setting | None") -> Setting:
+    """A class on its own (what the index always took) or the whole setting; every function below that takes a ``character``
+    takes either."""
+    return character if isinstance(character, Setting) else Setting(character=character)
+
+
+def relic_supply(relics: Iterable[str]) -> dict[str, float]:
+    """What the relics provide of each mechanic, together, each relic counted once; a relic the table has no entry for provides
+    nothing (the same as the page: it ignores ids the catalog does not know)."""
+    table = relic_synergy_table()["relics"]
+    out: dict[str, float] = {}
+    for relic in sorted(set(relics)):
+        for mechanic, g in table.get(relic, {}).get("g", {}).items():
+            out[mechanic] = out.get(mechanic, 0.0) + g
+    return out
+
+
+def supply_of(deck: Deck, character: "str | Setting | None" = None) -> dict[str, float]:
+    setting = setting_of(character)
     supply = {m: 0.0 for m in mechanic_ids()}
-    for mechanic, g in innate_supply(character).items():
+    for mechanic, g in innate_supply(setting.character).items():
+        supply[mechanic] += g
+    for mechanic, g in relic_supply(setting.relics).items():
         supply[mechanic] += g
     for card_id, count in deck.items():
         for mechanic, g in synergy_tags(card_id).gives.items():
@@ -221,7 +259,7 @@ def realized_of(card_id: str, supply: Mapping[str, float], act_index: int, model
     return Realized(prior, fit, held_back, scaler, prior * (1 - held_back) * (1 + scaler))
 
 
-def realized_split(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> tuple[float, float]:
+def realized_split(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | Setting | None = None) -> tuple[float, float]:
     """(rating lost to unmet needs, rating gained from scalers), summed over the deck's copies, in rating points.
 
     realized - prior = -prior x held_back + prior x (1 - held_back) x scaler, so the two parts add up to ``realized_mass``."""
@@ -234,7 +272,7 @@ def realized_split(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, cha
     return unmet, scaler
 
 
-def realized_mass(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> float:
+def realized_mass(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | Setting | None = None) -> float:
     unmet, scaler = realized_split(deck, act_index, model, character)
     return unmet + scaler
 
@@ -243,19 +281,19 @@ def engine_value(mechanic: str, supply: float, payoff: float, model: Model = DEF
     return model.engines * synergy_table()["mechanics"][mechanic]["engine"] * saturation(mechanic, supply) * (1 - math.exp(-max(0.0, payoff) / ENGINE_PAYOFF_SCALE))
 
 
-def engines_of(deck: Deck, model: Model = DEFAULT_MODEL, character: str | None = None) -> dict[str, float]:
+def engines_of(deck: Deck, model: Model = DEFAULT_MODEL, character: str | Setting | None = None) -> dict[str, float]:
     supply, payoff = supply_of(deck, character), payoff_mass_of(deck)
     return {m: engine_value(m, supply[m], payoff[m], model) for m in mechanic_ids()}
 
 
-def synergy_components(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> tuple[float, float, float]:
+def synergy_components(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | Setting | None = None) -> tuple[float, float, float]:
     """The deck's synergy in index points as its three parts: (unmet needs, scalers, engines). Unmet needs are 0 or negative."""
     unmet, scaler = realized_split(deck, act_index, model, character)
     engines = engines_of(deck, model, character)
     return unmet / SYNERGY_CARDS, scaler / SYNERGY_CARDS, sum(engines[m] for m in mechanic_ids())
 
 
-def synergy_of(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | None = None) -> float:
+def synergy_of(deck: Deck, act_index: int, model: Model = DEFAULT_MODEL, character: str | Setting | None = None) -> float:
     return realized_mass(deck, act_index, model, character) / SYNERGY_CARDS + sum(engines_of(deck, model, character).values())
 
 
@@ -279,7 +317,7 @@ class Profile:
     synergy: float
 
 
-def profile_deck(deck: Deck, act_index: int = 0, model: Model = DEFAULT_MODEL, character: str | None = None) -> Profile:
+def profile_deck(deck: Deck, act_index: int = 0, model: Model = DEFAULT_MODEL, character: str | Setting | None = None) -> Profile:
     size = prior_sum = playable = high_cost = starters = 0
     cost_sum = 0.0
     groups = {g: 0 for g in GROUPS}
@@ -388,7 +426,7 @@ def rank_options(
     risk: str = "balanced",
     weights: Weights | None = None,
     model: Model = DEFAULT_MODEL,
-    character: str | None = None,
+    character: str | Setting | None = None,
 ) -> list[tuple[str, float]]:
     """The offered cards and skipping, best first, each with the change in the deck index its pick makes.
 

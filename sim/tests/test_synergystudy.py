@@ -16,10 +16,15 @@ DECK = {"STRIKE_IRONCLAD": 5, "DEFEND_IRONCLAD": 4, "BASH": 1, "FEEL_NO_PAIN_CAR
 def test_the_features_are_the_advisors_index_parts():
     f = study.deck_features(DECK)
     deck = advisor.deck_from_ids(k for k, n in DECK.items() for _ in range(n))
-    profile = advisor.profile_deck(deck, 0)
+    # the study reads the parts at the first judgement, which the website no longer keeps (ADR-050 addendum D); the same parts at
+    # the website's own strengths add up to the website's synergy term
+    profile = advisor.profile_deck(deck, 0, study.FIRST_JUDGEMENT)
     assert f["quality"] == pytest.approx(profile.meanPrior)
     assert f["unmet"] + f["scaler"] + f["engines"] == pytest.approx(profile.synergy)
     assert f["unmet"] <= 0 <= f["scaler"] and f["engines"] >= 0
+    kept = study.deck_features(DECK, model=advisor.DEFAULT_MODEL)
+    assert kept["unmet"] + kept["scaler"] + kept["engines"] == pytest.approx(advisor.profile_deck(deck, 0).synergy)
+    assert kept["engines"] == 0
     # a simulator name with the _CARD suffix is read as the catalog card, upgrades are ignored
     assert study.deck_features({"FEEL_NO_PAIN_CARD+": 1})["quality"] == study.deck_features({"FEEL_NO_PAIN": 1})["quality"]
 

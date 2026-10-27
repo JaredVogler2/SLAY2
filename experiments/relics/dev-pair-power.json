@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "kind": "relic-reading-dev-pair",
+  "stage": "R4-dev of ADR-051 addendum A (development seeds; descriptive, not a test)",
+  "relic_synergy_table_sha256": "836676b1dafed94ce20891e39832cb35c87d362b52eb77e51bfc28fd83ebe6c1",
+  "arms": {
+    "relics": "advisor_v1 at A*, the relics it holds counted by the index",
+    "norelics": "advisor_v1 at A*, the class alone"
+  },
+  "per_class": {
+    "ironclad": {
+      "batches": [
+        "r4dev-ironclad-relics-keeprelics-dev-o500-n500",
+        "r4dev-ironclad-norelics-keeprelics-dev-o500-n500"
+      ],
+      "pairs": 497,
+      "past_act1_boss": {
+        "relics": 0.5855,
+        "norelics": 0.5875,
+        "only_relics": 0,
+        "only_norelics": 1
+      },
+      "identical_results": 477,
+      "mean_floors_relics_minus_norelics": 0.0181,
+      "sd_floors": 2.529,
+      "boss_decks": {
+        "pairs": 451,
+        "deck_differs": 12,
+        "relics_arm_holds_a_tagged_relic": 246,
+        "index_parts_differ_with_relics": 69
+      }
+    },
+    "silent": {
+      "batches": [
+        "r4dev-silent-relics-keeprelics-dev-o500-n500",
+        "r4dev-silent-norelics-keeprelics-dev-o500-n500"
+      ],
+      "pairs": 500,
+      "past_act1_boss": {
+        "relics": 0.178,
+        "norelics": 0.176,
+        "only_relics": 1,
+        "only_norelics": 0
+      },
+      "identical_results": 499,
+      "mean_floors_relics_minus_norelics": 0.01,
+      "sd_floors": 0.223,
+      "boss_decks": {
+        "pairs": 294,
+        "deck_differs": 4,
+        "relics_arm_holds_a_tagged_relic": 154,
+        "index_parts_differ_with_relics": 40
+      }
+    },
+    "regent": {
+      "batches": [
+        "r4dev-regent-relics-keeprelics-dev-o500-n500",
+        "r4dev-regent-norelics-keeprelics-dev-o500-n500"
+      ],
+      "pairs": 490,
+      "past_act1_boss": {
+        "relics": 0.249,
+        "norelics": 0.249,
+        "only_relics": 1,
+        "only_norelics": 1
+      },
+      "identical_results": 485,
+      "mean_floors_relics_minus_norelics": -0.0122,
+      "sd_floors": 0.679,
+      "boss_decks": {
+        "pairs": 339,
+        "deck_differs": 15,
+        "relics_arm_holds_a_tagged_relic": 183,
+        "index_parts_differ_with_relics": 49
+      }
+    },
+    "necrobinder": {
+      "batches": [
+        "r4dev-necrobinder-relics-keeprelics-dev-o500-n500",
+        "r4dev-necrobinder-norelics-keeprelics-dev-o500-n500"
+      ],
+      "pairs": 496,
+      "past_act1_boss": {
+        "relics": 0.4516,
+        "norelics": 0.4556,
+        "only_relics": 1,
+        "only_norelics": 3
+      },
+      "identical_results": 486,
+      "mean_floors_relics_minus_norelics": -0.0605,
+      "sd_floors": 1.28,
+      "boss_decks": {
+        "pairs": 382,
+        "deck_differs": 8,
+        "relics_arm_holds_a_tagged_relic": 216,
+        "index_parts_differ_with_relics": 36
+      }
+    },
+    "defect": {
+      "batches": [
+        "r4dev-defect-relics-keeprelics-dev-o500-n500",
+        "r4dev-defect-norelics-keeprelics-dev-o500-n500"
+      ],
+      "pairs": 495,
+      "past_act1_boss": {
+        "relics": 0.4929,
+        "norelics": 0.4909,
+        "only_relics": 2,
+        "only_norelics": 1
+      },
+      "identical_results": 491,
+      "mean_floors_relics_minus_norelics": 0.0162,
+      "sd_floors": 0.471,
+      "boss_decks": {
+        "pairs": 381,
+        "deck_differs": 11,
+        "relics_arm_holds_a_tagged_relic": 195,
+        "index_parts_differ_with_relics": 57
+      }
+    }
+  },
+  "pooled": {
+    "pairs": 2478,
+    "past_act1_boss": {
+      "relics": 0.3914,
+      "norelics": 0.3918,
+      "only_relics": 5,
+      "only_norelics": 6
+    },
+    "identical_results": 2438,
+    "mean_floors_relics_minus_norelics": -0.0056,
+    "boss_decks": {
+      "pairs": 1847,
+      "deck_differs": 50,
+      "relics_arm_holds_a_tagged_relic": 994,
+      "index_parts_differ_with_relics": 251
+    }
+  },
+  "power": {
+    "pairs_in_a_held_out_test": 10000,
+    "share_of_pairs_that_play_differently": 0.0271,
+    "share_of_those_whose_outcomes_differ": 0.22,
+    "expected_games_that_play_differently": 270.7,
+    "expected_discordant_pairs": 59.6,
+    "by_effect": {
+      "0.02": {
+        "expected_net_pairs": 5.4,
+        "z": 0.7,
+        "power": 0.104
+      },
+      "0.05": {
+        "expected_net_pairs": 13.5,
+        "z": 1.75,
+        "power": 0.418
+      },
+      "0.10": {
+        "expected_net_pairs": 27.1,
+        "z": 3.51,
+        "power": 0.939
+      }
+    },
+    "method": "normal approximation to the exact McNemar test at level 0.05, two-sided; the effect is the change in the share past the Act-1 boss among the games whose boss decks differ"
+  }
+}

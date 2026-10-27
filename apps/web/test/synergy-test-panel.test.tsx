@@ -56,6 +56,26 @@ describe("the registered test on /methods", () => {
     expect(box).toHaveTextContent("getting past the first boss is not winning");
   });
 
+  it("starts every sentence of its prose with a capital letter (the phrases that open a sentence are built from lower-case parts)", () => {
+    renderPanel(fixtureTest(600, 480, 1.5));
+    const box = screen.getByRole("heading", { name: "The registered test" }).parentElement
+      ?.parentElement;
+    if (!box) throw new Error("no test box");
+    for (const p of Array.from(box.querySelectorAll(":scope > p, :scope > div > p"))) {
+      const text = p.textContent.trim();
+      expect(text.charAt(0), text.slice(0, 40)).toBe(text.charAt(0).toUpperCase());
+      // a sentence after a lead-in ("Got past the Act-2 boss. With the term ...") too
+      for (const lead of text.matchAll(/\.\s+([a-z][a-z-]*)/g)) {
+        expect
+          .soft(
+            ["e.g", "i.e"].includes(lead[1] ?? ""),
+            `lower-case start after a full stop: ${lead[0]}`,
+          )
+          .toBe(true);
+      }
+    }
+  });
+
   it("not shown: does not claim a difference, and does not claim there is none", () => {
     const section = renderPanel(fixtureTest(500, 480));
     expect(section).toHaveTextContent("Not shown.");

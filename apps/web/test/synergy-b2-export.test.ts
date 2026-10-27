@@ -13,9 +13,12 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mcnemarP } from "./fixtures/synergy-test";
+
+// These tests start the site-data exporter in a child process; on a busy machine that takes longer than the 5 s default.
+vi.setConfig({ testTimeout: 30_000 });
 
 /**
  * `scripts/export-site-data.mjs` reads the one registered held-out test of the synergy term (ADR-050, stage B2) only when everything
@@ -49,6 +52,8 @@ interface Options {
   margin?: 0 | 1.5 | 3;
   /** discordant pairs of the primary comparison, A* only / d0* only (pooled over the classes, divisible by five) */
   discordant?: [number, number];
+  /** the same test repeated with the relics kept (ADR-054): its discordant pairs, or none while it has not been run */
+  keep?: [number, number] | null;
 }
 
 const dirs: string[] = [];
@@ -68,7 +73,8 @@ const hex = (seed: string): string => {
   return h.slice(0, 64);
 };
 
-function batchId(arm: Arm, cls: string): string {
+function batchId(arm: Arm, cls: string, keep = false): string {
+  if (keep) return `advisor_v1-${arm}-${cls}-a0-veteran-keeprelics-val-n2000`;
   if (arm === "rules_v3") {
     return cls === "ironclad"
       ? "rules_v3-values2-ironclad-a0-veteran-val-n2000"
@@ -86,13 +92,19 @@ function effective(arm: Arm, o: Required<Options>): Json {
   return {};
 }
 
-function manifest(arm: Arm, cls: string, o: Required<Options>): Json {
-  const id = batchId(arm, cls);
+function manifest(arm: Arm, cls: string, o: Required<Options>, keep = false): Json {
+  const id = batchId(arm, cls, keep);
   return {
     batch_id: id,
     canonical_process_state: true,
     class_start_verified: true,
-    config: { ascension: 0, character: EXACT[cls], profile: "veteran", start_with_neow: true },
+    config: {
+      ascension: 0,
+      character: EXACT[cls],
+      profile: "veteran",
+      start_with_neow: true,
+      ...(keep ? { keep_relics: true } : {}),
+    },
     content_sha256: hex(id),
     environment: { slay2: { head: "a".repeat(40), dirty: false } },
     episodes_gz: { sha256: hex(`${id}-gz`) },
@@ -153,14 +165,20 @@ function endpoint(
   };
 }
 
-function pooledFile(a: Arm, b: Arm, name: string, discordant: [number, number]): Json {
+function pooledFile(
+  a: Arm,
+  b: Arm,
+  name: string,
+  discordant: [number, number],
+  keep = false,
+): Json {
   const [aOnly, bOnly] = discordant;
   const both = 5000;
   const neither = 3000;
   const total = aOnly + bOnly + both + neither;
   const members = CLASSES.map((cls) => ({
-    a: { batchId: batchId(a, cls), contentSha256: hex(batchId(a, cls)), wins: 0 },
-    b: { batchId: batchId(b, cls), contentSha256: hex(batchId(b, cls)), wins: 0 },
+    a: { batchId: batchId(a, cls, keep), contentSha256: hex(batchId(a, cls, keep)), wins: 0 },
+    b: { batchId: batchId(b, cls, keep), contentSha256: hex(batchId(b, cls, keep)), wins: 0 },
     bothCompleted: total / 5,
     character: EXACT[cls],
     meanFloorDifference: 0.4,
@@ -286,7 +304,13 @@ function selection(o: Required<Options>): [Json, Json] {
 }
 
 function buildWorld(options: Options = {}): { root: string; path: (...parts: string[]) => string } {
-  const o: Required<Options> = { arm: "d2", margin: 1.5, discordant: [600, 480], ...options };
+  const o: Required<Options> = {
+    arm: "d2",
+    margin: 1.5,
+    discordant: [600, 480],
+    keep: null,
+    ...options,
+  };
   const root = mkdtempSync(join(tmpdir(), "slay2-b2-"));
   dirs.push(root);
   for (const name of ["packages", "sim"]) {
@@ -321,6 +345,28 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
       }
     }
   }
+  if (o.keep) {
+    // the same test with the relics kept: only the two arms (ADR-054), A* and the index without the term at the same margin
+    for (const arm of ["astar", "d0star"] as const) {
+      for (const cls of CLASSES) {
+        const m = manifest(arm, cls, o, true);
+        const dir = path("experiments", "batches", batchId(arm, cls, true));
+        write(join(dir, "manifest.json"), m);
+        writeFileSync(
+          join(dir, "episodes.jsonl"),
+          '{"seed":1,"outcome":"death","floor":12,"act":1,"killed_by":"X","wall_seconds":1}\n',
+        );
+        write(join(dir, "sample-audit.json"), {
+          batch_id: m.batch_id,
+          batch_content_sha256: m.content_sha256,
+          sample: { drawn: 40, completed_in_batch: 1990, rng_seed: 0 },
+          verified: 40,
+          ledger: { ok: true },
+          criteria: "synthetic",
+        });
+      }
+    }
+  }
   mkdirSync(path("experiments", "synergy"), { recursive: true });
   cpSync(
     join(repo, "experiments", "synergy", "b1-calibration.json"),
@@ -344,6 +390,12 @@ function buildWorld(options: Options = {}): { root: string; path: (...parts: str
   if (o.margin !== 0) val("pooled-astar-vs-d0.json", pooledFile("astar", "d0", "p2", [560, 500]));
   val("pooled-astar-vs-rules_v3.json", pooledFile("astar", "rules_v3", "p3", [300, 700]));
   val("arm-profile.json", armProfile(o));
+  if (o.keep) {
+    write(
+      path("experiments", "synergy", "keep-val", "pooled-astar-vs-d0star.json"),
+      pooledFile("astar", "d0star", "p4", o.keep, true),
+    );
+  }
   return { root, path };
 }
 
@@ -359,10 +411,10 @@ function edit(file: string, change: (body: Json) => void) {
   writeFileSync(file, JSON.stringify(body));
 }
 
-function exported(root: string): { b2: Json | null } {
+function exported(root: string): { b2: Json | null; b2keep: Json | null } {
   return JSON.parse(
     readFileSync(join(root, "apps", "web", "src", "content", "synergy.generated.json"), "utf8"),
-  ) as { b2: Json | null };
+  ) as { b2: Json | null; b2keep: Json | null };
 }
 
 describe("the arms the exporter knows are the arms the study runs", () => {
@@ -737,5 +789,95 @@ describe("the exporter reads the registered synergy test only when it belongs to
     const b = run(fresh.root);
     expect(b.status).not.toBe(0);
     expect(b.stderr).toContain("uncommitted changes");
+  });
+});
+
+describe("the exporter reads the registered test repeated with the relics kept only when it belongs together", () => {
+  it("exports nothing for it while its pooled result does not exist, and the first test is read as before", () => {
+    const w = buildWorld();
+    const r = run(w.root);
+    expect(r.status, r.stderr).toBe(0);
+    const out = exported(w.root);
+    expect(out.b2keep).toBeNull();
+    expect(out.b2).not.toBeNull();
+  });
+
+  it.each([
+    [[480, 600], "behind"],
+    [[500, 500], "not-shown"],
+    [[600, 480], "ahead"],
+  ] as const)("reads the registered rule from the numbers: %j is %s", (keep, verdict) => {
+    const w = buildWorld({ keep: [keep[0], keep[1]] });
+    const r = run(w.root);
+    expect(r.status, r.stderr).toBe(0);
+    const out = exported(w.root);
+    const b2keep = out.b2keep as Json & { verdict: string; primary: Json; astar: Json };
+    expect(b2keep.verdict).toBe(verdict);
+    expect((b2keep.primary as { members: unknown[] }).members).toHaveLength(5);
+    // it carries the one comparison that was registered, and the first test is untouched by it
+    expect(b2keep).not.toHaveProperty("measured");
+    expect(b2keep).not.toHaveProperty("noTermAtZero");
+    expect(b2keep).not.toHaveProperty("selection");
+    expect(b2keep.astar).toEqual({ arm: "d2", needs: 1, scalers: 0.7, engines: 0.25, margin: 1.5 });
+    expect((out.b2 as { verdict: string }).verdict).toBe("ahead");
+  });
+
+  it("refuses batches that were not played with the relics kept", () => {
+    const w = buildWorld({ keep: [600, 480] });
+    edit(
+      w.path("experiments", "batches", batchId("astar", "silent", true), "manifest.json"),
+      (m) => {
+        delete (m.config as Json).keep_relics;
+      },
+    );
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("it was not played with the relics kept (ADR-054)");
+  });
+
+  it("refuses a first test whose batches were played with the relics kept", () => {
+    const w = buildWorld();
+    edit(w.path("experiments", "batches", batchId("d0star", "regent"), "manifest.json"), (m) => {
+      (m.config as Json).keep_relics = true;
+    });
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("it was played with the relics kept (ADR-050 was not)");
+  });
+
+  it("refuses a comparison nobody registered beside it", () => {
+    const w = buildWorld({ keep: [600, 480] });
+    writeFileSync(
+      w.path("experiments", "synergy", "keep-val", "pooled-astar-vs-rules_v3.json"),
+      readFileSync(w.path("experiments", "synergy", "keep-val", "pooled-astar-vs-d0star.json")),
+    );
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("ADR-054 registers one comparison");
+  });
+
+  it("refuses arms that are not the configuration the development stage chose, as for the first test", () => {
+    const w = buildWorld({ keep: [600, 480] });
+    edit(
+      w.path("experiments", "batches", batchId("astar", "defect", true), "manifest.json"),
+      (m) => {
+        ((m.policy as Json).effective as { params: Json }).params.scalers = 1;
+      },
+    );
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain(
+      "its parameters are not the configuration the development stage chose",
+    );
+  });
+
+  it("refuses a batch without its sample audit", () => {
+    const w = buildWorld({ keep: [600, 480] });
+    rmSync(
+      w.path("experiments", "batches", batchId("d0star", "necrobinder", true), "sample-audit.json"),
+    );
+    const r = run(w.root);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("no passing sample audit");
   });
 });

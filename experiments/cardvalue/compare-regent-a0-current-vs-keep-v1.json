@@ -1,0 +1,50 @@
+{
+  "a": {
+    "boss_fights": 2703,
+    "file": "experiments/cardvalue/regent-a0-v1.json",
+    "games": 2703,
+    "pass_rate": 0.2238,
+    "sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db"
+  },
+  "b": {
+    "boss_fights": 3543,
+    "file": "experiments/cardvalue/regent-a0-keep-v1.json",
+    "games": 3543,
+    "pass_rate": 0.4894,
+    "sha256": "70bc58ef9dddb33ddf6a07ece9ae79363f4210b18bb1dd5043d1f6e552417097"
+  },
+  "comparison": {
+    "best_k_in_both": 7,
+    "cards_in_both": 85,
+    "cards_only_in_a": [
+      "FOREGONE_CONCLUSION",
+      "OMNISLICE",
+      "PANIC_BUTTON"
+    ],
+    "cards_only_in_b": [
+      "GUARDS",
+      "MONARCHS_GAZE_CARD",
+      "SEEKING_EDGE",
+      "THE_SMITH"
+    ],
+    "disjoint_ci95": 2,
+    "k": 10,
+    "spearman": 0.6656830173930037,
+    "worst_k_in_both": 3
+  },
+  "kind": "card-value-comparison",
+  "noise_reference": {
+    "best_k_in_both": 6,
+    "cards_in_both": 76,
+    "definition": "the second file's games split by the parity of the game seed, each half fitted like the full data, Spearman correlation of the two halves and the same corrected to the full number of games as 2r/(1+r)",
+    "games": [
+      1742,
+      1801
+    ],
+    "k": 10,
+    "spearman": 0.5269172932330827,
+    "spearman_brown": 0.6901713610399841,
+    "worst_k_in_both": 1
+  },
+  "schema": 1
+}

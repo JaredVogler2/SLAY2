@@ -203,10 +203,56 @@ export interface SynergyTest {
   readonly profile: TestProfile | null;
 }
 
+/**
+ * The registered test repeated with the relics kept (ADR-054): the same two arms on the same kind of seeds, in a simulator whose runs
+ * keep the relics they gain (the first test was played in one that drops them, gap G14). One pooled comparison was registered.
+ */
+export interface SynergyKeepTest {
+  readonly tableSha256: string;
+  readonly alpha: number;
+  readonly astar: SynergyConfig;
+  readonly primary: PooledTest;
+  /** the exporter's reading of `primary` (a `Verdict`); the page recomputes it with `verdictOf` */
+  readonly verdict: string;
+  readonly profile: TestProfile | null;
+}
+
+/** Stage B1 read again on random drafts played with the relics kept, with and without the relics a run held counted (ADR-053 item 6). */
+export interface KeepReading {
+  readonly file: string;
+  readonly sha256: string;
+  readonly outcome: string;
+  readonly bossFights: number;
+  /** boss decks of a run that held a relic the relic table tags, and those whose index parts the relics change */
+  readonly withTaggedRelic: number;
+  readonly partsDiffer: number;
+  readonly passRate: number;
+  readonly bootstrapDraws: number;
+  readonly classAlone: KeepArm;
+  readonly relicsCounted: KeepArm;
+  /** held-out log loss with the relics counted minus without (negative: counting them predicts better) */
+  readonly relicGain: Interval;
+  readonly perClass: Readonly<Record<string, Interval & { readonly rows: number }>>;
+}
+
+export interface KeepArm {
+  readonly logLoss: number;
+  /** change in held-out log loss when the synergy term is added to the index, read this way */
+  readonly synergyAdded: Interval;
+  readonly ratios: {
+    readonly needs: PartRatio;
+    readonly scalers: PartRatio;
+    readonly engines: PartRatio;
+  };
+}
+
 export interface SynergyEvidence {
   readonly table: { readonly sha256: string; readonly cards: number; readonly mechanics: number };
   readonly b1: SynergyReading | null;
+  readonly keep: KeepReading | null;
   readonly b2: SynergyTest | null;
+  /** the registered test repeated with the relics kept (ADR-054); null until it has been run */
+  readonly b2keep: SynergyKeepTest | null;
 }
 
 export const SYNERGY_EVIDENCE: SynergyEvidence = synergy;
@@ -228,6 +274,13 @@ export function num(x: number, digits: number): string {
 
 export function range(ci: readonly number[], digits: number): string {
   return `${num(ci[0] ?? 0, digits)} to ${num(ci[1] ?? 0, digits)}`;
+}
+
+/** What the index keeps of a part of the synergy term, in words ("in full" is the first judgement). */
+export function kept(weight: number): string {
+  if (weight >= 1) return "in full";
+  if (weight <= 0) return "not at all";
+  return `at ${num(weight, 2)} of its first judgement`;
 }
 
 /** "0.96 (95 % 0.78 to 1.15)": what a point of a part is worth relative to a point of average card rating. */

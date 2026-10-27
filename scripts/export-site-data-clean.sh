@@ -16,7 +16,7 @@ trap 'git worktree remove --force "$tmp/wt" >/dev/null 2>&1 || true; rm -rf "$tm
 git worktree add --detach "$tmp/wt" HEAD >/dev/null
 (cd "$tmp/wt" && node scripts/export-site-data.mjs >/dev/null)
 changed=0
-for f in rules evidence cardvalues neow; do
+for f in rules evidence cardvalues synergy neow; do
   src="$tmp/wt/apps/web/src/content/$f.generated.json"
   dst="apps/web/src/content/$f.generated.json"
   if ! cmp -s "$src" "$dst"; then

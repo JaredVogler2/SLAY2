@@ -1,0 +1,90 @@
+{
+ "schema": 1,
+ "rule": "A mechanic both readers wrote for a relic is kept, at the lower of their two magnitudes (they never differed by more than one step). A mechanic only one reader wrote is kept only if the reconciling read of the relic finds that it supplies the mechanic to the deck's cards in an ordinary run; each such mechanic has a decision below with the reason. Only what a relic provides (g) is kept: what its value depends on (w) is not read by the model, because the index counts no engines (ADR-050 addendum D). The starting relics and their upgrades are not tagged: the card table's innate supply already counts the class's starting relic. A relic that only multiplies a mechanic it cannot supply itself (Poison, Strength) is left out; one that multiplies Block is kept, because every deck holds Block cards.",
+ "decisions": {
+  "FAKE_ORICHALCUM": {
+   "block": {
+    "keep": null,
+    "why": "gives Block only at the end of a turn that has none, so no card can lean on it"
+   }
+  },
+  "ORICHALCUM": {
+   "block": {
+    "keep": null,
+    "why": "gives Block only at the end of a turn that has none, so no card can lean on it"
+   }
+  },
+  "KIFUDA": {
+   "block": {
+    "keep": null,
+    "why": "three chosen cards gain a little Block when played"
+   }
+  },
+  "RIPPLE_BASIN": {
+   "block": {
+    "keep": null,
+    "why": "gives Block at the end of a turn without Attacks, so no card can lean on it"
+   }
+  },
+  "PAELS_EYE": {
+   "exhaust": {
+    "keep": null,
+    "why": "fires only on a turn in which no card is played"
+   }
+  },
+  "POWER_CELL": {
+   "draw": {
+    "keep": null,
+    "why": "moves cards from the draw pile to the hand and draws nothing"
+   }
+  },
+  "REPTILE_TRINKET": {
+   "strength": {
+    "keep": null,
+    "why": "fires only when a potion is used, a few times a run"
+   }
+  },
+  "ROYAL_POISON": {
+   "hp_loss": {
+    "keep": 1,
+    "why": "a guaranteed loss of HP at the start of every combat"
+   }
+  },
+  "RUINED_HELMET": {
+   "strength": {
+    "keep": null,
+    "why": "doubles Strength it cannot supply itself"
+   }
+  },
+  "RUNIC_PYRAMID": {
+   "draw": {
+    "keep": null,
+    "why": "keeps the hand between turns and draws nothing"
+   }
+  },
+  "SNECKO_SKULL": {
+   "poison": {
+    "keep": null,
+    "why": "adds to Poison applications it cannot make itself"
+   }
+  },
+  "STURDY_CLAMP": {
+   "block": {
+    "keep": null,
+    "why": "keeps Block across turns: a payoff, written as a want like Barricade in the card table"
+   }
+  },
+  "FUNERARY_MASK": {
+   "create": {
+    "keep": null,
+    "why": "the card table writes makers of Souls as Souls only"
+   }
+  },
+  "NINJA_SCROLL": {
+   "create": {
+    "keep": null,
+    "why": "the card table writes makers of Shivs as Shivs only"
+   }
+  }
+ }
+}

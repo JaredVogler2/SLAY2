@@ -104,7 +104,7 @@ def test_an_unknown_risk_is_an_error_not_a_silent_default(sim):
 
 def test_the_model_scales_what_the_index_keeps_of_each_part():
     deck = {"STRIKE_IRONCLAD": 5, "DEFEND_IRONCLAD": 4, "BASH": 1, "FEEL_NO_PAIN": 1, "INFLAME": 1, "BURNING_PACT": 1}
-    full = advisor.synergy_components(deck, 0)
+    full = advisor.synergy_components(deck, 0, advisor.Model())  # the first judgement, not the strengths the page keeps
     half = advisor.synergy_components(deck, 0, advisor.Model(needs=0.5, scalers=0.5, engines=0.5))
     none = advisor.synergy_components(deck, 0, advisor.Model(needs=0.0, scalers=0.0, engines=0.0))
     for whole, part in zip(full, half):

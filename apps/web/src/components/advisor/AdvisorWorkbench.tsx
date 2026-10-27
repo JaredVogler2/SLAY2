@@ -16,6 +16,7 @@ import {
   newRun,
   parseRunState,
   resetToStart,
+  serializeRunState,
   withAscension,
   withCharacter,
   type PackSource,
@@ -30,6 +31,7 @@ import { HandOddsPanel } from "./HandOddsPanel";
 import { ADVISOR_SOURCES, OfferedPanel } from "./OfferedPanel";
 import { OfferCheck } from "./OfferCheck";
 import { OpeningPanel } from "./OpeningPanel";
+import { RelicsPanel } from "./RelicsPanel";
 import { PityTracker } from "./PityTracker";
 import { RecommendationPanel } from "./RecommendationPanel";
 import { SimulationOpinion } from "./SimulationOpinion";
@@ -69,6 +71,7 @@ export function AdvisorWorkbench() {
           ascension: run.ascension,
           actIndex: run.actIndex,
           deck: run.deck.map(({ id, count }) => ({ id, count })),
+          ...(run.relics.length > 0 ? { relics: run.relics } : {}),
           offered,
           source,
           riskPreference: run.risk,
@@ -135,7 +138,7 @@ export function AdvisorWorkbench() {
     if (!run) {
       return;
     }
-    const blob = new Blob([JSON.stringify(run, null, 2)], { type: "application/json" });
+    const blob = new Blob([serializeRunState(run, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -354,6 +357,8 @@ export function AdvisorWorkbench() {
             disabled={!hydrated}
           />
 
+          <RelicsPanel run={run} character={character} onChange={update} disabled={!hydrated} />
+
           <OfferedPanel
             character={character}
             offered={offered}
@@ -370,7 +375,7 @@ export function AdvisorWorkbench() {
           {outcome?.ok ? (
             <>
               <RecommendationPanel result={outcome.result} onRecord={record} />
-              <SynergyPanel synergy={outcome.result.deckSynergy} />
+              <SynergyPanel synergy={outcome.result.deckSynergy} relics={outcome.result.relics} />
               <SimulationOpinion
                 run={run}
                 offered={offered}

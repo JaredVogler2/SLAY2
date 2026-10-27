@@ -1,0 +1,430 @@
+{
+  "schema": 1,
+  "kind": "synergy-calibration-relics-kept",
+  "stage": "ADR-053 item 6 (exploratory: development seeds, relics kept)",
+  "outcome": "the run gets past the Act-1 boss",
+  "relic_synergy_table_sha256": "836676b1dafed94ce20891e39832cb35c87d362b52eb77e51bfc28fd83ebe6c1",
+  "synergy_table_sha256": "bd0b8a9fd4f96fd974e318c4d1e71efd4dda0e9359f61b73410f24baace7f49a",
+  "folds": 5,
+  "bootstrap_draws": 200,
+  "cohorts": [
+    {
+      "name": "ironclad-keep",
+      "character": "Ironclad",
+      "partition": "dev",
+      "batch_id": "explore4-ironclad-a0-keeprelics-dev-o5000-n5000",
+      "episodes_gz_sha256": "0a6560db6d57cfb753ed71a2aa355e8400816f2e87989ef54b39f1b47cd7439b",
+      "boss_fights": 4275,
+      "pass_rate": 0.6465,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "name": "silent-keep",
+      "character": "Silent",
+      "partition": "dev",
+      "batch_id": "explore4-silent-a0-keeprelics-dev-o5000-n5000",
+      "episodes_gz_sha256": "88705ddb86ec347d7b5b76e5b2350c1d8d211d3f9d70ba86729e63d3135f3150",
+      "boss_fights": 3025,
+      "pass_rate": 0.3021,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "name": "regent-keep",
+      "character": "Regent",
+      "partition": "dev",
+      "batch_id": "explore4-regent-a0-keeprelics-dev-o5000-n5000",
+      "episodes_gz_sha256": "0fb727fb7f6fef49a518cbe81b7552cab129cdefe9338c28ba1090b9ff731ec6",
+      "boss_fights": 3543,
+      "pass_rate": 0.4894,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "name": "necrobinder-keep",
+      "character": "Necrobinder",
+      "partition": "dev",
+      "batch_id": "explore4-necrobinder-a0-keeprelics-dev-o5000-n5000",
+      "episodes_gz_sha256": "0b9b594627a0e330dd2dc8f7291b96868fbe0524bd73dd4bc8174b4cf8470e69",
+      "boss_fights": 3829,
+      "pass_rate": 0.6226,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "name": "defect-keep",
+      "character": "Defect",
+      "partition": "dev",
+      "batch_id": "explore4-defect-a0-keeprelics-dev-o5000-n5000",
+      "episodes_gz_sha256": "b55028e4f79560e168e2fd583bf2d35de3d6eb07510afccc05930779b8e3777b",
+      "boss_fights": 3850,
+      "pass_rate": 0.7151,
+      "policy": "rules_explore_v3"
+    }
+  ],
+  "runs": {
+    "runs": 18522,
+    "with_a_tagged_relic": 10044,
+    "parts_differ": 2534
+  },
+  "class_alone": {
+    "rows": 18522,
+    "pass_rate": 0.5695,
+    "cross_validation": {
+      "controls": {
+        "log_loss": 0.47263,
+        "auc": 0.8484
+      },
+      "index": {
+        "log_loss": 0.46437,
+        "auc": 0.8545
+      },
+      "index+synergy": {
+        "log_loss": 0.45508,
+        "auc": 0.8614
+      },
+      "index+needs": {
+        "log_loss": 0.45686,
+        "auc": 0.8601
+      },
+      "index+needs+scalers": {
+        "log_loss": 0.45517,
+        "auc": 0.8613
+      }
+    },
+    "loss_gaps": {
+      "synergy_added_to_index": {
+        "mean": -0.00929,
+        "ci95": [
+          -0.01129,
+          -0.00708
+        ]
+      },
+      "needs_added_to_index": {
+        "mean": -0.00751,
+        "ci95": [
+          -0.00904,
+          -0.00563
+        ]
+      },
+      "scalers_added_to_needs": {
+        "mean": -0.00169,
+        "ci95": [
+          -0.00257,
+          -0.00088
+        ]
+      },
+      "engines_added_to_needs_and_scalers": {
+        "mean": -9e-05,
+        "ci95": [
+          -0.0003,
+          0.00011
+        ]
+      }
+    },
+    "coefficients": {
+      "quality": {
+        "per_point": 0.2115,
+        "ci95": [
+          0.1845,
+          0.2397
+        ],
+        "sd_points": 2.26
+      },
+      "coverage": {
+        "per_point": 0.0026,
+        "ci95": [
+          -0.0199,
+          0.0317
+        ],
+        "sd_points": 1.887
+      },
+      "curve": {
+        "per_point": -0.0014,
+        "ci95": [
+          -0.299,
+          0.2443
+        ],
+        "sd_points": 0.17
+      },
+      "unmet": {
+        "per_point": 0.2468,
+        "ci95": [
+          0.216,
+          0.2809
+        ],
+        "sd_points": 1.358
+      },
+      "scaler": {
+        "per_point": 0.1167,
+        "ci95": [
+          0.0914,
+          0.1445
+        ],
+        "sd_points": 1.716
+      },
+      "engines": {
+        "per_point": -0.029,
+        "ci95": [
+          -0.0552,
+          0.0
+        ],
+        "sd_points": 2.03
+      }
+    },
+    "ratios": {
+      "quality": {
+        "to_quality": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "coverage": {
+        "to_quality": 0.012,
+        "ci95": [
+          -0.087,
+          0.168
+        ]
+      },
+      "curve": {
+        "to_quality": -0.007,
+        "ci95": [
+          -1.431,
+          1.222
+        ]
+      },
+      "unmet": {
+        "to_quality": 1.167,
+        "ci95": [
+          1.014,
+          1.392
+        ]
+      },
+      "scaler": {
+        "to_quality": 0.552,
+        "ci95": [
+          0.411,
+          0.725
+        ]
+      },
+      "engines": {
+        "to_quality": -0.137,
+        "ci95": [
+          -0.261,
+          0.0
+        ]
+      }
+    }
+  },
+  "relics_counted": {
+    "rows": 18522,
+    "pass_rate": 0.5695,
+    "cross_validation": {
+      "controls": {
+        "log_loss": 0.47263,
+        "auc": 0.8484
+      },
+      "index": {
+        "log_loss": 0.46437,
+        "auc": 0.8545
+      },
+      "index+synergy": {
+        "log_loss": 0.45419,
+        "auc": 0.862
+      },
+      "index+needs": {
+        "log_loss": 0.4567,
+        "auc": 0.8603
+      },
+      "index+needs+scalers": {
+        "log_loss": 0.45427,
+        "auc": 0.862
+      }
+    },
+    "loss_gaps": {
+      "synergy_added_to_index": {
+        "mean": -0.01018,
+        "ci95": [
+          -0.01217,
+          -0.00794
+        ]
+      },
+      "needs_added_to_index": {
+        "mean": -0.00768,
+        "ci95": [
+          -0.00929,
+          -0.00584
+        ]
+      },
+      "scalers_added_to_needs": {
+        "mean": -0.00242,
+        "ci95": [
+          -0.00339,
+          -0.00152
+        ]
+      },
+      "engines_added_to_needs_and_scalers": {
+        "mean": -8e-05,
+        "ci95": [
+          -0.00026,
+          0.00011
+        ]
+      }
+    },
+    "coefficients": {
+      "quality": {
+        "per_point": 0.2097,
+        "ci95": [
+          0.1812,
+          0.2379
+        ],
+        "sd_points": 2.26
+      },
+      "coverage": {
+        "per_point": 0.0026,
+        "ci95": [
+          -0.0196,
+          0.0314
+        ],
+        "sd_points": 1.887
+      },
+      "curve": {
+        "per_point": -0.0013,
+        "ci95": [
+          -0.3037,
+          0.2412
+        ],
+        "sd_points": 0.17
+      },
+      "unmet": {
+        "per_point": 0.2504,
+        "ci95": [
+          0.2195,
+          0.2848
+        ],
+        "sd_points": 1.346
+      },
+      "scaler": {
+        "per_point": 0.1304,
+        "ci95": [
+          0.1109,
+          0.1585
+        ],
+        "sd_points": 1.814
+      },
+      "engines": {
+        "per_point": -0.0272,
+        "ci95": [
+          -0.0542,
+          0.0016
+        ],
+        "sd_points": 2.033
+      }
+    },
+    "ratios": {
+      "quality": {
+        "to_quality": 1.0,
+        "ci95": [
+          1.0,
+          1.0
+        ]
+      },
+      "coverage": {
+        "to_quality": 0.012,
+        "ci95": [
+          -0.088,
+          0.167
+        ]
+      },
+      "curve": {
+        "to_quality": -0.006,
+        "ci95": [
+          -1.45,
+          1.216
+        ]
+      },
+      "unmet": {
+        "to_quality": 1.194,
+        "ci95": [
+          1.041,
+          1.422
+        ]
+      },
+      "scaler": {
+        "to_quality": 0.622,
+        "ci95": [
+          0.491,
+          0.792
+        ]
+      },
+      "engines": {
+        "to_quality": -0.13,
+        "ci95": [
+          -0.258,
+          0.009
+        ]
+      }
+    }
+  },
+  "held_out_log_loss": {
+    "class_alone": 0.45508,
+    "relics_counted": 0.45419
+  },
+  "gap_relics_counted_minus_class_alone": {
+    "mean": -0.00089,
+    "ci95": [
+      -0.00132,
+      -0.00041
+    ]
+  },
+  "per_class": {
+    "ironclad-keep": {
+      "rows": 4275,
+      "gap_relics_counted_minus_class_alone": {
+        "mean": -0.0009,
+        "ci95": [
+          -0.0018,
+          4e-05
+        ]
+      }
+    },
+    "silent-keep": {
+      "rows": 3025,
+      "gap_relics_counted_minus_class_alone": {
+        "mean": -0.00035,
+        "ci95": [
+          -0.00147,
+          0.0007
+        ]
+      }
+    },
+    "regent-keep": {
+      "rows": 3543,
+      "gap_relics_counted_minus_class_alone": {
+        "mean": -0.00042,
+        "ci95": [
+          -0.00154,
+          0.0006
+        ]
+      }
+    },
+    "necrobinder-keep": {
+      "rows": 3829,
+      "gap_relics_counted_minus_class_alone": {
+        "mean": -0.00125,
+        "ci95": [
+          -0.00223,
+          -0.00044
+        ]
+      }
+    },
+    "defect-keep": {
+      "rows": 3850,
+      "gap_relics_counted_minus_class_alone": {
+        "mean": -0.00135,
+        "ci95": [
+          -0.00229,
+          -0.00034
+        ]
+      }
+    }
+  }
+}

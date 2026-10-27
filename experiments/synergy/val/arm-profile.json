@@ -1,0 +1,1807 @@
+{
+  "kind": "arm-profile",
+  "schema": 1,
+  "resampling": "whole seeds, 2000 resamples, rng seed 0",
+  "arms": {
+    "astar": {
+      "batches": {
+        "ironclad": {
+          "batch_id": "advisor_v1-astar-ironclad-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "7d828a09a49e60df07b8537a61f33dfc20fe613aa7c3895b400c714ce599fe65",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0,
+                "explore": 0.0,
+                "margin": 0.0,
+                "needs": 1,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 1.0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "engines": 0,
+              "margin": 0.0,
+              "needs": 1,
+              "scalers": 0.7
+            }
+          }
+        },
+        "silent": {
+          "batch_id": "advisor_v1-astar-silent-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "21d81d7645f083ce794a504742569092df7560e1db5b668e742e733894c6d935",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0,
+                "explore": 0.0,
+                "margin": 0.0,
+                "needs": 1,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 1.0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "engines": 0,
+              "margin": 0.0,
+              "needs": 1,
+              "scalers": 0.7
+            }
+          }
+        },
+        "regent": {
+          "batch_id": "advisor_v1-astar-regent-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "aded7030d5ee1925ef9d4954fcadb6a78b02ac04494fc7960def80fab11baf6b",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0,
+                "explore": 0.0,
+                "margin": 0.0,
+                "needs": 1,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 1.0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "engines": 0,
+              "margin": 0.0,
+              "needs": 1,
+              "scalers": 0.7
+            }
+          }
+        },
+        "necrobinder": {
+          "batch_id": "advisor_v1-astar-necrobinder-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "a9d16d89323e10597d0dd30e045c44783a5574cb9d171175b17c10d849629390",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0,
+                "explore": 0.0,
+                "margin": 0.0,
+                "needs": 1,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 1.0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "engines": 0,
+              "margin": 0.0,
+              "needs": 1,
+              "scalers": 0.7
+            }
+          }
+        },
+        "defect": {
+          "batch_id": "advisor_v1-astar-defect-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "6705474cc650dc5a5295f311a20e1e4e09fa61ec298661aa95c29fcdf482f17b",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0,
+                "explore": 0.0,
+                "margin": 0.0,
+                "needs": 1,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 1.0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "engines": 0,
+              "margin": 0.0,
+              "needs": 1,
+              "scalers": 0.7
+            }
+          }
+        }
+      },
+      "classes": {
+        "ironclad": {
+          "games": 1997,
+          "offers": 21615,
+          "taken": 21532,
+          "skipped": 83,
+          "skip_rate": {
+            "n": 21615,
+            "value": 0.0038399259773305573,
+            "ci95": [
+              0.0027514078005561253,
+              0.005063995734707843
+            ]
+          },
+          "boss_decks": 1753,
+          "at_boss": {
+            "deck_size": {
+              "n": 1753,
+              "mean": 19.530519110096975,
+              "ci95": [
+                19.45406446092413,
+                19.614960068454078
+              ]
+            },
+            "quality": {
+              "n": 1753,
+              "mean": 34.311393518888465,
+              "ci95": [
+                34.23040124768434,
+                34.39030057395267
+              ]
+            },
+            "coverage": {
+              "n": 1753,
+              "mean": 15.877397517828209,
+              "ci95": [
+                15.810779479684049,
+                15.943379686243391
+              ]
+            },
+            "curve": {
+              "n": 1753,
+              "mean": -0.010993890698945281,
+              "ci95": [
+                -0.015199345772220728,
+                -0.007239077046083133
+              ]
+            },
+            "unmet": {
+              "n": 1753,
+              "mean": -1.1355065217157256,
+              "ci95": [
+                -1.179095152044648,
+                -1.0913204679032584
+              ]
+            },
+            "scaler": {
+              "n": 1753,
+              "mean": 4.772782615494058,
+              "ci95": [
+                4.662968466366465,
+                4.88042156411525
+              ]
+            },
+            "engines": {
+              "n": 1753,
+              "mean": 2.782615539776361,
+              "ci95": [
+                2.6972850436586016,
+                2.867444241301921
+              ]
+            }
+          }
+        },
+        "silent": {
+          "games": 2000,
+          "offers": 14634,
+          "taken": 14623,
+          "skipped": 11,
+          "skip_rate": {
+            "n": 14634,
+            "value": 0.0007516741834085008,
+            "ci95": [
+              0.000273312724107254,
+              0.0013627670606527699
+            ]
+          },
+          "boss_decks": 1068,
+          "at_boss": {
+            "deck_size": {
+              "n": 1068,
+              "mean": 20.98501872659176,
+              "ci95": [
+                20.88572097378277,
+                21.08895131086142
+              ]
+            },
+            "quality": {
+              "n": 1068,
+              "mean": 31.3744805702776,
+              "ci95": [
+                31.277846842903305,
+                31.4715604192203
+              ]
+            },
+            "coverage": {
+              "n": 1068,
+              "mean": 15.54924023407647,
+              "ci95": [
+                15.472925445222268,
+                15.62430613943122
+              ]
+            },
+            "curve": {
+              "n": 1068,
+              "mean": -0.0007734896596645497,
+              "ci95": [
+                -0.0023204689789936487,
+                0.0
+              ]
+            },
+            "unmet": {
+              "n": 1068,
+              "mean": -0.7762630568348217,
+              "ci95": [
+                -0.8200246129169949,
+                -0.732142130340236
+              ]
+            },
+            "scaler": {
+              "n": 1068,
+              "mean": 1.6655282208976736,
+              "ci95": [
+                1.574673907604125,
+                1.7571268685847954
+              ]
+            },
+            "engines": {
+              "n": 1068,
+              "mean": 1.937394542982248,
+              "ci95": [
+                1.8351075225732725,
+                2.0452852296954034
+              ]
+            }
+          }
+        },
+        "regent": {
+          "games": 1990,
+          "offers": 16316,
+          "taken": 16305,
+          "skipped": 11,
+          "skip_rate": {
+            "n": 16316,
+            "value": 0.0006741848492277519,
+            "ci95": [
+              0.0003025815675496194,
+              0.0011492184559460364
+            ]
+          },
+          "boss_decks": 1311,
+          "at_boss": {
+            "deck_size": {
+              "n": 1311,
+              "mean": 19.214340198321892,
+              "ci95": [
+                19.115179252479024,
+                19.308180778032035
+              ]
+            },
+            "quality": {
+              "n": 1311,
+              "mean": 34.342940492664525,
+              "ci95": [
+                34.24540137719277,
+                34.44037971539644
+              ]
+            },
+            "coverage": {
+              "n": 1311,
+              "mean": 15.693747479547657,
+              "ci95": [
+                15.616083726708,
+                15.767411540839985
+              ]
+            },
+            "curve": {
+              "n": 1311,
+              "mean": -0.003909229595728451,
+              "ci95": [
+                -0.008906369183829137,
+                -0.0006102212051868803
+              ]
+            },
+            "unmet": {
+              "n": 1311,
+              "mean": -1.4081384002368826,
+              "ci95": [
+                -1.4636349504223694,
+                -1.3536552445473178
+              ]
+            },
+            "scaler": {
+              "n": 1311,
+              "mean": 1.0306373824915451,
+              "ci95": [
+                0.9459861676361052,
+                1.110970937093535
+              ]
+            },
+            "engines": {
+              "n": 1311,
+              "mean": 4.899356628450421,
+              "ci95": [
+                4.81771419971179,
+                4.986176463538423
+              ]
+            }
+          }
+        },
+        "necrobinder": {
+          "games": 1997,
+          "offers": 18875,
+          "taken": 18839,
+          "skipped": 36,
+          "skip_rate": {
+            "n": 18875,
+            "value": 0.0019072847682119205,
+            "ci95": [
+              0.001062909644258192,
+              0.0029562830691443253
+            ]
+          },
+          "boss_decks": 1476,
+          "at_boss": {
+            "deck_size": {
+              "n": 1476,
+              "mean": 19.27710027100271,
+              "ci95": [
+                19.1869918699187,
+                19.365853658536587
+              ]
+            },
+            "quality": {
+              "n": 1476,
+              "mean": 33.44547131952885,
+              "ci95": [
+                33.352536587721595,
+                33.54010706036538
+              ]
+            },
+            "coverage": {
+              "n": 1476,
+              "mean": 17.10580757416341,
+              "ci95": [
+                17.027940926818808,
+                17.17846322670979
+              ]
+            },
+            "curve": {
+              "n": 1476,
+              "mean": -0.02139708648284548,
+              "ci95": [
+                -0.02977910945980058,
+                -0.014169881192872106
+              ]
+            },
+            "unmet": {
+              "n": 1476,
+              "mean": -0.34374132829065523,
+              "ci95": [
+                -0.36986606368039254,
+                -0.3178289613473527
+              ]
+            },
+            "scaler": {
+              "n": 1476,
+              "mean": 0.08421782928965156,
+              "ci95": [
+                0.05680230257511563,
+                0.11371924717825835
+              ]
+            },
+            "engines": {
+              "n": 1476,
+              "mean": 5.650676745245222,
+              "ci95": [
+                5.583229790227183,
+                5.724590655689022
+              ]
+            }
+          }
+        },
+        "defect": {
+          "games": 2000,
+          "offers": 18498,
+          "taken": 18481,
+          "skipped": 17,
+          "skip_rate": {
+            "n": 18498,
+            "value": 0.0009190182722456482,
+            "ci95": [
+              0.0004886762851016751,
+              0.0014022617301931739
+            ]
+          },
+          "boss_decks": 1521,
+          "at_boss": {
+            "deck_size": {
+              "n": 1521,
+              "mean": 19.03484549638396,
+              "ci95": [
+                18.948044049967127,
+                19.122287968441814
+              ]
+            },
+            "quality": {
+              "n": 1521,
+              "mean": 33.05211311474604,
+              "ci95": [
+                32.95376060373795,
+                33.147257507268115
+              ]
+            },
+            "coverage": {
+              "n": 1521,
+              "mean": 14.90289273675728,
+              "ci95": [
+                14.821050579548137,
+                14.985143586654857
+              ]
+            },
+            "curve": {
+              "n": 1521,
+              "mean": -0.007237440534705927,
+              "ci95": [
+                -0.011710518907554689,
+                -0.003691528602791118
+              ]
+            },
+            "unmet": {
+              "n": 1521,
+              "mean": -0.7257743025540235,
+              "ci95": [
+                -0.7582380894909243,
+                -0.6922577276275088
+              ]
+            },
+            "scaler": {
+              "n": 1521,
+              "mean": 2.4727365029190747,
+              "ci95": [
+                2.3337274040044793,
+                2.6223042209666687
+              ]
+            },
+            "engines": {
+              "n": 1521,
+              "mean": 3.425339981066392,
+              "ci95": [
+                3.370396877794388,
+                3.4809716319162582
+              ]
+            }
+          }
+        }
+      },
+      "pooled": {
+        "games": 9984,
+        "offers": 89938,
+        "taken": 89780,
+        "skipped": 158,
+        "skip_rate": {
+          "n": 89938,
+          "value": 0.0017567657719762503,
+          "ci95": [
+            0.0013815247385116861,
+            0.002178092028166565
+          ]
+        },
+        "boss_decks": 7129,
+        "at_boss": {
+          "deck_size": {
+            "n": 7129,
+            "mean": 19.532052181231588,
+            "ci95": [
+              19.458787857733988,
+              19.60874266969294
+            ]
+          },
+          "quality": {
+            "n": 7129,
+            "mean": 33.42925975434205,
+            "ci95": [
+              33.361189182117855,
+              33.49197734564302
+            ]
+          },
+          "coverage": {
+            "n": 7129,
+            "mean": 15.840881076799903,
+            "ci95": [
+              15.791477388696874,
+              15.889558999478226
+            ]
+          },
+          "curve": {
+            "n": 7129,
+            "mean": -0.009512361348539831,
+            "ci95": [
+              -0.011829795733817055,
+              -0.007420327656999665
+            ]
+          },
+          "unmet": {
+            "n": 7129,
+            "mean": -0.8804777997923253,
+            "ci95": [
+              -0.9011569034274055,
+              -0.8611054376881927
+            ]
+          },
+          "scaler": {
+            "n": 7129,
+            "mean": 2.1576624225414016,
+            "ci95": [
+              2.103802092426734,
+              2.2110670289635523
+            ]
+          },
+          "engines": {
+            "n": 7129,
+            "mean": 3.776190200619362,
+            "ci95": [
+              3.7324374078921365,
+              3.8203467044283688
+            ]
+          }
+        }
+      }
+    },
+    "d0star": {
+      "batches": {
+        "ironclad": {
+          "batch_id": "advisor_v1-d0star-ironclad-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "746cc02426704cce8cb60eb97403d363fda7016bbba0c5bba5774cb6cf65a5d8",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0.0,
+                "explore": 0.0,
+                "margin": 0,
+                "needs": 1.0,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "margin": 0,
+              "synergy": 0
+            }
+          }
+        },
+        "silent": {
+          "batch_id": "advisor_v1-d0star-silent-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "1cb640525cc70a2e4fe528a3afabb3ce414d96a7d7f6a5f8fd5497f6f243fa01",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0.0,
+                "explore": 0.0,
+                "margin": 0,
+                "needs": 1.0,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "margin": 0,
+              "synergy": 0
+            }
+          }
+        },
+        "regent": {
+          "batch_id": "advisor_v1-d0star-regent-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "064f0caa86582e213b0461b9a07a95678b0cd5b9fe7ca1a7ace45e0d2abe4b43",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0.0,
+                "explore": 0.0,
+                "margin": 0,
+                "needs": 1.0,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "margin": 0,
+              "synergy": 0
+            }
+          }
+        },
+        "necrobinder": {
+          "batch_id": "advisor_v1-d0star-necrobinder-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "4a107d15997ec4002474a2ca9bd62ee13686c267fc52da5bf11f700d84a54bbe",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0.0,
+                "explore": 0.0,
+                "margin": 0,
+                "needs": 1.0,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "margin": 0,
+              "synergy": 0
+            }
+          }
+        },
+        "defect": {
+          "batch_id": "advisor_v1-d0star-defect-a0-veteran-val-n2000",
+          "episodes_gz_sha256": "6d742e4f2c7aeec34c0cb538fcbdf5d380fd01b2345c4de06c5d02da332502a2",
+          "policy": {
+            "effective": {
+              "params": {
+                "engines": 0.0,
+                "explore": 0.0,
+                "margin": 0,
+                "needs": 1.0,
+                "replicate": 0,
+                "risk": "balanced",
+                "scalers": 0.7,
+                "synergy": 0,
+                "tune": {
+                  "boss_heal_below": 0.9,
+                  "card_slope": 0.09,
+                  "card_threshold": 3.2,
+                  "danger_frac": 0.3,
+                  "elite_bad_value": -2.5,
+                  "elite_mid_hp": 0.65,
+                  "elite_mid_value": 0.2,
+                  "elite_ok_floor": 8,
+                  "elite_ok_hp": 0.9,
+                  "elite_value": 0.5,
+                  "heal_below": 0.7,
+                  "max_deck": 32,
+                  "monster_hp_penalty": 0.5,
+                  "monster_value": 1.0,
+                  "potion_hp_abs": 6,
+                  "potion_hp_frac": 0.15,
+                  "rest_base": 1.0,
+                  "rest_weight": 3.0,
+                  "shop_base": 0.3,
+                  "shop_card_threshold": 3.6,
+                  "shop_mid": 0.5,
+                  "shop_mid_gold": 75,
+                  "shop_potion_margin": 40,
+                  "shop_rich": 1.2,
+                  "shop_rich_gold": 150,
+                  "treasure_value": 1.8,
+                  "unknown_value": 0.8
+                }
+              },
+              "version": "1"
+            },
+            "name": "advisor_v1",
+            "params": {
+              "margin": 0,
+              "synergy": 0
+            }
+          }
+        }
+      },
+      "classes": {
+        "ironclad": {
+          "games": 1998,
+          "offers": 19968,
+          "taken": 19897,
+          "skipped": 71,
+          "skip_rate": {
+            "n": 19968,
+            "value": 0.0035556891025641025,
+            "ci95": [
+              0.002445881854760184,
+              0.00473891539876336
+            ]
+          },
+          "boss_decks": 1634,
+          "at_boss": {
+            "deck_size": {
+              "n": 1634,
+              "mean": 19.49877600979192,
+              "ci95": [
+                19.416141370869035,
+                19.582634638922887
+              ]
+            },
+            "quality": {
+              "n": 1634,
+              "mean": 35.07790712652634,
+              "ci95": [
+                34.994842331723405,
+                35.1609733105945
+              ]
+            },
+            "coverage": {
+              "n": 1634,
+              "mean": 15.82473955508959,
+              "ci95": [
+                15.749978928668437,
+                15.895739141779256
+              ]
+            },
+            "curve": {
+              "n": 1634,
+              "mean": -0.01274877246374165,
+              "ci95": [
+                -0.017113523779348765,
+                -0.008885621786359179
+              ]
+            },
+            "unmet": {
+              "n": 1634,
+              "mean": -2.9455931199711145,
+              "ci95": [
+                -3.030792516509879,
+                -2.8606003371891524
+              ]
+            },
+            "scaler": {
+              "n": 1634,
+              "mean": 3.933669032611413,
+              "ci95": [
+                3.831318166581773,
+                4.041446037612029
+              ]
+            },
+            "engines": {
+              "n": 1634,
+              "mean": 3.8309675039141315,
+              "ci95": [
+                3.733319647512983,
+                3.92439594818667
+              ]
+            }
+          }
+        },
+        "silent": {
+          "games": 2000,
+          "offers": 14311,
+          "taken": 14311,
+          "skipped": 0,
+          "skip_rate": {
+            "n": 14311,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "boss_decks": 1014,
+          "at_boss": {
+            "deck_size": {
+              "n": 1014,
+              "mean": 20.904339250493095,
+              "ci95": [
+                20.799778106508874,
+                21.00692800788955
+              ]
+            },
+            "quality": {
+              "n": 1014,
+              "mean": 31.710843789855165,
+              "ci95": [
+                31.611983007688128,
+                31.81312602021323
+              ]
+            },
+            "coverage": {
+              "n": 1014,
+              "mean": 15.79131590547611,
+              "ci95": [
+                15.704765364590248,
+                15.870064150396196
+              ]
+            },
+            "curve": {
+              "n": 1014,
+              "mean": -0.0033709879863726006,
+              "ci95": [
+                -0.006960731576116189,
+                -0.0007889546351084813
+              ]
+            },
+            "unmet": {
+              "n": 1014,
+              "mean": -2.378900069638918,
+              "ci95": [
+                -2.46839043482674,
+                -2.2855671105439175
+              ]
+            },
+            "scaler": {
+              "n": 1014,
+              "mean": 0.9563624586203734,
+              "ci95": [
+                0.876513203515184,
+                1.034403810808067
+              ]
+            },
+            "engines": {
+              "n": 1014,
+              "mean": 3.3934747381361294,
+              "ci95": [
+                3.2784418652431953,
+                3.5064513077189945
+              ]
+            }
+          }
+        },
+        "regent": {
+          "games": 1988,
+          "offers": 14945,
+          "taken": 14934,
+          "skipped": 11,
+          "skip_rate": {
+            "n": 14945,
+            "value": 0.0007360321177651389,
+            "ci95": [
+              0.0002698905413402219,
+              0.001322714217994187
+            ]
+          },
+          "boss_decks": 1106,
+          "at_boss": {
+            "deck_size": {
+              "n": 1106,
+              "mean": 19.1500904159132,
+              "ci95": [
+                19.049728752260396,
+                19.248643761301988
+              ]
+            },
+            "quality": {
+              "n": 1106,
+              "mean": 34.78521107956638,
+              "ci95": [
+                34.67620687580021,
+                34.8946734877996
+              ]
+            },
+            "coverage": {
+              "n": 1106,
+              "mean": 15.833221441864502,
+              "ci95": [
+                15.748657075887136,
+                15.91977237554781
+              ]
+            },
+            "curve": {
+              "n": 1106,
+              "mean": -0.0010754734938612353,
+              "ci95": [
+                -0.0027886171124012556,
+                -8.565718092700131e-05
+              ]
+            },
+            "unmet": {
+              "n": 1106,
+              "mean": -2.9897630248050655,
+              "ci95": [
+                -3.0851795779021236,
+                -2.8873494387944985
+              ]
+            },
+            "scaler": {
+              "n": 1106,
+              "mean": 0.5188216539408917,
+              "ci95": [
+                0.44937395874823666,
+                0.5852024677382345
+              ]
+            },
+            "engines": {
+              "n": 1106,
+              "mean": 5.2279167623839795,
+              "ci95": [
+                5.133431857659644,
+                5.326663410380333
+              ]
+            }
+          }
+        },
+        "necrobinder": {
+          "games": 1998,
+          "offers": 18221,
+          "taken": 18204,
+          "skipped": 17,
+          "skip_rate": {
+            "n": 18221,
+            "value": 0.0009329894078261347,
+            "ci95": [
+              0.00027910026449465844,
+              0.0018262786397257773
+            ]
+          },
+          "boss_decks": 1425,
+          "at_boss": {
+            "deck_size": {
+              "n": 1425,
+              "mean": 19.232982456140352,
+              "ci95": [
+                19.145263157894735,
+                19.317894736842106
+              ]
+            },
+            "quality": {
+              "n": 1425,
+              "mean": 34.05278938470991,
+              "ci95": [
+                33.9512917304586,
+                34.14619788495016
+              ]
+            },
+            "coverage": {
+              "n": 1425,
+              "mean": 16.911708682621846,
+              "ci95": [
+                16.833004626510434,
+                16.986974201596116
+              ]
+            },
+            "curve": {
+              "n": 1425,
+              "mean": -0.042295900740523855,
+              "ci95": [
+                -0.053775432755520367,
+                -0.031892010669537396
+              ]
+            },
+            "unmet": {
+              "n": 1425,
+              "mean": -1.8188902822572737,
+              "ci95": [
+                -1.9048994838231692,
+                -1.7362280722536654
+              ]
+            },
+            "scaler": {
+              "n": 1425,
+              "mean": 0.05786626023596971,
+              "ci95": [
+                0.03622849077708697,
+                0.08309914654594182
+              ]
+            },
+            "engines": {
+              "n": 1425,
+              "mean": 6.572379364727857,
+              "ci95": [
+                6.481013357854907,
+                6.658087591748066
+              ]
+            }
+          }
+        },
+        "defect": {
+          "games": 1998,
+          "offers": 17425,
+          "taken": 17416,
+          "skipped": 9,
+          "skip_rate": {
+            "n": 17425,
+            "value": 0.0005164992826398853,
+            "ci95": [
+              0.0001754909548254557,
+              0.0008693291475861293
+            ]
+          },
+          "boss_decks": 1434,
+          "at_boss": {
+            "deck_size": {
+              "n": 1434,
+              "mean": 19.006276150627617,
+              "ci95": [
+                18.914225941422593,
+                19.099041143654116
+              ]
+            },
+            "quality": {
+              "n": 1434,
+              "mean": 33.83329681951389,
+              "ci95": [
+                33.73593832753831,
+                33.92756134320965
+              ]
+            },
+            "coverage": {
+              "n": 1434,
+              "mean": 14.80767735284618,
+              "ci95": [
+                14.72384837338248,
+                14.892118144985542
+              ]
+            },
+            "curve": {
+              "n": 1434,
+              "mean": -0.00902238932716153,
+              "ci95": [
+                -0.013315736758624753,
+                -0.005344805965401643
+              ]
+            },
+            "unmet": {
+              "n": 1434,
+              "mean": -2.207383838701717,
+              "ci95": [
+                -2.2772168135066906,
+                -2.1356568013069706
+              ]
+            },
+            "scaler": {
+              "n": 1434,
+              "mean": 1.8328483629035734,
+              "ci95": [
+                1.6943445931249121,
+                1.9634988769123907
+              ]
+            },
+            "engines": {
+              "n": 1434,
+              "mean": 3.787573985338873,
+              "ci95": [
+                3.717763000822016,
+                3.85332404173463
+              ]
+            }
+          }
+        }
+      },
+      "pooled": {
+        "games": 9982,
+        "offers": 84870,
+        "taken": 84762,
+        "skipped": 108,
+        "skip_rate": {
+          "n": 84870,
+          "value": 0.0012725344644750796,
+          "ci95": [
+            0.000945741691035693,
+            0.0016503479733056745
+          ]
+        },
+        "boss_decks": 6613,
+        "at_boss": {
+          "deck_size": {
+            "n": 6613,
+            "mean": 19.491909874489643,
+            "ci95": [
+              19.41627477514514,
+              19.57139048545979
+            ]
+          },
+          "quality": {
+            "n": 6613,
+            "mean": 34.02188292969184,
+            "ci95": [
+              33.949688251165014,
+              34.09377829596268
+            ]
+          },
+          "coverage": {
+            "n": 6613,
+            "mean": 15.834712819081936,
+            "ci95": [
+              15.781354111155434,
+              15.88792153749304
+            ]
+          },
+          "curve": {
+            "n": 6613,
+            "mean": -0.014917422434378094,
+            "ci95": [
+              -0.01780290240362551,
+              -0.012379565595035655
+            ]
+          },
+          "unmet": {
+            "n": 6613,
+            "mean": -2.4632222608492276,
+            "ci95": [
+              -2.5036387815220924,
+              -2.423668277000992
+            ]
+          },
+          "scaler": {
+            "n": 6613,
+            "mean": 1.615295244945821,
+            "ci95": [
+              1.5690372807447983,
+              1.6639847908499978
+            ]
+          },
+          "engines": {
+            "n": 6613,
+            "mean": 4.578841965034863,
+            "ci95": [
+              4.528801254175253,
+              4.6313354150958475
+            ]
+          }
+        }
+      }
+    }
+  },
+  "differences": {
+    "astar-vs-d0star": {
+      "classes": {
+        "ironclad": {
+          "pairs": 1578,
+          "measures": {
+            "deck_size": {
+              "n": 1578,
+              "mean": 0.015209125475285171,
+              "ci95": [
+                -0.010139416983523447,
+                0.041191381495564006
+              ]
+            },
+            "quality": {
+              "n": 1578,
+              "mean": -0.7711518945070291,
+              "ci95": [
+                -0.8207987755717118,
+                -0.7210285069445772
+              ]
+            },
+            "coverage": {
+              "n": 1578,
+              "mean": 0.017651594293347648,
+              "ci95": [
+                -0.019024882828965858,
+                0.05402891604217399
+              ]
+            },
+            "curve": {
+              "n": 1578,
+              "mean": 0.002456588747519318,
+              "ci95": [
+                -0.0020955116304467833,
+                0.007349228905439646
+              ]
+            },
+            "unmet": {
+              "n": 1578,
+              "mean": 1.8171606715499533,
+              "ci95": [
+                1.7434787157212066,
+                1.893363510052337
+              ]
+            },
+            "scaler": {
+              "n": 1578,
+              "mean": 0.8416422274444683,
+              "ci95": [
+                0.7798494040779097,
+                0.9025309440438942
+              ]
+            },
+            "engines": {
+              "n": 1578,
+              "mean": -1.0767625176034215,
+              "ci95": [
+                -1.1563292877568812,
+                -0.998946911032303
+              ]
+            }
+          }
+        },
+        "silent": {
+          "pairs": 861,
+          "measures": {
+            "deck_size": {
+              "n": 861,
+              "mean": -0.0011614401858304297,
+              "ci95": [
+                -0.03484320557491289,
+                0.030197444831591175
+              ]
+            },
+            "quality": {
+              "n": 861,
+              "mean": -0.3842211638080611,
+              "ci95": [
+                -0.44626195349772124,
+                -0.32079221272241804
+              ]
+            },
+            "coverage": {
+              "n": 861,
+              "mean": -0.251269525736893,
+              "ci95": [
+                -0.30055856365848577,
+                -0.20071411990076002
+              ]
+            },
+            "curve": {
+              "n": 861,
+              "mean": 0.0030408615774469424,
+              "ci95": [
+                0.0002534051314539105,
+                0.0066307676063773625
+              ]
+            },
+            "unmet": {
+              "n": 861,
+              "mean": 1.6046785752083554,
+              "ci95": [
+                1.519703550404344,
+                1.6925600429550118
+              ]
+            },
+            "scaler": {
+              "n": 861,
+              "mean": 0.6787428077667426,
+              "ci95": [
+                0.6168764290438982,
+                0.7405599269263098
+              ]
+            },
+            "engines": {
+              "n": 861,
+              "mean": -1.4625680372496284,
+              "ci95": [
+                -1.5676013240839026,
+                -1.3644171256774382
+              ]
+            }
+          }
+        },
+        "regent": {
+          "pairs": 1031,
+          "measures": {
+            "deck_size": {
+              "n": 1031,
+              "mean": 0.008729388942774006,
+              "ci95": [
+                -0.01745877788554801,
+                0.03685741998060136
+              ]
+            },
+            "quality": {
+              "n": 1031,
+              "mean": -0.48514228997659825,
+              "ci95": [
+                -0.5341508345558337,
+                -0.433185923092782
+              ]
+            },
+            "coverage": {
+              "n": 1031,
+              "mean": -0.1145870733567905,
+              "ci95": [
+                -0.15486406736039338,
+                -0.07459756914073576
+              ]
+            },
+            "curve": {
+              "n": 1031,
+              "mean": -0.0030169993363622434,
+              "ci95": [
+                -0.007090714176323445,
+                0.0001837766093215586
+              ]
+            },
+            "unmet": {
+              "n": 1031,
+              "mean": 1.6020655783502025,
+              "ci95": [
+                1.5138974336188835,
+                1.6945573672931435
+              ]
+            },
+            "scaler": {
+              "n": 1031,
+              "mean": 0.4761814768595012,
+              "ci95": [
+                0.40588157430650823,
+                0.5497876393390445
+              ]
+            },
+            "engines": {
+              "n": 1031,
+              "mean": -0.34495545904260083,
+              "ci95": [
+                -0.42846548662549155,
+                -0.261510351861647
+              ]
+            }
+          }
+        },
+        "necrobinder": {
+          "pairs": 1350,
+          "measures": {
+            "deck_size": {
+              "n": 1350,
+              "mean": 0.008888888888888889,
+              "ci95": [
+                -0.008888888888888889,
+                0.02666666666666667
+              ]
+            },
+            "quality": {
+              "n": 1350,
+              "mean": -0.5855832074101618,
+              "ci95": [
+                -0.6268243127612824,
+                -0.5433912738802716
+              ]
+            },
+            "coverage": {
+              "n": 1350,
+              "mean": 0.16983613626267782,
+              "ci95": [
+                0.1411849744095022,
+                0.19819049773060038
+              ]
+            },
+            "curve": {
+              "n": 1350,
+              "mean": 0.02013205978598359,
+              "ci95": [
+                0.012539150818006202,
+                0.02812648306862982
+              ]
+            },
+            "unmet": {
+              "n": 1350,
+              "mean": 1.427099405555652,
+              "ci95": [
+                1.3463801093380914,
+                1.5098798852142545
+              ]
+            },
+            "scaler": {
+              "n": 1350,
+              "mean": 0.026611725133512596,
+              "ci95": [
+                0.011905498974372125,
+                0.04368166316927924
+              ]
+            },
+            "engines": {
+              "n": 1350,
+              "mean": -0.8925351216698791,
+              "ci95": [
+                -0.9634020983869865,
+                -0.8232583856646293
+              ]
+            }
+          }
+        },
+        "defect": {
+          "pairs": 1325,
+          "measures": {
+            "deck_size": {
+              "n": 1325,
+              "mean": 0.004528301886792453,
+              "ci95": [
+                -0.022641509433962263,
+                0.03245283018867925
+              ]
+            },
+            "quality": {
+              "n": 1325,
+              "mean": -0.7336505325624421,
+              "ci95": [
+                -0.7846322696119635,
+                -0.6822266949568975
+              ]
+            },
+            "coverage": {
+              "n": 1325,
+              "mean": 0.1623783827258385,
+              "ci95": [
+                0.12398018082997206,
+                0.2022836112009222
+              ]
+            },
+            "curve": {
+              "n": 1325,
+              "mean": -0.0012382105610809046,
+              "ci95": [
+                -0.004204473175927411,
+                0.001663703472565411
+              ]
+            },
+            "unmet": {
+              "n": 1325,
+              "mean": 1.4339348725839751,
+              "ci95": [
+                1.3678948412857221,
+                1.4980880227348017
+              ]
+            },
+            "scaler": {
+              "n": 1325,
+              "mean": 0.5896371945447914,
+              "ci95": [
+                0.5207157079807194,
+                0.6633344693448485
+              ]
+            },
+            "engines": {
+              "n": 1325,
+              "mean": -0.3720985959418925,
+              "ci95": [
+                -0.42758139698317893,
+                -0.3160302487418727
+              ]
+            }
+          }
+        }
+      },
+      "pooled": {
+        "pairs": 6145,
+        "measures": {
+          "deck_size": {
+            "n": 6145,
+            "mean": 0.008136696501220505,
+            "ci95": [
+              -0.0036287700723149304,
+              0.01941371544550823
+            ]
+          },
+          "quality": {
+            "n": 6145,
+            "mean": -0.6200973308682929,
+            "ci95": [
+              -0.6453909431767741,
+              -0.59730699088239
+            ]
+          },
+          "coverage": {
+            "n": 6145,
+            "mean": 0.022425064698281184,
+            "ci95": [
+              0.00339413036081734,
+              0.04140862795761194
+            ]
+          },
+          "curve": {
+            "n": 6145,
+            "mean": 0.004706558871216188,
+            "ci95": [
+              0.002364879056773245,
+              0.007106763246451871
+            ]
+          },
+          "unmet": {
+            "n": 6145,
+            "mean": 1.5829756400184176,
+            "ci95": [
+              1.5480048993383304,
+              1.622614765165326
+            ]
+          },
+          "scaler": {
+            "n": 6145,
+            "mean": 0.5241085771747391,
+            "ci95": [
+              0.4960843625965844,
+              0.5516594327064431
+            ]
+          },
+          "engines": {
+            "n": 6145,
+            "mean": -0.8156231838894051,
+            "ci95": [
+              -0.8511934772900388,
+              -0.7780413705216626
+            ]
+          }
+        }
+      }
+    }
+  }
+}

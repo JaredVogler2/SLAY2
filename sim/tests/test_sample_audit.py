@@ -74,3 +74,41 @@ def test_the_sample_is_reproducible_and_never_larger_than_the_batch(sim, tmp_pat
     b = audit_sample(batch, n=2, rng_seed=7)
     assert [g["seed"] for g in a["games"]] == [g["seed"] for g in b["games"]] and len(a["games"]) == 2
     assert audit_sample(batch, n=50)["sample"]["drawn"] == 3
+
+
+def test_the_requested_seeds_honour_the_offset_a_batch_was_played_with():
+    """A batch played with an offset (a fresh slice of the partition) was audited against the first seeds of the partition, so its
+    ledger read 'not consistent' and a re-derivation would have re-run other games: found when the first batch with an offset was audited."""
+    from slay2_sim.winaudit import requested_seeds
+
+    partition = partition_seeds(load_seed_manifest(external.REPO_ROOT / SEEDS_FILE), "dev")
+    plain = {"file": SEEDS_FILE, "partition": "dev", "n": 7}
+    assert requested_seeds(plain) == partition[:7]  # the manifest of a batch played without an offset records none
+    shifted = {**plain, "offset": 500}
+    assert requested_seeds(shifted) == partition[500:507] and requested_seeds(shifted) != requested_seeds(plain)
+    assert requested_seeds({**plain, "offset": 0}) == requested_seeds(plain)
+
+
+def test_a_batch_played_with_an_offset_has_a_consistent_ledger(sim, tmp_path):
+    """The same through the audit itself: a mini batch on dev seeds 5 to 7 passes the ledger only if the offset is read."""
+    cfg = RunConfig()
+    partition = partition_seeds(load_seed_manifest(external.REPO_ROOT / SEEDS_FILE), "dev")
+    seeds = partition[5:8]
+    rows = [run_episode(cfg, s, make_policy("rules_v1"), batch_id="shifted").to_json() for s in seeds]
+    d = tmp_path / "shifted"
+    d.mkdir()
+    (d / "episodes.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
+    (d / "manifest.json").write_text(
+        json.dumps({
+            "batch_id": "shifted", "config": cfg.describe(), "policy": {"name": "rules_v1", "params": {}},
+            "seeds": {"file": SEEDS_FILE, "partition": "dev", "n": 3, "offset": 5},
+            "summary": {"counts": dict(Counter(r["outcome"] for r in rows))},
+        }),
+        encoding="utf-8",
+    )
+    import gzip
+
+    with gzip.open(d / "episodes.jsonl.gz", "wt", encoding="utf-8") as fh:
+        fh.write((d / "episodes.jsonl").read_text(encoding="utf-8"))
+    report = audit_sample(d, n=1)
+    assert report["ledger"]["every_requested_seed_has_one_record"] and report["ledger"]["ok"]
