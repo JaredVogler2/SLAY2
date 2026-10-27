@@ -1,8 +1,12 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { CATALOG } from "@slay2/game-data";
 import { describe, expect, it } from "vitest";
 
 import cardvalues from "@/content/cardvalues.generated.json";
 import {
+  adoptedByPooledTest,
   againstText,
   allSets,
   buildIndex,
@@ -14,11 +18,29 @@ import {
   measuredValue,
   measurementsOf,
   oddsMultiplier,
+  pointsText,
   setFor,
   signCounts,
   valueSign,
   type CardValueSet,
 } from "@/lib/cardvalues";
+
+/** Which value files the site shows, from the decision file itself (adopting a set changes this list, ADR-046 and ADR-053). */
+const LISTING = (
+  JSON.parse(
+    readFileSync(
+      join(__dirname, "..", "..", "..", "experiments", "cardvalue", "site-sets.json"),
+      "utf8",
+    ),
+  ) as {
+    sets: {
+      file: string;
+      supersedes?: string;
+      test?: { comparison: string; against: string };
+    }[];
+  }
+).sets;
+const classOf = (file: string): string => file.split("-")[0] ?? "";
 
 const ironclad = setFor("ironclad");
 
@@ -48,34 +70,73 @@ describe("measured card values", () => {
     for (const set of allSets()) {
       expect(typeof set.relicsKept, set.id).toBe("boolean");
     }
-    // round two replaced round one for Ironclad after its pre-registered test (ADR-046); the others are still round one
-    expect(ironclad?.id).toBe("ironclad-a0-v2");
-    expect(setFor("silent")?.id).toBe("silent-a0-v1");
+    // each class shows the set the decision file lists for it
+    expect(LISTING).toHaveLength(5);
+    for (const entry of LISTING) {
+      expect(setFor(classOf(entry.file))?.id, entry.file).toBe(entry.file.replace(/\.json$/, ""));
+    }
   });
 
   it("a set that replaces an earlier one says what it was tested against and how far it moved", () => {
-    expect(ironclad?.supersedes).toBe("ironclad-a0-v1");
-    const v = ironclad?.validation;
-    expect(v?.against).toBe("first-values");
-    expect(v ? againstText(v) : "").toBe("the first measurement of the values");
-    expect(v?.passed).toBe(true);
-    expect(v?.alpha).toBe(0.05);
-    const d = ironclad?.drift;
-    expect(d?.previous).toBe("ironclad-a0-v1");
-    expect(d?.previousSha256).toMatch(/^[0-9a-f]{64}$/);
-    expect(d?.cardsInBoth).toBeGreaterThan(50);
-    // two measurements of the same pilot agree more than two pilots do
-    expect(d && d.noiseSpearmanBrown > d.spearman).toBe(true);
-    // the others are first measurements, tested against the hand-written ratings, and moved from nothing
-    for (const c of ["silent", "regent", "necrobinder", "defect"]) {
-      const other = setFor(c);
-      expect(other?.supersedes, c).toBeNull();
-      expect(other?.drift, c).toBeNull();
-      expect(other?.validation?.against, c).toBe("ratings");
-      expect(other?.validation && againstText(other.validation), c).toBe(
-        "the hand-written ratings",
-      );
+    for (const entry of LISTING) {
+      const cls = classOf(entry.file);
+      const set = requireSet(cls);
+      const v = set.validation;
+      if (!entry.supersedes) {
+        // a first measurement: tested against the hand-written ratings, and moved from nothing
+        expect(set.supersedes, cls).toBeNull();
+        expect(set.drift, cls).toBeNull();
+        expect(v?.against, cls).toBe("ratings");
+        expect(v?.basis, cls).toBe("own");
+        expect(v && againstText(v), cls).toBe("the hand-written ratings");
+        continue;
+      }
+      expect(set.supersedes, cls).toBe(entry.supersedes.replace(/\.json$/, ""));
+      expect(v?.against, cls).toBe(entry.test?.against);
+      expect(v?.alpha, cls).toBe(0.05);
+      const d = set.drift;
+      expect(d?.previous, cls).toBe(set.supersedes);
+      expect(d?.previousSha256, cls).toMatch(/^[0-9a-f]{64}$/);
+      expect(d?.cardsInBoth, cls).toBeGreaterThan(50);
+      if (entry.test?.against === "first-values") {
+        // round two by a stronger pilot (ADR-046): tested against round one, and it passed; two measurements of the same pilot agree more
+        // than two pilots do
+        expect(v?.basis, cls).toBe("own");
+        expect(v ? againstText(v) : "", cls).toBe("the first measurement of the values");
+        expect(v?.passed, cls).toBe(true);
+        expect(d && d.noiseSpearmanBrown > d.spearman, cls).toBe(true);
+      } else {
+        // measured with the relics kept (ADR-053): licensed by the pooled test and its rule, not by the class's own significance
+        expect(entry.test?.against, cls).toBe("current-values");
+        expect(v?.basis, cls).toBe("pooled");
+        expect(v?.passed, cls).toBe(true);
+        expect(set.relicsKept, cls).toBe(true);
+      }
     }
+  });
+
+  it("an own-basis set is licensed by its class's comparison, a pooled-basis one by the rule", () => {
+    const base = requireSet("silent");
+    const v = base.validation;
+    if (!v) {
+      throw new Error("expected the committed Silent test");
+    }
+    const own = { ...base, validation: { ...v, basis: "own", passed: true } };
+    const pooled = { ...base, validation: { ...v, basis: "pooled", passed: true } };
+    const notAdopted = { ...base, validation: { ...v, basis: "pooled", passed: false } };
+    expect(adoptedByPooledTest(own)).toBe(false);
+    expect(isValidated(own)).toBe(true);
+    expect(adoptedByPooledTest(pooled)).toBe(true);
+    expect(isValidated(pooled)).toBe(true);
+    expect(adoptedByPooledTest(notAdopted)).toBe(false);
+    expect(isValidated(notAdopted)).toBe(false);
+    expect(adoptedByPooledTest(undefined)).toBe(false);
+  });
+
+  it("writes a difference of two shares in points with a true minus sign", () => {
+    expect(pointsText(0.612, 0.6)).toBe("+1.2");
+    expect(pointsText(0.596, 0.6)).toBe("\u22120.4");
+    expect(pointsText(0.5, 0.5)).toBe("0.0");
   });
 
   it("attaches every measurement to exactly one catalog card per class (simulator `_CARD` ids included)", () => {
@@ -239,9 +300,30 @@ describe("coverage of the five classes", () => {
       ["defect", "none"],
     ]);
     expect(lines[0]?.detail).toContain("held-out simulated games");
-    expect(lines[0]?.detail).toContain("for the first measurement of the values");
+    expect(lines[0]?.detail).toContain(`for ${againstText(v)}`);
     expect(lines[2]?.detail).toContain("did not beat");
     expect(lines[3]?.detail).toBe("not measured yet");
+  });
+
+  it("says a set adopted by the pooled test was adopted by the rule, with the class's own numbers beside it", () => {
+    const pooled = withValidation("silent", {
+      ...v,
+      against: "current-values",
+      basis: "pooled",
+      passed: true,
+      p: 0.4,
+      passRate: 0.61,
+      passRateBase: 0.6,
+    });
+    const line = coverage(buildIndex([pooled])).find((l) => l.character === "silent");
+    expect(line?.state).toBe("validated");
+    expect(line?.detail).toContain(
+      "adopted by the rule registered before the pooled test of the five classes",
+    );
+    expect(line?.detail).toContain("61.0%");
+    expect(line?.detail).toContain("60.0%");
+    expect(line?.detail).toContain("p = 0.40");
+    expect(line?.detail).toContain("the values measured in the simulator that drops the relics");
   });
 
   it("is generated from the committed data (every class is listed, in the same order)", () => {

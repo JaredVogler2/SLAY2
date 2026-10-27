@@ -1,0 +1,198 @@
+{
+  "batch_id": "pre-neow0-regent",
+  "canonical_process_state": true,
+  "class_start_verified": true,
+  "config": {
+    "ascension": 0,
+    "character": "Regent",
+    "keep_relics": true,
+    "max_steps": 20000,
+    "max_turns_per_combat": 80,
+    "profile": "veteran",
+    "stall_limit": 200,
+    "start_with_neow": true,
+    "wall_seconds": 900.0
+  },
+  "content_sha256": "094049f8f8f3d5e01d250a5100ab94955d18c2513497c7e137e27f1d778e18f6",
+  "deliberation_isolated": true,
+  "environment": {
+    "cores": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.18.44-fc-v165-x86_64-with-glibc2.39",
+    "python": "3.13.17",
+    "slay2": {
+      "dirty": true,
+      "head": "71ca955f97971bc3d5861fde8d5dc45aa5ac3c62"
+    }
+  },
+  "episodes_file": {
+    "lines": 200,
+    "name": "episodes.jsonl",
+    "sha256": "164c895a43b08394c4a4fdb341af376534921b502dbb361f596b955504f527e5"
+  },
+  "episodes_gz": {
+    "bytes": 8637,
+    "name": "episodes.jsonl.gz",
+    "sha256": "a449d9992ae10e58bb805b8178e66191b3b06dcef8a7e5cb973251b672b6b104"
+  },
+  "finished": "2026-10-27T10:49:43+00:00",
+  "known_simulator_gaps": [
+    {
+      "affects": "coverage",
+      "id": "G3-sovereign-blade-crash",
+      "min_ascension": 0,
+      "summary": "is_sovereign_blade(None) raises in rare power/attack interactions (~1 in 2,000 random games); such games are reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "results",
+      "id": "G4-rng-family",
+      "min_ascension": 0,
+      "summary": "The simulator ports .NET System.Random; the game uses xoshiro256** (v0.107.1). Distributions match where audited, but no seed reproduces a live run and per-card roll order differs."
+    },
+    {
+      "affects": "results",
+      "id": "G5-no-live-parity",
+      "min_ascension": 0,
+      "summary": "State transitions have not been compared with a live STS2 build (no owned game in this environment)."
+    },
+    {
+      "affects": "coverage",
+      "id": "G6-undefined-name-in-reward-roll",
+      "min_ascension": 0,
+      "summary": "The three options of a trading event (`events/act2.py`) call `_roll_random_relic_rewards`, which that module does not import from `events/shared.py`, where it is defined (NameError): 2 of 2,000 rules_v1 validation games ended as simulator_error and are excluded from win rates, never counted as losses. With the relics a run gains kept (G14) the event is reached more often: 32 of 2,500 development games."
+    },
+    {
+      "affects": "coverage",
+      "id": "G7-no-legal-actions",
+      "min_ascension": 0,
+      "summary": "In 1 of 2,000 rules_v1 validation games the run was not over but the simulator offered no legal action; the episode is reported as simulator_error and excluded from win rates."
+    },
+    {
+      "affects": "coverage",
+      "id": "G8-dragon-fruit-lucky-fysh-shop",
+      "min_ascension": 0,
+      "summary": "Buying a card in a shop while holding Lucky Fysh (+15 gold per card added) and Dragon Fruit (max HP on gold gained) raises `TypeError: unhashable type: 'PlayerState'` in the pinned simulator (Dragon Fruit's gold handler looks the owner up in a dict keyed by creature). Seen in 1 of 2,000 rules_v1 Silent validation games (seed 605866524, Act 2); the episode is reported as simulator_error and excluded from win rates and paired comparisons."
+    },
+    {
+      "affects": "coverage",
+      "id": "G9-particle-wall-loop",
+      "min_ascension": 0,
+      "summary": "Regent's Particle Wall (catalog: 0 energy and 2 stars; gains block and returns to hand) is offered again at cost 0 after every play in the pinned simulator, and the rules policies keep playing it: 33 of 5,000 Regent exploration games (0.66 %) reached the 20,000-step limit with block in the hundreds of thousands. Such games end as timeout, are excluded from card values and paired comparisons and are never read as losses. Whether the simulator charges the stars was not examined; the policies have no guard against replaying a card that returns to hand."
+    },
+    {
+      "affects": "coverage",
+      "id": "G10-first-game-card-id-shift",
+      "min_ascension": 0,
+      "summary": "The pinned simulator caches some card lookups lazily; the first lookup of a card in a process takes the next card-instance id without returning it (e.g. the first upgrade of a Vicious card, via capture_self_mutating_card_progress). So a game's ids, and in rare situations a pile (Anger's added copy was missing from the discard pile), depended on how many games its process had already played. The harness now puts every process in the same state before its first game (warmup.py, ADR-037); batches written before that fix were produced with the first games of each worker in the other state, and are checked by `audit rederive`."
+    },
+    {
+      "affects": "results",
+      "id": "G11-no-act-start-ancient-heal",
+      "min_ascension": 0,
+      "summary": "The game opens every act with an Ancient event that first heals the player (all the missing HP, 80 % of it from Ascension 2) and then offers a boon. The pinned simulator plays the opening event of a run (Neow) but has none in acts two and three: its runs start those acts on the map with the HP the previous boss left, and the boons are not modelled. A harness variant (`ancient_heal`, off in every other batch) restores the heal. On 498 paired development games of `rules_v2` (Ironclad, A0) it removes most deaths in the first five rooms of Act 2 (135 to 53) but the games end a little later instead of not at all: 25 to 28 games reach Act 3, mean floors +0.96 (95 % bootstrap +0.53 to +1.39), wins 2 against 0 (p = 0.5). Simulated results here are therefore from a simulator that is harsher than the game at the start of acts two and three, by an amount measured to be small for this pilot (ADR-039)."
+    },
+    {
+      "affects": "coverage",
+      "id": "G12-only-overgrowth-played",
+      "min_ascension": 0,
+      "summary": "Act 1 of the game comes in two versions, Overgrowth and Underdocks, with different elites, bosses and ordinary fights. The pinned simulator's three-act run is Overgrowth, Hive, Glory; Underdocks exists in it only as the simulator's 'extra act' (an act index beyond the third) and the harness never plays it, so every simulated game, and every card value measured from them, is an Overgrowth game. This is not a fourth act: the game has three (ADR-048)."
+    },
+    {
+      "affects": "results",
+      "id": "G14-relics-lost-after-first-fight",
+      "min_ascension": 0,
+      "summary": "A run in the pinned simulator keeps the relics it holds when its first fight starts (the starting relic and the opening Ancient's pick) and loses every relic it gains afterwards: relics from chests, shops, elites, events and bosses are dropped when the next fight starts. The cause is in the simulator: `RunState.relics` is an alias of the player's relic list, the setup of the first fight gives the player a new list, the alias goes stale, and every later fight rebuilds the player's relics from it. So 97.05 % of the 19,717 Act-1 boss decks of the exploration batches hold exactly two relics, 2.95 % three, none more, and every simulated result here, the card values and the held-out tests among them, comes from a game whose runs never keep a boss, elite, chest or shop relic. A harness variant (`keep_relics`, off in every other batch) points the alias back at the player's list after every action. On 2,444 paired development games of `rules_v2` (500 seeds per class, A0) it lifts the share of runs that get past the Act-1 boss from 52.5 % to 63.1 % (325 pairs one way, 67 the other, exact McNemar p = 9.6e-42; every class, from Ironclad 63.2 to 77.1 % to Necrobinder 62.8 to 69.3 %), past the Act-2 boss from 2.1 % to 9.1 %, the mean floors reached by 3.04 (95 % bootstrap 2.81 to 3.28; Ironclad 5.40), and wins from 2 to 34 (Ironclad 0 to 25 of 481, Defect 2 to 9; every win re-derived). The simulator as it is is therefore much harsher than the game on this one point, by more than any pilot difference measured in this project; whether the order of choices (cards, pilots, opening relics) holds with relics kept has not been measured (ADR-052)."
+    }
+  ],
+  "notes": "Win rate = wins / (wins + deaths). Timeouts, simulator errors and invalid actions are counted separately.",
+  "policy": {
+    "effective": {
+      "params": {
+        "neow_explore": 0.0,
+        "threshold": 0.0,
+        "tune": {
+          "boss_heal_below": 0.9,
+          "card_slope": 0.09,
+          "card_threshold": 3.2,
+          "danger_frac": 0.3,
+          "elite_bad_value": -2.5,
+          "elite_mid_hp": 0.65,
+          "elite_mid_value": 0.2,
+          "elite_ok_floor": 4,
+          "elite_ok_hp": 0.8,
+          "elite_value": 2.0,
+          "heal_below": 0.7,
+          "max_deck": 32,
+          "monster_hp_penalty": 0.5,
+          "monster_value": 1.0,
+          "potion_hp_abs": 6,
+          "potion_hp_frac": 0.15,
+          "rest_base": 1.0,
+          "rest_weight": 3.0,
+          "shop_base": 0.3,
+          "shop_card_threshold": 3.6,
+          "shop_mid": 0.5,
+          "shop_mid_gold": 75,
+          "shop_potion_margin": 40,
+          "shop_rich": 1.2,
+          "shop_rich_gold": 150,
+          "treasure_value": 1.8,
+          "unknown_value": 0.8
+        },
+        "values": "experiments/cardvalue/regent-a0-v1.json",
+        "values_sha256": "1a8d0a8861dbbe119926c399b76b787acac2105cd1de1365463dbe1a693525db"
+      },
+      "version": "1"
+    },
+    "name": "rules_v2_neow",
+    "params": {
+      "neow_explore": 0.0,
+      "threshold": 0.0,
+      "values": "experiments/cardvalue/regent-a0-v1.json"
+    }
+  },
+  "schema": 1,
+  "seeds": {
+    "file": "experiments/seeds/ironclad-a0-v2.json",
+    "file_sha256": "e7b0d1d0d94eb9327e5d7db257d753e20021d8f6f35ea5cbaeef211cd43b9e7e",
+    "manifest_sha256": "83340c3bad2eb48d369674172922646fc5c39fd8baa345908cd0f36e97e9f2e3",
+    "n": 200,
+    "partition": "dev",
+    "sealed_partition_used": false
+  },
+  "simulator": {
+    "dirty": false,
+    "head": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+    "id": "sts2-rl-agent",
+    "parity_with_live_game": "UNVERIFIED",
+    "pin_ok": true,
+    "pinned": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "summary": {
+    "completed": 195,
+    "counts": {
+      "aborted": 0,
+      "death": 195,
+      "harness_error": 0,
+      "invalid_action": 0,
+      "policy_error": 0,
+      "simulator_error": 3,
+      "timeout": 2,
+      "win": 0
+    },
+    "denominator": "wins / (wins + deaths); timeouts, simulator errors and invalid actions are NOT losses and NOT excluded silently",
+    "episodes": 200,
+    "win_rate_95ci_wilson": [
+      0.0,
+      0.01931920457372107
+    ],
+    "win_rate_of_completed": 0.0
+  },
+  "traces": {
+    "count": 0,
+    "dir": "traces"
+  },
+  "wall_seconds_this_invocation": 168.6,
+  "workers": 2
+}

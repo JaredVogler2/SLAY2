@@ -17,8 +17,15 @@ export interface Validation {
   readonly passRateBase: number;
   /** exact McNemar p-value of "got past the Act-1 boss" on the shared seeds */
   readonly p: number;
-  /** what the pilot that followed these values was compared with: "ratings" (the hand-written ones) or "first-values" */
+  /** what the pilot that followed these values was compared with: "ratings" (the hand-written ones), "first-values" or "current-values" */
   readonly against: string;
+  /**
+   * What licenses the set: "own", this class's comparison at its own level; "pooled", the pooled test of the five classes and the rule
+   * registered before it (ADR-053 item 5), which adopts a class whose own games do not show the earlier values significantly ahead.
+   * The numbers above are always this class's own.
+   */
+  readonly basis: string;
+  /** `own`: improved the primary endpoint at the pre-registered level; `pooled`: the rule adopted the set */
   readonly passed: boolean;
 }
 
@@ -35,6 +42,9 @@ export function againstText(v: Validation): string {
 export interface Drift {
   readonly previous: string;
   readonly previousSha256: string;
+  /** the pilot that played each set's exploration games (a set measured by another pilot moved for that reason too) */
+  readonly previousPilot: string;
+  readonly pilot: string;
   readonly previousBossFights: number;
   readonly previousPassRate: number;
   /** cards measured in both */
@@ -194,6 +204,17 @@ export function isValidated(set: CardValueSet | undefined): boolean {
   return set?.validation?.passed === true;
 }
 
+/** The set is the site's by the pooled test of ADR-053 and its rule, not by its own class's significance: its own numbers are descriptive. */
+export function adoptedByPooledTest(set: CardValueSet | undefined): boolean {
+  return set?.validation?.basis === "pooled" && set.validation.passed;
+}
+
+/** A signed difference of two shares in percentage points, with a true minus sign: "+1.2" or "\u22120.4". */
+export function pointsText(a: number, b: number): string {
+  const d = Math.round((a - b) * 1000) / 10;
+  return `${d > 0 ? "+" : d < 0 ? "\u2212" : ""}${Math.abs(d).toFixed(1)}`;
+}
+
 /** Every measurement of a catalog card id (the card's own class first for class cards, one per class for colorless cards). */
 export function measurementsOf(cardId: string, index: ValueIndex = INDEX): readonly Measurement[] {
   return index.byCard.get(cardId) ?? [];
@@ -298,6 +319,14 @@ export function coverage(index: ValueIndex = INDEX): CoverageLine[] {
       };
     }
     const result = `got past the Act-1 boss in ${pct1(v.passRate)} of ${v.pairedGames.toLocaleString("en-US")} held-out simulated games against ${pct1(v.passRateBase)} for ${againstText(v)} (${pText(v.p)})`;
+    if (adoptedByPooledTest(set)) {
+      return {
+        character,
+        label,
+        state: "validated",
+        detail: `adopted by the rule registered before the pooled test of the five classes, which favoured these values (ADR-053); in this class's own games the pilot that follows them ${result}`,
+      };
+    }
     return v.passed
       ? { character, label, state: "validated", detail: `playing by the measured values ${result}` }
       : {

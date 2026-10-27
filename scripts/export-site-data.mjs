@@ -351,6 +351,9 @@ function parseCardValues(comparisons) {
           p: test.reachedAct2.pairedTable.mcnemar_p,
           // what the pilot that followed these values was compared with
           against: entry.test?.against ?? "ratings",
+          // what licenses the set: "own", this class's comparison at its own level; "pooled", the pooled test of the five classes and the
+          // rule registered before it (ADR-053 item 5), which can adopt a class whose own comparison is not significant (see parseCardValueSets)
+          basis: entry.test?.against === "current-values" ? "pooled" : "own",
           // improved the primary endpoint at the pre-registered level
           passed:
             test.reachedAct2.a.rate > test.reachedAct2.b.rate &&
@@ -367,9 +370,15 @@ function parseCardValues(comparisons) {
       const previous = readFileSync(join(dir, entry.supersedes));
       if (d.a.sha256 !== createHash("sha256").update(previous).digest("hex"))
         throw new Error(`${name}: ${entry.drift} compares another version of ${entry.supersedes}`);
+      // the pilot that played each set's exploration games: a set that replaces another measured by a different pilot moved for that reason too
+      const pilotOf = (file) =>
+        [...new Set((file.batches ?? []).map((b) => b.policy?.name).filter(Boolean))].sort().join(" + ") ||
+        "unknown";
       drift = {
         previous: entry.supersedes.replace(/\.json$/, ""),
         previousSha256: d.a.sha256,
+        previousPilot: pilotOf(JSON.parse(previous.toString("utf8"))),
+        pilot: pilotOf(v),
         previousBossFights: d.a.boss_fights,
         previousPassRate: d.a.pass_rate,
         cardsInBoth: d.comparison.cards_in_both,
@@ -456,14 +465,37 @@ const EXACT = {
 };
 const NEOW_EXPLORE_SEEDS = 3000;
 const NEOW_VAL_SEEDS = 2000;
-const NEOW_VALUES_FILE = "neow-values-v2.json";
-const NEOW_TEST_FILE = "pooled-neow-values-v2-vs-rules_v2-val.json";
+// The study of ADR-049 (the simulator as it is: the relics a run gains after its first fight are dropped, gap G14), the same study repeated
+// with the relics kept (ADR-055: its own fit, and the same test against a baseline played with the relics kept too), and the secondary arm
+// of that repetition: the values of ADR-049 played with the relics kept. `exploreKeepRelics` says what the exploration batches behind a
+// values file have to be, `testKeepRelics` what the held-out batches of a test have to be.
+const NEOW_FIRST = {
+  valuesFile: "neow-values-v2.json",
+  testFile: "pooled-neow-values-v2-vs-rules_v2-val.json",
+  exploreKeepRelics: false,
+  testKeepRelics: false,
+  adr: "ADR-049",
+};
+const NEOW_KEEP = {
+  valuesFile: "neow-values-keep-v1.json",
+  testFile: "pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
+  exploreKeepRelics: true,
+  testKeepRelics: true,
+  adr: "ADR-055",
+};
+const NEOW_SECONDARY = {
+  valuesFile: NEOW_FIRST.valuesFile,
+  testFile: "pooled-neow-values-v2-vs-rules_v2-keeprelics-val.json",
+  exploreKeepRelics: false,
+  testKeepRelics: true,
+  adr: "ADR-055",
+};
 
-function parseNeow(reports) {
+function parseNeow(reports, spec = NEOW_FIRST) {
   const dir = join(root, "experiments", "neow");
-  const valuesFile = join(dir, NEOW_VALUES_FILE);
+  const valuesFile = join(dir, spec.valuesFile);
   if (!existsSync(valuesFile)) return { values: null, test: null };
-  const here = `experiments/neow/${NEOW_VALUES_FILE}`;
+  const here = `experiments/neow/${spec.valuesFile}`;
   const raw = readFileSync(valuesFile);
   const v = JSON.parse(raw.toString("utf8"));
   if (v.kind !== "neow-values" || v.schema !== 1)
@@ -520,6 +552,10 @@ function parseNeow(reports) {
         ? "it is not a fully randomised rules_v2_neow batch"
         : m.seeds?.partition !== "train" || m.seeds?.n !== NEOW_EXPLORE_SEEDS
           ? `it is not the first ${NEOW_EXPLORE_SEEDS} train seeds`
+          : (m.config?.keep_relics === true) !== spec.exploreKeepRelics
+            ? spec.exploreKeepRelics
+              ? `it was not played with the relics kept (${spec.adr})`
+              : `it was played with the relics kept (${spec.adr} was not)`
           : m.class_start_verified !== true
             ? "its games were not checked against the class they were played as"
             : m.config.ascension !== v.ascension || m.config.profile !== v.profile
@@ -548,6 +584,8 @@ function parseNeow(reports) {
   });
   const values = {
     file: here,
+    // whether the exploration games kept the relics a run gains (gap G14, ADR-052)
+    relicsKept: spec.exploreKeepRelics,
     sha256,
     outcome: v.outcome,
     ascension: v.ascension,
@@ -570,10 +608,10 @@ function parseNeow(reports) {
     relics,
   };
 
-  const testFile = join(dir, NEOW_TEST_FILE);
+  const testFile = join(dir, spec.testFile);
   if (!existsSync(testFile)) return { values, test: null };
   const t = JSON.parse(readFileSync(testFile, "utf8"));
-  const where = `experiments/neow/${NEOW_TEST_FILE}`;
+  const where = `experiments/neow/${spec.testFile}`;
   if (
     t.kind !== "pooled-paired-comparison" ||
     t.policies?.a !== NEOW_POLICIES.a ||
@@ -621,7 +659,15 @@ function parseNeow(reports) {
               ? `it is not the ${NEOW_VAL_SEEDS} val seeds`
               : current.ascension !== v.ascension || current.profile !== v.profile
                 ? "its ascension or profile differ from the values'"
-                : null;
+                : current.keepRelics !== spec.testKeepRelics
+                  ? spec.testKeepRelics
+                    ? `it was not played with the relics kept (${spec.adr})`
+                    : `it was played with the relics kept (${spec.adr} was not)`
+                  : spec.testKeepRelics && !current.classStartVerified
+                    ? "its games were not checked against the class they were played as"
+                    : spec.testKeepRelics && !current.sampleAudit
+                      ? "it has no sample audit (slay2_sim audit sample --limit 40)"
+                      : null;
       if (bad) throw new Error(`${where}: batch ${side.batchId} (${cls}): ${bad}`);
     }
     if (m.pairedSeeds !== NEOW_VAL_SEEDS)
@@ -635,8 +681,35 @@ function parseNeow(reports) {
     );
     if (manifest.policy?.effective?.params?.neow_values_sha256 !== sha256) {
       throw new Error(
-        `${where}: ${m.a.batchId} was played with another version of ${NEOW_VALUES_FILE}`,
+        `${where}: ${m.a.batchId} was played with another version of ${spec.valuesFile}`,
       );
+    }
+    if (spec.testKeepRelics) {
+      // the page says the two arms differ in one thing, the rule for the opening relic: their recorded parameters (the card values and
+      // their hash, the thresholds, the tuning) are equal once the opening-relic parameters are set aside. The stored baselines of ADR-049
+      // predate that record, so the check is for the games played with the relics kept.
+      const canon = (v) =>
+        v !== null && typeof v === "object"
+          ? Object.fromEntries(
+              Object.keys(v)
+                .sort()
+                .map((k) => [k, canon(v[k])]),
+            )
+          : v;
+      const withoutRule = (id) =>
+        canon(
+          Object.fromEntries(
+            Object.entries(
+              JSON.parse(
+                readFileSync(join(root, "experiments", "batches", id, "manifest.json"), "utf8"),
+              ).policy?.effective?.params ?? {},
+            ).filter(([k]) => !k.startsWith("neow_")),
+          ),
+        );
+      if (JSON.stringify(withoutRule(m.a.batchId)) !== JSON.stringify(withoutRule(m.b.batchId)))
+        throw new Error(
+          `${where}: the two arms of ${cls} do not differ only in the opening-relic rule (their other recorded parameters differ)`,
+        );
     }
     const tab = m.reachedAct2.pairedTable;
     for (const k of ["a_only", "b_only", "both", "neither"]) sums[k] += tab[k];
@@ -654,7 +727,9 @@ function parseNeow(reports) {
   if (t.pairedSeeds !== sums.pairedSeeds || t.bothCompleted !== sums.bothCompleted)
     throw new Error(`${where}: its totals are not the sum of the classes'`);
   const test = {
-    id: NEOW_TEST_FILE.replace(/\.json$/, ""),
+    id: spec.testFile.replace(/\.json$/, ""),
+    // whether the held-out games kept the relics a run gains (gap G14, ADR-052)
+    relicsKept: spec.testKeepRelics,
     contentSha256: t.contentSha256,
     valuesSha256: sha256,
     a: t.policies.a,
@@ -682,6 +757,90 @@ function parseNeow(reports) {
     passed: r1.a.rate > r1.b.rate && r1.pairedTable.mcnemar_p < NEOW_ALPHA,
   };
   return { values, test };
+}
+
+// The opening-relic study and its repetition with the relics kept (ADR-055). The site shows the repeated study once its one test has been
+// run, whichever way it came out (ADR-055 item 6: a pass gives the new values and the class rule, anything else gives the new measurements
+// and no advice); until then it shows the first study. Both are exported, with the descriptive comparison of the two fits and the
+// secondary arm (the earlier values played with the relics kept), so /methods can say what the repetition found.
+/** The descriptive comparison of the two fits of the opening-relic values (slay2_sim.neowcompare), read field by field: the site shows it. */
+function neowComparison(c) {
+  const file = "experiments/neow/compare-v2-keep-v1.json";
+  const count = (v, what) => {
+    if (!Number.isInteger(v) || v < 0) throw new Error(`${file}: ${what} is not a count`);
+    return v;
+  };
+  const rho = (v, what) => {
+    if (v !== null && !(typeof v === "number" && v >= -1 && v <= 1)) throw new Error(`${file}: ${what} is not a correlation`);
+    return v;
+  };
+  const labels = (v, what) => {
+    if (!Array.isArray(v) || !v.every((x) => typeof x === "string")) throw new Error(`${file}: ${what} is not a list of relics`);
+    return v;
+  };
+  const x = c.comparison ?? {};
+  const n = c.noise_reference ?? {};
+  if (typeof x.best_in_a !== "string" || typeof x.best_in_b !== "string") throw new Error(`${file}: the best relic of each file is missing`);
+  if (!Array.isArray(n.seeds) || n.seeds.length !== 2) throw new Error(`${file}: the noise reference has no two halves`);
+  return {
+    file,
+    relicsInBoth: count(x.relics_in_both, "relics_in_both"),
+    spearman: rho(x.spearman, "spearman"),
+    k: count(x.k, "k"),
+    bestShared: count(x.best_k_in_both, "best_k_in_both"),
+    worstShared: count(x.worst_k_in_both, "worst_k_in_both"),
+    disjointIntervals: count(x.disjoint_ci95, "disjoint_ci95"),
+    onlyInFirst: labels(x.relics_only_in_a, "relics_only_in_a"),
+    onlyInRepeated: labels(x.relics_only_in_b, "relics_only_in_b"),
+    bestInFirst: x.best_in_a,
+    bestInRepeated: x.best_in_b,
+    noise: {
+      relicsInBoth: count(n.relics_in_both, "noise relics_in_both"),
+      seeds: n.seeds.map((v) => count(v, "noise seeds")),
+      spearman: rho(n.spearman, "noise spearman"),
+      spearmanBrown: rho(n.spearman_brown, "noise spearman_brown"),
+    },
+  };
+}
+
+function parseNeowStudies(reports) {
+  const first = parseNeow(reports, NEOW_FIRST);
+  const repeated = parseNeow(reports, NEOW_KEEP);
+  let secondary = null;
+  let comparison = null;
+  if (repeated.test) {
+    secondary = parseNeow(reports, NEOW_SECONDARY).test;
+    if (secondary) {
+      // the secondary arm is read against the same baseline batches as the primary test, or it would compare something else
+      for (const [i, m] of repeated.test.members.entries()) {
+        const other = secondary.members[i];
+        if (!other || other.b.batchId !== m.b.batchId || other.b.contentSha256 !== m.b.contentSha256)
+          throw new Error(
+            `experiments/neow/${NEOW_SECONDARY.testFile}: the secondary arm has to be read against the baseline batches of the primary test (${m.b.batchId})`,
+          );
+      }
+    }
+  }
+  const compareFile = join(root, "experiments", "neow", "compare-v2-keep-v1.json");
+  if (repeated.values && first.values && existsSync(compareFile)) {
+    const c = JSON.parse(readFileSync(compareFile, "utf8"));
+    if (
+      c.kind !== "neow-value-comparison" ||
+      c.a?.sha256 !== first.values.sha256 ||
+      c.b?.sha256 !== repeated.values.sha256
+    )
+      throw new Error(
+        "experiments/neow/compare-v2-keep-v1.json does not describe the two value files the site reads: run python -m slay2_sim.neowcompare",
+      );
+    comparison = neowComparison(c);
+  }
+  const shown = repeated.test ? repeated : first;
+  return {
+    ...shown,
+    study: repeated.test ? "repeated" : "first",
+    first: first.values ? first : null,
+    repeated: repeated.values ? { ...repeated, secondary, comparison } : null,
+  };
 }
 
 // What the simulated runs say about the advisor's synergy term (ADR-050). The page's panel quotes these numbers, so they are read from
@@ -1129,6 +1288,24 @@ function readPooledHeldOut({ where, path, names: [a, b], seeds, byId, check }) {
     };
   }
 
+// The sets the site shows with the test of ADR-053. A set adopted under that test is licensed by the rule registered before it (the pooled
+// gain, and the class's own games not showing the current values significantly ahead), not by its own class's significance: its `passed`
+// says whether the rule adopted it, read from the numbers, and the exporter refuses a listing that has no pooled result to rest on.
+function parseCardValueSets(comparisons, reports) {
+  const sets = parseCardValues(comparisons);
+  const keepTest = parseKeepValuesTest(reports);
+  for (const set of sets) {
+    if (set.validation?.basis !== "pooled") continue;
+    const verdict = keepTest?.classes[set.character];
+    if (!verdict)
+      throw new Error(
+        `${set.id} is listed as tested by the pooled test of ADR-053, whose result (experiments/cardvalue/pooled-keepvals-vs-curvals-val.json) does not exist`,
+      );
+    set.validation.passed = verdict.adopted;
+  }
+  return { sets, keepTest };
+}
+
 // The one registered held-out test of ADR-053: `rules_v3` following the card values measured again with the relics kept, against
 // `rules_v3` following the values the site showed, both played with the relics kept on the 2,000 val seeds of each class; the five classes
 // pooled into one exact McNemar test at level 0.05. The reading rule (item 5) decides which value files the site shows, and the exporter
@@ -1489,8 +1666,7 @@ const outputs = {
     schema: 1,
     generatedFrom:
       "experiments/cardvalue/*.json (kind card-values) + experiments/comparisons/*.json + packages/game-data/data/cards.sts2-main-0.107.1.json",
-    sets: parseCardValues(comparisons),
-    keepTest: parseKeepValuesTest(reports),
+    ...parseCardValueSets(comparisons, reports),
   },
   "synergy.generated.json": {
     schema: 1,
@@ -1501,8 +1677,8 @@ const outputs = {
   "neow.generated.json": {
     schema: 1,
     generatedFrom:
-      "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json + experiments/batches/*/manifest.json",
-    ...parseNeow(reports),
+      "experiments/neow/neow-values-v2.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-val.json (the first study) + experiments/neow/neow-values-keep-v1.json + experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json + experiments/neow/pooled-neow-values-v2-vs-rules_v2-keeprelics-val.json + experiments/neow/compare-v2-keep-v1.json (the repetition with the relics kept, ADR-055) + experiments/batches/*/manifest.json",
+    ...parseNeowStudies(reports),
     startHpGaps: parseStartHpGaps(),
   },
 };

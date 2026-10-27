@@ -1,16 +1,19 @@
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { NeowRepeatBlock } from "@/components/methods/NeowRepeatBlock";
 import { Tile } from "@/components/ui/Tile";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier } from "@/lib/cardvalues";
 import { formatP, pct, signed } from "@/lib/methods-data";
 import {
+  NEOW,
   classAlpha,
   classResult,
   neowTest,
   neowValues,
   relicValues,
+  type NeowData,
   type NeowMember,
 } from "@/lib/neow";
 import type { PlayableClass } from "@slay2/game-data";
@@ -44,13 +47,13 @@ function MemberRow({ m }: { m: NeowMember }) {
  * The opening Ancient's relics as simulated runs measured them (ADR-041), and the one held-out test of playing by the values.
  * Every number is read from the exporter's file; the words around the test follow from whether it passed.
  */
-export function NeowValuesPanel() {
-  const values = neowValues();
+export function NeowValuesPanel({ data = NEOW }: { data?: NeowData } = {}) {
+  const values = neowValues(data);
   if (!values) {
     return null;
   }
-  const test = neowTest();
-  const relics = relicValues();
+  const test = neowTest(data);
+  const relics = relicValues(data);
   const flagged = relics.filter((r) => r.exclusionFlag);
   const byPassRate = [...values.classes].sort((a, b) => a.passRate - b.passRate);
   const lowest = byPassRate[0];
@@ -61,7 +64,7 @@ export function NeowValuesPanel() {
   const notAdvised =
     test?.passed === true
       ? test.members
-          .filter((m) => !classResult(m.character)?.helped)
+          .filter((m) => !classResult(m.character, data)?.helped)
           .map((m) => classLabel(m.character))
       : [];
   return (
@@ -84,7 +87,10 @@ export function NeowValuesPanel() {
         cross-validated by seed: log-loss {values.model.cvLogLoss.toFixed(3)} with the relics
         against {values.model.baselineLogLoss.toFixed(3)} with the class alone (AUC{" "}
         {values.model.cvAuc.toFixed(3)}). Intervals resample whole seeds, because the games of one
-        seed share the offer and the relic taken ({values.model.bootstrapDraws} draws).
+        seed share the offer and the relic taken ({values.model.bootstrapDraws} draws).{" "}
+        {values.relicsKept
+          ? "These runs kept the relics they gained, as the game does (the pinned simulator drops them; a harness variant repairs that: gap G14)."
+          : "These runs kept only two relics, the starting one and the opening pick, because the pinned simulator drops every relic a run gains after its first fight (gap G14)."}
       </p>
 
       {test ? (
@@ -133,15 +139,17 @@ export function NeowValuesPanel() {
             takes the offered relic with the largest measured value (a costly one is allowed)
             instead of the first helpful one. Both played the same held-out seeds,{" "}
             {games(perClass ?? test.pairedSeeds)} {perClass ? "in each class " : ""}(
-            {games(test.pairedSeeds)} pairs, {games(test.bothCompleted)} completed by both; the
-            others ended in a simulator error or a timeout, which says nothing about play, and are
-            left out of the pair). The primary endpoint, fixed before any of these games: the share
-            of games that got past the Act-1 boss, paired by seed, pooled over the five classes,
-            exact McNemar test, two-sided, level {test.alpha}, one test.{" "}
-            {test.passed ? "It passed" : "It did not pass"}: {pct(test.reachedAct2.a.rate, 1)}{" "}
-            against {pct(test.reachedAct2.b.rate, 1)} ({test.reachedAct2.pairedTable.a_only} games
-            only the best-measured relic got past the boss, {test.reachedAct2.pairedTable.b_only}{" "}
-            only the first helpful one, {formatP(test.reachedAct2.pairedTable.mcnemar_p)}).{" "}
+            {games(test.pairedSeeds)} pairs, {games(test.bothCompleted)} completed by both;{" "}
+            {test.relicsKept
+              ? "the others ended in a simulator error or a timeout, which with the relics kept come deep into a run, after the Act-1 boss in nearly every case (ADR-053), so leaving them out of the pair reads the share past the boss slightly low in both arms alike"
+              : "the others ended in a simulator error or a timeout, which says nothing about play, and are left out of the pair"}
+            ). The primary endpoint, fixed before any of these games: the share of games that got
+            past the Act-1 boss, paired by seed, pooled over the five classes, exact McNemar test,
+            two-sided, level {test.alpha}, one test. {test.passed ? "It passed" : "It did not pass"}
+            : {pct(test.reachedAct2.a.rate, 1)} against {pct(test.reachedAct2.b.rate, 1)} (
+            {test.reachedAct2.pairedTable.a_only} games only the best-measured relic got past the
+            boss, {test.reachedAct2.pairedTable.b_only} only the first helpful one,{" "}
+            {formatP(test.reachedAct2.pairedTable.mcnemar_p)}).{" "}
             {test.passed
               ? "On the strength of that test, and only that, the advisor can say which of three offered relics a simulated pilot would take."
               : "So the values are reported as measurements that did not improve play, and the advisor does not say which relic to take."}
@@ -198,6 +206,8 @@ export function NeowValuesPanel() {
           which relic to take.
         </p>
       )}
+
+      <NeowRepeatBlock data={data} />
 
       <section className="mt-6" aria-labelledby="neow-values-heading">
         <ScrollRegion label="Measured values of the opening relics">

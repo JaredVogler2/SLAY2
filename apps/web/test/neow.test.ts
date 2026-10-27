@@ -44,6 +44,7 @@ function relic(label: string, beta: number, half = 0.1, over: Partial<RelicMeasu
 function fixture(test: NeowTest | null = null): NeowData {
   const values: NeowValues = {
     file: "x.json",
+    relicsKept: false,
     sha256: "0".repeat(64),
     outcome: "the run gets past the Act-1 boss",
     ascension: 0,
@@ -105,6 +106,7 @@ function testResult(passed: boolean, classes = CLASS_RESULTS): NeowTest {
   const endpoint = { definition: "x", a: rate, b: rate, pairedTable: table };
   return {
     id: "t",
+    relicsKept: false,
     contentSha256: "0".repeat(64),
     valuesSha256: "0".repeat(64),
     a: "rules_v2_neow_values",
