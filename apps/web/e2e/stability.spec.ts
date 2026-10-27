@@ -63,8 +63,9 @@ test.describe("layout stability", () => {
   test("the advisor is drawn before the page is interactive, and its controls wait for it", async ({
     page,
   }) => {
-    // with scripts blocked the server-drawn page is all there is: the real layout, with every control inert
-    await page.route("**/_next/static/chunks/**/*.js", (route) => route.abort());
+    // with scripts blocked the server-drawn page is all there is: the real layout, with every control inert (the hosted build serves
+    // its chunks under /_next/static/immutable/chunks, the local one under /_next/static/chunks: block both)
+    await page.route("**/_next/static/**/*.js", (route) => route.abort());
     await page.goto("/advisor", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Choose your character" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Try an example" })).toBeDisabled();

@@ -1,6 +1,6 @@
 # SLAY2 test report
 
-**Commit under test:** `03ec6ce` (the head of pull request #14 on `main` at `ef8d8ea`; the commits after it change documents only, this report among them) · **Run:** 2026-10-27 (UTC), from a clean `git worktree` of that commit · **Build:** Slay the Spire 2 main v0.107.1
+**Commit under test:** `03ec6ce` (the head of pull request #14, merged into `main` as `037cb8f`; the commit after it changes documents, the screenshots and the script pattern of one browser test, this report among them) · **Run:** 2026-10-27 (UTC), from a clean `git worktree` of that commit · **Build:** Slay the Spire 2 main v0.107.1
 
 **Machine:** Node v22.22.0, pnpm 10.28.0, Python 3.13.17; 4 cores (Intel Xeon at 2.80 GHz), 15.7 GiB of memory, Linux 6.18; Chromium from `/opt/pw-browsers/chromium` driven by Playwright 1.64.1 (a desktop at 1440 × 900 and an emulated Pixel 7). The worktree was clean when the run started and nothing edited it while it ran (`pnpm install --frozen-lockfile` from the lockfile). The third-party simulator checkout (git-ignored, pinned at `5d874e8`) was present, so the simulator tests ran instead of skipping themselves; the CI job has no simulator and skips them. Nothing heavy used the machine while the commands ran (a few small formatting checks and edits of documents).
 
@@ -172,7 +172,7 @@ The `sim` job installs only `numpy` and `pytest`, so the simulator tests skip th
 
 ## Hosted site
 
-Checked with `curl` against https://slay-part2.vercel.app at 2026-10-27 16:41 UTC (production serves `main`; pull request #14 is not merged): `/api/v1/health` reports commit `ef8d8ea1522b00b96623a1b4d3e872aa2717709e`, the merge of pull request #13, and `/`, `/advisor`, `/codex`, `/methods`, `/about`, `/routes` and `/odds` answer 200. The browser suite was not run against the hosted site in this run (it was, at `453864d`: `docs/DEPLOY.md`).
+Checked against https://slay-part2.vercel.app at 2026-10-27 17:48 UTC (production serves `main` at `037cb8f`, the merge of pull request #14): `/api/v1/health` reports commit `037cb8fc0e7b6b3cd9e16d5fe7e59ff88ae06f12`, and `/`, `/advisor`, `/codex`, `/methods`, `/about`, `/routes` and `/odds` answer 200. **The whole browser suite was run against the hosted site** (`BASE_URL=https://slay-part2.vercel.app`, 3 workers, 6.8 min): 333 passed and 2 failed, 133 skipped by design. The two failures were one test, `stability.spec.ts` "the advisor is drawn before the page is interactive", in both projects: it blocks the scripts to see the server-drawn page and matched only `/_next/static/chunks/…`, while the hosted build serves its chunks under `/_next/static/immutable/chunks/…`, so nothing was blocked and the page hydrated. The pattern is now `**/_next/static/**/*.js`; the test passes against the hosted site and against the local build, which makes **335 of 335** (a fault of the test, not of the site).
 
 ## What these tests do not show
 
