@@ -498,6 +498,28 @@ describe("the exporter reads the registered synergy test only when it belongs to
     expect(c.stderr).toContain('it was played as "Ironclad", not as Silent');
   });
 
+  it("accepts the one reference batch that predates the class check (Ironclad's rules_v3 with measured values) and nothing else", () => {
+    const ironclad = buildWorld();
+    edit(
+      ironclad.path("experiments", "batches", batchId("rules_v3", "ironclad"), "manifest.json"),
+      (m) => {
+        delete m.class_start_verified;
+      },
+    );
+    const a = run(ironclad.root);
+    expect(a.status, a.stderr).toBe(0);
+    const silent = buildWorld();
+    edit(
+      silent.path("experiments", "batches", batchId("rules_v3", "silent"), "manifest.json"),
+      (m) => {
+        delete m.class_start_verified;
+      },
+    );
+    const b = run(silent.root);
+    expect(b.status).not.toBe(0);
+    expect(b.stderr).toContain("its games were not checked against the class they were played as");
+  });
+
   it("refuses games that were not checked against the class they were played as", () => {
     const w = buildWorld();
     edit(w.path("experiments", "batches", batchId("astar", "ironclad"), "manifest.json"), (m) => {
