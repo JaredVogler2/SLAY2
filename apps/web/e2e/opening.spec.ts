@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 
 import {
+  ascensionStudy,
   expectNoClippedText,
   expectNoHorizontalOverflow,
   expectNoSeriousA11yViolations,
@@ -437,13 +438,21 @@ test.describe("what did Neow offer?", () => {
     await expectNoClippedText(page);
   });
 
-  test("tells a player past Ascension 0 that the runs behind it were Ascension 0", async ({
+  test("tells a player past Ascension 0 what was tested and where their level lies, in the state the Ascension 9 study is in", async ({
     page,
   }) => {
     await startIronclad(page);
     await page.locator("#adv-asc").selectOption("5");
     await openOffer(page);
     await expect(page.getByText(/Your run is at Ascension 5/)).toBeVisible();
-    await expect(page.getByText(/measured at Ascension 0 only/)).toBeVisible();
+    if (ascensionStudy().tests) {
+      // tested: the line says which levels were tested, so that a run between them knows that nothing was tested at its own
+      await expect(
+        page.getByText(/between the two levels tested; nothing was tested at it/),
+      ).toBeVisible();
+      await expect(page.getByText(/measured at Ascension 0 only/)).toHaveCount(0);
+    } else {
+      await expect(page.getByText(/measured at Ascension 0 only/)).toBeVisible();
+    }
   });
 });

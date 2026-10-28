@@ -226,3 +226,26 @@ export function neowAdvisedFor(character: string): boolean {
     member.reachedAct2.pairedTable.mcnemar_p < test.alpha / test.members.length
   );
 }
+
+export interface AscensionStudy {
+  /** false when the decision log carries no registration of the study */
+  readonly registered: boolean;
+  /** null while the three tests are registered and have not been run */
+  readonly tests: Readonly<
+    Record<
+      string,
+      {
+        readonly verdict: string;
+        readonly classes: Readonly<
+          Record<string, { readonly ahead: boolean; readonly behind: boolean }>
+        >;
+      }
+    >
+  > | null;
+}
+
+/** The Ascension 9 study (ADR-058) as the pages were built with it: registered and not run, or tested, from the generated file. */
+export function ascensionStudy(): AscensionStudy {
+  const file = join(__dirname, "..", "src", "content", "ascension.generated.json");
+  return JSON.parse(readFileSync(file, "utf8")) as AscensionStudy;
+}

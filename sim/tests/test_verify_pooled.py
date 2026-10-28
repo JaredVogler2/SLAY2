@@ -1,7 +1,8 @@
 """`scripts/verify-pooled.py` recomputes a pooled comparison from the episode files with code that shares nothing with `slay2_sim`.
 
-It has to agree with the pooled files the registered studies were read from (ADR-054 and ADR-055: published, with their batches committed)
-and has to notice when a number of such a file is not what the episodes give.
+It has to agree with the pooled files the registered studies were read from (ADR-054, ADR-055 and ADR-058: published, with their batches
+committed; the four files of ADR-058 were checked with it once, after `pool.sh`, and are checked here again) and has to notice when a
+number of such a file is not what the episodes give.
 """
 
 from __future__ import annotations
@@ -20,9 +21,14 @@ assert SPEC and SPEC.loader
 verify_pooled = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(verify_pooled)
 
+ASCENSION_9 = REPO / "experiments" / "ascension9"
 PUBLISHED = [
     REPO / "experiments" / "neow" / "pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
     REPO / "experiments" / "synergy" / "keep-val" / "pooled-astar-vs-d0star.json",
+    ASCENSION_9 / "pooled-a9-t1-synergy-astar-vs-d0star.json",
+    ASCENSION_9 / "pooled-a9-t2-values-shown-vs-rules_v1.json",
+    ASCENSION_9 / "pooled-a9-t3-neow-keep-v1-vs-rules_v2.json",
+    ASCENSION_9 / "pooled-a0keep-t2-values-shown-vs-rules_v1.json",
 ]
 BATCHES = REPO / "experiments" / "batches"
 

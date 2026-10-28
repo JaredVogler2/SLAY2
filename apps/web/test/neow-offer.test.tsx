@@ -297,7 +297,7 @@ describe("What did Neow offer?", () => {
     expect(screen.getByRole("button", { name: "Recorded" })).toBeDisabled();
   });
 
-  it("tells a player at a higher Ascension that the rule was measured at Ascension 0 only", () => {
+  it("tells a player at a higher Ascension that the rule was measured at Ascension 0 only, while the Ascension 9 study has not been run", () => {
     const run = withAscension({ ...newRun("silent"), ascensionConfirmed: true }, 5);
     render(
       <NeowOffer
@@ -306,6 +306,7 @@ describe("What did Neow offer?", () => {
         recorded={[]}
         onRecord={() => undefined}
         data={withTest(test(true))}
+        ascensionData={{ registered: true, adr: "ADR-058", ascension: 9, tests: null }}
       />,
     );
     expect(screen.getByText(/Your run is at Ascension 5/)).toBeInTheDocument();

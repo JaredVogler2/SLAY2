@@ -1,23 +1,16 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { expect, test, type Page } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations } from "./helpers";
+import {
+  ascensionStudy,
+  expectNoHorizontalOverflow,
+  expectNoSeriousA11yViolations,
+} from "./helpers";
 
 /**
  * The Ascension 9 study (ADR-058) on the pages: a section of /methods, and one line on each of the advisor's three panels for a run above
  * Ascension 0. What the pages say follows the exported data (registered and not run, or tested), so these tests read it.
  */
-const data = JSON.parse(
-  readFileSync(join(__dirname, "..", "src", "content", "ascension.generated.json"), "utf8"),
-) as {
-  registered: boolean;
-  tests: Record<
-    string,
-    { verdict: string; classes: Record<string, { ahead: boolean; behind: boolean }> }
-  > | null;
-};
+const data = ascensionStudy();
 
 async function addOffered(page: Page, name: string): Promise<void> {
   const box = page.getByRole("combobox", { name: /offered card/i });

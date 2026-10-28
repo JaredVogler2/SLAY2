@@ -22,20 +22,21 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D4 | Seed manifests | experiment design | no | hashed; the sealed partition is unread |
 | D5 | Simulation batches | measurements | summaries on `/methods` | counts, audits and hashes below |
 | D6 | Card-value sets (five classes) | fitted tables | yes: `/advisor`, `/codex` | each passed its registered held-out test |
-| D7 | Opening-relic values | fitted table | yes: `/advisor`, `/methods` | two pooled tests passed (relics dropped, ADR-049; relics kept, ADR-055) |
+| D7 | Opening-relic values | fitted table | yes: `/advisor`, `/methods` | three pooled tests passed (relics dropped, ADR-049; relics kept, ADR-055; and at Ascension 9, ADR-058, where the advice is licensed for four classes and not for Silent) |
 | D8 | Combat libraries and demonstrations | training data | no | local only |
 | D9 | Withdrawn data (`experiments/void/`) | **not evidence** | no | invalid, kept so the failure can be inspected |
 | D10 | Synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement, read against simulated runs (M8) |
 | D11 | Relic catalog | facts | yes: `/codex` | every relic has a model class and a pool in the decompiled build of the same version |
 | D12 | Relic synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement read twice by blind readers and reconciled by a written rule; **not yet tested in simulation** |
+| D13 | Ascension 9 study (ADR-058): precondition, read-back of each Ascension's changes, four pooled comparisons, twenty per-class comparisons, 40 batches | measurements | yes: `/methods#ascension`, a line on three advisor panels for a run above Ascension 0 | registered before its first game; three tests passed; all 294 wins re-derived; every pooled file recomputed from the episodes by code of its own |
 | M1 | Exact calculators | mathematics | yes | 739 golden cases, published tables, brute force, properties |
 | M2 | Draft advisor v1 (the deck index) | heuristic | yes | **uncalibrated**, never a probability; its synergy term is M8 |
-| M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class |
-| M4 | Opening-relic second opinion | ridge logistic regression | yes | pooled held-out test |
+| M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class; and once at Ascension 9 (ADR-058) |
+| M4 | Opening-relic second opinion | ridge logistic regression | yes | pooled held-out tests, at Ascension 0 and once at Ascension 9; advice withheld for a class whose own Ascension 9 games did not show the rule ahead (Silent) |
 | M5 | Simulated pilots and searchers | policies | summaries only | paired held-out comparisons |
 | M6 | Combat networks (BC v1, PPO v1, PPO v2) | neural networks | **no** | no improvement over the baseline |
 | M7 | What does not exist | | | co-op, map, shop, rest, combat and Ancient-boon advisors; a live bridge |
-| M8 | The synergy term and its evidence | heuristic, read against simulated runs and tested twice on held-out seeds | yes | stage B1 read; the registered held-out stage B2 ran once and the term improves what a rules pilot picks in simulation (33.0 % against 26.0 % past the Act-1 boss, ADR-050); the same test repeated with the relics kept gives 40.4 % against 33.3 % (ADR-054) |
+| M8 | The synergy term and its evidence | heuristic, read against simulated runs and tested three times on held-out seeds | yes | stage B1 read; the registered held-out stage B2 ran once and the term improves what a rules pilot picks in simulation (33.0 % against 26.0 % past the Act-1 boss, ADR-050); the same test repeated with the relics kept gives 40.4 % against 33.3 % (ADR-054), and at Ascension 9, nothing refitted, 10.1 % against 7.1 % (ADR-058) |
 
 ---
 
@@ -91,22 +92,22 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 13 | 26,000 | 25,641 | 313 | 359 | 0 |
+| Defect | held-out (val) | 21 | 42,000 | 41,506 | 433 | 494 | 0 |
 | Defect | development (train, dev) | 15 | 25,000 | 24,825 | 160 | 175 | 0 |
-| Ironclad | held-out (val) | 16 | 30,300 | 29,834 | 444 | 466 | 0 |
+| Ironclad | held-out (val) | 24 | 46,300 | 45,617 | 601 | 681 | 2 |
 | Ironclad | development (train, dev) | 27 | 34,910 | 34,647 | 282 | 253 | 10 |
-| Necrobinder | held-out (val) | 13 | 26,000 | 25,733 | 5 | 259 | 8 |
+| Necrobinder | held-out (val) | 21 | 42,000 | 41,614 | 7 | 378 | 8 |
 | Necrobinder | development (train, dev) | 17 | 26,000 | 25,840 | 0 | 154 | 6 |
-| Regent | held-out (val) | 13 | 26,000 | 25,647 | 28 | 188 | 165 |
+| Regent | held-out (val) | 21 | 42,000 | 41,467 | 43 | 249 | 284 |
 | Regent | development (train, dev) | 15 | 25,000 | 24,688 | 11 | 115 | 197 |
-| Silent | held-out (val) | 13 | 26,000 | 25,928 | 0 | 72 | 0 |
+| Silent | held-out (val) | 21 | 42,000 | 41,904 | 0 | 96 | 0 |
 | Silent | development (train, dev) | 15 | 25,000 | 24,970 | 0 | 30 | 0 |
-| **All classes** | **held-out (val)** | **68** | **134,300** | **132,783** | **790** | **1,344** | **173** |
+| **All classes** | **held-out (val)** | **108** | **214,300** | **212,108** | **1,084** | **1,898** | **294** |
 | **All classes** | **development (train, dev)** | **89** | **135,910** | **134,970** | **453** | **727** | **213** |
 <!-- table:games:end -->
 
 * **Outcome rule:** a win is an episode that ended won after the third act's boss (`docs/game/MECHANICS-COVERAGE.md` RUN-2); a death ends it lost; a timeout (step, stall, turn or 900-second wall-clock limit), a simulator error and an invalid action are separate outcomes, are shown, and are never counted as losses or silently dropped. A timeout or an error is excluded from the denominator of a rate and the exclusion is reported.
-* **Audits:** every win of every held-out batch is re-run and replayed observation hash for observation hash (`audit wins`: 53 wins in held-out batches, all verified); a 40-game random sample of every held-out batch is re-derived (`audit sample`); all 10,000 games of the five `rules_v2` held-out batches were re-derived in full and 9,994 reproduced exactly, the six that differ kept their outcome and act (RT-6-01, ADR-037). Not every game is re-derived: the development batches and the older `rules_v1` and `random_legal` batches have the sample audit or none (`docs/ADVERSARIAL-AUDIT.md`, campaign 6).
+* **Audits:** every win of every held-out batch is re-run and replayed observation hash for observation hash (`audit wins`: all 1,084 wins in held-out batches are verified, the 294 of the Ascension 9 study among them, ADR-058); a 40-game random sample of every held-out batch is re-derived (`audit sample`); all 10,000 games of the five `rules_v2` held-out batches were re-derived in full and 9,994 reproduced exactly, the six that differ kept their outcome and act (RT-6-01, ADR-037). Not every game is re-derived: the development batches and the older `rules_v1` and `random_legal` batches have the sample audit or none (`docs/ADVERSARIAL-AUDIT.md`, campaign 6).
 * **Known gaps of the simulator** travel with every batch (`gaps.json`, ADR-024):
 
 <!-- table:gaps:begin -->
@@ -258,6 +259,14 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Limits:** **no registered test** (the page says so beside the panel): the claim is of the kind the card table's was before its held-out test, with one exploration behind it: read against 18,522 boss decks of random-draft runs that keep their relics (development seeds), counting the relics lowered the held-out log loss of predicting the Act-1 boss by 0.00089 (95 % 0.00041 to 0.00132; a tenth of the card term's gain; ADR-053 item 6). It could not have been tested in the simulator as it is: its runs keep two relics (G14, ADR-052), so a relic's supply changes the index in about 1 % of boss decks; with the harness variant that keeps relics a test is possible, and a development pair showed it would see nothing: counting the relics changes the pilot's deck in 2.7 % of games (ADR-051 addendum A), so no held-out test was registered. A relic that only multiplies a mechanic it cannot make (Strength, Poison) and one that acts only at a rest site or shop are read as nothing; drawbacks (a cap on cards played, a Status shuffled into the draw pile, a cost in gold) are not modelled; the starting relics' upgrades are not an input; a class's starting relic is counted by the card table's `innate`, not here.
 * **Kept true by:** `packages/game-data/test/relic-synergy.test.ts` (the hash, only catalog relics and card-table mechanics, no starting relic, spot facts, what is left out), `sim/tests/test_relicreading.py` (the committed table is what the readings make, the lower magnitude, a decision for every one-reader mechanic), the golden cases of the index with relics (`packages/decision/test/golden/advisor-index.json`, reproduced by the Python port) and the end-to-end tests of the relics panel.
 
+## D13. The Ascension 9 study (ADR-058)
+
+* **What:** the transfer of three Ascension 0 results to Ascension 9, and what was checked before it. `experiments/ascension9/`: `precondition.json` (3,500 development games: the six arms play at Ascension 9 in all five classes with the relics kept, and the Ascension is in force: the shown-values pilot gets past the Act-1 boss in 28.1 % of 499 completed games against 68.0 % of 491 at Ascension 0 on the same seeds), `ascension-check.json` (what the pinned simulator changes at each Ascension, read back against the rule register; the gold of Ascension 3 and the HP and damage of the Ascension 8 and 9 enemies were not read back), four pooled comparisons (`pooled-a9-t1-synergy-astar-vs-d0star`, `pooled-a9-t2-values-shown-vs-rules_v1`, `pooled-a9-t3-neow-keep-v1-vs-rules_v2` and the descriptive twin `pooled-a0keep-t2-values-shown-vs-rules_v1`, whose SHA-256 are recorded in ADR-058) and twenty per-class comparisons in `per-class/`. The 40 batches are under `experiments/batches/` (`<arm>-<class>-a9-veteran-keeprelics-val-n2000`, and `…-a0-…` for the twin).
+* **Design:** nothing refitted. T1 the synergy term (`A*` against `d0*`, the arms of ADR-054), T2 the card values the site shows (`rules_v2` following them against `rules_v1`; no test of that pair exists with the relics kept, so it has a descriptive twin at Ascension 0), T3 the opening-relic rule (the fit of ADR-055 against the first helpful relic). `--keep-relics`, Ascension 9, `veteran`, the 2,000 `val` seeds of each class, five classes pooled, one exact McNemar test per question read at 0.05 / 3 and the whole-seed interval of the pooled difference at that level excluding zero; 80,000 games from a clean checkout of the registration commit `687db50`, pushed before the first game. The same `val` seeds have now served these questions at Ascension 0 and at Ascension 9, uncorrected for each other.
+* **Result:** all three came out ahead (T1 10.1 % against 7.1 % past the Act-1 boss, p = 6.8e-28; T2 24.6 % against 9.6 %, p = 1.3e-247; T3 26.4 % against 22.9 %, p = 1.8e-16), each by fewer points than at Ascension 0 (+3.0 against +7.1, +15.0 against +25.9, +3.5 against +4.7), which is not a smaller relative gain, because the baselines get past the boss in 7.1, 9.6 and 22.9 % of games at Ascension 9 against 33.3, 41.2 and 64.5 % at Ascension 0. The opening-relic rule's own games were ahead at p below 0.01 for Ironclad, Regent, Necrobinder and Defect and not for Silent (70 pairs against 44, p = 0.019).
+* **Audits:** two interruptions (the harness's two-hour limit on a background task, a machine restart) were each resumed from the same commit with the finished batches verified against their own manifests and never touched; all 294 wins were re-derived (`audit wins`) and each of the 40 batches has a 40-game sample audit (40 of 40); `pool.sh` ran once; `scripts/verify-pooled.py`, which shares no code with the harness, recomputed every count, exact p-value, share, mean floor and the pooled difference of the four pooled files from the episode files, and their intervals by resamples of its own (97 checks per file, all agreeing).
+* **Limits:** Ascension 10 (the second boss is never played, G1) and the levels 1 to 8 are not tested; nothing fitted at Ascension 9 itself exists; one rules pilot per arm; the simulator is unverified against the live game; the pilots win next to nothing at Ascension 9 (the 38 against 5 wins of T2 are a secondary count).
+
 ---
 
 # Model cards
@@ -282,6 +291,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **What:** the additive ridge logistic regression of D6 and the rule built on it: take the offered card with the largest value if it exceeds 0 (the average card), otherwise skip. The site shows what that rule would take, each offered card's value with its interval and a plain statement when it differs from the heuristic. The rule is ported to TypeScript and checked against the Python policy on 80 golden cases (`apps/web/test/simulation-pick.test.ts`).
 * **Intended use:** a labelled second opinion beside the heuristic. **Not for:** "this card wins runs": the values are simulated, one-pilot, additive.
 * **Evaluation:** the registered held-out tests in the D6 and M5 tables. A pilot following the values got past the Act-1 boss more often than the same pilot without them in all five classes (each test significant at its registered level). It also won 6 games against none for Ironclad (p = 0.031) and 7 against none for Defect (p = 0.016); the Regent difference is one game against none, and Silent and Necrobinder won none either way.
+* **At Ascension 9 (ADR-058, nothing refitted):** the pilot that follows the values the site shows got past the Act-1 boss in 24.6 % of 9,906 held-out paired games against 9.6 % for the hand-written rules (1,819 pairs only with the values, 332 only with the rules, p = 1.3e-247; +15.0 points), every class ahead; the same pair at Ascension 0 with the relics kept, played as a descriptive twin, gave 67.1 % against 41.2 %. The gap is smaller in points at Ascension 9 because both pilots get past the boss far less often there.
 * **Fairness:** the same code serves all five classes; each class is shown only the values measured for it; classes with weaker pilots show weaker evidence and say so.
 * **Limits:** see D6; the values are additive, so a card that is good only with others is undervalued and a good-in-isolation card is not penalised for a deck that cannot use it.
 
@@ -289,7 +299,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 
 * **What:** the model of D7 and its rule: among the three relics offered, the one with the largest value (a relic not in the file counts as 0). The site compares the three offered relics with each one's estimated chance for the player's class (95 % interval, games behind it) and names the rule's choice, labelled simulated and unverified.
 * **Intended use:** a comparison to think with. **Not for:** deciding a run: a player's plan matters more than one number, and the values come from a pilot that cannot use every effect.
-* **Evaluation:** the pooled held-out tests of D7 (the repetition's, with the relics kept, is the one the site follows). The rule takes a costly relic in 41 % of games, which it is allowed to.
+* **Evaluation:** the pooled held-out tests of D7 (the repetition's, with the relics kept, is the one the site follows). The rule takes a costly relic in 41 % of games, which it is allowed to. At Ascension 9 (ADR-058, nothing refitted) it got past the Act-1 boss in 26.4 % of 9,879 pairs against 22.9 % for the first helpful relic (1,073 pairs only with the rule, 724 only with the baseline, p = 1.8e-16; +3.5 points); by the class rule written in advance (the class's own games ahead at p below 0.01) the advisor names a relic at Ascension 1 to 10 for Ironclad, Regent, Necrobinder and Defect, and for Silent shows the measurements and says it has no tested advice (70 pairs against 44, p = 0.019).
 * **Limits:** see D7.
 
 ## M5. Simulated pilots and searchers
@@ -310,76 +320,116 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 **Held-out results per pilot and class** (`val`, 2,000 games per batch except `search_v3`, 300; mean floor over the batch's completed games; paired comparisons use only the pairs both games completed, which moves a mean by a few hundredths):
 
 <!-- table:policies:begin -->
-| Pilot | Class | Games | Completed | Wins | Wilson 95 % for the win rate | Mean floor | Simulator errors · timeouts |
-|---|---|---|---|---|---|---|---|
-| random_legal | Ironclad | 2000 | 2000 | 0 | 0.00 to 0.19 % | 4.48 | 0 · 0 |
-| rules_v1 | Defect | 2000 | 1999 | 0 | 0.00 to 0.19 % | 15.93 | 1 · 0 |
-| rules_v1 | Ironclad | 2000 | 1997 | 0 | 0.00 to 0.19 % | 18.08 | 3 · 0 |
-| rules_v1 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 17.63 | 3 · 0 |
-| rules_v1 | Regent | 2000 | 1987 | 0 | 0.00 to 0.19 % | 13.54 | 0 · 13 |
-| rules_v1 | Silent | 2000 | 1999 | 0 | 0.00 to 0.19 % | 13.36 | 1 · 0 |
-| rules_v2 | Defect | 2000 | 1934 | 62 | 2.51 to 4.09 % | 25.01 | 66 · 0 |
-| rules_v2 | Defect | 2000 | 1996 | 7 | 0.17 to 0.72 % | 21.30 | 4 · 0 |
-| rules_v2 | Ironclad | 2000 | 1936 | 91 | 3.84 to 5.74 % | 26.65 | 64 · 0 |
-| rules_v2 | Ironclad | 2000 | 1994 | 6 | 0.14 to 0.65 % | 21.07 | 6 · 0 |
-| rules_v2 | Necrobinder | 2000 | 1961 | 2 | 0.03 to 0.37 % | 22.60 | 37 · 2 |
-| rules_v2 | Necrobinder | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
-| rules_v2 | Regent | 2000 | 1956 | 6 | 0.14 to 0.67 % | 20.37 | 33 · 11 |
-| rules_v2 | Regent | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
-| rules_v2 | Silent | 2000 | 1987 | 0 | 0.00 to 0.19 % | 15.84 | 13 · 0 |
-| rules_v2 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
-| rules_v3 | Defect | 2000 | 1945 | 46 | 1.78 to 3.14 % | 25.01 | 55 · 0 |
-| rules_v3 | Defect | 2000 | 1998 | 10 | 0.27 to 0.92 % | 21.86 | 2 · 0 |
-| rules_v3 | Defect | 2000 | 1935 | 46 | 1.79 to 3.16 % | 25.26 | 65 · 0 |
-| rules_v3 | Ironclad | 2000 | 1928 | 40 | 1.53 to 2.81 % | 27.44 | 72 · 0 |
-| rules_v3 | Ironclad | 2000 | 1996 | 6 | 0.14 to 0.65 % | 22.46 | 4 · 0 |
-| rules_v3 | Ironclad | 2000 | 1930 | 37 | 1.39 to 2.63 % | 26.88 | 70 · 0 |
-| rules_v3 + Ironclad values v2 | Ironclad | 2000 | 1992 | 2 | 0.03 to 0.37 % | 23.19 | 8 · 0 |
-| rules_v3 | Necrobinder | 2000 | 1962 | 1 | 0.01 to 0.29 % | 22.80 | 37 · 1 |
-| rules_v3 | Necrobinder | 2000 | 1962 | 0 | 0.00 to 0.20 % | 23.58 | 38 · 0 |
-| rules_v3 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 20.28 | 3 · 0 |
-| rules_v3 | Regent | 2000 | 1964 | 3 | 0.05 to 0.45 % | 20.55 | 25 · 11 |
-| rules_v3 | Regent | 2000 | 1954 | 6 | 0.14 to 0.67 % | 21.27 | 32 · 14 |
-| rules_v3 | Regent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 18.44 | 0 · 10 |
-| rules_v3 | Silent | 2000 | 1991 | 0 | 0.00 to 0.19 % | 16.27 | 9 · 0 |
-| rules_v3 | Silent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 16.23 | 10 · 0 |
-| rules_v3 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.01 | 0 · 0 |
-| rules_v2_neow_values | Defect | 2000 | 1990 | 16 | 0.50 to 1.30 % | 22.39 | 10 · 0 |
-| rules_v2_neow_values | Defect | 2000 | 1936 | 65 | 2.64 to 4.26 % | 26.01 | 64 · 0 |
-| rules_v2_neow_values | Defect | 2000 | 1941 | 61 | 2.45 to 4.02 % | 25.90 | 59 · 0 |
-| rules_v2_neow_values | Ironclad | 2000 | 1984 | 12 | 0.35 to 1.05 % | 22.69 | 16 · 0 |
-| rules_v2_neow_values | Ironclad | 2000 | 1924 | 106 | 4.58 to 6.62 % | 27.83 | 76 · 0 |
-| rules_v2_neow_values | Ironclad | 2000 | 1930 | 115 | 4.99 to 7.10 % | 27.71 | 70 · 0 |
-| rules_v2_neow_values | Necrobinder | 2000 | 1951 | 0 | 0.00 to 0.20 % | 23.35 | 46 · 3 |
-| rules_v2_neow_values | Necrobinder | 2000 | 1992 | 0 | 0.00 to 0.19 % | 20.62 | 8 · 0 |
-| rules_v2_neow_values | Necrobinder | 2000 | 1956 | 1 | 0.01 to 0.29 % | 23.18 | 42 · 2 |
-| rules_v2_neow_values | Regent | 2000 | 1937 | 5 | 0.11 to 0.60 % | 21.86 | 41 · 22 |
-| rules_v2_neow_values | Regent | 2000 | 1948 | 6 | 0.14 to 0.67 % | 21.72 | 34 · 18 |
-| rules_v2_neow_values | Regent | 2000 | 1976 | 1 | 0.01 to 0.29 % | 19.29 | 6 · 18 |
-| rules_v2_neow_values | Silent | 2000 | 1984 | 0 | 0.00 to 0.19 % | 17.28 | 16 · 0 |
-| rules_v2_neow_values | Silent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 17.23 | 12 · 0 |
-| rules_v2_neow_values | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.53 | 0 · 0 |
-| search_v3 (every fight) | Ironclad | 300 | 300 | 2 | 0.18 to 2.40 % | 24.45 | 0 · 0 |
-| advisor_v1 | Defect | 2000 | 1983 | 0 | 0.00 to 0.19 % | 17.94 | 17 · 0 |
-| advisor_v1 | Defect | 2000 | 2000 | 0 | 0.00 to 0.19 % | 16.18 | 0 · 0 |
-| advisor_v1 | Defect | 2000 | 1986 | 0 | 0.00 to 0.19 % | 16.58 | 14 · 0 |
-| advisor_v1 | Defect | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.23 | 2 · 0 |
-| advisor_v1 | Ironclad | 2000 | 1959 | 13 | 0.39 to 1.13 % | 21.70 | 41 · 0 |
-| advisor_v1 | Ironclad | 2000 | 1997 | 2 | 0.03 to 0.36 % | 18.66 | 3 · 0 |
-| advisor_v1 | Ironclad | 2000 | 1969 | 12 | 0.35 to 1.06 % | 19.70 | 31 · 0 |
-| advisor_v1 | Ironclad | 2000 | 1998 | 0 | 0.00 to 0.19 % | 17.18 | 2 · 0 |
-| advisor_v1 | Necrobinder | 2000 | 1978 | 0 | 0.00 to 0.19 % | 18.09 | 22 · 0 |
-| advisor_v1 | Necrobinder | 2000 | 1997 | 0 | 0.00 to 0.19 % | 16.44 | 3 · 0 |
-| advisor_v1 | Necrobinder | 2000 | 1983 | 1 | 0.01 to 0.29 % | 17.30 | 17 · 0 |
-| advisor_v1 | Necrobinder | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.88 | 2 · 0 |
-| advisor_v1 | Regent | 2000 | 1982 | 0 | 0.00 to 0.19 % | 15.24 | 7 · 11 |
-| advisor_v1 | Regent | 2000 | 1990 | 0 | 0.00 to 0.19 % | 14.31 | 1 · 9 |
-| advisor_v1 | Regent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.74 | 6 · 6 |
-| advisor_v1 | Regent | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.04 | 1 · 11 |
-| advisor_v1 | Silent | 2000 | 1994 | 0 | 0.00 to 0.19 % | 13.41 | 6 · 0 |
-| advisor_v1 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.61 | 0 · 0 |
-| advisor_v1 | Silent | 2000 | 1995 | 0 | 0.00 to 0.19 % | 12.88 | 5 · 0 |
-| advisor_v1 | Silent | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.31 | 0 · 0 |
+| Pilot | Class | Game | Games | Completed | Wins | Wilson 95 % for the win rate | Mean floor | Simulator errors · timeouts |
+|---|---|---|---|---|---|---|---|---|
+| random_legal | Ironclad | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 4.48 | 0 · 0 |
+| rules_v1 | Defect | A0, relics dropped | 2000 | 1999 | 0 | 0.00 to 0.19 % | 15.93 | 1 · 0 |
+| rules_v1 | Defect | A0, relics kept | 2000 | 1985 | 0 | 0.00 to 0.19 % | 17.93 | 15 · 0 |
+| rules_v1 | Defect | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 10.91 | 1 · 0 |
+| rules_v1 | Ironclad | A0, relics dropped | 2000 | 1997 | 0 | 0.00 to 0.19 % | 18.08 | 3 · 0 |
+| rules_v1 | Ironclad | A0, relics kept | 2000 | 1959 | 22 | 0.74 to 1.69 % | 22.40 | 41 · 0 |
+| rules_v1 | Ironclad | A9, relics kept | 2000 | 1982 | 5 | 0.11 to 0.59 % | 14.52 | 17 · 1 |
+| rules_v1 | Necrobinder | A0, relics dropped | 2000 | 1997 | 0 | 0.00 to 0.19 % | 17.63 | 3 · 0 |
+| rules_v1 | Necrobinder | A0, relics kept | 2000 | 1972 | 1 | 0.01 to 0.29 % | 20.25 | 28 · 0 |
+| rules_v1 | Necrobinder | A9, relics kept | 2000 | 1994 | 0 | 0.00 to 0.19 % | 12.60 | 6 · 0 |
+| rules_v1 | Regent | A0, relics dropped | 2000 | 1987 | 0 | 0.00 to 0.19 % | 13.54 | 0 · 13 |
+| rules_v1 | Regent | A0, relics kept | 2000 | 1981 | 0 | 0.00 to 0.19 % | 14.72 | 5 · 14 |
+| rules_v1 | Regent | A9, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 10.35 | 1 · 11 |
+| rules_v1 | Silent | A0, relics dropped | 2000 | 1999 | 0 | 0.00 to 0.19 % | 13.36 | 1 · 0 |
+| rules_v1 | Silent | A0, relics kept | 2000 | 1993 | 0 | 0.00 to 0.19 % | 14.40 | 7 · 0 |
+| rules_v1 | Silent | A9, relics kept | 2000 | 1997 | 0 | 0.00 to 0.19 % | 9.65 | 3 · 0 |
+| rules_v2 | Defect | A0, relics dropped | 2000 | 1996 | 7 | 0.17 to 0.72 % | 21.30 | 4 · 0 |
+| rules_v2 | Defect | A0, relics kept | 2000 | 1934 | 62 | 2.51 to 4.09 % | 25.01 | 66 · 0 |
+| rules_v2 | Defect | A9, relics kept | 2000 | 1986 | 15 | 0.46 to 1.24 % | 15.25 | 14 · 0 |
+| rules_v2 [the card values shown on the site] | Defect | A0, relics kept | 2000 | 1930 | 68 | 2.79 to 4.44 % | 25.36 | 70 · 0 |
+| rules_v2 [the card values shown on the site] | Defect | A9, relics kept | 2000 | 1987 | 18 | 0.57 to 1.43 % | 15.21 | 13 · 0 |
+| rules_v2 | Ironclad | A0, relics dropped | 2000 | 1994 | 6 | 0.14 to 0.65 % | 21.07 | 6 · 0 |
+| rules_v2 | Ironclad | A0, relics kept | 2000 | 1936 | 91 | 3.84 to 5.74 % | 26.65 | 64 · 0 |
+| rules_v2 | Ironclad | A9, relics kept | 2000 | 1985 | 12 | 0.35 to 1.05 % | 17.02 | 15 · 0 |
+| rules_v2 [the card values shown on the site] | Ironclad | A0, relics kept | 2000 | 1917 | 78 | 3.27 to 5.05 % | 27.33 | 83 · 0 |
+| rules_v2 [the card values shown on the site] | Ironclad | A9, relics kept | 2000 | 1980 | 17 | 0.54 to 1.37 % | 17.81 | 20 · 0 |
+| rules_v2 | Necrobinder | A0, relics dropped | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
+| rules_v2 | Necrobinder | A0, relics kept | 2000 | 1961 | 2 | 0.03 to 0.37 % | 22.60 | 37 · 2 |
+| rules_v2 | Necrobinder | A9, relics kept | 2000 | 1992 | 0 | 0.00 to 0.19 % | 13.85 | 8 · 0 |
+| rules_v2 [the card values shown on the site] | Necrobinder | A0, relics kept | 2000 | 1957 | 0 | 0.00 to 0.20 % | 23.46 | 43 · 0 |
+| rules_v2 [the card values shown on the site] | Necrobinder | A9, relics kept | 2000 | 1988 | 1 | 0.01 to 0.28 % | 14.53 | 12 · 0 |
+| rules_v2 | Regent | A0, relics dropped | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
+| rules_v2 | Regent | A0, relics kept | 2000 | 1956 | 6 | 0.14 to 0.67 % | 20.37 | 33 · 11 |
+| rules_v2 | Regent | A9, relics kept | 2000 | 1981 | 1 | 0.01 to 0.29 % | 13.59 | 3 · 16 |
+| rules_v2 [the card values shown on the site] | Regent | A0, relics kept | 2000 | 1945 | 12 | 0.35 to 1.08 % | 21.14 | 35 · 20 |
+| rules_v2 [the card values shown on the site] | Regent | A9, relics kept | 2000 | 1979 | 2 | 0.03 to 0.37 % | 14.25 | 8 · 13 |
+| rules_v2 | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
+| rules_v2 | Silent | A0, relics kept | 2000 | 1987 | 0 | 0.00 to 0.19 % | 15.84 | 13 · 0 |
+| rules_v2 | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.36 | 0 · 0 |
+| rules_v2 [the card values shown on the site] | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
+| rules_v2 [the card values shown on the site] | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.21 | 0 · 0 |
+| rules_v3 | Defect | A0, relics dropped | 2000 | 1998 | 10 | 0.27 to 0.92 % | 21.86 | 2 · 0 |
+| rules_v3 [card values measured again with the relics kept] | Defect | A0, relics kept | 2000 | 1935 | 46 | 1.79 to 3.16 % | 25.26 | 65 · 0 |
+| rules_v3 [the card values shown at the time] | Defect | A0, relics kept | 2000 | 1945 | 46 | 1.78 to 3.14 % | 25.01 | 55 · 0 |
+| rules_v3 | Ironclad | A0, relics dropped | 2000 | 1996 | 6 | 0.14 to 0.65 % | 22.46 | 4 · 0 |
+| rules_v3 + Ironclad values v2 | Ironclad | A0, relics dropped | 2000 | 1992 | 2 | 0.03 to 0.37 % | 23.19 | 8 · 0 |
+| rules_v3 [card values measured again with the relics kept] | Ironclad | A0, relics kept | 2000 | 1930 | 37 | 1.39 to 2.63 % | 26.88 | 70 · 0 |
+| rules_v3 [the card values shown at the time] | Ironclad | A0, relics kept | 2000 | 1928 | 40 | 1.53 to 2.81 % | 27.44 | 72 · 0 |
+| rules_v3 | Necrobinder | A0, relics dropped | 2000 | 1997 | 0 | 0.00 to 0.19 % | 20.28 | 3 · 0 |
+| rules_v3 [card values measured again with the relics kept] | Necrobinder | A0, relics kept | 2000 | 1962 | 0 | 0.00 to 0.20 % | 23.58 | 38 · 0 |
+| rules_v3 [the card values shown at the time] | Necrobinder | A0, relics kept | 2000 | 1962 | 1 | 0.01 to 0.29 % | 22.80 | 37 · 1 |
+| rules_v3 | Regent | A0, relics dropped | 2000 | 1990 | 0 | 0.00 to 0.19 % | 18.44 | 0 · 10 |
+| rules_v3 [card values measured again with the relics kept] | Regent | A0, relics kept | 2000 | 1954 | 6 | 0.14 to 0.67 % | 21.27 | 32 · 14 |
+| rules_v3 [the card values shown at the time] | Regent | A0, relics kept | 2000 | 1964 | 3 | 0.05 to 0.45 % | 20.55 | 25 · 11 |
+| rules_v3 | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.01 | 0 · 0 |
+| rules_v3 [card values measured again with the relics kept] | Silent | A0, relics kept | 2000 | 1990 | 0 | 0.00 to 0.19 % | 16.23 | 10 · 0 |
+| rules_v3 [the card values shown at the time] | Silent | A0, relics kept | 2000 | 1991 | 0 | 0.00 to 0.19 % | 16.27 | 9 · 0 |
+| rules_v2_neow_values | Defect | A0, relics dropped | 2000 | 1990 | 16 | 0.50 to 1.30 % | 22.39 | 10 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Defect | A0, relics kept | 2000 | 1936 | 65 | 2.64 to 4.26 % | 26.01 | 64 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Defect | A9, relics kept | 2000 | 1979 | 19 | 0.62 to 1.49 % | 16.44 | 21 · 0 |
+| rules_v2_neow_values [relic values of the first study] | Defect | A0, relics kept | 2000 | 1941 | 61 | 2.45 to 4.02 % | 25.90 | 59 · 0 |
+| rules_v2_neow_values | Ironclad | A0, relics dropped | 2000 | 1984 | 12 | 0.35 to 1.05 % | 22.69 | 16 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Ironclad | A0, relics kept | 2000 | 1924 | 106 | 4.58 to 6.62 % | 27.83 | 76 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Ironclad | A9, relics kept | 2000 | 1977 | 21 | 0.70 to 1.62 % | 17.70 | 23 · 0 |
+| rules_v2_neow_values [relic values of the first study] | Ironclad | A0, relics kept | 2000 | 1930 | 115 | 4.99 to 7.10 % | 27.71 | 70 · 0 |
+| rules_v2_neow_values | Necrobinder | A0, relics dropped | 2000 | 1992 | 0 | 0.00 to 0.19 % | 20.62 | 8 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Necrobinder | A0, relics kept | 2000 | 1951 | 0 | 0.00 to 0.20 % | 23.35 | 46 · 3 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Necrobinder | A9, relics kept | 2000 | 1982 | 0 | 0.00 to 0.19 % | 14.46 | 18 · 0 |
+| rules_v2_neow_values [relic values of the first study] | Necrobinder | A0, relics kept | 2000 | 1956 | 1 | 0.01 to 0.29 % | 23.18 | 42 · 2 |
+| rules_v2_neow_values | Regent | A0, relics dropped | 2000 | 1976 | 1 | 0.01 to 0.29 % | 19.29 | 6 · 18 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Regent | A0, relics kept | 2000 | 1937 | 5 | 0.11 to 0.60 % | 21.86 | 41 · 22 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Regent | A9, relics kept | 2000 | 1969 | 0 | 0.00 to 0.19 % | 14.47 | 9 · 22 |
+| rules_v2_neow_values [relic values of the first study] | Regent | A0, relics kept | 2000 | 1948 | 6 | 0.14 to 0.67 % | 21.72 | 34 · 18 |
+| rules_v2_neow_values | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 15.53 | 0 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Silent | A0, relics kept | 2000 | 1984 | 0 | 0.00 to 0.19 % | 17.28 | 16 · 0 |
+| rules_v2_neow_values [relic values fitted with the relics kept] | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 11.51 | 0 · 0 |
+| rules_v2_neow_values [relic values of the first study] | Silent | A0, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 17.23 | 12 · 0 |
+| search_v3 (every fight) | Ironclad | A0, relics dropped | 300 | 300 | 2 | 0.18 to 2.40 % | 24.45 | 0 · 0 |
+| advisor_v1 [synergy term off, d0*] | Defect | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.23 | 2 · 0 |
+| advisor_v1 [synergy term off, d0*] | Defect | A0, relics kept | 2000 | 1986 | 0 | 0.00 to 0.19 % | 16.58 | 14 · 0 |
+| advisor_v1 [synergy term off, d0*] | Defect | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.79 | 0 · 0 |
+| advisor_v1 [synergy term on, A*] | Defect | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 16.18 | 0 · 0 |
+| advisor_v1 [synergy term on, A*] | Defect | A0, relics kept | 2000 | 1983 | 0 | 0.00 to 0.19 % | 17.94 | 17 · 0 |
+| advisor_v1 [synergy term on, A*] | Defect | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 11.46 | 1 · 0 |
+| advisor_v1 [synergy term off, d0*] | Ironclad | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 17.18 | 2 · 0 |
+| advisor_v1 [synergy term off, d0*] | Ironclad | A0, relics kept | 2000 | 1969 | 12 | 0.35 to 1.06 % | 19.70 | 31 · 0 |
+| advisor_v1 [synergy term off, d0*] | Ironclad | A9, relics kept | 2000 | 1994 | 2 | 0.03 to 0.36 % | 13.73 | 5 · 1 |
+| advisor_v1 [synergy term on, A*] | Ironclad | A0, relics dropped | 2000 | 1997 | 2 | 0.03 to 0.36 % | 18.66 | 3 · 0 |
+| advisor_v1 [synergy term on, A*] | Ironclad | A0, relics kept | 2000 | 1959 | 13 | 0.39 to 1.13 % | 21.70 | 41 · 0 |
+| advisor_v1 [synergy term on, A*] | Ironclad | A9, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 14.97 | 11 · 0 |
+| advisor_v1 [synergy term off, d0*] | Necrobinder | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.88 | 2 · 0 |
+| advisor_v1 [synergy term off, d0*] | Necrobinder | A0, relics kept | 2000 | 1983 | 1 | 0.01 to 0.29 % | 17.30 | 17 · 0 |
+| advisor_v1 [synergy term off, d0*] | Necrobinder | A9, relics kept | 2000 | 1997 | 0 | 0.00 to 0.19 % | 11.45 | 3 · 0 |
+| advisor_v1 [synergy term on, A*] | Necrobinder | A0, relics dropped | 2000 | 1997 | 0 | 0.00 to 0.19 % | 16.44 | 3 · 0 |
+| advisor_v1 [synergy term on, A*] | Necrobinder | A0, relics kept | 2000 | 1978 | 0 | 0.00 to 0.19 % | 18.09 | 22 · 0 |
+| advisor_v1 [synergy term on, A*] | Necrobinder | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 11.76 | 1 · 0 |
+| advisor_v1 [synergy term off, d0*] | Regent | A0, relics dropped | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.04 | 1 · 11 |
+| advisor_v1 [synergy term off, d0*] | Regent | A0, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.74 | 6 · 6 |
+| advisor_v1 [synergy term off, d0*] | Regent | A9, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 9.84 | 0 · 11 |
+| advisor_v1 [synergy term on, A*] | Regent | A0, relics dropped | 2000 | 1990 | 0 | 0.00 to 0.19 % | 14.31 | 1 · 9 |
+| advisor_v1 [synergy term on, A*] | Regent | A0, relics kept | 2000 | 1982 | 0 | 0.00 to 0.19 % | 15.24 | 7 · 11 |
+| advisor_v1 [synergy term on, A*] | Regent | A9, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 10.90 | 0 · 12 |
+| advisor_v1 [synergy term off, d0*] | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.31 | 0 · 0 |
+| advisor_v1 [synergy term off, d0*] | Silent | A0, relics kept | 2000 | 1995 | 0 | 0.00 to 0.19 % | 12.88 | 5 · 0 |
+| advisor_v1 [synergy term off, d0*] | Silent | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 9.24 | 1 · 0 |
+| advisor_v1 [synergy term on, A*] | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.61 | 0 · 0 |
+| advisor_v1 [synergy term on, A*] | Silent | A0, relics kept | 2000 | 1994 | 0 | 0.00 to 0.19 % | 13.41 | 6 · 0 |
+| advisor_v1 [synergy term on, A*] | Silent | A9, relics kept | 2000 | 1998 | 0 | 0.00 to 0.19 % | 9.35 | 2 · 0 |
 <!-- table:policies:end -->
 
 **Every comparison that was made** (the held-out ones registered as shown, the development ones labelled; exact McNemar on the shared seeds, mean-floor differences with a seed bootstrap):
@@ -390,22 +440,46 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | `pooled-neow-values-v2-vs-rules_v2-val` | ADR-049, **the registered test** | all five classes · val | rules_v2_neow_values | rules_v2 | 9932 | 61.05 % · 54.30 % | 1487 · 817 | 9.1e-45 | +1.27 (+1.13 to +1.41, resampling pairs) | 29 · 14 |
 | `pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val` | ADR-055, **the registered test** | all five classes · val | rules_v2_neow_values | rules_v2 | 9629 | 69.16 % · 64.45 % | 1258 · 805 | 1.7e-23 | +1.15 (+0.98 to +1.33, resampling pairs) | 174 · 158 |
 | `pooled-neow-values-v2-vs-rules_v2-keeprelics-val` | ADR-055, secondary arm (decides nothing) | all five classes · val | rules_v2_neow_values | rules_v2 | 9648 | 69.08 % · 64.51 % | 1245 · 804 | 1.7e-22 | +1.03 (+0.85 to +1.21, resampling pairs) | 181 · 158 |
-| `advisor_v1-astar-vs-d0star-defect-a0-veteran-keeprelics-val` |  | Defect · val | advisor_v1 | advisor_v1 | 1978 | 49.2 % · 40.8 % | 328 · 162 | 5.2e-14 | +1.32 (+1.04 to +1.61) | 0 · 0 |
-| `advisor_v1-astar-vs-d0star-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | advisor_v1 | advisor_v1 | 1946 | 60.0 % · 48.8 % | 373 · 154 | 5.5e-22 | +2.05 (+1.67 to +2.45) | 13 · 11 |
-| `advisor_v1-astar-vs-d0star-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | advisor_v1 | advisor_v1 | 1972 | 47.6 % · 43.9 % | 193 · 120 | 4.4e-05 | +0.78 (+0.54 to +1.03) | 0 · 1 |
-| `advisor_v1-astar-vs-d0star-regent-a0-veteran-keeprelics-val` |  | Regent · val | advisor_v1 | advisor_v1 | 1978 | 27.5 % · 18.6 % | 259 · 84 | 6.9e-22 | +1.51 (+1.29 to +1.74) | 0 · 0 |
-| `advisor_v1-astar-vs-d0star-silent-a0-veteran-keeprelics-val` |  | Silent · val | advisor_v1 | advisor_v1 | 1991 | 18.1 % · 14.6 % | 172 · 102 | 2.8e-05 | +0.54 (+0.34 to +0.74) | 0 · 0 |
-| `defect-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1906 | 85.0 % · 82.5 % | 172 · 123 | 0.0051 | +0.93 (+0.50 to +1.35) | 64 · 62 |
-| `defect-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1909 | 86.0 % · 82.6 % | 181 · 116 | 1.9e-04 | +0.78 (+0.35 to +1.20) | 60 · 62 |
+| `pooled-a9-t1-synergy-astar-vs-d0star` | ADR-058 T1 at Ascension 9, **the registered test** | all five classes · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 9964 | 10.12 % · 7.14 % | 524 · 227 | 6.8e-28 | +0.68 (+0.60 to +0.77, resampling pairs) | 0 · 1 |
+| `pooled-a9-t2-values-shown-vs-rules_v1` | ADR-058 T2 at Ascension 9, **the registered test** | all five classes · val | rules_v2 [the card values shown on the site] | rules_v1 | 9906 | 24.61 % · 9.60 % | 1819 · 332 | 1.3e-247 | +2.78 (+2.63 to +2.92, resampling pairs) | 38 · 5 |
+| `pooled-a9-t3-neow-keep-v1-vs-rules_v2` | ADR-058 T3 at Ascension 9, **the registered test** | all five classes · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 9879 | 26.43 % · 22.90 % | 1073 · 724 | 1.8e-16 | +0.91 (+0.77 to +1.05, resampling pairs) | 40 · 28 |
+| `pooled-a0keep-t2-values-shown-vs-rules_v1` | ADR-058 twin of T2 at Ascension 0, relics kept (descriptive) | all five classes · val | rules_v2 [the card values shown on the site] | rules_v1 | 9686 | 67.07 % · 41.18 % | 3010 · 503 | < 1e-300 | +4.63 (+4.44 to +4.82, resampling pairs) | 156 · 22 |
+| `advisor_v1-astar-vs-d0star-defect-a0-veteran-keeprelics-val` |  | Defect · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1978 | 49.2 % · 40.8 % | 328 · 162 | 5.2e-14 | +1.32 (+1.04 to +1.61) | 0 · 0 |
+| `advisor_v1-astar-vs-d0star-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1946 | 60.0 % · 48.8 % | 373 · 154 | 5.5e-22 | +2.05 (+1.67 to +2.45) | 13 · 11 |
+| `advisor_v1-astar-vs-d0star-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1972 | 47.6 % · 43.9 % | 193 · 120 | 4.4e-05 | +0.78 (+0.54 to +1.03) | 0 · 1 |
+| `advisor_v1-astar-vs-d0star-regent-a0-veteran-keeprelics-val` |  | Regent · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1978 | 27.5 % · 18.6 % | 259 · 84 | 6.9e-22 | +1.51 (+1.29 to +1.74) | 0 · 0 |
+| `advisor_v1-astar-vs-d0star-silent-a0-veteran-keeprelics-val` |  | Silent · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1991 | 18.1 % · 14.6 % | 172 · 102 | 2.8e-05 | +0.54 (+0.34 to +0.74) | 0 · 0 |
+| `ascension9/a0keep-t2-defect` | ADR-058 twin at Ascension 0, relics kept (descriptive) | Defect · val | rules_v2 [the card values shown on the site] | rules_v1 | 1923 | 83.4 % · 45.4 % | 800 · 70 | 7.8e-158 | +7.39 (+6.91 to +7.88) | 68 · 0 |
+| `ascension9/a0keep-t2-ironclad` | ADR-058 twin at Ascension 0, relics kept (descriptive) | Ironclad · val | rules_v2 [the card values shown on the site] | rules_v1 | 1899 | 80.3 % · 61.3 % | 465 · 105 | 5.2e-55 | +4.93 (+4.45 to +5.40) | 76 · 21 |
+| `ascension9/a0keep-t2-necrobinder` | ADR-058 twin at Ascension 0, relics kept (descriptive) | Necrobinder · val | rules_v2 [the card values shown on the site] | rules_v1 | 1944 | 75.9 % · 57.8 % | 481 · 130 | 2.8e-48 | +3.20 (+2.79 to +3.61) | 0 · 1 |
+| `ascension9/a0keep-t2-regent` | ADR-058 twin at Ascension 0, relics kept (descriptive) | Regent · val | rules_v2 [the card values shown on the site] | rules_v1 | 1934 | 63.9 % · 21.9 % | 868 · 57 | 3.8e-187 | +6.46 (+6.07 to +6.85) | 12 · 0 |
+| `ascension9/a0keep-t2-silent` | ADR-058 twin at Ascension 0, relics kept (descriptive) | Silent · val | rules_v2 [the card values shown on the site] | rules_v1 | 1986 | 33.2 % · 20.3 % | 396 · 141 | 5.0e-29 | +1.30 (+1.01 to +1.58) | 0 · 0 |
+| `ascension9/a9-t1-defect` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Defect · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1999 | 10.5 % · 6.6 % | 125 · 47 | 2.3e-09 | +0.67 (+0.50 to +0.85) | 0 · 0 |
+| `ascension9/a9-t1-ironclad` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Ironclad · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1984 | 19.8 % · 13.6 % | 216 · 92 | 1.2e-12 | +1.27 (+1.00 to +1.54) | 0 · 1 |
+| `ascension9/a9-t1-necrobinder` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Necrobinder · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1996 | 11.7 % · 10.7 % | 72 · 51 | 0.071 | +0.31 (+0.17 to +0.46) | 0 · 0 |
+| `ascension9/a9-t1-regent` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Regent · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1987 | 6.9 % · 3.3 % | 90 · 17 | 3.5e-13 | +1.05 (+0.88 to +1.23) | 0 · 0 |
+| `ascension9/a9-t1-silent` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Silent · val | advisor_v1 [synergy term on, A*] | advisor_v1 [synergy term off, d0*] | 1998 | 1.7 % · 1.7 % | 21 · 20 | 1 | +0.12 (-0.03 to +0.26) | 0 · 0 |
+| `ascension9/a9-t2-defect` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Defect · val | rules_v2 [the card values shown on the site] | rules_v1 | 1986 | 34.7 % · 6.4 % | 608 · 46 | 3.4e-126 | +4.30 (+3.91 to +4.67) | 18 · 0 |
+| `ascension9/a9-t2-ironclad` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2 [the card values shown on the site] | rules_v1 | 1968 | 35.4 % · 18.7 % | 436 · 107 | 4.3e-48 | +3.22 (+2.84 to +3.61) | 17 · 5 |
+| `ascension9/a9-t2-necrobinder` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2 [the card values shown on the site] | rules_v1 | 1985 | 26.8 % · 16.1 % | 341 · 128 | 2.1e-23 | +1.94 (+1.64 to +2.23) | 1 · 0 |
+| `ascension9/a9-t2-regent` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Regent · val | rules_v2 [the card values shown on the site] | rules_v1 | 1970 | 22.3 % · 5.0 % | 372 · 30 | 3.5e-76 | +3.91 (+3.61 to +4.19) | 2 · 0 |
+| `ascension9/a9-t2-silent` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Silent · val | rules_v2 [the card values shown on the site] | rules_v1 | 1997 | 4.0 % · 1.9 % | 62 · 21 | 7.5e-06 | +0.55 (+0.34 to +0.75) | 0 · 0 |
+| `ascension9/a9-t3-defect` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1971 | 41.4 % · 34.5 % | 313 · 177 | 8.4e-10 | +1.20 (+0.85 to +1.56) | 19 · 15 |
+| `ascension9/a9-t3-ironclad` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1970 | 36.6 % · 33.5 % | 267 · 204 | 0.0042 | +0.69 (+0.27 to +1.10) | 21 · 12 |
+| `ascension9/a9-t3-necrobinder` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1980 | 26.7 % · 23.4 % | 228 · 163 | 0.0012 | +0.62 (+0.32 to +0.93) | 0 · 0 |
+| `ascension9/a9-t3-regent` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1958 | 21.9 % · 18.9 % | 195 · 136 | 0.0014 | +0.88 (+0.60 to +1.17) | 0 · 1 |
+| `ascension9/a9-t3-silent` | ADR-058 at Ascension 9 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 2000 | 5.8 % · 4.5 % | 70 · 44 | 0.019 | +1.15 (+0.92 to +1.38) | 0 · 0 |
+| `defect-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1906 | 85.0 % · 82.5 % | 172 · 123 | 0.0051 | +0.93 (+0.50 to +1.35) | 64 · 62 |
+| `defect-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values [relic values of the first study] | rules_v2 | 1909 | 86.0 % · 82.6 % | 181 · 116 | 1.9e-04 | +0.78 (+0.35 to +1.20) | 60 · 62 |
 | `defect-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Defect · val | rules_v2_neow_values | rules_v2 | 1989 | 80.0 % · 76.2 % | 232 · 156 | 1.3e-04 | +1.08 (+0.74 to +1.42) | 16 · 7 |
-| `ironclad-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1899 | 80.2 % · 77.3 % | 202 · 146 | 0.0031 | +1.26 (+0.79 to +1.74) | 105 · 88 |
-| `ironclad-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1901 | 79.9 % · 77.4 % | 200 · 152 | 0.012 | +1.09 (+0.62 to +1.57) | 114 · 88 |
+| `ironclad-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1899 | 80.2 % · 77.3 % | 202 · 146 | 0.0031 | +1.26 (+0.79 to +1.74) | 105 · 88 |
+| `ironclad-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values [relic values of the first study] | rules_v2 | 1901 | 79.9 % · 77.4 % | 200 · 152 | 0.012 | +1.09 (+0.62 to +1.57) | 114 · 88 |
 | `ironclad-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Ironclad · val | rules_v2_neow_values | rules_v2 | 1982 | 71.2 % · 65.1 % | 301 · 181 | 5.1e-08 | +1.63 (+1.26 to +2.01) | 12 · 6 |
-| `necrobinder-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1934 | 74.5 % · 71.4 % | 248 · 189 | 0.0055 | +0.71 (+0.32 to +1.10) | 0 · 2 |
-| `necrobinder-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1937 | 74.2 % · 71.4 % | 248 · 193 | 0.01 | +0.53 (+0.16 to +0.92) | 1 · 2 |
+| `necrobinder-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1934 | 74.5 % · 71.4 % | 248 · 189 | 0.0055 | +0.71 (+0.32 to +1.10) | 0 · 2 |
+| `necrobinder-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values [relic values of the first study] | rules_v2 | 1937 | 74.2 % · 71.4 % | 248 · 193 | 0.01 | +0.53 (+0.16 to +0.92) | 1 · 2 |
 | `necrobinder-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Necrobinder · val | rules_v2_neow_values | rules_v2 | 1992 | 67.5 % · 62.1 % | 301 · 195 | 2.2e-06 | +0.99 (+0.68 to +1.30) | 0 · 0 |
-| `regent-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values | rules_v2 | 1912 | 65.9 % · 60.0 % | 286 · 173 | 1.5e-07 | +1.42 (+1.06 to +1.80) | 5 · 6 |
-| `regent-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values | rules_v2 | 1920 | 65.8 % · 60.1 % | 280 · 171 | 3.2e-07 | +1.32 (+0.96 to +1.69) | 6 · 6 |
+| `regent-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1912 | 65.9 % · 60.0 % | 286 · 173 | 1.5e-07 | +1.42 (+1.06 to +1.80) | 5 · 6 |
+| `regent-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values [relic values of the first study] | rules_v2 | 1920 | 65.8 % · 60.1 % | 280 · 171 | 3.2e-07 | +1.32 (+0.96 to +1.69) | 6 · 6 |
 | `regent-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Regent · val | rules_v2_neow_values | rules_v2 | 1969 | 58.6 % · 49.7 % | 346 · 172 | 1.7e-14 | +1.43 (+1.15 to +1.72) | 1 · 1 |
 | `rules_v1-vs-random_legal-ironclad-a0-veteran-val` | baseline, not a registered test | Ironclad · val | rules_v1 | random_legal | 1997 | 43.3 % · 0.0 % | 865 · 0 | 8.1e-261 | +13.60 (+13.31 to +13.90) | 0 · 0 |
 | `rules_v2-vs-rules_v1-defect-a0-veteran-val` | ADR-034 | Defect · val | rules_v2 | rules_v1 | 1996 | 76.2 % · 34.5 % | 937 · 106 | 7.2e-167 | +5.37 (+5.00 to +5.75) | 7 · 0 |
@@ -413,16 +487,16 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | `rules_v2-vs-rules_v1-necrobinder-a0-veteran-val` | ADR-034 | Necrobinder · val | rules_v2 | rules_v1 | 1997 | 62.1 % · 47.8 % | 468 · 182 | 5.9e-30 | +1.99 (+1.69 to +2.30) | 0 · 0 |
 | `rules_v2-vs-rules_v1-regent-a0-veteran-val` | ADR-034 | Regent · val | rules_v2 | rules_v1 | 1978 | 49.7 % · 14.0 % | 771 · 65 | 3.9e-154 | +4.32 (+4.00 to +4.63) | 1 · 0 |
 | `rules_v2-vs-rules_v1-silent-a0-veteran-val` | ADR-034 | Silent · val | rules_v2 | rules_v1 | 1999 | 18.5 % · 11.5 % | 263 · 123 | 8.5e-13 | +0.97 (+0.74 to +1.20) | 0 · 0 |
-| `rules_v3-keepvals-vs-curvals-defect-a0-veteran-keeprelics-val` |  | Defect · val | rules_v3 | rules_v3 | 1919 | 85.5 % · 84.3 % | 127 · 104 | 0.15 | +0.25 (-0.09 to +0.60) | 45 · 44 |
-| `rules_v3-keepvals-vs-curvals-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | rules_v3 | rules_v3 | 1901 | 81.7 % · 85.2 % | 99 · 164 | 7.3e-05 | -0.56 (-0.93 to -0.19) | 37 · 40 |
-| `rules_v3-keepvals-vs-curvals-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | rules_v3 | rules_v3 | 1945 | 78.9 % · 75.1 % | 235 · 160 | 1.9e-04 | +0.78 (+0.42 to +1.14) | 0 · 1 |
-| `rules_v3-keepvals-vs-curvals-regent-a0-veteran-keeprelics-val` |  | Regent · val | rules_v3 | rules_v3 | 1937 | 66.3 % · 62.4 % | 248 · 172 | 2.4e-04 | +0.73 (+0.41 to +1.04) | 6 · 3 |
-| `rules_v3-keepvals-vs-curvals-silent-a0-veteran-keeprelics-val` |  | Silent · val | rules_v3 | rules_v3 | 1985 | 36.7 % · 35.1 % | 263 · 232 | 0.18 | -0.04 (-0.29 to +0.21) | 0 · 0 |
+| `rules_v3-keepvals-vs-curvals-defect-a0-veteran-keeprelics-val` |  | Defect · val | rules_v3 [card values measured again with the relics kept] | rules_v3 [the card values shown at the time] | 1919 | 85.5 % · 84.3 % | 127 · 104 | 0.15 | +0.25 (-0.09 to +0.60) | 45 · 44 |
+| `rules_v3-keepvals-vs-curvals-ironclad-a0-veteran-keeprelics-val` |  | Ironclad · val | rules_v3 [card values measured again with the relics kept] | rules_v3 [the card values shown at the time] | 1901 | 81.7 % · 85.2 % | 99 · 164 | 7.3e-05 | -0.56 (-0.93 to -0.19) | 37 · 40 |
+| `rules_v3-keepvals-vs-curvals-necrobinder-a0-veteran-keeprelics-val` |  | Necrobinder · val | rules_v3 [card values measured again with the relics kept] | rules_v3 [the card values shown at the time] | 1945 | 78.9 % · 75.1 % | 235 · 160 | 1.9e-04 | +0.78 (+0.42 to +1.14) | 0 · 1 |
+| `rules_v3-keepvals-vs-curvals-regent-a0-veteran-keeprelics-val` |  | Regent · val | rules_v3 [card values measured again with the relics kept] | rules_v3 [the card values shown at the time] | 1937 | 66.3 % · 62.4 % | 248 · 172 | 2.4e-04 | +0.73 (+0.41 to +1.04) | 6 · 3 |
+| `rules_v3-keepvals-vs-curvals-silent-a0-veteran-keeprelics-val` |  | Silent · val | rules_v3 [card values measured again with the relics kept] | rules_v3 [the card values shown at the time] | 1985 | 36.7 % · 35.1 % | 263 · 232 | 0.18 | -0.04 (-0.29 to +0.21) | 0 · 0 |
 | `rules_v3-values2-vs-rules_v3-ironclad-a0-veteran-val` | ADR-046 | Ironclad · val | rules_v3 + Ironclad values v2 | rules_v3 | 1990 | 79.4 % · 74.8 % | 276 · 185 | 2.6e-05 | +0.72 (+0.40 to +1.04) | 2 · 6 |
 | `rules_v3-vs-rules_v2-ironclad-a0-veteran-val` | ADR-045 | Ironclad · val | rules_v3 | rules_v2 | 1991 | 74.8 % · 65.1 % | 292 · 99 | 3.3e-23 | +1.39 (+1.10 to +1.68) | 6 · 5 |
 | `search_v3-all-vs-rules_v2-ironclad-a0-veteran-val` | ADR-040 | Ironclad · val | search_v3 (every fight) | rules_v2 | 300 | 74.3 % · 64.7 % | 59 · 30 | 0.0028 | +3.93 (+2.90 to +5.01) | 2 · 1 |
-| `silent-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values | rules_v2 | 1978 | 41.2 % · 32.3 % | 350 · 174 | 1.2e-14 | +1.44 (+1.16 to +1.72) | 0 · 0 |
-| `silent-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values | rules_v2 | 1981 | 40.5 % · 32.3 % | 336 · 172 | 3.0e-13 | +1.40 (+1.12 to +1.67) | 0 · 0 |
+| `silent-neow-values-keepvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values [relic values fitted with the relics kept] | rules_v2 | 1978 | 41.2 % · 32.3 % | 350 · 174 | 1.2e-14 | +1.44 (+1.16 to +1.72) | 0 · 0 |
+| `silent-neow-values-oldvals-vs-rules_v2-keeprelics-val` | ADR-055 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values [relic values of the first study] | rules_v2 | 1981 | 40.5 % · 32.3 % | 336 · 172 | 3.0e-13 | +1.40 (+1.12 to +1.67) | 0 · 0 |
 | `silent-neow-values-v2-vs-rules_v2-val` | ADR-049 (descriptive; the registered test is pooled) | Silent · val | rules_v2_neow_values | rules_v2 | 2000 | 28.2 % · 18.5 % | 307 · 113 | 8.4e-22 | +1.19 (+0.98 to +1.40) | 0 · 0 |
 | `g13-gamehp-vs-base-necrobinder-a0-veteran-dev` | development, not held-out | Necrobinder · dev | rules_v2 [the game's start HP] | rules_v2 | 499 | 51.5 % · 63.5 % | 26 · 86 | 1.1e-08 | -1.63 (-2.10 to -1.16) | 0 · 0 |
 | `g14-keeprelics-vs-base-defect-a0-veteran-dev` | development, not held-out | Defect · dev | rules_v2 | rules_v2 | 488 | 81.8 % · 76.8 % | 40 · 16 | 0.0018 | +3.17 (+2.61 to +3.76) | 9 · 2 |

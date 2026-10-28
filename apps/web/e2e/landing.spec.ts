@@ -1,9 +1,11 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import { expect, test } from "@playwright/test";
 
-import { expectNoHorizontalOverflow, expectNoSeriousA11yViolations, neowInfo } from "./helpers";
+import {
+  ascensionStudy,
+  expectNoHorizontalOverflow,
+  expectNoSeriousA11yViolations,
+  neowInfo,
+} from "./helpers";
 
 test.describe("landing", () => {
   test("renders the promise, a working live demo and honest coverage", async ({ page }) => {
@@ -43,9 +45,7 @@ test.describe("landing", () => {
   test("the coverage table says where the simulated evidence stands above Ascension 0, following the exported study", async ({
     page,
   }) => {
-    const study = JSON.parse(
-      readFileSync(join(__dirname, "..", "src", "content", "ascension.generated.json"), "utf8"),
-    ) as { registered: boolean; tests: unknown };
+    const study = ascensionStudy();
     await page.goto("/");
     const row = page.getByRole("row", { name: /^Simulated results above Ascension 0/ });
     if (!study.registered) {

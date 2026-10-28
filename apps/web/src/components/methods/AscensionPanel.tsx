@@ -8,6 +8,7 @@ import {
   ASCENSION,
   FINDING_NAMES,
   ascensionTested,
+  fallNote,
   type AscensionData,
   type AscensionFinding,
   type AscensionSize,
@@ -146,7 +147,8 @@ function ClassTable({ test, title }: { test: AscensionTest; title: string }) {
                   {pct(m.reachedAct2.b, 1)} → {pct(m.reachedAct2.a, 1)}
                 </td>
                 <td className="num py-2 pr-3 text-muted">
-                  {m.reachedAct2.pairedTable.a_only} / {m.reachedAct2.pairedTable.b_only}
+                  {games(m.reachedAct2.pairedTable.a_only)} /{" "}
+                  {games(m.reachedAct2.pairedTable.b_only)}
                 </td>
                 <td className="num py-2 pr-3 text-muted">
                   {formatP(m.reachedAct2.pairedTable.mcnemar_p)}
@@ -193,11 +195,12 @@ function TestBlock({
       </p>
       <ResultTiles test={test} label={`Result for ${d.title.toLowerCase()} at Ascension 9`} />
       <p className="mt-3 text-sm text-muted">
-        {test.reachedAct2.pairedTable.a_only} pairs only with the first arm,{" "}
-        {test.reachedAct2.pairedTable.b_only} only with the second. The difference of the shares,
-        resampling whole seeds, is {pts(test.clusteredDifference.meanAMinusB)} (95 % {pts(shareLo)}{" "}
-        to {pts(shareHi)}; at the level of the test, {pts(lvlLo)} to {pts(lvlHi)}); mean floors{" "}
-        {signed(test.floorDifference.meanAMinusB)} (95 % {signed(floorLo)} to {signed(floorHi)}).
+        {games(test.reachedAct2.pairedTable.a_only)} pairs only with the first arm,{" "}
+        {games(test.reachedAct2.pairedTable.b_only)} only with the second. The difference of the
+        shares, resampling whole seeds, is {pts(test.clusteredDifference.meanAMinusB)} (95 %{" "}
+        {pts(shareLo)} to {pts(shareHi)}; at the level of the test, {pts(lvlLo)} to {pts(lvlHi)});
+        mean floors {signed(test.floorDifference.meanAMinusB)} (95 % {signed(floorLo)} to{" "}
+        {signed(floorHi)}).
         {a0 ? (
           <>
             {" "}
@@ -214,6 +217,7 @@ function TestBlock({
                       : "the Ascension 0 difference lies inside its interval at the level of the test"
                 }.`
               : ""}
+            {fallNote(test) ? ` ${fallNote(test)}` : ""}
           </>
         ) : null}
       </p>
