@@ -1,8 +1,8 @@
 # SLAY2 test report
 
-**Commit under test:** `03ec6ce` (the head of pull request #14, merged into `main` as `037cb8f`; the commit after it changes documents, the screenshots and the script pattern of one browser test, this report among them) · **Run:** 2026-10-27 (UTC), from a clean `git worktree` of that commit · **Build:** Slay the Spire 2 main v0.107.1
+**Commit under test:** `f47f6fb` (the head of [pull request #18](https://github.com/JaredVogler2/SLAY2/pull/18) when the run started, on `main` at `682a317`; the commits after it change documents only, this report among them) · **Run:** 2026-10-28 (UTC, 00:37 to 01:00), from a clean `git worktree` of that commit · **Build:** Slay the Spire 2 main v0.107.1
 
-**Machine:** Node v22.22.0, pnpm 10.28.0, Python 3.13.17; 4 cores (Intel Xeon at 2.80 GHz), 15.7 GiB of memory, Linux 6.18; Chromium from `/opt/pw-browsers/chromium` driven by Playwright 1.64.1 (a desktop at 1440 × 900 and an emulated Pixel 7). The worktree was clean when the run started and nothing edited it while it ran (`pnpm install --frozen-lockfile` from the lockfile). The third-party simulator checkout (git-ignored, pinned at `5d874e8`) was present, so the simulator tests ran instead of skipping themselves; the CI job has no simulator and skips them. Nothing heavy used the machine while the commands ran (a few small formatting checks and edits of documents).
+**Machine:** Node v22.22.0, pnpm 10.28.0, Python 3.13.17; 4 cores (Intel Xeon at 2.80 GHz), 15.7 GiB of memory, Linux 6.18; Chromium from `/opt/pw-browsers/chromium` driven by Playwright 1.64.1 (a desktop at 1440 × 900 and an emulated Pixel 7). The worktree was clean when the run started (`git clean -fdx` except `node_modules`) and nothing edited it while it ran; `pnpm install --frozen-lockfile` found the dependencies of the previous report's worktree up to date with the lockfile ("Already up to date"). The third-party simulator checkout (git-ignored, pinned at `5d874e8`) was present, so the simulator tests ran instead of skipping themselves; the CI job has no simulator and skips them. Nothing heavy used the machine while the commands ran (the stages ran one after the other; between them only small reads of logs and edits of documents).
 
 Every number below was read from the output of the command beside it (the logs of this run), not typed from memory. Wall times are for this machine.
 
@@ -10,15 +10,15 @@ Every number below was read from the output of the command beside it (the logs o
 
 | # | Suite | Command | Result | Wall time |
 |---|---|---|---|---|
-| 1 | Provenance guard | `pnpm guard` | clean: no third-party file or text is tracked | 10 s |
+| 1 | Provenance guard | `pnpm guard` | clean: no third-party file or text is tracked | 11 s |
 | 2 | Licence gate | `pnpm licenses:check` | clean (production dependencies within the allowed licences; the documented exceptions are the optional prebuilt libvips pulled in by Next's image optimiser, LGPL-3.0-or-later ×2, and browser-support data used at build time, CC-BY-4.0 ×1) | 4 s |
-| 3 | TypeScript: typecheck, lint, format, unit tests, production build | `pnpm check` | **781 tests passed, none skipped** (game-schema 6, game-data 50, odds 100, decision 115, web 510 in 60 files); typecheck, ESLint and Prettier clean; Next.js 16.4.3 (Turbopack) build succeeded with 16 static pages | 2:48 |
-| 4 | Script budget per page | `pnpm --filter @slay2/web bytes:check` | every page within its budget (ADR-056): `/about` and `/methods` 177.1 KB of gzipped script, `/` 184.0, `/odds` 265.0, `/routes` 257.6, `/codex` 265.3, `/advisor` 323.8 | 1 s |
+| 3 | TypeScript: typecheck, lint, format, unit tests, production build | `pnpm check` | **862 tests passed, none skipped** (game-schema 6, game-data 50, odds 100, decision 115, web 591; 63 test files); typecheck, ESLint and Prettier clean; Next.js 16.4.3 (Turbopack) build succeeded with 16 static pages | 2:57 |
+| 4 | Script budget per page | `pnpm --filter @slay2/web bytes:check` | every page within its budget (ADR-056): `/about` and `/methods` 177.1 KB of gzipped script, `/` 184.0, `/odds` 265.0, `/routes` 257.6, `/codex` 265.3, `/advisor` 332.1 (budget 345; the Ascension 9 study adds about 8 KB, ADR-058) | 1 s |
 | 5 | Dependency audit | `pnpm audit --audit-level high` | "No known vulnerabilities found" | 1 s |
 | 6 | Guard self-test | `bash scripts/test-guard.sh` | "all checks passed" | 0 s |
-| 7 | Generated files are current | `node scripts/export-site-data.mjs --check` and `python3 scripts/docs-tables.py --check` | both current | 4 s |
-| 8 | Python research harness | `PYTHONPATH=sim python -m pytest sim/tests -q --durations=10` | **623 passed, 1 xfailed** (the strict expected failure is the documented Ascension 10 Double Boss gap, G1), none skipped | 9:04 (541.25 s in pytest) |
-| 9 | Browser: production build, desktop + mobile, axe WCAG 2.2 AA | `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium PORT=3210 pnpm --filter @slay2/web e2e` (2 workers) | **335 passed, 0 failed, 133 skipped by design** | 8:05 (8.1 min in Playwright) |
+| 7 | Generated files are current | `node scripts/export-site-data.mjs --check` and `python3 scripts/docs-tables.py --check` | both current | 5 s |
+| 8 | Python research harness | `PYTHONPATH=sim python -m pytest sim/tests -q --durations=10` | **645 passed, 1 xfailed** (the strict expected failure is the documented Ascension 10 Double Boss gap, G1), none skipped | 10:49 (646.66 s in pytest) |
+| 9 | Browser: production build, desktop + mobile, axe WCAG 2.2 AA | `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium PORT=3192 pnpm --filter @slay2/web e2e` (2 workers) | **345 passed, 0 failed, 133 skipped by design** | 8:55 (8.9 min in Playwright) |
 
 `pnpm check` is `pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm build`; the `web` job of CI runs these plus the gates above, the script budget and the audit.
 
@@ -30,8 +30,8 @@ Every number below was read from the output of the command beside it (the logs o
 | `packages/game-data` | 6 | 50 |
 | `packages/odds` | 8 | 100 |
 | `packages/decision` | 7 | 115 |
-| `apps/web` | 38 | 510 |
-| **Total** | **60** | **781** |
+| `apps/web` | 41 | 591 |
+| **Total** | **63** | **862** |
 
 The tests of `apps/web`, by file:
 
@@ -39,12 +39,15 @@ The tests of `apps/web`, by file:
 |---|---|---|
 | `advisor-unreadable-run.test.tsx` | 2 | a saved run the advisor refuses (a card the catalog does not know) is explained with its reason where "Resume" leads, and the notice goes once a new run replaces it |
 | `api.test.ts` | 14 | the HTTP contract of the odds, recommend, capabilities, catalog and experiments routes |
+| `ascension-export.test.ts` | 41 | the reader of the Ascension 9 study (ADR-058) refuses a result whose arms, batches, hashes, interval or arithmetic do not belong together, applies the registered reading rule to the numbers alone and sets a passed result beside the Ascension 0 difference of the same arms |
+| `ascension.test.tsx` | 36 | what a run above Ascension 0 is told on the three panels whichever way the study came out (the notes, the size words, the fall in both arms' shares, the run's own class), the opening-relic advice withheld where the study does not license it, the `/methods` section, the landing row, and the data the site ships (each verdict re-read by the registered rule; four classes licensed, Silent not) |
 | `bundle-weight.test.ts` | 11 | what the browser is sent: only the methods page, the experiments route and the page metadata may import the evidence and rules files; the shell, the landing page, the About page and the methods page may not reach the catalog, the schema library or the run store (ADR-056); every workspace package declares `sideEffects: false` |
 | `card-values-drift-keep.test.tsx` | 3 | the card-value panel's account of how values moved when the relics were kept (pilot change, wording) |
 | `card-values-keep-export.test.ts` | 13 | the exporter reads the card-value test of ADR-053 only when it belongs together, and applies the registered adoption rule to the numbers |
 | `card-values-keep.test.tsx` | 8 | the card values measured again with the relics kept, on `/methods`: registered, result, adopted classes |
 | `cardvalues.test.ts` | 16 | the measured card values: a set per class with the facts needed to read it, one catalog card per measurement, intervals, helpful or harmful only when the whole interval is on one side of zero |
 | `codex.test.ts` | 8 | the facts-only card browser: the catalog partitions into the codex classes, exact-name ranking, filters combine with AND |
+| `combobox.test.tsx` | 4 | the search box's delayed close after a blur belongs to that blur: coming back cancels it, a click on an option still registers, the "nothing matches" message stays live (the failure of pull request #16's browser job) |
 | `content.test.ts` | 6 | the exported site data is current with its sources; one row per rule; no win rate without sample size and interval |
 | `deploy-config.test.ts` | 5 | the Vercel contract (`vercel.json`, bounded `engines.node`, root `next`) |
 | `error-boundary.test.tsx` | 5 | the route error boundary shows a reference and never the message or stack; retry; clearing only the saved run (the run store is fetched on demand, with a direct fallback) |
@@ -91,7 +94,7 @@ The unit tests of the packages: `game-schema` (builds, ids, schemas, refusal of 
 | `test_classes.py` | 16 |
 | `test_cli_paths.py` | 4 |
 | `test_clone_and_fairness.py` | 5 |
-| `test_compare.py` | 44 |
+| `test_compare.py` | 45 |
 | `test_docs_tables.py` | 1 |
 | `test_g14_batches.py` | 7 |
 | `test_isolation.py` | 3 |
@@ -103,7 +106,7 @@ The unit tests of the packages: `game-schema` (builds, ids, schemas, refusal of 
 | `test_oracle_odds.py` | 10 |
 | `test_patchdiff.py` | 6 |
 | `test_pickgolden.py` | 2 |
-| `test_policy_fairness.py` | 19 |
+| `test_policy_fairness.py` | 29 |
 | `test_policy_regression.py` | 4 |
 | `test_process_state_determinism.py` | 2 |
 | `test_relicpower.py` | 8 |
@@ -126,16 +129,17 @@ The unit tests of the packages: `game-schema` (builds, ids, schemas, refusal of 
 | `test_synergystudy.py` | 8 |
 | `test_terminal_semantics.py` | 4 |
 | `test_tune.py` | 10 |
+| `test_verify_pooled.py` | 11 |
 | `test_win_audit.py` | 3 |
-| **Total collected** | **624** (623 passed + 1 xfailed) |
+| **Total collected** | **646** (645 passed + 1 xfailed) |
 
-The slowest five: 60.10 s `test_neow_explore.py::test_exploration_takes_each_of_the_three_options_about_a_third_of_the_time`; 59.20 s `test_neow_explore.py::test_the_measured_rule_takes_the_offered_relic_with_the_largest_value`; 50.68 s `test_oracle_odds.py::test_golden_file_is_reproducible`; 24.81 s `test_neow_explore.py::test_the_choice_is_reproducible_per_seed_and_does_not_depend_on_the_policy_rng_stream`; 18.75 s `test_neow_explore.py::test_without_exploration_it_is_exactly_rules_v2_and_still_logs_the_offer`.
+The slowest five: 61.93 s `test_neow_explore.py::test_the_measured_rule_takes_the_offered_relic_with_the_largest_value`; 61.57 s `test_neow_explore.py::test_exploration_takes_each_of_the_three_options_about_a_third_of_the_time`; 60.31 s `test_oracle_odds.py::test_golden_file_is_reproducible`; 26.08 s `test_neow_explore.py::test_the_choice_is_reproducible_per_seed_and_does_not_depend_on_the_policy_rng_stream`; 18.44 s `test_neow_explore.py::test_without_exploration_it_is_exactly_rules_v2_and_still_logs_the_offer`.
 
-Tests worth naming: `test_policy_regression.py` replays committed batches seed by seed (a policy change that moves a published result fails here); `test_sample_audit.py` and `test_win_audit.py` re-derive games and wins; `test_process_state_determinism.py` fails without the warm-up of ADR-037; `test_policy_fairness.py` is the counterfactual hidden-state test (with a leak canary); `test_classes.py` is the guard that would have stopped the void study; `test_oracle_odds.py` regenerates the 739 golden cases; `test_advisor_port.py` holds the golden cases that tie the TypeScript advisor to its Python port number for number; `test_g14_batches.py` checks that the registry's quotation of the relic-gap measurement is what the committed batches give; `test_neowcompare.py` and `test_keep_relics.py` pin the statistics and the harness variant of ADR-052 and ADR-055; `test_docs_tables.py` keeps the tables of the cards, the audit and the status current.
+Tests worth naming: `test_policy_regression.py` replays committed batches seed by seed (a policy change that moves a published result fails here); `test_sample_audit.py` and `test_win_audit.py` re-derive games and wins; `test_process_state_determinism.py` fails without the warm-up of ADR-037; `test_policy_fairness.py` is the counterfactual hidden-state test (with a leak canary); `test_classes.py` is the guard that would have stopped the void study; `test_oracle_odds.py` regenerates the 739 golden cases; `test_advisor_port.py` holds the golden cases that tie the TypeScript advisor to its Python port number for number; `test_g14_batches.py` checks that the registry's quotation of the relic-gap measurement is what the committed batches give; `test_neowcompare.py` and `test_keep_relics.py` pin the statistics and the harness variant of ADR-052 and ADR-055; `test_docs_tables.py` keeps the tables of the cards, the audit and the status current; `test_verify_pooled.py` runs the independent recomputation of a pooled comparison (`scripts/verify-pooled.py`, which shares no code with the harness) on the published pooled files of ADR-054, ADR-055 and ADR-058 and checks that it notices a changed count, a p-value that is not the exact one, a shifted interval and a missing batch; the ten new tests of `test_policy_fairness.py` are the counterfactual-fairness tests of the six arms at Ascension 9.
 
 ## Browser tests
 
-The suite starts `next start` on the production build and runs every spec in two projects. **335 passed**; the **133 skipped** are by design: the width sweeps (`phone-widths.spec.ts`, `rich-states.spec.ts`) set their own viewports and run in the mobile project only, so the desktop project skips them (91 in `[desktop] e2e/phone-widths.spec.ts`, 42 in `[desktop] e2e/rich-states.spec.ts`). Nothing is skipped for lack of data.
+The suite starts `next start` on the production build and runs every spec in two projects. **345 passed**; the **133 skipped** are by design: the width sweeps (`phone-widths.spec.ts`, `rich-states.spec.ts`) set their own viewports and run in the mobile project only, so the desktop project skips them (91 in `[desktop] e2e/phone-widths.spec.ts`, 42 in `[desktop] e2e/rich-states.spec.ts`). Nothing is skipped for lack of data.
 
 | Spec | Passed | What it covers |
 |---|---|---|
@@ -148,25 +152,26 @@ The suite starts `next start` on the production build and runs every spec in two
 | `e2e/pages.spec.ts` | 20 | methods, about, 404, navigation, the measured-value panels and the registered blocks of the studies |
 | `e2e/stability.spec.ts` | 20 | layout shift per page (phone and desktop, with and without a slow network), the server-drawn advisor |
 | `e2e/codex.spec.ts` | 14 | the card and relic codex: filters, the measured-value tile and sort, keyboard |
-| `e2e/landing.spec.ts` | 12 | the promise and the live demo, coverage table, axe, skip link, reduced motion |
+| `e2e/landing.spec.ts` | 14 | the promise and the live demo, coverage table (including where the simulated evidence stands above Ascension 0, following the exported study), axe, skip link, reduced motion |
+| `e2e/ascension.spec.ts` | 8 | the Ascension 9 study on the pages, in whichever state the exported data are: the opening-relic advice at Ascension 5 for Ironclad and for Silent follows the study (a relic for Ironclad; for Silent the measurements and no advice), the `/methods` section, and the line a run above Ascension 0 gets on the synergy panel and the simulated second opinion (none at Ascension 0) |
 | `e2e/journey.spec.ts` | 6 | the scripted visitor journey from the landing page to a recommendation in at most 8 interactions |
 | `e2e/security.spec.ts` | 6 | security headers, no-store API, zero CSP violations while pages hydrate |
 | `e2e/no-javascript.spec.ts` | 4 | a visitor without JavaScript is told why the tools do not run |
 | `e2e/privacy.spec.ts` | 2 | one origin, no cookies, no request that carries data |
 | `e2e/share.spec.ts` | 2 | the link-preview image |
-| **Total** | **335** | |
+| **Total** | **345** | |
 
 Accessibility is axe-core at WCAG 2.2 AA on every page in both projects, plus keyboard paths (skip link, the combobox, the codex filters), a reduced-motion test with a power check, enlarged-text and width sweeps; it is not a screen-reader session by a person.
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` on pull request #14 at `03ec6ce`:
+`.github/workflows/ci.yml` on pull request #18 at `f47f6fb`:
 
 | Job | Result | Time |
 |---|---|---|
-| web (typecheck, lint, format, test, build, script budget) | success | 2 min 4 s |
-| sim (python unit tests, provenance guard self-test) | success | 1 min 12 s |
-| e2e (production build, Playwright desktop + mobile, axe WCAG 2.2 AA) | success | 5 min 58 s |
+| web (typecheck, lint, format, test, build, script budget) | success | 2 min 47 s |
+| sim (python unit tests, provenance guard self-test) | success | 2 min 20 s |
+| e2e (production build, Playwright desktop + mobile, axe WCAG 2.2 AA) | success | 5 min 55 s |
 
 The `sim` job installs only `numpy` and `pytest`, so the simulator tests skip themselves there; the docs-tables test, the guard self-test, the golden-case reproducibility and the pure layout tests run. GitHub Actions is free for this public repository.
 
@@ -174,11 +179,13 @@ The `sim` job installs only `numpy` and `pytest`, so the simulator tests skip th
 
 Checked against https://slay-part2.vercel.app at 2026-10-27 17:48 UTC (production serves `main` at `037cb8f`, the merge of pull request #14): `/api/v1/health` reports commit `037cb8fc0e7b6b3cd9e16d5fe7e59ff88ae06f12`, and `/`, `/advisor`, `/codex`, `/methods`, `/about`, `/routes` and `/odds` answer 200. **The whole browser suite was run against the hosted site** (`BASE_URL=https://slay-part2.vercel.app`, 3 workers, 6.8 min): 333 passed and 2 failed, 133 skipped by design. The two failures were one test, `stability.spec.ts` "the advisor is drawn before the page is interactive", in both projects: it blocks the scripts to see the server-drawn page and matched only `/_next/static/chunks/…`, while the hosted build serves its chunks under `/_next/static/immutable/chunks/…`, so nothing was blocked and the page hydrated. The pattern is now `**/_next/static/**/*.js`; the test passes against the hosted site and against the local build, which makes **335 of 335** (a fault of the test, not of the site).
 
+Checked again on 2026-10-28 at 01:04 UTC, after pull request #18 was merged (00:58 UTC): production serves `main` at `c324e7e` (`/api/v1/health` reports commit `c324e7e5d4349ddb8a405c16337d69eaebe64890`, the seven pages answer 200, and `/methods` carries the results of the Ascension 9 study), and **the whole browser suite was run against the hosted site** (`BASE_URL=https://slay-part2.vercel.app`, 3 workers, 01:05 to 01:12 UTC, 7.8 min): **345 passed, 0 failed, 133 skipped by design**. The specs read the exported data of the commit they were run from (the same one the site was built from), so the pages that follow it (the Ascension 9 section, the opening-relic advice for Ironclad and for Silent, the landing row) were checked against the data they are served with. Before it, on 2026-10-28 at 00:21 UTC, production served `main` at `682a317` with the study as "not run yet"; the continuous-integration `e2e` job of that merge (run 202) succeeded.
+
 ## What these tests do not show
 
 * **Nothing here tests the game.** The simulator tests prove the harness is deterministic, fair and audited, not that the simulator is the game; no live-game fixture exists (G5).
 * **The browser is one engine.** Chromium only (a desktop viewport and an emulated Pixel 7); no Firefox, WebKit, real phone, or screen reader; iOS Safari's address bar and safe areas are not reproduced.
-* **Statistics are not unit tests.** The registered held-out comparisons (ADR-031 to ADR-055) are experiments with their own manifests; `test_policy_regression.py` only guards that the committed batches still replay.
+* **Statistics are not unit tests.** The registered held-out comparisons (ADR-031 to ADR-058) are experiments with their own manifests; `test_policy_regression.py` only guards that the committed batches still replay.
 * **Not run here:** Lighthouse, Interaction to Next Paint, a load test of the hosted API beyond the limits that the tests assert, the heavy simulator audits (`audit rederive` over whole batches is an experiment, not a test), and the retired PPO run (ADR-057).
 * **Expected failure kept visible:** one strict `xfail` (G1, the Ascension 10 second boss that the simulator does not enter); it turns red the day the simulator is fixed or the gap is closed.
 
