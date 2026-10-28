@@ -48,6 +48,8 @@ def load(path: str | Path):
 
 
 def pval(p: float) -> str:
+    if p == 0:  # the exact p underflowed a double: the site prints it as below 1e-300 as well
+        return "< 1e-300"
     return f"{p:.1e}" if p < 1e-3 else f"{p:.2g}"
 
 
@@ -56,6 +58,12 @@ def episodes(batch: str):
         for line in fh:
             if line.strip():
                 yield json.loads(line)
+
+
+def game_of(manifest: dict) -> str:
+    """The game a batch was played in: its Ascension and whether a run keeps the relics it gains after its first fight (G14)."""
+    c = manifest["config"]
+    return f"A{c.get('ascension', 0)}, relics {'kept' if c.get('keep_relics') else 'dropped'}"
 
 
 def variant(batch_id: str, policy: str) -> str:
@@ -70,6 +78,21 @@ def variant(batch_id: str, policy: str) -> str:
         return "search_v3 (every fight)"
     if batch_id.startswith("search_v3-boss"):
         return "search_v3 (bosses only)"
+    # the arms of the registered studies that share a pilot (the infix means what the study that named it meant by it)
+    if policy == "rules_v2" and "-shownvals-" in batch_id:  # ADR-058: the card values the site shows
+        return f"{policy} [the card values shown on the site]"
+    if policy == "rules_v3" and "-keepvals-" in batch_id:  # ADR-053: card values measured again with the relics kept
+        return f"{policy} [card values measured again with the relics kept]"
+    if policy == "rules_v3" and "-curvals-" in batch_id:  # ADR-053: the values the site showed then
+        return f"{policy} [the card values shown at the time]"
+    if policy == "rules_v2_neow_values" and "-keepvals-" in batch_id:  # ADR-055: relic values fitted with the relics kept
+        return f"{policy} [relic values fitted with the relics kept]"
+    if policy == "rules_v2_neow_values" and "-oldvals-" in batch_id:  # ADR-055: the first study's relic values
+        return f"{policy} [relic values of the first study]"
+    if policy == "advisor_v1" and "-d0star-" in batch_id:  # ADR-050, ADR-054, ADR-058
+        return f"{policy} [synergy term off, d0*]"
+    if policy == "advisor_v1" and "-astar-" in batch_id:
+        return f"{policy} [synergy term on, A*]"
     return policy
 
 
@@ -90,14 +113,14 @@ def table_policies() -> str:
                 order.index(pol) if pol in order else 99,
                 m["config"]["character"],
                 variant(m["batch_id"], pol),
-                f"| {variant(m['batch_id'], pol)} | {m['config']['character']} | {m['seeds']['n']} | {m['summary']['completed']} | {c['win']} | "
+                f"| {variant(m['batch_id'], pol)} | {m['config']['character']} | {game_of(m)} | {m['seeds']['n']} | {m['summary']['completed']} | {c['win']} | "
                 f"{100 * lo:.2f} to {100 * hi:.2f} % | {sum(floors) / len(floors):.2f} | {c['simulator_error']} · {c['timeout']} |",
             )
         )
-    rows.sort(key=lambda r: (r[0], r[1], r[2]))
+    rows.sort(key=lambda r: (r[0], r[1], r[2], r[3]))
     head = [
-        "| Pilot | Class | Games | Completed | Wins | Wilson 95 % for the win rate | Mean floor | Simulator errors · timeouts |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Pilot | Class | Game | Games | Completed | Wins | Wilson 95 % for the win rate | Mean floor | Simulator errors · timeouts |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     return "\n".join(head + [r[3] for r in rows])
 
@@ -129,25 +152,45 @@ def table_comparisons() -> str:
     for p in sorted(glob.glob(str(ROOT / "experiments" / "neow" / "per-class" / "*.json"))):
         name = Path(p).stem
         rows.append(comparison_row(name, load(p), NEOW_KEEP_REGISTRATION if "keeprelics" in name else NEOW_REGISTRATION))
-    # the pooled tests of the opening-relic study (ADR-049) and of its repetition with the relics kept (ADR-055; the second is the secondary arm)
-    for stem, status, order in (
-        ("pooled-neow-values-v2-vs-rules_v2-val", "ADR-049, **the registered test**", "0"),
-        ("pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val", "ADR-055, **the registered test**", "1"),
-        ("pooled-neow-values-v2-vs-rules_v2-keeprelics-val", "ADR-055, secondary arm (decides nothing)", "2"),
+    # the per-class comparisons of the Ascension 9 study (ADR-058; the registered tests are pooled, the class results are descriptive)
+    for p in sorted(glob.glob(str(ROOT / "experiments" / "ascension9" / "per-class" / "*.json"))):
+        name = Path(p).stem
+        twin = name.startswith("a0keep-")
+        rows.append(
+            comparison_row(
+                f"ascension9/{name}",
+                load(p),
+                "ADR-058 twin at Ascension 0, relics kept (descriptive)" if twin else "ADR-058 at Ascension 9 (descriptive; the registered test is pooled)",
+            )
+        )
+    # the pooled tests of the opening-relic study (ADR-049) and of its repetition with the relics kept (ADR-055; the second is the secondary arm),
+    # and of the Ascension 9 study (ADR-058: T1, T2, T3 and the descriptive twin of T2 at Ascension 0)
+    for folder, stem, status, order in (
+        ("neow", "pooled-neow-values-v2-vs-rules_v2-val", "ADR-049, **the registered test**", "0"),
+        ("neow", "pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val", "ADR-055, **the registered test**", "1"),
+        ("neow", "pooled-neow-values-v2-vs-rules_v2-keeprelics-val", "ADR-055, secondary arm (decides nothing)", "2"),
+        ("ascension9", "pooled-a9-t1-synergy-astar-vs-d0star", "ADR-058 T1 at Ascension 9, **the registered test**", "3"),
+        ("ascension9", "pooled-a9-t2-values-shown-vs-rules_v1", "ADR-058 T2 at Ascension 9, **the registered test**", "4"),
+        ("ascension9", "pooled-a9-t3-neow-keep-v1-vs-rules_v2", "ADR-058 T3 at Ascension 9, **the registered test**", "5"),
+        ("ascension9", "pooled-a0keep-t2-values-shown-vs-rules_v1", "ADR-058 twin of T2 at Ascension 0, relics kept (descriptive)", "6"),
     ):
-        path = ROOT / "experiments" / "neow" / f"{stem}.json"
+        path = ROOT / "experiments" / folder / f"{stem}.json"
         if not path.exists():
             continue
         pooled = load(path)
         r1, t = pooled["reachedAct2"], pooled["reachedAct2"]["pairedTable"]
         fd = pooled["floorDifference"]
+        first = pooled["members"][0]
+        # the arms by name: the pilot and, where several arms share it, what distinguishes this one
+        arm_a = variant(first["a"]["batchId"], pooled["policies"]["a"]) if folder == "ascension9" else pooled["policies"]["a"]
+        arm_b = variant(first["b"]["batchId"], pooled["policies"]["b"]) if folder == "ascension9" else pooled["policies"]["b"]
         rows.append(
             (
                 -1,
                 "",
                 f"pooled{order}",
                 f"| `{stem}` | {status} | all five classes · val | "
-                f"{pooled['policies']['a']} | {pooled['policies']['b']} | {pooled['bothCompleted']} | "
+                f"{arm_a} | {arm_b} | {pooled['bothCompleted']} | "
                 f"{100 * r1['a']['rate']:.2f} % · {100 * r1['b']['rate']:.2f} % | {t['a_only']} · {t['b_only']} | {pval(t['mcnemar_p'])} | "
                 f"{fd['meanAMinusB']:+.2f} ({fd['ci95'][0]:+.2f} to {fd['ci95'][1]:+.2f}, resampling pairs) | {pooled['wins']['a']} · {pooled['wins']['b']} |",
             )

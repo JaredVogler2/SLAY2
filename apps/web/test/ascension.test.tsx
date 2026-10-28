@@ -14,6 +14,7 @@ import {
   ascensionCoverage,
   ascensionNote,
   ascensionTested,
+  fallNote,
   neowAdviceAllowed,
   standingOf,
   type AscensionClassResult,
@@ -90,10 +91,10 @@ function makeTest(
   const ahead = verdict === "reversed" ? 0.2 : 0.3;
   const behind = verdict === "reversed" ? 0.3 : 0.2;
   const table = {
-    a_only: verdict === "reversed" ? 400 : 700,
-    b_only: verdict === "reversed" ? 700 : 400,
+    a_only: verdict === "reversed" ? 1400 : 1700,
+    b_only: verdict === "reversed" ? 1700 : 1400,
     both: 2000,
-    neither: 6700,
+    neither: 4700,
     mcnemar_p: verdict === "not-shown" ? 0.2 : 1e-12,
   };
   const defaultOwn: Own =
@@ -274,13 +275,11 @@ describe("the note under a finding", () => {
   });
 
   it("says how big a passed result is beside the same arms at Ascension 0, and never says that it 'holds' without a size", () => {
+    const beside = "at Ascension 0 with the relics kept (+7.1 points: 40.4 % against 33.3 %)";
     const sizes: [AscensionSize, string][] = [
-      ["smaller", "smaller than the difference at Ascension 0 with the relics kept (+7.1 points)"],
-      [
-        "about-the-same",
-        "about the same as the difference at Ascension 0 with the relics kept (+7.1 points)",
-      ],
-      ["larger", "larger than the difference at Ascension 0 with the relics kept (+7.1 points)"],
+      ["smaller", `smaller than the difference ${beside}`],
+      ["about-the-same", `about the same as the difference ${beside}`],
+      ["larger", `larger than the difference ${beside}`],
     ];
     for (const [size, words] of sizes) {
       const text = ascensionNote("synergy", 9, true, tested({}, { synergy: { size } }))?.text;
@@ -288,11 +287,11 @@ describe("the note under a finding", () => {
       expect(text).not.toContain(" holds");
       expect(text).not.toContain("the gain");
     }
-    // no size words for a test that did not pass; the Ascension 0 difference is only stated
+    // no size words for a test that did not pass; the Ascension 0 difference is only stated, with the shares it is made of
     const notShown = ascensionNote("synergy", 9, true, tested({ synergy: "not-shown" }))?.text;
     expect(notShown).not.toContain("That is smaller");
     expect(notShown).toContain(
-      "The same arms differ by +7.1 points at Ascension 0 with the relics kept",
+      "The same arms differ by +7.1 points at Ascension 0 with the relics kept (40.4 % against 33.3 %)",
     );
     // nor when there is no Ascension 0 difference to set it beside
     const bare = ascensionNote(
@@ -303,6 +302,33 @@ describe("the note under a finding", () => {
     )?.text;
     expect(bare).not.toContain("Ascension 0 with the relics kept (");
     expect(bare).not.toContain("That is");
+    expect(bare).not.toContain("less often at Ascension 9");
+  });
+
+  it("says when both arms got past the boss less often at Ascension 9 than at 0, so that fewer points are not read as a weaker effect", () => {
+    // the fixture: 30.0 % and 20.0 % at Ascension 9, 40.4 % and 33.3 % at Ascension 0
+    const smaller = makeTest("passed", { size: "smaller" });
+    expect(fallNote(smaller)).toBe(
+      "Both arms got past the Act 1 boss less often at Ascension 9, so a smaller number of points does not by itself mean a weaker effect.",
+    );
+    for (const size of ["about-the-same", "larger", null] as const) {
+      const note = fallNote(makeTest("passed", { size }));
+      expect(note).toBe(
+        "Both arms got past the Act 1 boss less often at Ascension 9 than at Ascension 0.",
+      );
+      expect(note).not.toContain("weaker effect");
+    }
+    // it is a statement about the two shares, so it is made whichever way the test came out
+    expect(fallNote(makeTest("not-shown", { size: null }))).toContain("less often at Ascension 9");
+    // and only when both fell: either arm doing as well or better, or nothing at Ascension 0 to set it beside, says nothing
+    expect(fallNote(makeTest("passed", { a0: { ...A0, a: 0.3 } }))).toBe("");
+    expect(fallNote(makeTest("passed", { a0: { ...A0, b: 0.2 } }))).toBe("");
+    expect(fallNote(makeTest("passed", { a0: { ...A0, a: 0.25, b: 0.15 } }))).toBe("");
+    expect(fallNote(makeTest("passed", { a0: null, size: null }))).toBe("");
+    // the note carries the sentence, once, and the panel for a run at 0 carries none of it
+    const text = ascensionNote("synergy", 9, true, tested())?.text ?? "";
+    expect(text.split("less often at Ascension 9").length - 1).toBe(1);
+    expect(ascensionNote("synergy", 0, true, tested())).toBeNull();
   });
 
   it("tells a run whose own class went the other way in its own games, and only that class", () => {
@@ -381,13 +407,23 @@ describe("the three panels", () => {
 
   it("the synergy panel tells a run above Ascension 0 what was tested, and a run at 0 nothing", () => {
     const { container, rerender } = render(
-      <SynergyPanel synergy={deck()} ascension={{ level: 5, confirmed: true }} />,
+      <SynergyPanel
+        synergy={deck()}
+        ascension={{ level: 5, confirmed: true }}
+        ascensionData={REGISTERED}
+      />,
     );
     expect(container.querySelector("[data-ascension-note]")).not.toBeNull();
     expect(container).toHaveTextContent("measured at Ascension 0 only");
-    rerender(<SynergyPanel synergy={deck()} ascension={{ level: 0, confirmed: true }} />);
+    rerender(
+      <SynergyPanel
+        synergy={deck()}
+        ascension={{ level: 0, confirmed: true }}
+        ascensionData={REGISTERED}
+      />,
+    );
     expect(container.querySelector("[data-ascension-note]")).toBeNull();
-    rerender(<SynergyPanel synergy={deck()} />);
+    rerender(<SynergyPanel synergy={deck()} ascensionData={REGISTERED} />);
     expect(container.querySelector("[data-ascension-note]")).toBeNull();
   });
 
@@ -396,15 +432,44 @@ describe("the three panels", () => {
     const offered = (set?.cards ?? []).slice(0, 3).map((c) => c.id);
     const run = withAscension({ ...newRun("ironclad"), ascensionConfirmed: true }, 7);
     const { container, rerender } = render(
-      <SimulationOpinion run={run} offered={offered} heuristic={{ kind: "skip" }} />,
+      <SimulationOpinion
+        run={run}
+        offered={offered}
+        heuristic={{ kind: "skip" }}
+        ascensionData={REGISTERED}
+      />,
     );
     const note = container.querySelector("[data-ascension-note]");
     expect(note).toHaveAttribute("data-ascension-note", "registered");
     expect(note).toHaveTextContent("Your run is at Ascension 7");
     rerender(
-      <SimulationOpinion run={newRun("ironclad")} offered={offered} heuristic={{ kind: "skip" }} />,
+      <SimulationOpinion
+        run={newRun("ironclad")}
+        offered={offered}
+        heuristic={{ kind: "skip" }}
+        ascensionData={REGISTERED}
+      />,
     );
     expect(container.querySelector("[data-ascension-note]")).toBeNull();
+  });
+
+  it("with no data passed, the panels read the data the site ships, as tested", () => {
+    const set = setFor("ironclad");
+    const offered = (set?.cards ?? []).slice(0, 3).map((c) => c.id);
+    const run = withAscension({ ...newRun("ironclad"), ascensionConfirmed: true }, 7);
+    const values = render(
+      <SimulationOpinion run={run} offered={offered} heuristic={{ kind: "skip" }} />,
+    );
+    const note = values.container.querySelector("[data-ascension-note]");
+    expect(note).not.toBeNull();
+    expect(note).not.toHaveAttribute("data-ascension-note", "registered");
+    expect(note).not.toHaveTextContent("has not been run");
+    values.unmount();
+    const synergy = render(
+      <SynergyPanel synergy={deck()} ascension={{ level: 7, confirmed: true }} />,
+    );
+    expect(synergy.container.querySelector("[data-ascension-note]")).not.toBeNull();
+    expect(synergy.container).not.toHaveTextContent("has not been run");
   });
 
   it("each panel carries the note of its own finding, from the data it is given", () => {
@@ -616,6 +681,9 @@ describe("the /methods section", () => {
     expect(container).not.toHaveTextContent("hold at Ascension 9");
     const synergy = container.querySelector("#ascension-synergy");
     expect(synergy).toHaveTextContent("ahead at Ascension 9");
+    expect(synergy).toHaveTextContent(
+      "1,700 pairs only with the first arm, 1,400 only with the second",
+    );
     expect(synergy).toHaveTextContent("larger than at Ascension 0");
     expect(synergy).toHaveTextContent("+7.1 points");
     expect(synergy).toHaveTextContent(
@@ -720,28 +788,76 @@ describe("the landing page's coverage line", () => {
     );
     const covered = ascensionCoverage(data);
     expect(covered?.state).toBe("tested");
-    expect(covered?.detail).toContain("the synergy term was ahead, larger than at Ascension 0");
+    expect(covered?.detail).toContain(
+      "the synergy term ahead (larger than at Ascension 0), the card values not shown ahead",
+    );
     expect(covered?.detail).toContain("the card values not shown ahead");
     expect(covered?.detail).toContain("the opening-relic rule behind");
     expect(covered?.detail).toContain("Ascension 10 and the levels from 1 to 8 are not tested");
     expect(covered?.detail).not.toMatch(/\bhold/);
     // a passed result without a size to set it beside says only that it was ahead
     const bare = ascensionCoverage(tested({}, { synergy: { a0: null, size: null } }));
-    expect(bare?.detail).toContain("the synergy term was ahead, the card values");
+    expect(bare?.detail).toContain("the synergy term ahead, the card values");
   });
 });
 
 describe("the data the site ships", () => {
-  it("is registered, carries a passed precondition, and has no result until the tests have been run", () => {
+  it("is the registered study with its passed precondition", () => {
     expect(ASCENSION.registered).toBe(true);
     expect(ASCENSION.adr).toBe("ADR-058");
     expect(ASCENSION.ascension).toBe(9);
     expect(ASCENSION.precondition?.games).toBe(3500);
     expect(ASCENSION.ascensionCheck?.claims).toHaveLength(5);
-    if (ASCENSION.tests) {
-      // once they exist, all three exist, each says how it came out and the card-value test carries its twin
-      expect(Object.keys(ASCENSION.tests).sort()).toEqual(["neow", "synergy", "values"]);
-      expect(ASCENSION.tests.values.twin).toBeDefined();
+  });
+
+  it("carries the three tests as the result block of ADR-058 records them, each read by the rule that was registered", () => {
+    expect(ASCENSION.tests).not.toBeNull();
+    const tests = ASCENSION.tests;
+    if (!tests) return;
+    expect(Object.keys(tests).sort()).toEqual(["neow", "synergy", "values"]);
+    // the card-value test carries its twin at Ascension 0 with the relics kept, the others do not
+    expect(tests.values.twin).toBeDefined();
+    expect(tests.synergy.twin).toBeUndefined();
+    expect(tests.neow.twin).toBeUndefined();
+    // all three came out ahead at Ascension 9, each smaller in points than at Ascension 0 (ADR-058, "Result of ADR-058")
+    for (const f of ["synergy", "values", "neow"] as const) {
+      const t = tests[f];
+      expect(t.verdict).toBe("passed");
+      expect(t.size).toBe("smaller");
+      // ... which the numbers must bear out under the rule: below the level, the first arm ahead, the interval at that level above zero
+      expect(t.reachedAct2.pairedTable.mcnemar_p).toBeLessThan(ASCENSION.level ?? 0);
+      expect(t.reachedAct2.a.rate).toBeGreaterThan(t.reachedAct2.b.rate);
+      expect(t.clusteredDifference.ciAtLevel.level).toBeCloseTo(1 - (ASCENSION.level ?? 0), 12);
+      expect(t.clusteredDifference.ciAtLevel.ci[0]).toBeGreaterThan(0);
+      // 5 classes x 2000 seeds, of which the games that ended (the rest are not counted)
+      expect(t.pairedSeeds).toBe(10000);
+      expect(t.bothCompleted).toBeGreaterThan(9000);
+      expect(t.bothCompleted + t.excludedNotCompleted).toBe(t.pairedSeeds);
+      expect(t.members.map((m) => m.character).sort()).toEqual([...CLASSES].sort());
     }
+  });
+
+  it("licenses the opening-relic advice at Ascension 1 to 10 for the four classes whose own games showed the rule ahead, and not for Silent", () => {
+    for (const level of [1, 5, 9, 10]) {
+      for (const c of ["ironclad", "regent", "necrobinder", "defect"]) {
+        expect(neowAdviceAllowed(c, level, true, ASCENSION)).toBe(true);
+      }
+      expect(neowAdviceAllowed("silent", level, true, ASCENSION)).toBe(false);
+    }
+    // at Ascension 0 the rule of ADR-055 stands for every class, and an unconfirmed Ascension changes nothing
+    for (const c of CLASSES) {
+      expect(neowAdviceAllowed(c, 0, true, ASCENSION)).toBe(true);
+      expect(neowAdviceAllowed(c, 9, false, ASCENSION)).toBe(true);
+    }
+  });
+
+  it("shows the whole study to a run above Ascension 0 as tested, not as registered", () => {
+    expect(ascensionTested(ASCENSION)).toBe(true);
+    for (const f of ["synergy", "values", "neow"] as const) {
+      const note = ascensionNote(f, 9, true, ASCENSION);
+      expect(note?.kind).toBe("passed");
+      expect(note?.text).not.toContain("has not been run");
+    }
+    expect(ascensionCoverage(ASCENSION)?.state).toBe("tested");
   });
 });

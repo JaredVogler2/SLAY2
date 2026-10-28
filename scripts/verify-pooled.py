@@ -11,8 +11,9 @@ count) and checks that the file's intervals agree within the Monte-Carlo error.
 
     python3 scripts/verify-pooled.py experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json [--bootstrap]
 
-Exit status 0 when everything matches, 1 otherwise. Used once for ADR-058, after `pool.sh`, and checked against the published pooled files of
-ADR-054 and ADR-055 (`sim/tests/test_verify_pooled.py`).
+Exit status 0 when everything matches, 1 otherwise. Used once for ADR-058, after `pool.sh` (its outcome is quoted in the result of ADR-058);
+`sim/tests/test_verify_pooled.py` runs it on the published pooled files of ADR-054, ADR-055 and ADR-058 and checks that it notices a changed count,
+a p-value that is not the exact one, a shifted interval and a missing batch.
 """
 from __future__ import annotations
 

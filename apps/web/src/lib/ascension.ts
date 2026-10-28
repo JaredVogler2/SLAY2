@@ -202,7 +202,7 @@ export function neowAdviceAllowed(
 function verdictWords(t: AscensionTest): string {
   switch (t.verdict) {
     case "passed":
-      return t.size ? `ahead, ${SIZE_WORDS[t.size]} at Ascension 0` : "ahead";
+      return t.size ? `ahead (${SIZE_WORDS[t.size]} at Ascension 0)` : "ahead";
     case "not-shown":
       return "not shown ahead";
     case "reversed":
@@ -229,7 +229,7 @@ export function ascensionCoverage(
   }
   return {
     state: "tested",
-    detail: `Each of three results was tested again at Ascension 9 with nothing refitted: the synergy term was ${verdictWords(tests.synergy)}, the card values ${verdictWords(tests.values)}, the opening-relic rule ${verdictWords(tests.neow)}. Ascension 10 and the levels from 1 to 8 are not tested`,
+    detail: `Each of three results was tested again at Ascension 9 with nothing refitted: the synergy term ${verdictWords(tests.synergy)}, the card values ${verdictWords(tests.values)}, the opening-relic rule ${verdictWords(tests.neow)}. Ascension 10 and the levels from 1 to 8 are not tested`,
   };
 }
 
@@ -274,15 +274,30 @@ function figures(finding: AscensionFinding, t: AscensionTest): string {
   }
 }
 
+/**
+ * Whether both arms got past the Act-1 boss less often at Ascension 9 than the same arms at Ascension 0 (ADR-058 result): then a smaller
+ * number of points is not by itself a smaller effect, and the page says so beside the size words. Empty when there is nothing to say.
+ */
+export function fallNote(t: AscensionTest): string {
+  const a0 = t.a0;
+  if (!a0 || !(t.reachedAct2.a.rate < a0.a && t.reachedAct2.b.rate < a0.b)) return "";
+  return t.size === "smaller"
+    ? "Both arms got past the Act 1 boss less often at Ascension 9, so a smaller number of points does not by itself mean a weaker effect."
+    : "Both arms got past the Act 1 boss less often at Ascension 9 than at Ascension 0.";
+}
+
 /** The Ascension 0 difference of the same arms, in words: how big the passed result is beside it, or what it was. */
 function beside(t: AscensionTest): string {
   const a0 = t.a0;
   if (!a0) return "";
   const where = "at Ascension 0 with the relics kept";
+  const shares = `${percent(a0.a)} against ${percent(a0.b)}`;
+  const fall = fallNote(t);
+  const tail = fall ? ` ${fall}` : "";
   if (t.size) {
-    return ` That is ${SIZE_WORDS[t.size]} the difference ${where} (${points(a0.mean)}).`;
+    return ` That is ${SIZE_WORDS[t.size]} the difference ${where} (${points(a0.mean)}: ${shares}).${tail}`;
   }
-  return ` The same arms differ by ${points(a0.mean)} ${where}.`;
+  return ` The same arms differ by ${points(a0.mean)} ${where} (${shares}).${tail}`;
 }
 
 /** The two arms of each test as a player would name them: the first (the one under test) and the second (what it was set against). */
@@ -307,7 +322,7 @@ function classReversal(
   const c = character ? t.classes[character.toLowerCase()] : undefined;
   if (!c?.behind) return "";
   const arms = ARM_NAMES[finding];
-  return ` In the simulated games of your own class alone at Ascension 9, ${arms.second} came out ahead: ${String(c.bOnly)} pairs got past the Act 1 boss only with ${arms.second} against ${String(c.aOnly)} only with ${arms.first} (${pText(c.p)}).`;
+  return ` In the simulated games of your own class alone at Ascension 9, ${arms.second} came out ahead: ${c.bOnly.toLocaleString("en-US")} pairs got past the Act 1 boss only with ${arms.second} against ${c.aOnly.toLocaleString("en-US")} only with ${arms.first} (${pText(c.p)}).`;
 }
 
 function whereYouAre(level: number): string {
