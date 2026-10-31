@@ -210,14 +210,22 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
     return body
 
 
-def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 20000, seed: int = 0, confidence: float | None = None) -> dict:
+def build_pooled_comparison(
+    pairs: list[tuple[Path, Path]], *, iters: int = 20000, seed: int = 0, confidence: float | None = None, endpoint: str = "act1"
+) -> dict:
     """The paired comparisons of several cohorts that differ in the class only (ADR-041), pooled into one test: the
     discordant pairs of every cohort are added and the exact McNemar test runs once on the total. Each member keeps its own
     counts so that a reader can see which class carries the result. Seeds are paired within a member, never across.
 
     ``confidence`` (None by default, which leaves the output exactly as it was): also give the whole-seed bootstrap interval of the pooled
     difference at that level, for a test that is read at a level other than 0.05 (ADR-058 reads three tests at 0.05 / 3 and asks the
-    seed-clustered interval at the same level to exclude zero, because the classes' games of one seed are not independent pairs)."""
+    seed-clustered interval at the same level to exclude zero, because the classes' games of one seed are not independent pairs).
+
+    ``endpoint`` ("act1" by default, which leaves the output exactly as it was): the endpoint whose pooled difference gets the whole-seed
+    interval, "act1" the share that got past the Act-1 boss and "act2" the share that got past the Act-2 boss (ADR-060 reads that one). Both
+    endpoints' exact McNemar tables are in the file whichever is chosen."""
+    if endpoint not in ("act1", "act2"):
+        raise ValueError(f"endpoint must be 'act1' or 'act2', got {endpoint!r}")
     if len(pairs) < 2:
         raise ValueError("a pooled comparison needs at least two cohorts")
     members, flags = [], {k: ([], []) for k in ("win", "act1", "act2")}
@@ -260,7 +268,7 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
     partition = next(iter(partitions))
     n = len(floors_a)
     mean_diff, lo, hi = paired_bootstrap_ci(floors_a, floors_b, iters=iters, seed=seed)
-    cl_rows = [float(x) - float(y) for x, y in zip(*flags["act1"])]
+    cl_rows = [float(x) - float(y) for x, y in zip(*flags[endpoint])]
     cl_mean, cl_lo, cl_hi = clustered_bootstrap_ci(cl_rows, seed_ids, iters=iters, seed=seed)
     cl_level = None
     if confidence is not None:
@@ -292,11 +300,12 @@ def build_pooled_comparison(pairs: list[tuple[Path, Path]], *, iters: int = 2000
             "pairedTable": paired_win_table(*flags["act2"]),
         },
         "clusteredDifference": {
-            "definition": "pooled difference (A minus B) in the share that got past the Act-1 boss, with a bootstrap interval that "
+            "definition": f"pooled difference (A minus B) in the share that got past the Act-{'1' if endpoint == 'act1' else '2'} boss, with a bootstrap interval that "
                           "resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
             "meanAMinusB": cl_mean,
             "ci95": [cl_lo, cl_hi],
             "method": f"percentile bootstrap over seeds, {iters} resamples, rng seed {seed}",
+            **({"endpoint": endpoint} if endpoint != "act1" else {}),
             **({"ciAtLevel": cl_level} if cl_level is not None else {}),
         },
         "floorDifference": {

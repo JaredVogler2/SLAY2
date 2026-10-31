@@ -87,6 +87,10 @@ HEADLINE_POLICIES = [
     ("rules_v2", {}),
     ("rules_v3", {}),
     ("rules_v2_neow_values", {"neow_values": "experiments/neow/neow-values-v2.json"}),
+    # the pilots of ADR-060: the late card rule is a function of the offered cards, the deck and the act, all of which a human sees (the
+    # states at an Act-2 card reward are tested in test_rules_v2_late.py)
+    ("rules_v2_late", {"late_threshold": 0.2}),
+    ("rules_v2_late", {"late_values": "experiments/cardvalue/ironclad-a0-v2.json", "late_threshold": 0.0}),
 ]
 
 

@@ -183,9 +183,17 @@ def wall_timer(seconds: float):
         signal.signal(signal.SIGALRM, previous)
 
 
+# A policy that is the *same pilot* as another with one rule varied draws its private randomness from the other's stream, so that two arms
+# that differ in that rule alone play the same game until the rule first matters (ADR-060: rules_v2_late is rules_v2 with another card rule in
+# Act 2; without this the anti-stall fallback of rules_v1, the only use of the private stream in either, could send the two arms different
+# ways in Act 1). Every other name is hashed as itself, so no earlier batch is touched.
+SAME_PILOT_AS = {"rules_v2_late": "rules_v2"}
+
+
 def policy_seed_for(policy_name: str, run_seed: int) -> int:
     """Policy-private RNG seed: a hash, never the run seed itself, and never visible to the policy."""
-    digest = hashlib.sha256(f"slay2-policy:{policy_name}:{run_seed}".encode()).digest()
+    stream = SAME_PILOT_AS.get(policy_name, policy_name)
+    digest = hashlib.sha256(f"slay2-policy:{stream}:{run_seed}".encode()).digest()
     return int.from_bytes(digest[:8], "big")
 
 

@@ -40,19 +40,25 @@ def read_episodes(batch_dir: Path) -> list[dict]:
     return [json.loads(line) for line in lines if line.strip()]
 
 
-def extract(episodes: list[dict]) -> list[dict]:
-    """One record per run that reached the Act-1 boss: the deck it brought and whether it got past the boss.
+def extract(episodes: list[dict], act: int = 0) -> list[dict]:
+    """One record per run that reached the boss of act ``act`` (0 is the Act-1 boss, 1 the Act-2 boss): the deck it brought and whether it got past the boss.
 
     Passing means the run's final floor is beyond the boss floor (a run that dies in the boss fight ends on that
-    floor); the record is skipped when the episode did not finish cleanly, so errors are never read as losses."""
+    floor); the record is skipped when the episode did not finish cleanly, so errors are never read as losses.
+    ``act`` 0 is what every card value so far was measured with; ``act`` 1 is the Act-2 boss (``slay2_sim.latevalues``)."""
     out = []
     for ep in episodes:
         if ep.get("outcome") not in ("death", "win"):
             continue
         fights = (ep.get("extra") or {}).get("boss_fights") or []
-        if not fights or fights[0].get("act") != 0:
-            continue
-        f = fights[0]
+        if act == 0:
+            if not fights or fights[0].get("act") != 0:
+                continue
+            f = fights[0]
+        else:
+            f = next((x for x in fights if x.get("act") == act), None)
+            if f is None:
+                continue
         deck: dict[str, int] = {}
         upgraded = 0
         for key, n in f["deck"].items():
