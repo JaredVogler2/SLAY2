@@ -8,7 +8,7 @@
   "screenLevel": 0.1,
   "gate": 0.002,
   "seeds": 2000,
-  "frozen": false,
+  "frozen": true,
   "fit": {
     "classes": [
       {
@@ -388,6 +388,217 @@
     ],
     "anyFitted": true
   },
-  "dev": null,
+  "dev": {
+    "file": "experiments/act2/dev-selection.json",
+    "sha256": "42ffcc04b465d693712a8f6d45e88a6661dcb7459012c6aa9332f4b2c29f451c",
+    "slice": {
+      "n": 600,
+      "offset": 1000,
+      "partition": "dev"
+    },
+    "arms": [
+      {
+        "arm": "lead",
+        "lateThreshold": null,
+        "pairs": 2877,
+        "excluded": 123,
+        "shares": {
+          "arm": 0.10879388251651026,
+          "baseline": 0.09350017379214459
+        },
+        "difference": 0.015293708724365668,
+        "armOnly": 157,
+        "baselineOnly": 113,
+        "p": 0.008750220575512778,
+        "eligible": true,
+        "actOne": {
+          "arm": 0.6166145290232882,
+          "baseline": 0.6694473409801877,
+          "differs": 492
+        },
+        "wins": {
+          "arm": 71,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "pall",
+        "lateThreshold": -100,
+        "pairs": 2908,
+        "excluded": 92,
+        "shares": {
+          "arm": 0.0952544704264099,
+          "baseline": 0.0952544704264099
+        },
+        "difference": 0,
+        "armOnly": 41,
+        "baselineOnly": 41,
+        "p": 1,
+        "eligible": false,
+        "actOne": {
+          "arm": 0.6705639614855571,
+          "baseline": 0.6705639614855571,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 47,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "p010",
+        "lateThreshold": 0.1,
+        "pairs": 2909,
+        "excluded": 91,
+        "shares": {
+          "arm": 0.09969061533172911,
+          "baseline": 0.09556548642145067
+        },
+        "difference": 0.004125128910278442,
+        "armOnly": 53,
+        "baselineOnly": 41,
+        "p": 0.25644234893296924,
+        "eligible": false,
+        "actOne": {
+          "arm": 0.6706772086627707,
+          "baseline": 0.6706772086627707,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 49,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "p020",
+        "lateThreshold": 0.2,
+        "pairs": 2905,
+        "excluded": 95,
+        "shares": {
+          "arm": 0.10499139414802065,
+          "baseline": 0.09500860585197934
+        },
+        "difference": 0.009982788296041309,
+        "armOnly": 99,
+        "baselineOnly": 70,
+        "p": 0.030947734779096257,
+        "eligible": true,
+        "actOne": {
+          "arm": 0.670223752151463,
+          "baseline": 0.670223752151463,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 55,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "p035",
+        "lateThreshold": 0.35,
+        "pairs": 2903,
+        "excluded": 97,
+        "shares": {
+          "arm": 0.1026524285222184,
+          "baseline": 0.09472959007922839
+        },
+        "difference": 0.007922838442990007,
+        "armOnly": 110,
+        "baselineOnly": 87,
+        "p": 0.11678744024535476,
+        "eligible": false,
+        "actOne": {
+          "arm": 0.6699965552876335,
+          "baseline": 0.6699965552876335,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 58,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "p050",
+        "lateThreshold": 0.5,
+        "pairs": 2899,
+        "excluded": 101,
+        "shares": {
+          "arm": 0.0996895481200414,
+          "baseline": 0.09417040358744394
+        },
+        "difference": 0.005519144532597456,
+        "armOnly": 114,
+        "baselineOnly": 98,
+        "p": 0.30290363192094966,
+        "eligible": false,
+        "actOne": {
+          "arm": 0.6695412211107279,
+          "baseline": 0.6695412211107279,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 59,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "pnone",
+        "lateThreshold": 100,
+        "pairs": 2899,
+        "excluded": 101,
+        "shares": {
+          "arm": 0.09003104518799586,
+          "baseline": 0.09451535012073128
+        },
+        "difference": -0.004484304932735425,
+        "armOnly": 101,
+        "baselineOnly": 114,
+        "p": 0.4131936945188756,
+        "eligible": false,
+        "actOne": {
+          "arm": 0.6695412211107279,
+          "baseline": 0.6695412211107279,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 45,
+          "baseline": 43
+        }
+      },
+      {
+        "arm": "v",
+        "lateThreshold": null,
+        "pairs": 2907,
+        "excluded": 93,
+        "shares": {
+          "arm": 0.09597523219814241,
+          "baseline": 0.09425524595803234
+        },
+        "difference": 0.0017199862401100774,
+        "armOnly": 64,
+        "baselineOnly": 59,
+        "p": 0.7185088365549657,
+        "eligible": false,
+        "actOne": {
+          "arm": 0.6704506363949089,
+          "baseline": 0.6704506363949089,
+          "differs": 0
+        },
+        "wins": {
+          "arm": 42,
+          "baseline": 43
+        }
+      }
+    ],
+    "P": {
+      "advance": true,
+      "arm": "p020",
+      "lateThreshold": 0.2
+    },
+    "V": {
+      "advance": false,
+      "anyClassFitted": true
+    }
+  },
   "tests": null
 }

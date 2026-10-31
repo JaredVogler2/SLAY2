@@ -94,17 +94,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
 | Defect | held-out (val) | 21 | 42,000 | 41,506 | 433 | 494 | 0 |
-| Defect | development (train, dev) | 15 | 25,000 | 24,825 | 160 | 175 | 0 |
+| Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
 | Ironclad | held-out (val) | 24 | 46,300 | 45,617 | 601 | 681 | 2 |
-| Ironclad | development (train, dev) | 27 | 34,910 | 34,647 | 282 | 253 | 10 |
+| Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
 | Necrobinder | held-out (val) | 21 | 42,000 | 41,614 | 7 | 378 | 8 |
-| Necrobinder | development (train, dev) | 17 | 26,000 | 25,840 | 0 | 154 | 6 |
+| Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
 | Regent | held-out (val) | 21 | 42,000 | 41,467 | 43 | 249 | 284 |
-| Regent | development (train, dev) | 15 | 25,000 | 24,688 | 11 | 115 | 197 |
+| Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
 | Silent | held-out (val) | 21 | 42,000 | 41,904 | 0 | 96 | 0 |
-| Silent | development (train, dev) | 15 | 25,000 | 24,970 | 0 | 30 | 0 |
+| Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
 | **All classes** | **held-out (val)** | **108** | **214,300** | **212,108** | **1,084** | **1,898** | **294** |
-| **All classes** | **development (train, dev)** | **89** | **135,910** | **134,970** | **453** | **727** | **213** |
+| **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 
 * **Outcome rule:** a win is an episode that ended won after the third act's boss (`docs/game/MECHANICS-COVERAGE.md` RUN-2); a death ends it lost; a timeout (step, stall, turn or 900-second wall-clock limit), a simulator error and an invalid action are separate outcomes, are shown, and are never counted as losses or silently dropped. A timeout or an error is excluded from the denominator of a rate and the exclusion is reported.

@@ -30,7 +30,10 @@ DEV_HEAD=$(grep -oE 'DEV_HEAD=[0-9a-f]{40}' <<< "$ADR" | head -1 | cut -d= -f2)
 git cat-file -e "$DEV_HEAD^{commit}" 2>/dev/null || fail "the development commit $DEV_HEAD is not in this repository"
 git merge-base --is-ancestor "$DEV_HEAD" "$REG" || fail "the development commit is not an ancestor of the registration commit"
 git diff --quiet "$DEV_HEAD" "$REG" -- "${SCREENED_PATHS[@]}" || fail "code or data the arms execute changed between the development commit ${DEV_HEAD:0:12} and the registration commit: $(git diff --name-only "$DEV_HEAD" "$REG" -- "${SCREENED_PATHS[@]}" | head -5 | tr '\n' ' ')"
-# ... and so did what each arm is: the table of arms, as the development commit's common.sh defines it and as this one does
+# ... and so did what each arm is: the table of arms, as the development commit's common.sh defines it and as this one does.
+# (The development commit's common.sh is from before addendum B and has no arm_table: the subshell below inherits the one of the common.sh sourced
+# at the top of this file, and the old file, sourced into it, supplies the old definitions of everything arm_table calls: arm_policy, arm_params,
+# dev_id, val_id, shown_values, act2_values and the variables. Checked by hand against the real development commit: 46 identical lines.)
 arm_table_at() { # <commit>
   local tmp rc; tmp=$(mktemp -d); mkdir -p "$tmp/scripts/studies/act2"
   git show "$1:scripts/studies/act2/common.sh" > "$tmp/scripts/studies/act2/common.sh" 2>/dev/null || { rm -rf "$tmp"; return 1; }
