@@ -158,6 +158,30 @@ def test_a_level_can_be_asked_for_the_whole_seed_interval_and_changes_nothing_el
             build_pooled_comparison(pairs, iters=50, confidence=bad)
 
 
+def test_the_whole_seed_interval_can_be_asked_for_the_act_two_endpoint_and_nothing_else_moves(tmp_path: Path):
+    """ADR-060 reads the share past the Act-2 boss; the file then says so, and a file asked for the default endpoint is as it always was."""
+    # act index: 0 died in Act 1, 1 died in Act 2 (past the first boss), 2 reached Act 3 (past the second boss)
+    rows_a = [(s, "death", 40, 1.0, 2 if s % 4 == 0 else 1 if s % 4 in (1, 2) else 0) for s in range(400)]
+    rows_b = [(s, "death", 40, 1.0, 2 if s % 8 == 0 else 1 if s % 4 in (0, 1, 2) else 0) for s in range(400)]
+    pairs = [(make_batch(tmp_path, f"alpha-e{k}", rows_a, character=c), make_batch(tmp_path, f"beta-e{k}", rows_b, character=c))
+             for k, c in enumerate(("Ironclad", "Silent"))]
+    plain = build_pooled_comparison(pairs, iters=2000, confidence=0.975)
+    act1 = build_pooled_comparison(pairs, iters=2000, confidence=0.975, endpoint="act1")
+    assert act1 == plain and "endpoint" not in plain["clusteredDifference"]  # naming the default changes nothing
+    two = build_pooled_comparison(pairs, iters=2000, confidence=0.975, endpoint="act2")
+    cl = two["clusteredDifference"]
+    assert cl["endpoint"] == "act2" and "Act-2 boss" in cl["definition"] and "Act-1" not in cl["definition"]
+    assert cl["meanAMinusB"] == pytest.approx(0.25 - 0.125)   # 1 seed in 4 against 1 in 8 got past the Act-2 boss
+    assert plain["clusteredDifference"]["meanAMinusB"] == pytest.approx(0.0)  # and the Act-1 endpoint is the same in both arms
+    lo, hi = cl["ciAtLevel"]["ci"]
+    assert lo < cl["meanAMinusB"] < hi and cl["ci95"][0] > lo
+    # both endpoints' exact tables are in the file whichever is asked for
+    assert two["reachedAct3"] == plain["reachedAct3"] and two["reachedAct2"] == plain["reachedAct2"]
+    assert {k: v for k, v in two.items() if k not in ("clusteredDifference", "contentSha256")} == {k: v for k, v in plain.items() if k not in ("clusteredDifference", "contentSha256")}
+    with pytest.raises(ValueError, match="endpoint"):
+        build_pooled_comparison(pairs, iters=50, endpoint="act3")
+
+
 def test_the_pooled_difference_is_also_checked_with_whole_seeds_as_the_resampling_unit(tmp_path: Path):
     from slay2_sim.stats import clustered_bootstrap_ci, paired_bootstrap_ci
 

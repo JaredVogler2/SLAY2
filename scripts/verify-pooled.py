@@ -6,7 +6,7 @@
 (a game is completed when it ended in a win or a death; a run got past the Act-1 boss when it won or ended in the second act or later; the
 Act-2 boss likewise in the third; a pair is a seed that both batches completed), every count the pooled file reports: each class's paired
 table, the pooled tables for the Act-1 boss, the Act-2 boss and wins, the pairs, the exact McNemar p-values (exact integers), the rates, the
-mean floors and the pooled difference. With `--bootstrap` it also draws its own whole-seed and paired resamples (another generator, another
+mean floors and the pooled difference (of the endpoint the file names: the Act-1 boss unless it says `act2`, ADR-060). With `--bootstrap` it also draws its own whole-seed and paired resamples (another generator, another
 count) and checks that the file's intervals agree within the Monte-Carlo error.
 
     python3 scripts/verify-pooled.py experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json [--bootstrap]
@@ -147,7 +147,9 @@ def verify(path: Path, batches: Path, bootstrap: bool = False) -> tuple[list[str
         ck.same(f"games past the {name} boss, second arm", t[key]["b"]["games"], sum(flag[1]))
         ck.close(f"share past the {name} boss, first arm", t[key]["a"]["rate"], sum(flag[0]) / n)
         ck.close(f"share past the {name} boss, second arm", t[key]["b"]["rate"], sum(flag[1]) / n)
-    rows = [float(x) - float(y) for x, y in zip(*flags["act1"])]
+    endpoint = t["clusteredDifference"].get("endpoint", "act1")  # absent in every file written before ADR-060: the Act-1 boss
+    ck.same("endpoint of the whole-seed interval", endpoint in ("act1", "act2"), True)
+    rows = [float(x) - float(y) for x, y in zip(*flags["act2" if endpoint == "act2" else "act1"])]
     ck.close("pooled difference of the shares", t["clusteredDifference"]["meanAMinusB"], sum(rows) / n)
     ck.close("mean floor difference", t["floorDifference"]["meanAMinusB"], (sum(floors_a) - sum(floors_b)) / n)
 

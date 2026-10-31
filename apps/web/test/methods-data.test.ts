@@ -268,7 +268,8 @@ describe("comparison wording is derived from the data", () => {
       const held = v.role === "held-out";
       expect(held || v.role.includes("development"), v.id).toBe(true);
       expect(held, v.id).toBe(v.partition === "val");
-      expect(largestReport(v.policy, v.character)?.keepRelics).toBe(false);
+      // a policy that exists only with the relics kept (the Act-2 study's rules_v2_late) has no headline report at all, which is as good
+      expect(largestReport(v.policy, v.character)?.keepRelics ?? false).toBe(false);
     }
     expect(evidence.reports.filter((r) => !r.keepRelics && r.id.includes("keeprelics"))).toEqual(
       [],

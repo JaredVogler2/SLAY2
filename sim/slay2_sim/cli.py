@@ -259,7 +259,7 @@ def _character(value: str) -> str:
 
 def cmd_pool(args) -> int:
     pairs = [(Path(a), Path(b)) for a, b in args.pair]
-    pooled = build_pooled_comparison(pairs, iters=args.iters, seed=args.bootstrap_seed, confidence=args.confidence)
+    pooled = build_pooled_comparison(pairs, iters=args.iters, seed=args.bootstrap_seed, confidence=args.confidence, endpoint=args.endpoint)
     print(render_pooled_text(pooled))
     if args.out:
         write_comparison(pooled, Path(args.out))
@@ -470,6 +470,9 @@ def build_parser() -> argparse.ArgumentParser:
     pp.add_argument("--confidence", type=float, default=None,
                     help="also write the whole-seed bootstrap interval of the pooled difference at this level (e.g. 0.98333 for a test read at 0.05 / 3); "
                          "without it the output is unchanged")
+    pp.add_argument("--endpoint", choices=["act1", "act2"], default="act1",
+                    help="the endpoint whose pooled difference gets the whole-seed interval: the share past the Act-1 boss (the default; the output is "
+                         "unchanged) or past the Act-2 boss (ADR-060)")
     pp.set_defaults(fn=cmd_pool)
     return p
 
