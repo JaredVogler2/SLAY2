@@ -1,6 +1,6 @@
 # SLAY2 test report
 
-**Commit under test:** `f47f6fb` (the head of [pull request #18](https://github.com/JaredVogler2/SLAY2/pull/18) when the run started, on `main` at `682a317`; the commits after it change documents only, this report among them) · **Run:** 2026-10-28 (UTC, 00:37 to 01:00), from a clean `git worktree` of that commit · **Build:** Slay the Spire 2 main v0.107.1
+**Commit under test:** `0ac5dba` (the head of [pull request #20](https://github.com/JaredVogler2/SLAY2/pull/20) when the run started, on `main` at `e0f5b7d`; the commits after it change documents only, this report among them) · **Run:** 2026-10-31 (UTC: `pnpm install`, `pnpm check` and the budgets from 16:17, the other gates at 16:28, the browser and Python suites from 17:19, because the machine restarted at about 16:26 and killed the first attempt of those two stages part-way; the rerun started them again from the same clean worktree of the same commit), from a clean `git worktree` of that commit · **Build:** Slay the Spire 2 main v0.107.1
 
 **Machine:** Node v22.22.0, pnpm 10.28.0, Python 3.13.17; 4 cores (Intel Xeon at 2.80 GHz), 15.7 GiB of memory, Linux 6.18; Chromium from `/opt/pw-browsers/chromium` driven by Playwright 1.64.1 (a desktop at 1440 × 900 and an emulated Pixel 7). The worktree was clean when the run started (`git clean -fdx` except `node_modules`) and nothing edited it while it ran; `pnpm install --frozen-lockfile` found the dependencies of the previous report's worktree up to date with the lockfile ("Already up to date"). The third-party simulator checkout (git-ignored, pinned at `5d874e8`) was present, so the simulator tests ran instead of skipping themselves; the CI job has no simulator and skips them. Nothing heavy used the machine while the commands ran (the stages ran one after the other; between them only small reads of logs and edits of documents).
 
@@ -10,15 +10,15 @@ Every number below was read from the output of the command beside it (the logs o
 
 | # | Suite | Command | Result | Wall time |
 |---|---|---|---|---|
-| 1 | Provenance guard | `pnpm guard` | clean: no third-party file or text is tracked | 11 s |
+| 1 | Provenance guard | `pnpm guard` | clean: no third-party file or text is tracked | 14 s |
 | 2 | Licence gate | `pnpm licenses:check` | clean (production dependencies within the allowed licences; the documented exceptions are the optional prebuilt libvips pulled in by Next's image optimiser, LGPL-3.0-or-later ×2, and browser-support data used at build time, CC-BY-4.0 ×1) | 4 s |
-| 3 | TypeScript: typecheck, lint, format, unit tests, production build | `pnpm check` | **862 tests passed, none skipped** (game-schema 6, game-data 50, odds 100, decision 115, web 591; 63 test files); typecheck, ESLint and Prettier clean; Next.js 16.4.3 (Turbopack) build succeeded with 16 static pages | 2:57 |
-| 4 | Script budget per page | `pnpm --filter @slay2/web bytes:check` | every page within its budget (ADR-056): `/about` and `/methods` 177.1 KB of gzipped script, `/` 184.0, `/odds` 265.0, `/routes` 257.6, `/codex` 265.3, `/advisor` 332.1 (budget 345; the Ascension 9 study adds about 8 KB, ADR-058) | 1 s |
+| 3 | TypeScript: typecheck, lint, format, unit tests, production build | `pnpm check` | **960 tests passed, none skipped** (game-schema 6, game-data 50, odds 100, decision 115, web 689; 66 test files); typecheck, ESLint and Prettier clean; Next.js 16.4.3 (Turbopack) build succeeded with 17 static pages | 2:59 |
+| 4 | Script budget per page | `pnpm --filter @slay2/web bytes:check` | every page within its budget (ADR-056): `/about` and `/methods` 177.1 KB of gzipped script, `/` 184.0, `/odds` 265.0, `/routes` 257.6, `/codex` 265.3, `/advisor` 332.1 (budget 345; the Ascension 9 study adds about 8 KB, ADR-058), and the new `/insights` 179.4 (budget 192; ADR-059) | 1 s |
 | 5 | Dependency audit | `pnpm audit --audit-level high` | "No known vulnerabilities found" | 1 s |
 | 6 | Guard self-test | `bash scripts/test-guard.sh` | "all checks passed" | 0 s |
 | 7 | Generated files are current | `node scripts/export-site-data.mjs --check` and `python3 scripts/docs-tables.py --check` | both current | 5 s |
-| 8 | Python research harness | `PYTHONPATH=sim python -m pytest sim/tests -q --durations=10` | **645 passed, 1 xfailed** (the strict expected failure is the documented Ascension 10 Double Boss gap, G1), none skipped | 10:49 (646.66 s in pytest) |
-| 9 | Browser: production build, desktop + mobile, axe WCAG 2.2 AA | `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium PORT=3192 pnpm --filter @slay2/web e2e` (2 workers) | **345 passed, 0 failed, 133 skipped by design** | 8:55 (8.9 min in Playwright) |
+| 8 | Python research harness | `PYTHONPATH=sim python -m pytest sim/tests -q --durations=10` | **654 passed, 1 xfailed** (the strict expected failure is the documented Ascension 10 Double Boss gap, G1), none skipped | 10:50 (644.43 s in pytest) |
+| 9 | Browser: production build, desktop + mobile, axe WCAG 2.2 AA | `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium PORT=3192 pnpm --filter @slay2/web e2e` (2 workers) | **367 passed, 0 failed, 139 skipped by design** | 10:22 (10.3 min in Playwright) |
 
 `pnpm check` is `pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm build`; the `web` job of CI runs these plus the gates above, the script budget and the audit.
 
@@ -30,8 +30,8 @@ Every number below was read from the output of the command beside it (the logs o
 | `packages/game-data` | 6 | 50 |
 | `packages/odds` | 8 | 100 |
 | `packages/decision` | 7 | 115 |
-| `apps/web` | 41 | 591 |
-| **Total** | **63** | **862** |
+| `apps/web` | 44 | 689 |
+| **Total** | **66** | **960** |
 
 The tests of `apps/web`, by file:
 
@@ -41,7 +41,7 @@ The tests of `apps/web`, by file:
 | `api.test.ts` | 14 | the HTTP contract of the odds, recommend, capabilities, catalog and experiments routes |
 | `ascension-export.test.ts` | 41 | the reader of the Ascension 9 study (ADR-058) refuses a result whose arms, batches, hashes, interval or arithmetic do not belong together, applies the registered reading rule to the numbers alone and sets a passed result beside the Ascension 0 difference of the same arms |
 | `ascension.test.tsx` | 36 | what a run above Ascension 0 is told on the three panels whichever way the study came out (the notes, the size words, the fall in both arms' shares, the run's own class), the opening-relic advice withheld where the study does not license it, the `/methods` section, the landing row, and the data the site ships (each verdict re-read by the registered rule; four classes licensed, Silent not) |
-| `bundle-weight.test.ts` | 11 | what the browser is sent: only the methods page, the experiments route and the page metadata may import the evidence and rules files; the shell, the landing page, the About page and the methods page may not reach the catalog, the schema library or the run store (ADR-056); every workspace package declares `sideEffects: false` |
+| `bundle-weight.test.ts` | 13 | what the browser is sent: only the methods page, the experiments route and the page metadata may import the evidence and rules files; the shell, the landing page, the About page, the methods page and the insights page may not reach the catalog, the schema library or the run store (ADR-056), and the insights page sends its atlas and none of the data it was built from (ADR-059); every workspace package declares `sideEffects: false` |
 | `card-values-drift-keep.test.tsx` | 3 | the card-value panel's account of how values moved when the relics were kept (pilot change, wording) |
 | `card-values-keep-export.test.ts` | 13 | the exporter reads the card-value test of ADR-053 only when it belongs together, and applies the registered adoption rule to the numbers |
 | `card-values-keep.test.tsx` | 8 | the card values measured again with the relics kept, on `/methods`: registered, result, adopted classes |
@@ -51,6 +51,9 @@ The tests of `apps/web`, by file:
 | `content.test.ts` | 6 | the exported site data is current with its sources; one row per rule; no win rate without sample size and interval |
 | `deploy-config.test.ts` | 5 | the Vercel contract (`vercel.json`, bounded `engines.node`, root `next`) |
 | `error-boundary.test.tsx` | 5 | the route error boundary shows a reference and never the message or stack; retry; clearing only the saved run (the run store is fetched on demand, with a direct fallback) |
+| `insights-export.test.ts` | 28 | the reader of the insights page's data (ADR-059): refuses a comparison whose arms, partition, Ascension, role, table or exact p-value do not belong together; reads each class's own result, the seeds, the share of random card picks and the search's cost from the files; joins the rows of a boss floor into fights and recounts them from the episode files; refuses missing or inconsistent boss floors |
+| `insights-lib.test.ts` | 36 | the library of the insights page: the formatters, the sentences built from the data, the reward-card filter and the places of tied cards, the coverage cells against the catalogs and the register, the Ascension read-back list against `ascension-check.json`, and the open questions |
+| `insights-page.test.tsx` | 32 | the insights page as a visitor gets it: every section and anchor, charts named and tables captioned, the wording the independent audit corrected (and a list of retired phrases that must not return), the boss fights as one row each, the gaps named |
 | `licenses.test.ts` | 5 | the dependency licence gate |
 | `measured-value.test.tsx` | 3 | the Codex's measured value and what the runs behind it kept (gap G14) |
 | `methods-data.test.ts` | 46 | the methods page's helpers: headline reports per class, variants, comparisons, refusals of stale or partial files |
@@ -99,6 +102,7 @@ The unit tests of the packages: `game-schema` (builds, ids, schemas, refusal of 
 | `test_g14_batches.py` | 7 |
 | `test_isolation.py` | 3 |
 | `test_keep_relics.py` | 3 |
+| `test_latedrivers.py` | 9 |
 | `test_map_rules.py` | 7 |
 | `test_neow_explore.py` | 8 |
 | `test_neowcompare.py` | 6 |
@@ -131,27 +135,28 @@ The unit tests of the packages: `game-schema` (builds, ids, schemas, refusal of 
 | `test_tune.py` | 10 |
 | `test_verify_pooled.py` | 11 |
 | `test_win_audit.py` | 3 |
-| **Total collected** | **646** (645 passed + 1 xfailed) |
+| **Total collected** | **655** (654 passed + 1 xfailed) |
 
-The slowest five: 61.93 s `test_neow_explore.py::test_the_measured_rule_takes_the_offered_relic_with_the_largest_value`; 61.57 s `test_neow_explore.py::test_exploration_takes_each_of_the_three_options_about_a_third_of_the_time`; 60.31 s `test_oracle_odds.py::test_golden_file_is_reproducible`; 26.08 s `test_neow_explore.py::test_the_choice_is_reproducible_per_seed_and_does_not_depend_on_the_policy_rng_stream`; 18.44 s `test_neow_explore.py::test_without_exploration_it_is_exactly_rules_v2_and_still_logs_the_offer`.
+The slowest five: 63.62 s `test_neow_explore.py::test_exploration_takes_each_of_the_three_options_about_a_third_of_the_time`; 60.17 s `test_neow_explore.py::test_the_measured_rule_takes_the_offered_relic_with_the_largest_value`; 52.95 s `test_oracle_odds.py::test_golden_file_is_reproducible`; 27.18 s `test_neow_explore.py::test_the_choice_is_reproducible_per_seed_and_does_not_depend_on_the_policy_rng_stream`; 20.37 s `test_synergystudy.py::test_a_small_report_has_every_part_and_is_reproducible`.
 
-Tests worth naming: `test_policy_regression.py` replays committed batches seed by seed (a policy change that moves a published result fails here); `test_sample_audit.py` and `test_win_audit.py` re-derive games and wins; `test_process_state_determinism.py` fails without the warm-up of ADR-037; `test_policy_fairness.py` is the counterfactual hidden-state test (with a leak canary); `test_classes.py` is the guard that would have stopped the void study; `test_oracle_odds.py` regenerates the 739 golden cases; `test_advisor_port.py` holds the golden cases that tie the TypeScript advisor to its Python port number for number; `test_g14_batches.py` checks that the registry's quotation of the relic-gap measurement is what the committed batches give; `test_neowcompare.py` and `test_keep_relics.py` pin the statistics and the harness variant of ADR-052 and ADR-055; `test_docs_tables.py` keeps the tables of the cards, the audit and the status current; `test_verify_pooled.py` runs the independent recomputation of a pooled comparison (`scripts/verify-pooled.py`, which shares no code with the harness) on the published pooled files of ADR-054, ADR-055 and ADR-058 and checks that it notices a changed count, a p-value that is not the exact one, a shifted interval and a missing batch; the ten new tests of `test_policy_fairness.py` are the counterfactual-fairness tests of the six arms at Ascension 9.
+Tests worth naming: `test_policy_regression.py` replays committed batches seed by seed (a policy change that moves a published result fails here); `test_sample_audit.py` and `test_win_audit.py` re-derive games and wins; `test_process_state_determinism.py` fails without the warm-up of ADR-037; `test_policy_fairness.py` is the counterfactual hidden-state test (with a leak canary); `test_classes.py` is the guard that would have stopped the void study; `test_oracle_odds.py` regenerates the 739 golden cases; `test_advisor_port.py` holds the golden cases that tie the TypeScript advisor to its Python port number for number; `test_g14_batches.py` checks that the registry's quotation of the relic-gap measurement is what the committed batches give; `test_neowcompare.py` and `test_keep_relics.py` pin the statistics and the harness variant of ADR-052 and ADR-055; `test_docs_tables.py` keeps the tables of the cards, the audit and the status current; `test_latedrivers.py` checks the exploratory reading of the Act-1 and Act-2 boss fights against a synthetic world with a known answer and against a recount of the committed batches, and rebuilds its committed file (counts and ids exactly, fitted numbers to a relative 1e-9); `test_verify_pooled.py` runs the independent recomputation of a pooled comparison (`scripts/verify-pooled.py`, which shares no code with the harness) on the published pooled files of ADR-054, ADR-055 and ADR-058 and checks that it notices a changed count, a p-value that is not the exact one, a shifted interval and a missing batch; the ten new tests of `test_policy_fairness.py` are the counterfactual-fairness tests of the six arms at Ascension 9.
 
 ## Browser tests
 
-The suite starts `next start` on the production build and runs every spec in two projects. **345 passed**; the **133 skipped** are by design: the width sweeps (`phone-widths.spec.ts`, `rich-states.spec.ts`) set their own viewports and run in the mobile project only, so the desktop project skips them (91 in `[desktop] e2e/phone-widths.spec.ts`, 42 in `[desktop] e2e/rich-states.spec.ts`). Nothing is skipped for lack of data.
+The suite starts `next start` on the production build and runs every spec in two projects. **367 passed**; the **139 skipped** are by design: the width sweeps (`phone-widths.spec.ts`, `rich-states.spec.ts`) set their own viewports and run in the mobile project only, so the desktop project skips them (94 in `[desktop] e2e/phone-widths.spec.ts`, 45 in `[desktop] e2e/rich-states.spec.ts`). Nothing is skipped for lack of data.
 
 | Spec | Passed | What it covers |
 |---|---|---|
-| `e2e/phone-widths.spec.ts` | 91 | no sideways scroll and no cut-off text at 320, 360, 375, 390, 412, 640, 768, 1024 and 1280 px; every class selected; a returning visitor's header |
-| `e2e/rich-states.spec.ts` | 42 | rich states (a full run, every ranked option) at 360, 768 and 1280 px, and enlarged text (150 % and 200 %) on phones |
+| `e2e/phone-widths.spec.ts` | 94 | no sideways scroll and no cut-off text at 320, 360, 375, 390, 412, 640, 768, 1024 and 1280 px, on every page (the Insights page among them); every class selected; a returning visitor's header (seven links) |
+| `e2e/rich-states.spec.ts` | 45 | rich states (a full run, every ranked option) at 360, 768 and 1280 px, and enlarged text (150 % and 200 %) on phones, the Insights page included (its bars show a number only where the segment is wide enough to hold it) |
 | `e2e/advisor.spec.ts` | 38 | the card advisor, its combobox (ARIA, keyboard), the relics panel (add, remove, the keyboard stays in the list), the synergy reading, and the simulated second opinion per class with the basis that licenses it (own test or the pooled test) |
 | `e2e/odds.spec.ts` | 30 | the five calculators, exact fractions, impossible histories |
 | `e2e/opening.spec.ts` | 26 | the start of a run: Act 1 version and boss, the Ancient's options and their effects, ascension, export and import, the opening-relic comparison |
 | `e2e/routes.spec.ts` | 22 | Route Lab: typing, link persistence, hidden counters, Poverty, impossible histories, exact fractions |
 | `e2e/pages.spec.ts` | 20 | methods, about, 404, navigation, the measured-value panels and the registered blocks of the studies |
-| `e2e/stability.spec.ts` | 20 | layout shift per page (phone and desktop, with and without a slow network), the server-drawn advisor |
+| `e2e/stability.spec.ts` | 22 | layout shift per page, the Insights page included (phone and desktop, with and without a slow network), the server-drawn advisor |
 | `e2e/codex.spec.ts` | 14 | the card and relic codex: filters, the measured-value tile and sort, keyboard |
+| `e2e/insights.spec.ts` | 14 | the Insights page: reached from the header, every section where the contents list sends you, the levers ranked with each bar's figure and interval, the endings and the boss fights as one row each with the same figures as a table, the synergy atlas answering the class and mechanic asked, the coverage table, axe and layout with every section open |
 | `e2e/landing.spec.ts` | 14 | the promise and the live demo, coverage table (including where the simulated evidence stands above Ascension 0, following the exported study), axe, skip link, reduced motion |
 | `e2e/ascension.spec.ts` | 8 | the Ascension 9 study on the pages, in whichever state the exported data are: the opening-relic advice at Ascension 5 for Ironclad and for Silent follows the study (a relic for Ironclad; for Silent the measurements and no advice), the `/methods` section, and the line a run above Ascension 0 gets on the synergy panel and the simulated second opinion (none at Ascension 0) |
 | `e2e/journey.spec.ts` | 6 | the scripted visitor journey from the landing page to a recommendation in at most 8 interactions |
@@ -159,19 +164,21 @@ The suite starts `next start` on the production build and runs every spec in two
 | `e2e/no-javascript.spec.ts` | 4 | a visitor without JavaScript is told why the tools do not run |
 | `e2e/privacy.spec.ts` | 2 | one origin, no cookies, no request that carries data |
 | `e2e/share.spec.ts` | 2 | the link-preview image |
-| **Total** | **345** | |
+| **Total** | **367** | |
 
 Accessibility is axe-core at WCAG 2.2 AA on every page in both projects, plus keyboard paths (skip link, the combobox, the codex filters), a reduced-motion test with a power check, enlarged-text and width sweeps; it is not a screen-reader session by a person.
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` on pull request #18 at `f47f6fb`:
+`.github/workflows/ci.yml` on pull request #20 at `0ac5dba`:
 
 | Job | Result | Time |
 |---|---|---|
-| web (typecheck, lint, format, test, build, script budget) | success | 2 min 47 s |
-| sim (python unit tests, provenance guard self-test) | success | 2 min 20 s |
-| e2e (production build, Playwright desktop + mobile, axe WCAG 2.2 AA) | success | 5 min 55 s |
+| web (typecheck, lint, format, test, build, script budget) | success | 3 min 3 s |
+| sim (python unit tests, provenance guard self-test) | success | 1 min 46 s |
+| e2e (production build, Playwright desktop + mobile, axe WCAG 2.2 AA) | success | 6 min 50 s |
+
+The same pull request failed twice before that, both times in code of its own, and both were fixed in the pull request (not skipped, not re-run until green). At `860f10a` the `sim` job failed one test: the exploratory file of the Insights page rebuilt from the committed batches was required to equal the committed file, and on the runner every fitted number differs from the committed one in its last digits (about 1e-15 relative) because a float fit depends on the machine's BLAS; forcing OpenBLAS to its AVX2 and SSE kernels on the machine that wrote the file reproduced it (185 to 191 of 234 numbers differ, by up to 5e-14), and the test now compares counts, ids and hashes exactly and fitted numbers to a relative 1e-9 (`737ef33`; ADR-059 Addendum A). At `737ef33` the `e2e` job failed three tests: two still expected six links in the header (it has seven) and one found a number clipped in a 14 % bar segment at 390 px with the text at 200 % (it was printed for every segment of at least 7 %, however narrow; it is now shown only where the segment is wide enough, `dccb25f`).
 
 The `sim` job installs only `numpy` and `pytest`, so the simulator tests skip themselves there; the docs-tables test, the guard self-test, the golden-case reproducibility and the pure layout tests run. GitHub Actions is free for this public repository.
 
@@ -187,6 +194,7 @@ Checked again on 2026-10-28 at 01:04 UTC, after pull request #18 was merged (00:
 * **The browser is one engine.** Chromium only (a desktop viewport and an emulated Pixel 7); no Firefox, WebKit, real phone, or screen reader; iOS Safari's address bar and safe areas are not reproduced.
 * **Statistics are not unit tests.** The registered held-out comparisons (ADR-031 to ADR-058) are experiments with their own manifests; `test_policy_regression.py` only guards that the committed batches still replay.
 * **Not run here:** Lighthouse, Interaction to Next Paint, a load test of the hosted API beyond the limits that the tests assert, the heavy simulator audits (`audit rederive` over whole batches is an experiment, not a test), and the retired PPO run (ADR-057).
+* **Floating-point fits depend on the machine.** The last digits of the exploratory fit of the Insights page depend on the BLAS of the machine that runs it, so its test compares counts, ids and hashes exactly and the fitted numbers to a relative 1e-9 (not byte for byte; ADR-059 Addendum A). The registered comparisons are counts and exact tests and are reproduced exactly.
 * **Expected failure kept visible:** one strict `xfail` (G1, the Ascension 10 second boss that the simulator does not enter); it turns red the day the simulator is fixed or the gap is closed.
 
 ## Reproduce on a fresh clone
