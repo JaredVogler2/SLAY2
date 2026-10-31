@@ -109,6 +109,21 @@ Re-playing the games takes the simulator: about 90 and 35 minutes on four cores 
 minutes for the held-out arms (`run-dev.sh`, `run-val.sh`, which refuses to start unless `preflight-val.sh` passes). The held-out test
 was run once; re-computing it from the committed games changes nothing and is not a second test.
 
+### The Insights page, command by command
+
+The page plays no game; it reads committed files (ADR-059). Its one new analysis needs no simulator. Rebuilt on the machine that wrote it, it comes out byte for byte the committed file; on another machine (another OpenBLAS kernel) every count, id and hash is the same and the fitted numbers differ in their last digits, by up to about 5e-14 relative, so `sim/tests/test_latedrivers.py` requires equality to 1e-9 for those.
+
+```bash
+# the exploratory reading of the Act-1 and Act-2 boss fights, from the five committed exploration batches: about 9 s, writes experiments/insights/late-drivers.json
+PYTHONPATH=sim python -m slay2_sim.latedrivers --batches experiments/cardvalue/explore4-*-a0-keeprelics-dev-o5000-n5000 --out experiments/insights/late-drivers.json
+
+# the counts of what the game has, from the local pinned copy of the extracted data (git-ignored, ADR-011); --check compares with the committed file
+python3 scripts/inventory-game-data.py --check
+
+# the page's data and the other site data; --check fails if the committed files differ from what the inputs give
+node scripts/export-site-data.mjs --check
+```
+
 ## The website's data
 
 `apps/web/src/content/*.generated.json` are generated, never edited: `node scripts/export-site-data.mjs` writes them from the

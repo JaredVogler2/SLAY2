@@ -35,6 +35,15 @@ const PILLARS = [
     badge: "Heuristic v1",
   },
   {
+    eyebrow: "Insights",
+    title: "What simulated games say moves the odds",
+    body: "How big the differences between simulated pilots are, where runs end, what matters at the second boss, where card ratings and measurements disagree, and what the site does not yet capture of the game — every figure labelled with the kind of evidence it is.",
+    href: "/insights",
+    cta: "Read the insights",
+    tone: "heuristic" as const,
+    badge: "Research",
+  },
+  {
     eyebrow: "Evidence",
     title: "A ledger, not a leaderboard",
     body: "Every rule has a source, every model a measured result with its sample size — and “not yet evaluated” where nothing has been measured. Third-party simulator results are research output with unverified live-game parity.",
@@ -96,7 +105,7 @@ export default function Home() {
           <h2 id="pillars" className="sr-only">
             What SLAY2 does
           </h2>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2">
             {PILLARS.map((p) => (
               <Panel
                 key={p.title}

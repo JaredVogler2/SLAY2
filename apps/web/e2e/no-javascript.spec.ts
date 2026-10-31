@@ -8,7 +8,7 @@ test.describe("without JavaScript", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("evidence");
     await expect(page.getByText(/need\s+JavaScript/)).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link")).toHaveCount(
-      6,
+      7,
     );
   });
 

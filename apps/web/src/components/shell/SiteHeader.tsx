@@ -9,6 +9,7 @@ const NAV = [
   { href: "/odds", label: "Odds" },
   { href: "/routes", label: "Routes" },
   { href: "/codex", label: "Codex" },
+  { href: "/insights", label: "Insights" },
   { href: "/methods", label: "Methods" },
   { href: "/about", label: "About" },
 ] as const;
@@ -28,13 +29,13 @@ export function SiteHeader() {
         </Link>
         <nav
           aria-label="Primary"
-          className="order-last -mx-2 grid w-full grid-cols-3 border-t border-line pb-1 pt-1 md:order-none md:mx-0 md:flex md:w-auto md:items-center md:justify-start md:gap-2 md:border-0 md:p-0"
+          className="order-last -mx-2 grid w-full grid-cols-3 border-t border-line pb-1 pt-1 md:order-none md:mx-0 md:flex md:w-auto md:items-center md:justify-start md:gap-0.5 md:border-0 md:p-0"
         >
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg px-2.5 text-sm text-muted hover:bg-ink-2 hover:text-parchment md:flex-none md:px-3.5"
+              className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg px-2.5 text-sm text-muted hover:bg-ink-2 hover:text-parchment md:flex-none md:px-2.5 lg:px-3.5"
             >
               {item.label}
             </Link>

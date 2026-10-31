@@ -1,0 +1,607 @@
+{
+  "batches": [
+    {
+      "ascension": 0,
+      "batchId": "explore4-defect-a0-keeprelics-dev-o5000-n5000",
+      "character": "Defect",
+      "completed": 4946,
+      "contentSha256": "cd8a8780bcc534d6380eb110536ad9ce3083260380efc8f2ea5b9803503ec4a4",
+      "keepRelics": true,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "ascension": 0,
+      "batchId": "explore4-ironclad-a0-keeprelics-dev-o5000-n5000",
+      "character": "Ironclad",
+      "completed": 4921,
+      "contentSha256": "183ab8e5994b4b6586700e8e28956526ee60b86b8a0a49dce69d61ca869521b4",
+      "keepRelics": true,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "ascension": 0,
+      "batchId": "explore4-necrobinder-a0-keeprelics-dev-o5000-n5000",
+      "character": "Necrobinder",
+      "completed": 4932,
+      "contentSha256": "71a19ccf1ac9c02f546fecc5c5fc42065228505836e6e96b61b995d29fac6b35",
+      "keepRelics": true,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "ascension": 0,
+      "batchId": "explore4-regent-a0-keeprelics-dev-o5000-n5000",
+      "character": "Regent",
+      "completed": 4917,
+      "contentSha256": "31df060a23156e37126168a9e371d14fe1c3247f0b3bd334b75ad122946303d7",
+      "keepRelics": true,
+      "policy": "rules_explore_v3"
+    },
+    {
+      "ascension": 0,
+      "batchId": "explore4-silent-a0-keeprelics-dev-o5000-n5000",
+      "character": "Silent",
+      "completed": 4992,
+      "contentSha256": "2f4d0763173e235b301e1918395e10a055c51bc1547ec4ecb0053389c30da504",
+      "keepRelics": true,
+      "policy": "rules_explore_v3"
+    }
+  ],
+  "bootstrap": {
+    "draws": 400,
+    "ridge": 0.001,
+    "seed": 20261030,
+    "unit": "run"
+  },
+  "bossFloors": [
+    16,
+    31,
+    45
+  ],
+  "catalogSha256": "669a23e05b2efddb3ebe6bbbdf291a41757fd7a562213b513d0ce937afef6b0b",
+  "classes": {
+    "Defect": {
+      "passedAct1Boss": 2753,
+      "passedAct2Boss": 201,
+      "reachedAct1Boss": 3850,
+      "reachedAct2Boss": 880,
+      "runs": 3850
+    },
+    "Ironclad": {
+      "passedAct1Boss": 2764,
+      "passedAct2Boss": 422,
+      "reachedAct1Boss": 4275,
+      "reachedAct2Boss": 1513,
+      "runs": 4275
+    },
+    "Necrobinder": {
+      "passedAct1Boss": 2384,
+      "passedAct2Boss": 89,
+      "reachedAct1Boss": 3829,
+      "reachedAct2Boss": 810,
+      "runs": 3829
+    },
+    "Regent": {
+      "passedAct1Boss": 1734,
+      "passedAct2Boss": 65,
+      "reachedAct1Boss": 3543,
+      "reachedAct2Boss": 494,
+      "runs": 3543
+    },
+    "Silent": {
+      "passedAct1Boss": 914,
+      "passedAct2Boss": 2,
+      "reachedAct1Boss": 3025,
+      "reachedAct2Boss": 118,
+      "runs": 3025
+    }
+  },
+  "definition": {
+    "cards": "types and rarity from packages/game-data/data/cards.sts2-main-0.107.1.json",
+    "intervals": "95 % percentile intervals from resampling whole runs, the same resampled runs for both lines (the difference carries their correlation)",
+    "line0": "the Act-1 boss fight",
+    "line1": "the Act-2 boss fight",
+    "model": "logistic regression, one term per feature and one per class (Ironclad is the reference), a ridge of 1e-3 on everything but the intercept",
+    "passed": "the run's final floor is beyond the boss floor, or the run was won (the definition of the card values)"
+  },
+  "endpoints": {
+    "act1": {
+      "passed": 10549,
+      "rate": 0.5695389266817839,
+      "runs": 18522
+    },
+    "act2": {
+      "passed": 779,
+      "rate": 0.20419397116644822,
+      "runs": 3815
+    }
+  },
+  "features": [
+    {
+      "act1": {
+        "beta": 0.27121542048550074,
+        "ci95": [
+          0.24808868457078673,
+          0.29740327472940503
+        ],
+        "oddsRatio": 1.3115575763245662,
+        "oddsRatioCi95": [
+          1.2815735829575483,
+          1.3463581421988364
+        ]
+      },
+      "act2": {
+        "beta": 0.07350562988638479,
+        "ci95": [
+          0.035286198449635105,
+          0.10874846937988766
+        ],
+        "oddsRatio": 1.0762745959585294,
+        "oddsRatioCi95": [
+          1.0359161439723132,
+          1.114881888137835
+        ]
+      },
+      "difference": {
+        "beta": -0.19770979059911595,
+        "ci95": [
+          -0.242234433198515,
+          -0.15558490356235827
+        ]
+      },
+      "id": "attacks",
+      "label": "Attack cards",
+      "unit": "per extra card"
+    },
+    {
+      "act1": {
+        "beta": 0.0772614408962488,
+        "ci95": [
+          0.051051470034798666,
+          0.1030130313329214
+        ],
+        "oddsRatio": 1.0803244804754184,
+        "oddsRatioCi95": [
+          1.0523770577730527,
+          1.1085058542907194
+        ]
+      },
+      "act2": {
+        "beta": -0.010792636999753307,
+        "ci95": [
+          -0.055937398934686175,
+          0.030921767438895693
+        ],
+        "oddsRatio": 0.9892653945481764,
+        "oddsRatioCi95": [
+          0.9455983295003711,
+          1.0314048112902472
+        ]
+      },
+      "difference": {
+        "beta": -0.0880540778960021,
+        "ci95": [
+          -0.140501803185398,
+          -0.03609860488960072
+        ]
+      },
+      "id": "skills",
+      "label": "Skill cards",
+      "unit": "per extra card"
+    },
+    {
+      "act1": {
+        "beta": 0.2376009307961865,
+        "ci95": [
+          0.18088368684865802,
+          0.30213139379873427
+        ],
+        "oddsRatio": 1.2682029910689432,
+        "oddsRatioCi95": [
+          1.1982757959532948,
+          1.3527389565431236
+        ]
+      },
+      "act2": {
+        "beta": 0.00315278160838256,
+        "ci95": [
+          -0.09145666624597602,
+          0.1004950089047721
+        ],
+        "oddsRatio": 1.003157756851562,
+        "oddsRatioCi95": [
+          0.9126008617164398,
+          1.1057181229458584
+        ]
+      },
+      "difference": {
+        "beta": -0.23444814918780393,
+        "ci95": [
+          -0.3529131217588152,
+          -0.12093903557192942
+        ]
+      },
+      "id": "powers",
+      "label": "Power cards",
+      "unit": "per extra card"
+    },
+    {
+      "act1": {
+        "beta": 0.006124380219124571,
+        "ci95": [
+          -0.04132642169165006,
+          0.05039910372610529
+        ],
+        "oddsRatio": 1.0061431725799255,
+        "oddsRatioCi95": [
+          0.9595158720293777,
+          1.0516907463240932
+        ]
+      },
+      "act2": {
+        "beta": 0.029934776989388998,
+        "ci95": [
+          -0.03865728038362611,
+          0.09272276284324153
+        ],
+        "oddsRatio": 1.030387326798265,
+        "oddsRatioCi95": [
+          0.9620803764689551,
+          1.0971575202687442
+        ]
+      },
+      "difference": {
+        "beta": 0.023810396770264426,
+        "ci95": [
+          -0.05592697249675197,
+          0.09795104418282591
+        ]
+      },
+      "id": "other",
+      "label": "Curses, statuses and quest cards",
+      "unit": "per extra card"
+    },
+    {
+      "act1": {
+        "beta": -0.3539829321961267,
+        "ci95": [
+          -0.4253564930440227,
+          -0.2882481692990224
+        ],
+        "oddsRatio": 0.7018869469219126,
+        "oddsRatioCi95": [
+          0.6535367622870354,
+          0.7495755475165105
+        ]
+      },
+      "act2": {
+        "beta": -0.050934555873491404,
+        "ci95": [
+          -0.09319181934405713,
+          -0.010331276932703838
+        ],
+        "oddsRatio": 0.9503408627249943,
+        "oddsRatioCi95": [
+          0.9110187325190607,
+          0.9897219073972366
+        ]
+      },
+      "difference": {
+        "beta": 0.3030483763226353,
+        "ci95": [
+          0.2232948129855458,
+          0.38042556851527715
+        ]
+      },
+      "id": "starters",
+      "label": "Starting cards still in the deck (Strikes, Defends and the class's other basics)",
+      "unit": "per extra card"
+    },
+    {
+      "act1": {
+        "beta": 0.21653981841079836,
+        "ci95": [
+          0.20004948128349004,
+          0.23194434993509022
+        ],
+        "oddsRatio": 1.2417725297781321,
+        "oddsRatioCi95": [
+          1.2214631962315663,
+          1.2610495493863245
+        ]
+      },
+      "act2": {
+        "beta": 0.04065998916249384,
+        "ci95": [
+          0.025675417753453764,
+          0.05702263688616164
+        ],
+        "oddsRatio": 1.0414979247545813,
+        "oddsRatioCi95": [
+          1.02600787048119,
+          1.0586797753378092
+        ]
+      },
+      "difference": {
+        "beta": -0.17587982924830453,
+        "ci95": [
+          -0.19669548370998713,
+          -0.15458491248599993
+        ]
+      },
+      "id": "upgraded",
+      "label": "Upgraded cards",
+      "unit": "per extra upgraded card"
+    },
+    {
+      "act1": {
+        "beta": 0.601500416908683,
+        "ci95": [
+          0.5741748741095076,
+          0.6295631248685395
+        ],
+        "oddsRatio": 1.8248547902977201,
+        "oddsRatioCi95": [
+          1.7756647753034596,
+          1.8767904770498705
+        ]
+      },
+      "act2": {
+        "beta": 0.478189454586572,
+        "ci95": [
+          0.3922497320644316,
+          0.5809233299296687
+        ],
+        "oddsRatio": 1.613151073304674,
+        "oddsRatioCi95": [
+          1.4803073454550035,
+          1.7876882950560558
+        ]
+      },
+      "difference": {
+        "beta": -0.12331096232211103,
+        "ci95": [
+          -0.20813456381594592,
+          -0.022863849861418557
+        ]
+      },
+      "id": "hp",
+      "label": "HP when the boss fight starts",
+      "unit": "per ten percentage points of the maximum"
+    },
+    {
+      "act1": {
+        "beta": 0.4130643487205157,
+        "ci95": [
+          0.3408622562132874,
+          0.507430025739457
+        ],
+        "oddsRatio": 1.5114422821817943,
+        "oddsRatioCi95": [
+          1.4061595377823215,
+          1.6610169341612075
+        ]
+      },
+      "act2": {
+        "beta": 0.07502158542219127,
+        "ci95": [
+          -0.04411622193191752,
+          0.1908753252556729
+        ],
+        "oddsRatio": 1.077907417720213,
+        "oddsRatioCi95": [
+          0.9568427448981484,
+          1.210308547765767
+        ]
+      },
+      "difference": {
+        "beta": -0.3380427632983244,
+        "ci95": [
+          -0.5084892618724598,
+          -0.201665977370428
+        ]
+      },
+      "id": "max_hp",
+      "label": "Maximum HP",
+      "unit": "per ten more"
+    },
+    {
+      "act1": {
+        "beta": 0.5139380277318178,
+        "ci95": [
+          0.47621143316376785,
+          0.5528091422464896
+        ],
+        "oddsRatio": 1.6718620875399488,
+        "oddsRatioCi95": [
+          1.60996337962599,
+          1.7381288173445326
+        ]
+      },
+      "act2": {
+        "beta": 0.3879266706606716,
+        "ci95": [
+          0.3110722879571007,
+          0.4800116590931335
+        ],
+        "oddsRatio": 1.4739216986208832,
+        "oddsRatioCi95": [
+          1.3648878825768063,
+          1.6160932442646996
+        ]
+      },
+      "difference": {
+        "beta": -0.12601135707114625,
+        "ci95": [
+          -0.22167321425040193,
+          -0.03621492989481727
+        ]
+      },
+      "id": "potions",
+      "label": "Potions held",
+      "unit": "per extra potion"
+    },
+    {
+      "act1": {
+        "beta": 0.303731888820361,
+        "ci95": [
+          0.2559030192882103,
+          0.36204437759881364
+        ],
+        "oddsRatio": 1.3549057420107748,
+        "oddsRatioCi95": [
+          1.2916274589151298,
+          1.43626267843504
+        ]
+      },
+      "act2": {
+        "beta": 0.0036762026904646537,
+        "ci95": [
+          -0.057279336420163945,
+          0.06278269342733597
+        ],
+        "oddsRatio": 1.0036829682115105,
+        "oddsRatioCi95": [
+          0.9443302466900348,
+          1.0647954270436821
+        ]
+      },
+      "difference": {
+        "beta": -0.30005568612989636,
+        "ci95": [
+          -0.3912151565745022,
+          -0.2190774838796445
+        ]
+      },
+      "id": "relics",
+      "label": "Relics held",
+      "unit": "per extra relic"
+    },
+    {
+      "act1": {
+        "beta": 0.074797167470253,
+        "ci95": [
+          0.029467076941341673,
+          0.12280919983545821
+        ],
+        "oddsRatio": 1.0776655430866693,
+        "oddsRatioCi95": [
+          1.029905527273627,
+          1.1306686685973413
+        ]
+      },
+      "act2": {
+        "beta": 0.049944099626571245,
+        "ci95": [
+          -0.03315271220846437,
+          0.12501917411252755
+        ],
+        "oddsRatio": 1.0512123315716644,
+        "oddsRatioCi95": [
+          0.9673908159202408,
+          1.1331701803910763
+        ]
+      },
+      "difference": {
+        "beta": -0.024853067843681756,
+        "ci95": [
+          -0.1262939132354316,
+          0.06732833434893133
+        ]
+      },
+      "id": "gold",
+      "label": "Gold unspent",
+      "unit": "per hundred more"
+    }
+  ],
+  "kind": "late-drivers",
+  "perClass": {
+    "Defect": {
+      "act1": {
+        "attacks": 0.3591426252738078,
+        "gold": 0.21525439361563278,
+        "hp": 0.6143439814084006,
+        "max_hp": 0.33894932939647515,
+        "other": 0.020119606546531235,
+        "potions": 0.474271706450534,
+        "powers": 0.4365569868268394,
+        "relics": 0.3388620304412882,
+        "skills": 0.08635767710196565,
+        "starters": -0.441990211446202,
+        "upgraded": 0.19048632146831176
+      },
+      "act2": {
+        "attacks": 0.1807502109598099,
+        "gold": 0.13371895738982087,
+        "hp": 0.44058617740683476,
+        "max_hp": 0.2883414540716129,
+        "other": 0.02565105291086261,
+        "potions": 0.39423378252100316,
+        "powers": 0.10644832970939473,
+        "relics": -0.005410776526592159,
+        "skills": 0.009903655745581321,
+        "starters": -0.09641996583442805,
+        "upgraded": 0.05835498408699982
+      }
+    },
+    "Ironclad": {
+      "act1": {
+        "attacks": 0.24432768870486557,
+        "gold": -0.030927533997789542,
+        "hp": 0.7464429170767545,
+        "max_hp": 0.44705740532745836,
+        "other": -0.04679882942876026,
+        "potions": 0.5674878984808976,
+        "powers": 0.3469098012240357,
+        "relics": 0.29820879137849055,
+        "skills": 0.054528897623348324,
+        "starters": -0.3315489185987012,
+        "upgraded": 0.2302227252641891
+      },
+      "act2": {
+        "attacks": 0.028296668616606062,
+        "gold": 0.03311777309993309,
+        "hp": 0.5651199448713201,
+        "max_hp": 0.08662972164620893,
+        "other": 0.0379884738580784,
+        "potions": 0.4722182543131563,
+        "powers": -0.01907537038080742,
+        "relics": -0.005957906062941207,
+        "skills": -0.02497139148453665,
+        "starters": -0.008114519739408875,
+        "upgraded": 0.024737662188040455
+      }
+    },
+    "Necrobinder": {
+      "act1": {
+        "attacks": 0.3188136311623559,
+        "gold": 0.1180653760718912,
+        "hp": 0.6071890012633268,
+        "max_hp": 0.4511453150333026,
+        "other": 0.017802536750021112,
+        "potions": 0.44054671874389234,
+        "powers": -0.09060077146692373,
+        "relics": 0.2779267433615169,
+        "skills": 0.15715118932172795,
+        "starters": -0.693249653278686,
+        "upgraded": 0.2140774695447296
+      },
+      "act2": {
+        "attacks": 0.09479524491305084,
+        "gold": -0.12228889626323383,
+        "hp": 0.6557656194583749,
+        "max_hp": -0.06982786875581024,
+        "other": 0.07763499607602864,
+        "potions": 0.2870665529825422,
+        "powers": -0.1527833464801399,
+        "relics": 0.056205250889664,
+        "skills": -0.024932707959525277,
+        "starters": -0.1037994560163554,
+        "upgraded": 0.0624286041456532
+      }
+    },
+    "Regent": null,
+    "Silent": null
+  },
+  "role": "exploratory",
+  "schema": 1
+}

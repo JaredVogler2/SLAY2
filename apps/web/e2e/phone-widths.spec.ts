@@ -20,6 +20,7 @@ const PAGES = [
   "/odds?tab=shop",
   "/routes?a=M%3FMER&b=M%3F%3FRE&c=ESRT",
   "/codex",
+  "/insights",
   "/methods",
   "/about",
 ];
@@ -83,7 +84,7 @@ test.describe("phone widths", () => {
         await page.goto("/", { waitUntil: "networkidle" });
         const nav = page.getByRole("navigation", { name: "Primary" });
         const links = nav.getByRole("link");
-        await expect(links).toHaveCount(6);
+        await expect(links).toHaveCount(7);
         for (const link of await links.all()) {
           const box = await link.boundingBox();
           expect(box).not.toBeNull();
@@ -115,7 +116,7 @@ test.describe("tablet and small laptop widths", () => {
         await page.goto("/", { waitUntil: "networkidle" });
         expect(await documentOverflow(page)).toBeLessThanOrEqual(0);
         await expectNoClippedText(page);
-        // the chip needs the single-row header (from 768 px); below that the six links are the way back
+        // the chip needs the single-row header (from 768 px); below that the seven links are the way back
         await expect(page.getByRole("link", { name: /^Resume/ })).toBeVisible({
           visible: width >= 768,
         });

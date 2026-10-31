@@ -158,6 +158,16 @@ test.describe("rich states", () => {
         await documentFits(page);
       });
 
+      test("insights: every section open", async ({ page }) => {
+        await page.goto("/insights", { waitUntil: "networkidle" });
+        await page.evaluate(() => {
+          document.querySelectorAll("details").forEach((d) => {
+            d.open = true;
+          });
+        });
+        await documentFits(page);
+      });
+
       test("methods: every section open", async ({ page }) => {
         await page.goto("/methods", { waitUntil: "networkidle" });
         await page.evaluate(() => {
@@ -201,7 +211,7 @@ test.describe("enlarged text on a phone", () => {
       });
 
       test("the landing page, the codex and about", async ({ page }) => {
-        for (const route of ["/", "/codex", "/about"]) {
+        for (const route of ["/", "/codex", "/insights", "/about"]) {
           await page.goto(route, { waitUntil: "networkidle" });
           await documentFits(page, percent);
         }
