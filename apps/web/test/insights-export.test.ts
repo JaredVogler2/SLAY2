@@ -39,7 +39,20 @@ interface Insights {
     pairs: number;
     members: Record<string, unknown> | null;
   };
-  parseLevers: (root: string) => { id: string; rows: { when: string; evidence: string }[] }[];
+  parseLevers: (root: string) => {
+    id: string;
+    inAdvisor: string;
+    label: string;
+    first: string;
+    note: string | null;
+    rows: {
+      when: string;
+      evidence: string;
+      label: string | null;
+      slowdown: number | null;
+      behind: { character: string; first: number; second: number; pairs: number }[];
+    }[];
+  }[];
   parseLateDrivers: (root: string) => {
     features: { id: string; matters: string; classesAgreeing: number; classesAlone: number }[];
   } & Json;
@@ -125,7 +138,17 @@ function pooled(
       a: { batchId: `${over.first ?? "alpha"}-${c.toLowerCase()}-a0` },
       b: { batchId: `${over.second ?? "beta"}-${c.toLowerCase()}-a0` },
       bothCompleted: n / 5,
-      reachedAct2: { a: rateA, b: rateB },
+      pairedSeeds: 400,
+      reachedAct2: {
+        a: rateA,
+        b: rateB,
+        pairedTable: table({
+          aOnly: s.aOnly / 5,
+          bOnly: s.bOnly / 5,
+          both: s.both / 5,
+          neither: s.neither / 5,
+        }),
+      },
     })),
     reachedAct2: {
       a: { games: s.aOnly + s.both, rate: rateA },
@@ -185,6 +208,22 @@ describe("reading one comparison", () => {
     expect(r.ci95[0]).toBeCloseTo(0.03, 12);
     expect(r.classes).toBe(5);
     expect(Object.keys(r.members ?? {})).toHaveLength(5);
+  });
+
+  it("reads the seeds each class pairs, the shares and paired counts of every class, and refuses classes that pair different numbers of seeds", async () => {
+    const { readComparison } = await load();
+    const r = readComparison({ where: "t", path: write(pooled()), arms: ARMS, expect: EXPECT });
+    expect(r.seedsPerClass).toBe(400);
+    expect(r.members?.ironclad).toMatchObject({ first: 0.65, second: 0.6, pairs: 400, aOnly: 60 });
+    const odd = pooled({
+      tweak: (t) => {
+        const third = (t.members as { pairedSeeds: number }[])[2];
+        if (third) third.pairedSeeds = 399;
+      },
+    });
+    expect(() =>
+      readComparison({ where: "t", path: write(odd), arms: ARMS, expect: EXPECT }),
+    ).toThrow(/same number of seeds/);
   });
 
   it("reads a paired comparison of one class and gives the paired Wald interval of its table, which it says it is", async () => {
@@ -349,6 +388,57 @@ describe("the levers, read from the committed files", () => {
     expect(twin).toEqual(["card-values/a0"]);
   });
 
+  it("says which classes a lever did not help (from each class's own games), what a lever is called, and what the search costs", async () => {
+    const { parseLevers } = await load();
+    const levers = parseLevers(repo);
+    const by = (id: string) => levers.find((l) => l.id === id);
+    // the only class whose own games had the first arm behind is Ironclad's, in the values measured again (ADR-053)
+    const behind = levers.flatMap((l) =>
+      l.rows.flatMap((r) => r.behind.map((b) => `${l.id}/${r.when}/${b.character}`)),
+    );
+    expect(behind).toEqual(["values-remeasured/a0/ironclad"]);
+    const iron = by("values-remeasured")?.rows[0]?.behind[0];
+    expect(iron?.first).toBeLessThan(iron?.second ?? 0);
+    expect(by("values-remeasured")?.inAdvisor).toBe("four-classes");
+    // the cost of a game is reported for the search, which it is part of, and for no other lever; it is read from the comparison's own times
+    const slow = levers.flatMap((l) => l.rows.filter((r) => r.slowdown !== null).map(() => l.id));
+    expect(slow).toEqual(["search"]);
+    const file = JSON.parse(
+      readFileSync(
+        join(
+          repo,
+          "experiments/comparisons/search_v3-all-vs-rules_v2-ironclad-a0-veteran-val.json",
+        ),
+        "utf8",
+      ),
+    ) as { a: { meanWallSecondsPerEpisode: number }; b: { meanWallSecondsPerEpisode: number } };
+    expect(by("search")?.rows[0]?.slowdown).toBeCloseTo(
+      file.a.meanWallSecondsPerEpisode / file.b.meanWallSecondsPerEpisode,
+      9,
+    );
+    // what the levers are called says what changed: three elite thresholds (the rules_v3 manifest), and a simulator fix, not a choice
+    expect(by("thresholds")?.label).toBe("Avoid more elite fights");
+    expect(by("thresholds")?.first).toMatch(/three tuned elite-fight thresholds/);
+    expect(by("relics-along-the-way")?.label).toMatch(/Simulator fix/);
+    expect(by("relics-along-the-way")?.rows[0]?.label).toMatch(
+      /relics kept against relics dropped/,
+    );
+  });
+
+  it("names the three thresholds rules_v3 changed, from the tuning record: all three are about elite fights", () => {
+    const decision = JSON.parse(
+      readFileSync(
+        join(repo, "experiments/tuning/rules_v2-ironclad-a0-v1/stage3-decision.json"),
+        "utf8",
+      ),
+    ) as { tune: Record<string, number> }[];
+    expect(Object.keys(decision[0]?.tune ?? {}).sort()).toEqual([
+      "elite_ok_floor",
+      "elite_ok_hp",
+      "elite_value",
+    ]);
+  });
+
   it("refuses a lever file whose arms are not the pilots it names", async () => {
     const { parseLevers } = await load();
     const root = tmp();
@@ -461,6 +551,72 @@ describe("where runs end", () => {
     }
   });
 
+  it("joins the rows of a boss floor into fights: the enemies that were ever alive together are one fight, and a death in it is counted once", async () => {
+    const { fightKeyOf } = (await load()) as unknown as {
+      fightKeyOf: (rows: string[][]) => (ids: string[]) => string;
+    };
+    const fight = fightKeyOf([
+      ["KIN_PRIEST"],
+      ["KIN_FOLLOWER", "KIN_PRIEST"],
+      ["KIN_FOLLOWER", "KIN_FOLLOWER", "KIN_PRIEST"],
+      ["ROCKET"],
+      ["CRUSHER", "ROCKET"],
+      ["VANTOM"],
+    ]);
+    const kin = "KIN_FOLLOWER,KIN_PRIEST";
+    expect(fight(["KIN_PRIEST"])).toBe(kin);
+    expect(fight(["KIN_FOLLOWER", "KIN_PRIEST"])).toBe(kin);
+    expect(fight(["KIN_FOLLOWER", "KIN_FOLLOWER", "KIN_PRIEST"])).toBe(kin);
+    expect(fight(["ROCKET"])).toBe("CRUSHER,ROCKET");
+    expect(fight(["CRUSHER", "ROCKET"])).toBe("CRUSHER,ROCKET");
+    expect(fight(["VANTOM"])).toBe("VANTOM"); // a fight of one enemy stays alone
+    // a chain of rows that share an id is one fight, whatever the order they arrive in
+    const chain = fightKeyOf([["A", "B"], ["C"], ["B", "C"], ["D"]]);
+    expect(chain(["A", "B"])).toBe("A,B,C");
+    expect(chain(["C"])).toBe("A,B,C");
+    expect(chain(["D"])).toBe("D");
+  });
+
+  it("counts a boss fight once whatever enemies were alive at the end: the Kin fight and Crusher & Rocket are one row each, recounted here from the episode files", async () => {
+    const { parseRunsEnd } = await load();
+    const ends = parseRunsEnd(repo, BOSS_FLOORS) as {
+      ascension: number;
+      killersByAct: { top: { enemy: string; deaths: number; atBoss: number }[] }[];
+    }[];
+    for (const e of ends) {
+      const recount: Record<string, number> = { kin: 0, crab: 0 };
+      for (const c of CLS) {
+        const dir = join(repo, "experiments", "batches", SHOWN(c, e.ascension));
+        const lines = gunzipSync(readFileSync(join(dir, "episodes.jsonl.gz")))
+          .toString("utf8")
+          .split("\n")
+          .filter(Boolean);
+        for (const line of lines) {
+          const ep = JSON.parse(line) as {
+            outcome: string;
+            act: number;
+            floor: number;
+            killed_by: string | null;
+          };
+          if (ep.outcome !== "death" || ep.floor !== BOSS_FLOORS[ep.act]) continue;
+          if (ep.act === 0 && (ep.killed_by ?? "").includes("KIN_"))
+            recount.kin = (recount.kin ?? 0) + 1;
+          if (ep.act === 1 && /CRUSHER|ROCKET/.test(ep.killed_by ?? ""))
+            recount.crab = (recount.crab ?? 0) + 1;
+        }
+      }
+      const row = (act: number, id: string): { deaths: number; atBoss: number } | undefined =>
+        e.killersByAct[act]?.top.find((t) => t.enemy === id);
+      expect(row(0, "KIN_FOLLOWER,KIN_PRIEST")?.deaths).toBe(recount.kin);
+      expect(row(1, "CRUSHER,ROCKET")?.deaths).toBe(recount.crab);
+      // and no part of a fight is left as a row of its own
+      for (const act of [0, 1]) {
+        const ids = (e.killersByAct[act]?.top ?? []).map((t) => t.enemy);
+        expect(ids).not.toContain(act === 0 ? "KIN_PRIEST" : "ROCKET");
+      }
+    }
+  });
+
   it("tags a fight as a boss fight only if every death in it was on a boss floor, and the lists name the bosses of acts 1 and 2", async () => {
     const { parseRunsEnd } = await load();
     const ends = parseRunsEnd(repo, BOSS_FLOORS) as {
@@ -472,8 +628,12 @@ describe("where runs end", () => {
     const a0 = head(ends);
     const bosses = (act: number): string[] =>
       (a0.killersByAct[act]?.top ?? []).filter((t) => t.atBoss === t.deaths).map((t) => t.enemy);
-    expect(bosses(0)).toEqual(expect.arrayContaining(["VANTOM", "CEREMONIAL_BEAST", "KIN_PRIEST"]));
-    expect(bosses(1)).toEqual(expect.arrayContaining(["THE_INSATIABLE", "KNOWLEDGE_DEMON"]));
+    expect(bosses(0)).toEqual(
+      expect.arrayContaining(["VANTOM", "CEREMONIAL_BEAST", "KIN_FOLLOWER,KIN_PRIEST"]),
+    );
+    expect(bosses(1)).toEqual(
+      expect.arrayContaining(["THE_INSATIABLE", "KNOWLEDGE_DEMON", "CRUSHER,ROCKET"]),
+    );
     expect(a0.killersByAct[0]?.top.find((t) => t.enemy === "FOGMOG")?.atBoss).toBe(0);
   });
 
@@ -511,31 +671,52 @@ describe("where runs end", () => {
 
 function lateFile(
   features: Json[],
-  over: { role?: string; tweak?: (t: Json) => void } = {},
+  over: {
+    role?: string;
+    tweak?: (t: Json) => void;
+    /** the share of random card picks the manifest records (or "missing"); `second` adds a second batch with another share */
+    explore?: number | "missing";
+    second?: number;
+  } = {},
 ): { root: string; sha: string } {
   const root = tmp();
   const batch = "explore-x-a0-keeprelics-dev-o5000-n5000";
   const sha = "9".repeat(64);
+  const manifest = (explore: number | "missing"): string =>
+    JSON.stringify({
+      content_sha256: sha,
+      policy: explore === "missing" ? {} : { params: { explore } },
+    });
   mkdirSync(join(root, "experiments", "cardvalue", batch), { recursive: true });
   writeFileSync(
     join(root, "experiments", "cardvalue", batch, "manifest.json"),
-    JSON.stringify({ content_sha256: sha }),
+    manifest(over.explore ?? 0.6),
   );
+  const batches = [
+    {
+      batchId: batch,
+      character: "Ironclad",
+      keepRelics: true,
+      ascension: 0,
+      contentSha256: sha,
+      completed: 100,
+    },
+  ];
+  if (over.second !== undefined) {
+    const other = "explore-y-a0-keeprelics-dev-o5000-n5000";
+    mkdirSync(join(root, "experiments", "cardvalue", other), { recursive: true });
+    writeFileSync(
+      join(root, "experiments", "cardvalue", other, "manifest.json"),
+      manifest(over.second),
+    );
+    batches.push({ ...head(batches), batchId: other });
+  }
   mkdirSync(join(root, "experiments", "insights"), { recursive: true });
   const t: Json = {
     schema: 1,
     kind: "late-drivers",
     role: over.role ?? "exploratory",
-    batches: [
-      {
-        batchId: batch,
-        character: "Ironclad",
-        keepRelics: true,
-        ascension: 0,
-        contentSha256: sha,
-        completed: 100,
-      },
-    ],
+    batches,
     bootstrap: { draws: 10 },
     bossFloors: [16, 31, 45],
     endpoints: {
@@ -618,6 +799,18 @@ describe("what matters at the second boss", () => {
     expect(() => parseLateDrivers(lateFile(hold as unknown as Json[]).root)).toThrow(
       /interval does not hold/,
     );
+  });
+
+  it("reads the share of random card picks from the manifests and refuses one that is missing, out of range or different between batches", async () => {
+    const { parseLateDrivers } = await load();
+    const ok = [feature("f", 0.3, 0.6, [0.1, 0.5])];
+    expect(parseLateDrivers(lateFile(ok).root).exploreShare).toBe(0.6);
+    for (const bad of [{ explore: "missing" as const }, { explore: 1.2 }, { explore: 0 }])
+      expect(() => parseLateDrivers(lateFile(ok, bad).root)).toThrow(/share of random card picks/);
+    expect(() => parseLateDrivers(lateFile(ok, { second: 0.5 }).root)).toThrow(
+      /share of random card picks/,
+    );
+    expect(parseLateDrivers(lateFile(ok, { second: 0.6 }).root).exploreShare).toBe(0.6);
   });
 
   it("carries the floors of the three bosses and refuses a file whose floors are missing, not whole numbers or not increasing", async () => {

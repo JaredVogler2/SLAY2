@@ -30,7 +30,9 @@ test.describe("insights", () => {
       .getByRole("link", { name: "Insights" })
       .click();
     await expect(page).toHaveURL(/\/insights$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("What decides a run");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "What moves the odds in simulated runs",
+    );
     await expect(page.getByText("Simulated · unverified").first()).toBeVisible();
     await expect(page.getByText(/never been compared with the live game/)).toBeVisible();
   });

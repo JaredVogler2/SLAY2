@@ -6,6 +6,7 @@ import {
   MATTERS_TEXT,
   count,
   oddsChange,
+  pct,
   share,
   type LateFeature,
 } from "@/lib/insights";
@@ -111,8 +112,8 @@ export function SecondBoss() {
         <span className="num text-parchment">{share(t.endpoints.act1.rate)}</span> got past it;{" "}
         <span className="num text-parchment">{count(t.endpoints.act2.runs)}</span> reached the Act-2
         boss and <span className="num text-parchment">{share(t.endpoints.act2.rate)}</span> got past
-        that. For each boss, a regression on what the run held when the fight began says how much
-        each thing moved the odds of getting past it, with the class allowed for.
+        that. For each boss, a regression shows how the odds of getting past it went with each thing
+        the run held when the fight began, with the class allowed for.
       </p>
       <ul
         className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted"
@@ -177,14 +178,15 @@ export function SecondBoss() {
         <p className="eyebrow mb-1">How far to trust it</p>
         <p>
           This is an exploratory reading of {count(t.batches.reduce((n, b) => n + b.completed, 0))}{" "}
-          simulated games in which 60 % of the card picks were random, so the cards in a deck were
-          largely chance; the smith, shop and removal choices were the pilot&rsquo;s rules, not
-          chance, so these are associations. Only runs that reached a boss are in it, which is also
-          who the question is about; but a run that reached the second boss has already got through
-          two acts and differs less from the others, so a weaker association there does not by
-          itself mean that a card matters less. In the three classes with enough second-boss fights
-          to fit alone, most of the differences point the same way (the table says how many for each
-          feature). Nothing was registered or tested.
+          simulated Ascension 0 games, the relics kept, in which {pct(t.exploreShare, 0)} of the
+          card picks were random, so the cards in a deck were largely chance; the smith, shop and
+          removal choices were the pilot&rsquo;s rules, not chance, so these are associations. Only
+          runs that reached a boss are in it, which is also who the question is about; but a run
+          that reached the second boss has already got through two acts and differs less from the
+          others, so a weaker association there does not by itself mean that a card matters less. In
+          the three classes with enough second-boss fights to fit alone, most of the differences
+          point the same way (the table says how many for each feature). The Necrobinder&rsquo;s
+          runs start at 75 HP, the game gives 66 (gap G13). Nothing was registered or tested.
         </p>
       </div>
       <Disclosure summary="The figures as a table">

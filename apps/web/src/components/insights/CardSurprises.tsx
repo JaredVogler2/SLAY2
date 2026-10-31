@@ -1,4 +1,5 @@
 import { Disclosure } from "@/components/ui/Disclosure";
+import { StartHpNote } from "@/components/ui/StartHpNote";
 import { count, ordinal } from "@/lib/insights";
 import { allSurprises, type Surprise } from "@/lib/insights-server";
 
@@ -50,8 +51,9 @@ export function CardSurprises() {
             <span className="flex flex-wrap items-baseline gap-x-3">
               <span>{c.label}</span>
               <span className="num text-xs font-normal text-dim">
-                {count(c.set.bossFights)} runs · {c.set.cards} cards · rank correlation with the
-                hand ratings {c.set.spearman === null ? "n/a" : c.set.spearman.toFixed(2)}
+                {count(c.set.bossFights)} runs · {c.set.cards} reward cards ranked · rank
+                correlation with the hand ratings, all measured cards,{" "}
+                {c.set.spearman === null ? "n/a" : c.set.spearman.toFixed(2)}
               </span>
             </span>
           }
@@ -68,16 +70,23 @@ export function CardSurprises() {
               empty="None that stand out."
             />
           </div>
+          <StartHpNote
+            character={c.character}
+            subject="values"
+            className="mt-3 text-xs text-rose"
+          />
           <p className="mt-3 text-xs text-dim">
             The value is the change in the log-odds of getting past the Act-1 boss from one more
             copy in the deck, fitted to runs whose card picks were partly random
             {c.set.relicsKept
               ? ", with the relics kept"
               : ", in the simulator that dropped the relics a run gains"}
-            . A card is listed only if even the end of its interval that is least favourable to the
-            surprise puts it at least 15 % of the class&rsquo;s cards away from where its rating
-            puts it. A card a better pilot would play well is undervalued, and a card that needs
-            others is judged one at a time.
+            . Only cards that a reward can offer are compared. A card is listed only if even the end
+            of its interval that is least favourable to the surprise puts it at least 15 % of the
+            class&rsquo;s cards away from where its rating puts it, and cards with the same rating
+            share their places. A card a better pilot would play well is undervalued, a card that
+            needs others is judged one at a time, and a card the simulator plays badly is mis-valued
+            (known gap G9, the Regent&rsquo;s Particle Wall).
           </p>
         </Disclosure>
       ))}

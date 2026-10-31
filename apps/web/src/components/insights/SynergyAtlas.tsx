@@ -102,7 +102,7 @@ export function SynergyAtlas({ mechanics }: { mechanics: readonly AtlasMechanic[
         <p className="mt-1 text-sm text-muted">{current.about}</p>
         <p className="mt-2 text-xs text-dim">
           {ratio
-            ? `Exploratory reading of ${ratio.decks.toLocaleString("en-US")} simulated decks: a point of unmet need here was worth about ${ratio.ratio.toFixed(2)} points of average card quality (95 % interval ${ratio.ci95[0]?.toFixed(2)} to ${ratio.ci95[1]?.toFixed(2)}); an interval that holds zero means the runs cannot tell.`
+            ? `Exploratory reading of ${ratio.decks.toLocaleString("en-US")} randomly drafted simulated decks, in the simulator as it was when they were played (it dropped the relics a run gains): a point of unmet need here was worth about ${ratio.ratio.toFixed(2)} points of average card quality (95 % interval ${ratio.ci95[0]?.toFixed(2)} to ${ratio.ci95[1]?.toFixed(2)}); ${String(ratio.of)} such intervals were read together and are not corrected for each other, and an interval that holds zero means the runs cannot tell.`
             : "The simulated runs say nothing about this mechanic on its own: too few decks left its need unmet."}
         </p>
       </div>

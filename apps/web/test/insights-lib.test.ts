@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { CATALOG, RELIC_CATALOG, getCard, synergyTags, type MechanicId } from "@slay2/game-data";
 import { describe, expect, it } from "vitest";
 
@@ -23,13 +26,16 @@ import {
   type RunsEnd,
 } from "@/lib/insights";
 import { ASCENSION_LEVELS, ascensionStatus, openQuestions } from "@/lib/insights-content";
-import { atlasData, coverageRows, surprisesFor } from "@/lib/insights-server";
+import { allSets } from "@/lib/cardvalues";
+import { allSurprises, atlasData, coverageRows, surprisesFor } from "@/lib/insights-server";
 
 /**
  * The library behind the insights page (ADR-059): every sentence that quotes a number builds it from the exported data, so these tests
  * read the data and check the sentences against it, check the formatters on cases whose answer is known, and check that what the page
  * says it holds of the game (counts, rule ids, rule numbers) is what the catalogs and the rule register say.
  */
+const repo = join(__dirname, "..", "..", "..");
+
 describe("the formatters", () => {
   it("writes a difference of shares as signed points and an interval as two signed numbers", () => {
     expect(points(0.259)).toBe("+25.9 points");
@@ -262,8 +268,10 @@ describe("what a card's measurement and its rating say of each other", () => {
     ],
   } as unknown as CardValueSet;
 
+  const all = (): boolean => true;
+
   it("lists a card only when even the less favourable end of its interval sits far from where its rating puts it", () => {
-    const s = surprisesFor(set);
+    const s = surprisesFor(set, all);
     expect(s.better.map((c) => c.id)).toEqual(["I"]);
     expect(s.worse.map((c) => c.id)).toEqual(["L"]);
     expect(s.set.cards).toBe(11); // K has too few runs
@@ -278,7 +286,7 @@ describe("what a card's measurement and its rating say of each other", () => {
       ...set,
       cards: set.cards.slice(0, 8),
     } as CardValueSet;
-    const s = surprisesFor(aligned);
+    const s = surprisesFor(aligned, all);
     expect(s.better).toEqual([]);
     expect(s.worse).toEqual([]);
   });
@@ -289,8 +297,44 @@ describe("what a card's measurement and its rating say of each other", () => {
       ...set,
       cards: [...set.cards.slice(0, 8), card(real?.id ?? "?", 0.9, 0.05, 500, 1)],
     } as unknown as CardValueSet;
-    expect(surprisesFor(withReal).better[0]?.name).toBe(getCard(real?.id ?? "?")?.name);
-    expect(surprisesFor(set).better[0]?.name).toBe("I");
+    expect(surprisesFor(withReal, all).better[0]?.name).toBe(getCard(real?.id ?? "?")?.name);
+    expect(surprisesFor(set, all).better[0]?.name).toBe("I");
+  });
+
+  it("compares only the cards a reward can offer: a card that is never a choice is not ranked, and with the real catalog none is listed", () => {
+    // the same twelve cards, but the one that would be the biggest surprise is not offered by any reward
+    const s = surprisesFor(set, (id) => id !== "I" && id !== "L");
+    expect(s.better.map((c) => c.id)).not.toContain("I");
+    expect(s.worse.map((c) => c.id)).not.toContain("L");
+    expect(s.set.cards).toBe(9);
+    // the default is the catalog's own flag: every listed card of the real sets is reward-eligible
+    for (const c of allSurprises())
+      for (const x of [...c.better, ...c.worse])
+        expect(getCard(x.id)?.rewardEligible, `${c.character} ${x.id}`).toBe(true);
+  });
+
+  it("gives cards with the same rating the same place, not an order made by their ids", () => {
+    // four cards rated 10 to 7 take places 1 to 4 and six cards rated alike take places 5 to 10, so each of the six is 7.5th, shown as 8th;
+    // T6 is the best measured of all, so it is a card worth more than its rating, and ordering the tie by id would have put it 10th
+    const tie = {
+      ...set,
+      cards: [
+        card("P", 0.9, 0.05, 500, 10),
+        card("Q", 0.8, 0.05, 500, 9),
+        card("R", 0.7, 0.05, 500, 8),
+        card("S", 0.6, 0.05, 500, 7),
+        card("T1", -1.5, 0.05, 500, 5),
+        card("T2", 0.04, 0.05, 500, 5),
+        card("T3", 0.03, 0.05, 500, 5),
+        card("T4", 0.02, 0.05, 500, 5),
+        card("T5", 0.01, 0.05, 500, 5),
+        card("T6", 1.5, 0.05, 500, 5),
+      ],
+    } as unknown as CardValueSet;
+    const s = surprisesFor(tie, all);
+    const t6 = s.better.find((c) => c.id === "T6");
+    expect(t6?.ratedRank).toBe(8);
+    expect(t6?.measuredRank).toBe(1);
   });
 });
 
@@ -358,14 +402,50 @@ describe("what the site says it holds of the game", () => {
   it("does not claim a catalog, a measurement or advice for the parts that have none", () => {
     for (const id of ["potions", "events", "enchantments"]) {
       expect(by[id]?.facts.status, id).toBe("none");
-      expect(by[id]?.measured.status, id).toBe("none");
       expect(by[id]?.advice.status, id).toBe("none");
     }
+    for (const id of ["events", "enchantments"]) expect(by[id]?.measured.status, id).toBe("none");
+    // the second-boss reading counts the potions a run held, which is not a measurement of any potion
+    expect(by.potions?.measured.status).toBe("partial");
+    expect(by.potions?.measured.text).toMatch(/how many were held/);
     expect(by.potions?.inGame).toBe(String(INSIGHTS.inventory.counts.potions.total));
-    expect(by.events?.inGame).toBe(String(INSIGHTS.inventory.counts.events.total));
+    expect(by.events?.inGame).toContain(String(INSIGHTS.inventory.counts.events.total));
+    expect(by.events?.inGame).toMatch(/records/);
     expect(by.enchantments?.inGame).toBe(String(INSIGHTS.inventory.counts.enchantments.total));
     expect(by.combat?.advice.status).toBe("none");
     expect(by.shops?.advice.status).toBe("none");
+  });
+
+  it("counts the cards with a value once, says how many values there are class by class, and does not call every card tested", () => {
+    const valued = new Set(allSets().flatMap((s) => s.cards.map((c) => c.id)));
+    const values = allSets().reduce((n, s) => n + s.cards.length, 0);
+    expect(valued.size).toBeLessThan(values); // some cards are valued in more than one class
+    const text = by.cards?.measured.text ?? "";
+    expect(text).toContain(
+      `A value for ${String(valued.size)} of the ${String(CATALOG.cards.length)} cards`,
+    );
+    expect(text).toContain(`${String(values)} values class by class`);
+    expect(by.cards?.tested.status).toBe("partial");
+    expect(by.cards?.tested.text).toMatch(/no card is tested alone/);
+  });
+
+  it("says the enemies are monster records, that one fight can be several, and that Act 1's fights are in the advisor's briefs", () => {
+    expect(by.monsters?.inGame).toContain(
+      `${String(INSIGHTS.inventory.counts.monsters.total)} monster records`,
+    );
+    expect(by.monsters?.inGame).toMatch(/one fight can be several records/);
+    expect(by.monsters?.facts.status).toBe("partial");
+  });
+
+  it("describes the map, rest and Ascension rows as what the data and the register say", () => {
+    expect(by.map?.measured.text).toMatch(/Three elite-fight thresholds/);
+    expect(by.rest?.inGame).toMatch(/besides the one before the boss/);
+    expect(by.rest?.measured.text).toMatch(/none was adopted/);
+    // the register: rest sites "besides row R: 6 or 7 ... 6 or 7 ... 5 or 6", and row R is a rest site (MAP-3)
+    const reg = (id: string): string => rules.rules.find((r) => r.id === id)?.text ?? "";
+    expect(reg("MAP-4")).toMatch(/rest sites besides row R: 6 or 7[^;]*6 or 7[^;]*5 or 6/);
+    expect(reg("MAP-3")).toMatch(/rest site always comes right before the boss/);
+    expect(by.ascension?.facts.status).toBe("partial");
   });
 });
 
@@ -385,7 +465,7 @@ describe("the Ascension ladder", () => {
   it("says what each level changes in the numbers the rule register gives", () => {
     const change = (n: number): string => ASCENSION_LEVELS.find((l) => l.level === n)?.change ?? "";
     expect(text("MAP-4")).toMatch(/5 elites, 8 with A1/);
-    expect(change(1)).toMatch(/eight elite fights instead of five/);
+    expect(change(1)).toMatch(/eight elite rooms instead of five/);
     expect(text("ASC-6")).toMatch(/heals 80 %/);
     expect(change(2)).toMatch(/80 %/);
     expect(text("ASC-2")).toMatch(/0\.75/);
@@ -395,12 +475,33 @@ describe("the Ascension ladder", () => {
     expect(text("ASC-4")).toMatch(/100 \+ 50\*n instead of 75 \+ 25\*n/);
     expect(change(6)).toMatch(/100 plus 50.*75 plus 25/);
     expect(text("RUN-4")).toMatch(/second, different boss/);
+    // level 7: the base chance is halved (CARD-3: 1.49 % where level 0 has 3 %, 5 % elite, 4.5 % shop) and the upgrade odds are halved
+    // (UPG-1: scaling 0.25, 0.125 at level 7), so the page says "halved", not that rare cards turn up half as often
+    expect(text("CARD-3")).toMatch(/regular 1\.49%/);
+    expect(text("UPG-1")).toMatch(/A7 0\.125/);
+    expect(change(7)).toMatch(/base chance of a rare card in a reward is halved/);
+    expect(change(7)).toMatch(/upgraded half as often/);
+    expect(change(7)).not.toMatch(/about half as often/);
   });
 
-  it("says that only level 9 was tested, and that level 10's second boss is never played", () => {
-    expect(ascensionStatus(9).tone).toBe("exact");
+  it("says which levels the simulator was read back for, that only level 9 was played, and that level 10's second boss is never played", () => {
+    // the read-back of ADR-058 covers levels 1 and 4 to 7 and nothing else: the page's list is taken from the claims of that file
+    const check = JSON.parse(
+      readFileSync(join(repo, "experiments", "ascension9", "ascension-check.json"), "utf8"),
+    ) as { claims: Record<string, boolean>; allClaimsHold: boolean };
+    expect(check.allClaimsHold).toBe(true);
+    const readBack = Object.keys(check.claims)
+      .map((c) => Number(/^A(\d+)/.exec(c)?.[1]))
+      .sort((a, b) => a - b);
+    expect(readBack).toEqual([1, 4, 5, 6, 7]);
+    for (const n of readBack) expect(ascensionStatus(n).text, String(n)).toMatch(/^read back/);
+    for (const n of [2, 3, 8]) expect(ascensionStatus(n).text, String(n)).toMatch(/^not read back/);
+    for (const n of [1, 2, 3, 4, 5, 6, 7, 8])
+      expect(ascensionStatus(n).text).toMatch(/not tested alone/);
+    // level 9 was played in the tests, but is not shown as exact: its enemy numbers were not read back
+    expect(ascensionStatus(9).tone).toBe("neutral");
+    expect(ascensionStatus(9).text).toMatch(/enemy numbers not read back/);
     expect(ascensionStatus(10).tone).toBe("unverified");
-    for (const n of [1, 2, 3, 4, 5, 6, 7, 8]) expect(ascensionStatus(n).text).toMatch(/not tested/);
   });
 });
 

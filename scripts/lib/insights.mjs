@@ -36,6 +36,14 @@ export function readComparison({ where, path, arms: [first, second], expect }) {
   const r = t.reachedAct2;
   const table = r.pairedTable;
   const n = t.bothCompleted;
+  // seeds per class of a pooled file: the same for every class (a pooled comparison pairs the same list of seeds in each)
+  let seedsPerClass = null;
+  if (pooled) {
+    const seeds = new Set(t.members.map((m) => m.pairedSeeds));
+    if (seeds.size !== 1 || !Number.isInteger([...seeds][0]))
+      throw new Error(`${where}: the classes do not pair the same number of seeds`);
+    seedsPerClass = [...seeds][0];
+  }
   if (table.a_only + table.b_only + table.both + table.neither !== n)
     throw new Error(`${where}: the paired table does not add up to the pairs both arms completed`);
   if (!closeP(table.mcnemar_p, mcnemarExact(table.a_only, table.b_only)))
@@ -76,11 +84,24 @@ export function readComparison({ where, path, arms: [first, second], expect }) {
     file: path,
     sha256: t.contentSha256,
     ids,
+    seedsPerClass,
+    // mean wall seconds of one game in each arm, where the paired file records them (the search comparison does)
+    wall:
+      !pooled && t.a?.meanWallSecondsPerEpisode > 0 && t.b?.meanWallSecondsPerEpisode > 0
+        ? { first: t.a.meanWallSecondsPerEpisode, second: t.b.meanWallSecondsPerEpisode }
+        : null,
     members: pooled
       ? Object.fromEntries(
           t.members.map((m) => [
             String(m.character).toLowerCase(),
-            { first: m.reachedAct2.a, second: m.reachedAct2.b, pairs: m.bothCompleted },
+            {
+              first: m.reachedAct2.a,
+              second: m.reachedAct2.b,
+              pairs: m.bothCompleted,
+              aOnly: m.reachedAct2.pairedTable.a_only,
+              bOnly: m.reachedAct2.pairedTable.b_only,
+              p: m.reachedAct2.pairedTable.mcnemar_p,
+            },
           ]),
         )
       : null,
@@ -172,8 +193,9 @@ const LEVERS = [
     versus: "the values measured without them",
     first: "a pilot that follows the values measured with the relics kept",
     second: "a pilot that follows the values the site showed before",
-    inAdvisor: "yes",
+    inAdvisor: "four-classes",
     adr: ["ADR-053"],
+    note: "Ironclad's own games favoured its earlier set, so the advisor shows the new values for four classes. Four of the five earlier sets were measured by an older pilot as well, so the gain is not due to the relics alone.",
     rows: [
       {
         when: "a0",
@@ -186,13 +208,13 @@ const LEVERS = [
   },
   {
     id: "thresholds",
-    label: "Tune when to fight elites, rest and shop",
+    label: "Avoid more elite fights",
     versus: "the untuned thresholds",
-    first: "a pilot with the tuned route and rest thresholds (Ironclad)",
+    first: "a pilot with three tuned elite-fight thresholds (Ironclad)",
     second: "the same pilot untuned",
     inAdvisor: "no",
     adr: ["ADR-036", "ADR-045"],
-    note: "Tuned in a simulator that dropped the relics a run gains, so the elite thresholds in particular may not carry over.",
+    note: "Three thresholds that decide when to fight an elite, tuned in a simulator that dropped the relics a run gains, so they may not carry over. The heal, rest and shop thresholds were screened too and none was adopted.",
     rows: [
       {
         when: "a0-dropped",
@@ -207,11 +229,12 @@ const LEVERS = [
     id: "search",
     label: "Plan every fight with a search",
     versus: "the rules pilot",
-    first: "a pilot that plans each fight by searching on clones (Ironclad, 300 games)",
+    first: "a pilot that plans each fight by searching on clones (Ironclad)",
     second: "the rules pilot",
+    speed: true,
     inAdvisor: "no",
     adr: ["ADR-033", "ADR-040"],
-    note: "About 105 times slower than the rules pilot; nothing on the site runs a simulator.",
+    note: "Nothing on the site runs a simulator.",
     rows: [
       {
         when: "a0-dropped",
@@ -224,7 +247,7 @@ const LEVERS = [
   },
   {
     id: "relics-along-the-way",
-    label: "Keep the relics found along the way",
+    label: "Simulator fix: keep the relics a run gains (G14)",
     versus: "losing them at the next fight (the simulator's old behaviour)",
     first: "the same pilot with the relics it gains kept",
     second: "the same pilot as the pinned simulator plays it (every relic gained after the first fight is dropped)",
@@ -234,6 +257,7 @@ const LEVERS = [
     rows: [
       {
         when: "a0",
+        label: "Ascension 0, relics kept against relics dropped",
         file: "experiments/g14/pooled-keeprelics-vs-base-dev.json",
         arms: [/keeprelics/, /^(?!.*keeprelics)/],
         expect: { partition: "dev", ascension: 0, role: "development" },
@@ -260,10 +284,20 @@ export function parseLevers(root) {
         arms: row.arms,
         expect: row.expect,
       });
+      // a class whose own games had the first arm behind (a lever that helps on the whole may not help everywhere)
+      const behind = c.members
+        ? Object.entries(c.members)
+            .filter(([, m]) => m.first < m.second)
+            .map(([character, m]) => ({ character, ...m }))
+        : [];
       return {
         when: row.when,
+        label: row.label ?? null,
         evidence: row.evidence,
         note: row.note ?? null,
+        behind,
+        // how many times longer one game takes, for the lever whose cost is part of what it is (the search)
+        slowdown: lever.speed && c.wall ? c.wall.first / c.wall.second : null,
         file: row.file,
         sha256: c.sha256,
         first: c.first,
@@ -308,12 +342,50 @@ const ENDS = [
   { id: "a9", ascension: 9, label: "Ascension 9" },
 ];
 
+// `killed_by` lists the enemies still alive when the run ended, so one fight fills several rows ("KIN_PRIEST", "KIN_FOLLOWER,KIN_PRIEST", ...).
+// On the floor of an act's boss every death is a death in a boss fight, and the enemies that were ever alive together belong to one fight:
+// the ids of those deaths are joined into fights (a union of the ids that appear in one row), and a fight is named by its sorted ids.
+// Away from the boss floors the rows are left as the games wrote them; the page says so.
+export function fightKeyOf(rows) {
+  const parent = new Map();
+  const find = (x) => {
+    let r = x;
+    while (parent.get(r) !== r) r = parent.get(r);
+    for (let c = x; parent.get(c) !== r; ) {
+      const next = parent.get(c);
+      parent.set(c, r);
+      c = next;
+    }
+    return r;
+  };
+  for (const ids of rows) for (const id of ids) if (!parent.has(id)) parent.set(id, id);
+  for (const ids of rows)
+    for (let i = 1; i < ids.length; i++) {
+      const a = find(ids[0]);
+      const b = find(ids[i]);
+      if (a !== b) parent.set(a, b);
+    }
+  const members = new Map();
+  for (const id of parent.keys()) {
+    const r = find(id);
+    members.set(r, [...(members.get(r) ?? []), id]);
+  }
+  const key = new Map();
+  for (const ids of members.values()) {
+    const k = [...new Set(ids)].sort().join(",");
+    for (const id of ids) key.set(id, k);
+  }
+  return (ids) => key.get(ids[0]);
+}
+
 function endsFor(root, variant, bossFloors) {
   const perClass = [];
   const killers = [{}, {}, {}];
   const killersAtBoss = [{}, {}, {}];
+  const bossRows = [[], [], []];
   const unrecorded = [0, 0, 0];
   const allGold = [];
+  let seedsPerClass = null;
   for (const cls of CLASSES) {
     const id = `rules_v2-shownvals-${cls}-a${variant.ascension}-veteran-keeprelics-val-n2000`;
     const dir = join(root, "experiments", "batches", id);
@@ -326,6 +398,9 @@ function endsFor(root, variant, bossFloors) {
       m.seeds.partition !== "val"
     )
       throw new Error(`${id}: the manifest is not the batch the insights page says it is`);
+    if (!Number.isInteger(m.seeds.n) || (seedsPerClass !== null && m.seeds.n !== seedsPerClass))
+      throw new Error(`${id}: the classes do not play the same number of seeds`);
+    seedsPerClass = m.seeds.n;
     const eps = readEpisodes(dir).filter((e) => e.outcome === "win" || e.outcome === "death");
     const counts = m.summary.counts;
     if (eps.length !== m.summary.completed || eps.filter((e) => e.outcome === "win").length !== counts.win)
@@ -343,8 +418,8 @@ function endsFor(root, variant, bossFloors) {
         continue;
       }
       const key = String(e.killed_by);
-      killers[e.act][key] = (killers[e.act][key] ?? 0) + 1;
-      if (e.floor === bossFloors[e.act]) killersAtBoss[e.act][key] = (killersAtBoss[e.act][key] ?? 0) + 1;
+      if (e.floor === bossFloors[e.act]) bossRows[e.act].push(key.split(","));
+      else killers[e.act][key] = (killers[e.act][key] ?? 0) + 1;
     }
     const gold = dead.map((e) => e.gold);
     allGold.push(...gold);
@@ -367,6 +442,15 @@ function endsFor(root, variant, bossFloors) {
       relicsMean: mean(dead.map((e) => e.relics)),
     });
   }
+  // the deaths on a boss floor, joined into fights across the five classes
+  for (let act = 0; act < 3; act++) {
+    const fight = fightKeyOf(bossRows[act]);
+    for (const ids of bossRows[act]) {
+      const key = fight(ids);
+      killers[act][key] = (killers[act][key] ?? 0) + 1;
+      killersAtBoss[act][key] = (killersAtBoss[act][key] ?? 0) + 1;
+    }
+  }
   const sum = (key) => perClass.reduce((a, c) => a + c[key], 0);
   const completed = sum("completed");
   return {
@@ -375,6 +459,7 @@ function endsFor(root, variant, bossFloors) {
     ascension: variant.ascension,
     pilot: "rules_v2 following the card values shown on the site",
     relicsKept: true,
+    seedsPerClass,
     completed,
     goldMedian: median(allGold),
     goldShare150: allGold.filter((g) => g >= 150).length / allGold.length,
@@ -425,12 +510,20 @@ export function parseLateDrivers(root) {
   const t = read(path);
   if (t.kind !== "late-drivers" || t.schema !== 1 || t.role !== "exploratory")
     throw new Error("late-drivers.json: not the exploratory reading of schema 1");
+  // the share of card picks the pilot of these games chose at random, read from the batches' own manifests (the same in every one)
+  let exploreShare = null;
   for (const b of t.batches) {
     const m = read(join(root, "experiments", "cardvalue", b.batchId, "manifest.json"));
     if ((m.content_sha256 ?? null) !== b.contentSha256)
       throw new Error(`late-drivers.json: ${b.batchId} is not the batch it was fitted from`);
     if (!b.keepRelics || b.ascension !== 0)
       throw new Error(`late-drivers.json: ${b.batchId} is not a relics-kept Ascension 0 batch`);
+    const explore = m.policy?.effective?.params?.explore ?? m.policy?.params?.explore;
+    if (typeof explore !== "number" || !(explore > 0 && explore < 1))
+      throw new Error(`late-drivers.json: ${b.batchId} does not record the share of random card picks`);
+    if (exploreShare !== null && explore !== exploreShare)
+      throw new Error(`late-drivers.json: the batches do not share one share of random card picks`);
+    exploreShare = explore;
   }
   const bossFloors = t.bossFloors;
   if (
@@ -481,6 +574,7 @@ export function parseLateDrivers(root) {
     role: t.role,
     batches: t.batches.map((b) => ({ id: b.batchId, character: b.character, completed: b.completed })),
     draws: t.bootstrap.draws,
+    exploreShare,
     bossFloors,
     endpoints: ep,
     classes: t.classes,
@@ -503,8 +597,11 @@ export function parseAscensionLadder(root) {
     arms: [/^rules_v2-shownvals-/, /^rules_v1-/],
     expect: { partition: "val", ascension: 9, role: "held-out" },
   });
+  if (a0.seedsPerClass !== a9.seedsPerClass)
+    throw new Error("ascension: the two levels do not pair the same number of seeds");
   return {
     pilots: { first: "follows the card values shown on the site", second: "the hand-written rules" },
+    seedsPerClass: a0.seedsPerClass,
     pooled: {
       a0: { first: a0.first, second: a0.second, pairs: a0.pairs },
       a9: { first: a9.first, second: a9.second, pairs: a9.pairs },

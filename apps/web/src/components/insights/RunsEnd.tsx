@@ -1,5 +1,6 @@
 import { Disclosure } from "@/components/ui/Disclosure";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
+import { StartHpNote } from "@/components/ui/StartHpNote";
 import {
   INSIGHTS,
   bossDeaths,
@@ -133,7 +134,7 @@ function bossSentence(a0: Variant, a9: Variant): string {
   return `A boss fight ended ${one(a0)} and ${one(a9)}; the rest ended in elite and ordinary fights and elsewhere on the map.`;
 }
 
-/** How the best simulated pilot's games ended, class by class at Ascension 0 and 9, and which enemies ended them. */
+/** How the games of the pilot that follows the shown card values ended, class by class at Ascension 0 and 9, and which enemies ended them. */
 export function RunsEnd() {
   const a0 = INSIGHTS.runsEnd.find((v) => v.id === "a0");
   const a9 = INSIGHTS.runsEnd.find((v) => v.id === "a9");
@@ -156,6 +157,7 @@ export function RunsEnd() {
             </li>
           ))}
         </ul>
+        <StartHpNote character="necrobinder" subject="chances" className="mb-3 text-xs text-rose" />
         <div className="space-y-3">
           {[
             { label: "All five classes", a0, a9, pooled: true },
@@ -189,8 +191,9 @@ export function RunsEnd() {
         <p className="mt-3 text-xs text-dim">
           Share of completed games, in percent, for the pilot that follows the card values shown on
           the site, relics kept: {count(a0.completed)} games at Ascension 0 and{" "}
-          {count(a9.completed)} at Ascension 9, the same 2,000 seeds of each class. The best pilot
-          the project has, and it wins almost nothing: the second half of a run is barely observed.
+          {count(a9.completed)} at Ascension 9, the same {count(a0.seedsPerClass)} seeds of each
+          class. It won {share(a0.won / a0.completed)} of its games at Ascension 0, so act 3 and
+          winning are thinly observed.
         </p>
         <div className="mt-3">
           <Disclosure summary="The figures as a table">
@@ -254,8 +257,9 @@ export function RunsEnd() {
       <div>
         <h3 className="text-lg text-parchment">What ended the runs, at Ascension 0</h3>
         <p className="mb-3 mt-0.5 text-sm text-muted">
-          The enemies that were in the fight a run died in, act by act, all five classes together; a
-          boss fight is tagged. {bossSentence(a0, a9)}
+          The enemies still alive when each run ended, act by act, all five classes together. A boss
+          fight is one row and is tagged; below the bosses a row is the enemies that were alive at
+          the end, so one ordinary fight can fill more than one row. {bossSentence(a0, a9)}
         </p>
         <Killers v={a0} />
         <div className="mt-4">

@@ -1,3 +1,4 @@
+import { allSets } from "@/lib/cardvalues";
 import { count, INSIGHTS, points, share } from "@/lib/insights";
 
 /**
@@ -16,7 +17,7 @@ export const ASCENSION_LEVELS: readonly AscensionLevel[] = [
   {
     level: 1,
     name: "Swarming Elites",
-    change: "Each act's map has eight elite fights instead of five.",
+    change: "Each act's map is built to hold eight elite rooms instead of five.",
     rules: ["ASC-6", "MAP-4"],
   },
   {
@@ -49,7 +50,7 @@ export const ASCENSION_LEVELS: readonly AscensionLevel[] = [
     level: 7,
     name: "Scarcity",
     change:
-      "Rare cards turn up about half as often in rewards, and fewer reward cards arrive upgraded.",
+      "The base chance of a rare card in a reward is halved and the counter that builds it up grows half as fast; reward cards arrive upgraded half as often.",
     rules: ["ASC-5", "CARD-3", "UPG-1"],
   },
   {
@@ -68,14 +69,21 @@ export const ASCENSION_LEVELS: readonly AscensionLevel[] = [
   },
 ];
 
-/** What the simulation says about each level: only Ascension 0 and 9 were played in held-out tests. */
+/**
+ * What the simulation says about each level. The simulator's changes were read back against the register for levels 1 and 4 to 7
+ * (`experiments/ascension9/ascension-check.json`); level 3's gold, level 2's heal after the first act and the enemy numbers of levels 8
+ * and 9 were not (ADR-058). Only Ascension 0 and 9 were played in held-out tests.
+ */
+const READ_BACK = new Set([1, 4, 5, 6, 7]);
 export function ascensionStatus(level: number): {
   readonly text: string;
   readonly tone: "exact" | "neutral" | "unverified";
 } {
-  if (level === 9) return { text: "tested, with 1 to 8 in force", tone: "exact" };
+  if (level === 9)
+    return { text: "played in the tests; enemy numbers not read back", tone: "neutral" };
   if (level === 10) return { text: "second boss never played", tone: "unverified" };
-  return { text: "not tested alone", tone: "neutral" };
+  if (READ_BACK.has(level)) return { text: "read back; not tested alone", tone: "neutral" };
+  return { text: "not read back; not tested alone", tone: "unverified" };
 }
 
 export interface OpenQuestion {
@@ -91,6 +99,7 @@ export function openQuestions(): readonly OpenQuestion[] {
   const late = INSIGHTS.lateDrivers.endpoints;
   const gold = a0?.goldMedian ?? 0;
   const silent = a0?.perClass.find((c) => c.character === "silent");
+  const drift = allSets().find((c) => c.character === "ironclad")?.drift?.spearman ?? null;
   const silentAct1 = silent ? silent.diedAct1 / silent.completed : 0;
   const relicsKept =
     INSIGHTS.levers.find((l) => l.id === "relics-along-the-way")?.rows[0]?.difference ?? 0;
@@ -98,15 +107,16 @@ export function openQuestions(): readonly OpenQuestion[] {
     {
       id: "later",
       question: "What wins a run, as opposed to getting past the first boss?",
-      why: `Every card value on this site is measured at the Act-1 boss, and the best simulated pilot wins ${share((a0?.won ?? 0) / (a0?.completed ?? 1))} of its games. Of ${count(late.act2.runs)} runs that reached the Act-2 boss, ${count(late.act2.passed)} got past it, which is the evidence there is for the second half of a run.`,
+      why: `Every card value on this site is measured at the Act-1 boss, and the pilot that follows the shown values wins ${share((a0?.won ?? 0) / (a0?.completed ?? 1))} of its games at Ascension 0. In the exploration games ${count(late.act2.runs)} runs reached the Act-2 boss and ${count(late.act2.passed)} got past it; the endings of the pilot's own games above are another reading. Neither was designed to answer the question.`,
       first:
         "Refit the values for the Act-2 boss from the runs that exist, then test a pilot that follows them on held-out seeds.",
     },
     {
       id: "elites",
       question: "Should you fight elites?",
-      why: "The thresholds that told the pilot when to fight an elite were tuned in a simulator that dropped every relic a run gains, and elites are where relics come from. Route Lab compares odds; it cannot say whether the fight is worth the HP.",
-      first: "Tune the route and rest thresholds again with the relics kept, then test the result.",
+      why: "The thresholds that told the pilot when to fight an elite were tuned in a simulator that dropped every relic a run gains, and elites are one place relics come from. Route Lab compares odds; it cannot say whether the fight is worth the HP.",
+      first:
+        "Tune the elite thresholds again with the relics kept (and screen the heal, rest and shop ones), then test the result.",
     },
     {
       id: "relics",
@@ -118,7 +128,7 @@ export function openQuestions(): readonly OpenQuestion[] {
     {
       id: "events",
       question: "What do events and enchantments do to a deck?",
-      why: `The game has ${count(INSIGHTS.inventory.counts.events.total)} events and ${count(INSIGHTS.inventory.counts.enchantments.total)} enchantments, and most "?" rooms are events. The advisor has no event advice and its deck cannot record an enchanted card.`,
+      why: `The extracted data hold ${count(INSIGHTS.inventory.counts.events.total)} event records (they include the Ancients that open the acts and the event that closes a run, which no "?" room offers) and ${count(INSIGHTS.inventory.counts.enchantments.total)} enchantments, and a "?" room turns into an event more often than into anything else (UNK-2). The advisor has no event advice and its deck cannot record an enchanted card.`,
       first:
         "A facts-only table of what each event offers, written in our own words, then a measurement of the choices.",
     },
@@ -132,13 +142,13 @@ export function openQuestions(): readonly OpenQuestion[] {
     {
       id: "pilot",
       question: "How much of this is the pilot?",
-      why: `Every value comes from one rules pilot. Two pilots' card values agree at about +0.59 (Ironclad), the engine credit of the synergy term was set to zero on runs of a rules pilot that may not play engine decks well, and the Silent pilot dies in act 1 in ${share(silentAct1)} of its games at Ascension 0.`,
+      why: `Every value comes from rules pilots of one family, not from people. ${drift === null ? "" : `Card values measured with two of those pilots agree with a rank correlation of ${drift.toFixed(2)} for Ironclad, so a value depends, moderately, on who plays. `}The engine credit of the synergy term was set to zero on runs of a rules pilot that may not play engine decks well, and the Silent pilot dies in act 1 in ${share(silentAct1)} of its games at Ascension 0.`,
       first: "A stronger pilot, or run logs from people, to see which values survive.",
     },
     {
       id: "live",
       question: "Does any of it hold in the live game?",
-      why: "Not known. The simulator has never been compared with the game, so every figure here is model output. A handful of fixed scenarios replayed in an owned copy would show how far it can be trusted.",
+      why: "Not known. The simulator has never been compared with the game, so every performance figure here is model output. A handful of fixed scenarios replayed in an owned copy could show where the simulator departs from the game.",
       first: "Needs a copy of the game on the owner's machine.",
     },
   ];

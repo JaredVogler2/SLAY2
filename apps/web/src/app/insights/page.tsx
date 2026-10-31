@@ -14,13 +14,14 @@ import { SynergyAtlas } from "@/components/insights/SynergyAtlas";
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { INSIGHTS, count, roughly } from "@/lib/insights";
+import { allSets } from "@/lib/cardvalues";
 import { atlasData } from "@/lib/insights-server";
 
 const PLAYED = INSIGHTS.games.completed + INSIGHTS.games.exploration.completed;
 
 export const metadata: Metadata = {
   title: "Insights",
-  description: `What ${roughly(PLAYED)} simulated Slay the Spire 2 games say about what decides a run: how much each decision is worth, where runs end, what matters at the second boss, where card ratings and measurements disagree, how cards work together, what each Ascension changes, and what this site does and does not capture of the game.`,
+  description: `What simulated Slay the Spire 2 games say about what moves the odds of a run: how big the differences between simulated pilots are, where runs end, what matters at the second boss, where card ratings and measurements disagree, how cards work together, what each Ascension changes, and what this site does and does not capture of the game.`,
 };
 
 const SECTIONS = [
@@ -37,15 +38,24 @@ const SECTIONS = [
 
 export default function InsightsPage() {
   const atlas = atlasData();
+  // the rank correlations of the measured values with the hand ratings, one for each class
+  const rhos = allSets().flatMap((s) =>
+    s.spearmanWithStaticRating === null ? [] : [s.spearmanWithStaticRating],
+  );
+  const rhoLow = Math.min(...rhos);
+  const rhoHigh = Math.max(...rhos);
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8 px-4 py-10 sm:px-6">
       <header className="max-w-3xl">
         <p className="eyebrow mb-3">Insights</p>
-        <h1 className="text-3xl leading-tight text-parchment sm:text-4xl">What decides a run</h1>
+        <h1 className="text-3xl leading-tight text-parchment sm:text-4xl">
+          What moves the odds in simulated runs
+        </h1>
         <p className="mt-4 text-lg text-muted">
-          {roughly(PLAYED)} simulated games of{" "}
-          <em className="not-italic text-parchment">Slay the Spire 2</em>, read for what moves the
-          odds of getting through a run, with a plain account of what they cannot say.
+          This project&rsquo;s ledger holds {roughly(PLAYED)} completed simulated games of{" "}
+          <em className="not-italic text-parchment">Slay the Spire 2</em>. The page reads them for
+          what moves the odds of getting past the first boss and the second, with a plain account of
+          what they cannot say.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Badge tone="unverified" title="The simulator has not been compared with the live game">
@@ -75,27 +85,38 @@ export default function InsightsPage() {
       <Panel eyebrow="Read this first" title="What these figures are, and are not">
         <div className="space-y-3 text-sm text-muted">
           <p>
-            Every figure here comes from a third-party simulator that plays Slay the Spire 2
-            locally. It has{" "}
+            Every performance figure here comes from a third-party simulator that plays Slay the
+            Spire 2 locally. It has{" "}
             <strong className="font-medium text-parchment">
               never been compared with the live game
             </strong>
-            , so each number is model output about a rules-playing pilot, not a win probability for
+            , so each of them is model output about a rules-playing pilot, not a win probability for
             you. The pilots win almost nothing, so most figures are about getting past the first
-            boss, and what is true of that may not be true of winning.
+            boss, and what is true of that may not be true of winning. The counts of what the game
+            holds come from its extracted data, and the Ascension rules from the site&rsquo;s
+            register of rules.
           </p>
           <p>
-            {count(PLAYED)} completed games are behind the page: {count(INSIGHTS.games.completed)}{" "}
-            in the evidence ledger of{" "}
+            Three known gaps of the simulator bear on what follows (the others are on{" "}
             <Link
               href="/methods"
               className="text-teal underline decoration-dotted underline-offset-4"
             >
               Evidence &amp; methods
-            </Link>{" "}
-            and {count(INSIGHTS.games.exploration.completed)} played to fit the card and relic
-            values. They are not independent: the same seeds are played by several pilots. What kind
-            of evidence a number is matters more than its size, so each carries a label:
+            </Link>
+            ): every game is played in Overgrowth, so the Act-1 bosses named here are
+            Overgrowth&rsquo;s (G12); acts two and three have no start-of-act Ancient, so a run
+            reaches them with whatever HP the boss fight left (G11); and a Necrobinder starts at 75
+            HP where the game gives 66 (G13).
+          </p>
+          <p>
+            {count(PLAYED)} completed games are in the project&rsquo;s ledger:{" "}
+            {count(INSIGHTS.games.completed)} in the evidence ledger of Methods and{" "}
+            {count(INSIGHTS.games.exploration.completed)} played to fit values, to explore and to
+            check a setup. Not every game feeds a figure here, and the sections that report games
+            say how many; they are not independent, since the same seeds are played by several
+            pilots. What kind of evidence a number is matters more than its size, so the findings
+            and the lever rows carry a label:
           </p>
         </div>
         <div className="mt-4">
@@ -107,7 +128,7 @@ export default function InsightsPage() {
         id="findings"
         className="scroll-mt-20"
         eyebrow="Findings"
-        title="Six things the games say"
+        title="Six things the simulated games say"
       >
         <Findings />
       </Panel>
@@ -116,7 +137,7 @@ export default function InsightsPage() {
         id="levers"
         className="scroll-mt-20"
         eyebrow="Levers"
-        title="How much each decision is worth"
+        title="How big each difference between simulated pilots is"
       >
         <p className="mb-4 max-w-3xl text-sm text-muted">
           Each lever is a pair of simulated pilots that differ in one thing, played on the same
@@ -130,7 +151,7 @@ export default function InsightsPage() {
         id="runs-end"
         className="scroll-mt-20"
         eyebrow="Where runs end"
-        title="Most runs end before the third act"
+        title="Most simulated runs end before the third act"
       >
         <RunsEnd />
       </Panel>
@@ -139,7 +160,7 @@ export default function InsightsPage() {
         id="second-boss"
         className="scroll-mt-20"
         eyebrow="Exploratory"
-        title="The second boss is a different test"
+        title="The second boss looks different"
       >
         <SecondBoss />
       </Panel>
@@ -151,8 +172,10 @@ export default function InsightsPage() {
         title="Where the measurement and the old rating disagree"
       >
         <p className="mb-4 max-w-3xl text-sm text-muted">
-          The hand-written rating of a card and its measured value agree only weakly. These are the
-          cards of each class that sit furthest from where their rating puts them. The{" "}
+          The hand-written rating of a card and its measured value agree only weakly (rank
+          correlations of {rhoLow.toFixed(2)} to {rhoHigh.toFixed(2)} across the classes). Among the
+          cards a reward can offer, these are the ones of each class that sit furthest from where
+          their rating puts them. The{" "}
           <Link href="/codex" className="text-teal underline decoration-dotted underline-offset-4">
             Codex
           </Link>{" "}
@@ -208,10 +231,12 @@ export default function InsightsPage() {
       </Panel>
 
       <p className="max-w-3xl text-sm text-dim">
-        Every number on this page is written by{" "}
-        <code className="font-mono text-xs">scripts/export-site-data.mjs</code> from the experiment
-        files in the repository, each read against the counts it rests on; the registrations, the
-        results and the known gaps of the simulator are in{" "}
+        Every measured figure on this page is read from the experiment files in the repository by{" "}
+        <code className="font-mono text-xs">scripts/export-site-data.mjs</code>, each against the
+        counts it rests on. The rule numbers in the Ascension table, the shop prices in the note on
+        gold and the room counts of the map are written from the register of rules, which the table
+        cites; the counts of what the game holds come from its extracted data. The registrations,
+        the results and the known gaps of the simulator are in{" "}
         <Link href="/methods" className="text-teal underline decoration-dotted underline-offset-4">
           Evidence &amp; methods
         </Link>

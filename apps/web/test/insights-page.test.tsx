@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, describe, expect, it } from "vitest";
 
 import InsightsPage from "@/app/insights/page";
-import { INSIGHTS, bossDeaths, count, enemyName, share } from "@/lib/insights";
+import { INSIGHTS, bossDeaths, count, enemyName, findings, pct, share } from "@/lib/insights";
 import { atlasData } from "@/lib/insights-server";
 
 afterEach(cleanup);
@@ -31,7 +31,9 @@ describe("the page", () => {
   it("has one heading of the first level, a panel for each section with the anchor the contents list points at", () => {
     const { container } = page();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("What decides a run");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "What moves the odds in simulated runs",
+    );
     for (const id of SECTIONS) expect(container.querySelector(`section#${id}`), id).not.toBeNull();
     const nav = screen.getByRole("navigation", { name: "On this page" });
     const hrefs = within(nav)
@@ -127,6 +129,174 @@ describe("the findings and the levers", () => {
   });
 });
 
+describe("what the independent audit found unsupported, and the page now says instead", () => {
+  it("no longer says what the audit found wrong: an old headline, a best pilot, a lone source for the second half, advice or cause in a headline", () => {
+    const { container } = page();
+    const text = container.textContent;
+    for (const retired of [
+      /bosses end most|end most of them/i,
+      /best (simulated )?pilot/i,
+      /the evidence there is/i,
+      /biggest lever you control/i,
+      /big lever too/i,
+      /What decides a run/,
+      /how much each decision is worth/i,
+      /matters (less|more) at the second boss/i,
+      /about half as often/i,
+      /Tune when to fight elites, rest and shop/,
+      /tuned route and rest thresholds/i,
+    ])
+      expect(text, String(retired)).not.toMatch(retired);
+  });
+
+  it("says that every performance figure is simulated, and names the three gaps of the simulator that bear on the page", () => {
+    const { container } = page();
+    const first = container.querySelector("section")?.textContent ?? "";
+    const text = container.textContent;
+    expect(text).toMatch(/Every performance figure here comes from a third-party simulator/);
+    expect(text).not.toMatch(/Every figure here comes from/);
+    expect(text).toMatch(/Overgrowth.*\(G12\)/);
+    expect(text).toMatch(/start-of-act Ancient.*\(G11\)/);
+    expect(text).toMatch(/75\s+HP where the game gives 66 \(G13\)/);
+    expect(first.length).toBeGreaterThan(0);
+    // the labels are on the findings and the lever rows, which is what the page says
+    expect(text).toMatch(/the findings and the lever\s+rows carry a label/);
+    expect(text).not.toMatch(/so each carries a label/);
+  });
+
+  it("says in the footer which numbers are read from the experiment files and which are written from the register", () => {
+    const { container } = page();
+    const text = container.textContent;
+    expect(text).toMatch(/Every measured figure on this page is read from the experiment files/);
+    expect(text).toMatch(/written from the register of rules/);
+    expect(text).not.toMatch(/Every number on this page is written by/);
+  });
+
+  it("says how many games are in the ledger without saying that all of them feed a figure", () => {
+    const { container } = page();
+    const total = INSIGHTS.games.completed + INSIGHTS.games.exploration.completed;
+    expect(container.textContent).toContain(
+      `${count(total)} completed games are in the project’s ledger`,
+    );
+    expect(container.textContent).toMatch(/Not every game feeds a figure here/);
+    expect(container.textContent).not.toMatch(/games are behind the page/);
+  });
+
+  it("gives the ends finding the share that ended before act 3 and the pilot it is about, not a share of act 1 under a headline about most runs", () => {
+    const a0 = INSIGHTS.runsEnd[0];
+    const f = findings().find((x) => x.id === "ends");
+    expect(f?.figure).toBe(
+      share(((a0?.diedAct1 ?? 0) + (a0?.diedAct2 ?? 0)) / (a0?.completed ?? 1)),
+    );
+    expect(f?.headline).toMatch(/Most simulated runs end before act 3/);
+    expect(f?.body).toMatch(/The pilot that follows the card values shown on the site/);
+  });
+});
+
+describe("the pages' parts that the audit found misleading or incomplete", () => {
+  it("says in the lever rows which class went the other way, what the search costs, what was tuned, and that the relics lever is a simulator fix", () => {
+    const { container } = page();
+    const lever = (id: string): string =>
+      container.querySelector(`#lever-${id}`)?.textContent ?? "";
+    expect(lever("values-remeasured")).toMatch(
+      /Ironclad went the other way \(81\.7% against 85\.2% in 1,901 pairs\)/,
+    );
+    expect(lever("values-remeasured")).toMatch(/In the advisor for four classes/);
+    expect(lever("values-remeasured")).toMatch(/not due to the relics alone/);
+    expect(lever("search")).toMatch(
+      /A game takes about 105 times as long as one of the rules pilot/,
+    );
+    expect(lever("search")).not.toMatch(/300 games/);
+    expect(lever("thresholds")).toMatch(/Avoid more elite fights/);
+    expect(lever("thresholds")).toMatch(/three tuned elite-fight thresholds/);
+    expect(lever("thresholds")).toMatch(
+      /heal, rest and shop thresholds were screened too and none was adopted/,
+    );
+    expect(lever("relics-along-the-way")).toMatch(
+      /Simulator fix: keep the relics a run gains \(G14\)/,
+    );
+    expect(lever("relics-along-the-way")).toMatch(/relics kept against relics dropped/);
+    // a lever with every class ahead says nothing of the kind
+    expect(lever("opening-relic")).not.toMatch(/went the other way/);
+  });
+
+  it("makes one row of a boss fight whatever enemies were alive at the end, tags it, and says what a row below the bosses is", () => {
+    const { container } = page();
+    const rows = [...container.querySelectorAll("#runs-end ol li")].map((li) => li.textContent);
+    expect(rows.some((t) => t.startsWith("Kin Follower & Kin Priest") && t.includes("boss"))).toBe(
+      true,
+    );
+    expect(rows.some((t) => t.startsWith("Crusher & Rocket") && t.includes("boss"))).toBe(true);
+    // the parts of a fight are not rows of their own
+    expect(rows.some((t) => /^(Kin Priest|Rocket|Crusher)\d/.test(t))).toBe(false);
+    const text = container.querySelector("#runs-end")?.textContent ?? "";
+    expect(text).toMatch(/one ordinary fight can fill more than one row/);
+    expect(text).toMatch(/A boss fight is one row and is tagged/);
+  });
+
+  it("names the pilot of the endings, gives the seeds from the data, and puts the Necrobinder's start HP beside the figures that include it", () => {
+    const { container } = page();
+    const text = container.querySelector("#runs-end")?.textContent ?? "";
+    const a0 = INSIGHTS.runsEnd[0];
+    expect(text).toContain(
+      `the same ${count(a0?.seedsPerClass ?? 0)} seeds of each class. It won ${share((a0?.won ?? 0) / (a0?.completed ?? 1))} of its games at Ascension 0, so act 3 and winning are thinly observed`,
+    );
+    expect(text).toMatch(
+      /The simulator starts a Necrobinder with more HP than the game gives it \(gap G13\)/,
+    );
+    const cards = container.querySelector("#cards")?.textContent ?? "";
+    expect(cards).toMatch(
+      /The simulator starts a Necrobinder with more HP than the game gives it \(gap G13\)/,
+    );
+  });
+
+  it("compares only reward cards, says so, names the gap that mis-values a card, and gives the correlations as a range from the data", () => {
+    const { container } = page();
+    const cards = container.querySelector("#cards")?.textContent ?? "";
+    expect(cards).toMatch(/Only cards that a reward can offer are compared/);
+    expect(cards).toMatch(/cards with the same rating\s+share their places/);
+    expect(cards).toMatch(/known gap G9/);
+    expect(cards).toMatch(/reward cards ranked/);
+    expect(cards).toMatch(/Among the\s+cards a reward can offer/);
+    expect(cards).toMatch(/rank\s+correlations of 0\.\d\d to 0\.\d\d across the classes/);
+  });
+
+  it("gives the atlas's measured readings their provenance: random drafts in the simulator as it was, and intervals not corrected for each other", () => {
+    const { container } = page();
+    const atlas = container.querySelector("#synergy")?.textContent ?? "";
+    expect(atlas).toMatch(
+      /randomly drafted simulated decks, in the simulator as it was when they were played \(it dropped the relics a run gains\)/,
+    );
+    expect(atlas).toMatch(
+      /\d+ such intervals were read together and are not corrected for each other/,
+    );
+  });
+
+  it("states what the simulator was read back for at each level, and does not say the level 9 tests include levels it was not read back for", () => {
+    const { container } = page();
+    const text = container.querySelector("#ascension")?.textContent ?? "";
+    expect(text).toMatch(/read back against the register of rules for levels 1 and 4\s+to 7/);
+    expect(text).toMatch(
+      /the gold of level 3, level 2.s heal after the first act and the\s+enemy numbers of levels 8 and 9 were not/,
+    );
+    expect(text).not.toMatch(/so the level 9 tests\s+include them all/);
+    expect(text).toMatch(/The same\s+2,000 seeds of each class/);
+    expect(text).toMatch(/built to hold eight elite rooms instead of five/);
+    expect(text).toMatch(/base chance of a rare card in a reward is halved/);
+  });
+
+  it("asks of the second half of a run only what the games can say, and does not call the exploration games the only evidence", () => {
+    const { container } = page();
+    const open = container.querySelector("#open")?.textContent ?? "";
+    expect(open).toMatch(/the endings of the pilot.s own games above are another reading/);
+    expect(open).toMatch(/Tune the elite thresholds again with the relics kept/);
+    expect(open).toMatch(/elites are one place relics come from/);
+    expect(open).toMatch(/event records \(they include the Ancients that open the acts/);
+    expect(open).toMatch(/could show where the simulator departs from the game/);
+    expect(open).toMatch(/rank correlation of 0\.59 for Ironclad/);
+  });
+});
+
 describe("where runs end", () => {
   it("draws the games of every class at both levels as four parts, and writes the shares in the name of each bar", () => {
     const { container } = page();
@@ -155,7 +325,7 @@ describe("where runs end", () => {
     }
     expect(text).not.toMatch(/bosses end most|end most of them/i);
     expect(container.querySelector("#runs-end h2")?.textContent ?? "").toBe(
-      "Most runs end before the third act",
+      "Most simulated runs end before the third act",
     );
   });
 
@@ -195,8 +365,15 @@ describe("the second boss", () => {
     );
     expect(plots).toHaveLength(INSIGHTS.lateDrivers.features.length);
     expect(section?.querySelectorAll("section[aria-label]")).toHaveLength(3);
-    expect(section?.textContent).toMatch(/matters less at the second boss/);
+    expect(section?.textContent).toMatch(/a weaker association at the second boss/);
+    expect(section?.textContent).not.toMatch(/matters (less|more) at the second boss/);
     expect(section?.textContent).toContain("How far to trust it");
+    // the share of random picks, the Ascension and the relics are said, and the Necrobinder's start HP is named (G13)
+    expect(section?.textContent).toContain(
+      `in which ${pct(INSIGHTS.lateDrivers.exploreShare, 0)} of the card picks were random`,
+    );
+    expect(section?.textContent).toMatch(/Ascension 0 games, the relics kept/);
+    expect(section?.textContent).toMatch(/75 HP, the game gives 66 \(gap G13\)/);
     // the runs that reach the second boss are survivors of two acts, so a weaker pull there is not read as a card mattering less
     expect(section?.textContent).toMatch(/already got through\s+two acts/);
   });
@@ -206,8 +383,8 @@ describe("the second boss", () => {
     const row = [...container.querySelectorAll("#second-boss li")].find((li) =>
       li.textContent.includes("Starting cards still in the deck"),
     );
-    expect(row?.textContent).toMatch(/matters less at the second boss/);
-    expect(row?.textContent).not.toMatch(/matters more at the second boss/);
+    expect(row?.textContent).toMatch(/a weaker association at the second boss/);
+    expect(row?.textContent).not.toMatch(/a stronger association at the second boss/);
   });
 
   it("holds the same figures as a table with a caption", () => {

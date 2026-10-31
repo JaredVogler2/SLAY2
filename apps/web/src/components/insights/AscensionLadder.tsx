@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/Badge";
 import { ScrollRegion } from "@/components/ui/ScrollRegion";
-import { INSIGHTS, share } from "@/lib/insights";
+import { INSIGHTS, count, share } from "@/lib/insights";
 import { ASCENSION_LEVELS, ascensionStatus } from "@/lib/insights-content";
 
 function Pair({
@@ -115,8 +115,8 @@ export function AscensionLadder() {
         <p className="mb-3 mt-0.5 text-sm text-muted">
           The pilot that {t.pilots.first} got past the Act-1 boss in {share(t.pooled.a0.first)} of
           its games at Ascension 0 and {share(t.pooled.a9.first)} at Ascension 9; {t.pilots.second},
-          in {share(t.pooled.a0.second)} and {share(t.pooled.a9.second)}. The same 2,000 seeds of
-          each class, the relics kept.
+          in {share(t.pooled.a0.second)} and {share(t.pooled.a9.second)}. The same{" "}
+          {count(t.seedsPerClass)} seeds of each class, the relics kept.
         </p>
         <div className="space-y-3">
           <Pair
@@ -134,11 +134,13 @@ export function AscensionLadder() {
           ))}
         </div>
         <p className="mt-3 text-xs text-dim">
-          Levels are cumulative: a run at level 9 has every change from 1 to 9, so the level 9 tests
-          include them all. Only levels 0 and 9 were played in held-out tests. Nothing here says
-          what each of levels 1 to 8 does to these figures on its own, and level 10&rsquo;s second
-          boss is never entered by the simulator (a recorded gap), so its figures would not be
-          Double Boss figures.
+          Levels are cumulative in the game: a run at level 9 has every change from 1 to 9. The
+          simulator&rsquo;s changes were read back against the register of rules for levels 1 and 4
+          to 7 (ADR-058); the gold of level 3, level 2&rsquo;s heal after the first act and the
+          enemy numbers of levels 8 and 9 were not. Only levels 0 and 9 were played in held-out
+          tests, and nothing here says what each of levels 1 to 8 does to these figures on its own.
+          Level 10&rsquo;s second boss is never entered by the simulator (a recorded gap), so its
+          figures would not be Double Boss figures.
         </p>
       </div>
     </div>

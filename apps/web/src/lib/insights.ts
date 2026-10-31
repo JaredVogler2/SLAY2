@@ -21,7 +21,7 @@ export const EVIDENCE: Record<
     label: "Registered test",
     tone: "exact",
     meaning:
-      "A paired comparison on held-out seeds, written down before its first game and read by its registered rule (exact McNemar test and a whole-seed interval).",
+      "A paired comparison on held-out seeds, written down before its first game and read by its registered rule: an exact McNemar test, with a whole-seed interval when five classes are pooled and a paired Wald interval for one class.",
   },
   development: {
     label: "Development result",
@@ -97,7 +97,7 @@ export function roughly(n: number): string {
 }
 
 export const share = (x: number): string => pct(x, 1);
-export { formatP };
+export { formatP, pct };
 
 // ---- the levers
 
@@ -114,6 +114,7 @@ export const ADVISOR_LABEL: Record<
 > = {
   yes: { text: "In the advisor", tone: "exact" },
   "second-opinion": { text: "A second opinion in the advisor", tone: "heuristic" },
+  "four-classes": { text: "In the advisor for four classes", tone: "heuristic" },
   no: { text: "Not in the advisor yet", tone: "neutral" },
 };
 
@@ -132,6 +133,28 @@ export function ladderScale(): number {
   for (const l of INSIGHTS.levers)
     for (const r of l.rows) top = Math.max(top, Math.abs(r.difference), ...r.ci95.map(Math.abs));
   return Math.ceil(top * 20) / 20;
+}
+
+/** What a row is called: its own label where it has one (a comparison of two simulators), otherwise the level and the relics. */
+export function rowLabel(row: LeverRow): string {
+  return row.label ?? WHEN_LABEL[row.when] ?? row.when;
+}
+
+/** The classes whose own games had the first arm behind, with their shares: a lever that helps on the whole may not help everywhere. */
+export function behindText(row: LeverRow): string | null {
+  if (row.behind.length === 0) return null;
+  const parts = row.behind.map(
+    (b) =>
+      `${b.character.charAt(0).toUpperCase()}${b.character.slice(1)} went the other way (${share(b.first)} against ${share(b.second)} in ${count(b.pairs)} pairs)`,
+  );
+  return `${parts.join("; ")}.`;
+}
+
+/** How many times longer a game of the first arm takes, for the lever whose cost is part of what it is. */
+export function slowdownText(row: LeverRow): string | null {
+  return row.slowdown === null
+    ? null
+    : `A game takes about ${count(Math.round(row.slowdown))} times as long as one of the rules pilot.`;
 }
 
 export function leverSentence(r: LeverRow, l: Lever): string {
@@ -209,8 +232,8 @@ export const GROUPS: readonly { readonly title: string; readonly ids: readonly s
 ];
 
 export const MATTERS_TEXT: Record<string, string> = {
-  earlier: "matters less at the second boss",
-  later: "matters more at the second boss",
+  earlier: "a weaker association at the second boss",
+  later: "a stronger association at the second boss",
   same: "no clear difference",
 };
 
@@ -259,13 +282,15 @@ export function findings(): readonly Finding[] {
   const upgraded = lateFeature("upgraded");
   const hp = lateFeature("hp");
   const wonA0 = a0End.won / a0End.completed;
+  const beforeAct3 = (v: RunsEnd): number => (v.diedAct1 + v.diedAct2) / v.completed;
   const out: Finding[] = [
     {
       id: "cards",
       caption: "past the Act-1 boss, Ascension 9",
       figure: points(row(values, "a9").difference, 0),
-      headline: "The card you take is the biggest lever you control",
-      body: `At Ascension 9 a pilot that follows measured card values got past the Act-1 boss in ${share(row(values, "a9").first)} of games against ${share(row(values, "a9").second)} for the hand-written ratings; at Ascension 0 with the relics kept the gap was ${points(row(values, "a0").difference, 0)}.`,
+      headline:
+        "Choosing cards by measured value is the biggest difference between simulated pilots",
+      body: `At Ascension 9 a pilot that follows measured card values got past the Act-1 boss in ${share(row(values, "a9").first)} of games against ${share(row(values, "a9").second)} for the hand-written ratings; at Ascension 0 with the relics kept the gap was ${points(row(values, "a0").difference, 0)}. The size depends on the baseline it is set against.`,
       evidence: "registered",
       href: "#levers",
     },
@@ -273,8 +298,8 @@ export function findings(): readonly Finding[] {
       id: "relics",
       caption: "past the Act-1 boss, Ascension 0",
       figure: points(row(relics, "a0").difference, 0),
-      headline: "The relics you find along the way are a big lever too",
-      body: `The same pilot with the relics it gains kept, against the simulator's old rule of dropping them: ${share(row(relics, "a0").first)} against ${share(row(relics, "a0").second)} past the Act-1 boss. The advisor values the opening relic only.`,
+      headline: "Keeping the relics a run finds is worth a lot in the simulator",
+      body: `The same pilot with the relics it gains kept, against the pinned simulator's old rule of dropping them (a simulator gap, G14): ${share(row(relics, "a0").first)} against ${share(row(relics, "a0").second)} past the Act-1 boss. The game keeps them, so this is the size of what relics are worth together, not a choice. The advisor recommends an opening relic only.`,
       evidence: "development",
       href: "#levers",
     },
@@ -282,17 +307,17 @@ export function findings(): readonly Finding[] {
       id: "synergy",
       caption: "past the Act-1 boss, Ascension 0",
       figure: points(row(synergy, "a0").difference, 0),
-      headline: "Counting how cards work together helps, modestly",
-      body: `The synergy term raised the share past the Act-1 boss by ${points(row(synergy, "a0").difference)} at Ascension 0 and ${points(row(synergy, "a9").difference)} at Ascension 9, in every test.`,
+      headline: "Counting how cards work together helped the advisor's index, modestly",
+      body: `The synergy term raised the share past the Act-1 boss of the pilot that picks by the advisor's index by ${points(row(synergy, "a0").difference)} at Ascension 0 and ${points(row(synergy, "a9").difference)} at Ascension 9, in every test.`,
       evidence: "registered",
       href: "#levers",
     },
     {
       id: "ends",
-      caption: "of games died in act 1, Ascension 0",
-      figure: share(a0End.diedAct1 / a0End.completed),
-      headline: "Most runs end early, and almost none are won",
-      body: `Even the best simulated pilot died in act 1 in ${share(a0End.diedAct1 / a0End.completed)} of its games at Ascension 0 (${share(a9End.diedAct1 / a9End.completed)} at Ascension 9) and won ${share(wonA0)} of them: what these figures can say about the end of a run is thin.`,
+      caption: "of simulated games ended before act 3, Ascension 0",
+      figure: share(beforeAct3(a0End)),
+      headline: "Most simulated runs end before act 3, and these pilots win little",
+      body: `The pilot that follows the card values shown on the site died in act 1 in ${share(a0End.diedAct1 / a0End.completed)} of its games at Ascension 0 (${share(a9End.diedAct1 / a9End.completed)} at Ascension 9), in act 2 in ${share(a0End.diedAct2 / a0End.completed)}, and won ${share(wonA0)} of them: what these figures can say about the end of a run is thin.`,
       evidence: "descriptive",
       href: "#runs-end",
     },
@@ -302,8 +327,8 @@ export function findings(): readonly Finding[] {
       id: "second-boss",
       caption: "odds per upgraded card, first boss to second",
       figure: `×${upgraded.act1.oddsRatio.toFixed(2)} → ×${upgraded.act2.oddsRatio.toFixed(2)}`,
-      headline: "The second boss is a different test",
-      body: `Among runs that reached it, each upgraded card raised the odds of getting past the Act-1 boss by ${oddsChange(upgraded.act1.oddsRatio)} and the Act-2 boss by ${oddsChange(upgraded.act2.oddsRatio)}; the HP you bring kept most of its weight (×${hp.act1.oddsRatio.toFixed(2)} and ×${hp.act2.oddsRatio.toFixed(2)} per ten percentage points of your maximum HP).`,
+      headline: "The second boss looks like a different test",
+      body: `In simulated Ascension 0 games with ${pct(INSIGHTS.lateDrivers.exploreShare, 0)} of the card picks random (relics kept), each upgraded card went with ${oddsChange(upgraded.act1.oddsRatio)} higher odds of getting past the Act-1 boss and ${oddsChange(upgraded.act2.oddsRatio)} at the Act-2 boss; the HP the run held kept most of its weight (×${hp.act1.oddsRatio.toFixed(2)} and ×${hp.act2.oddsRatio.toFixed(2)} per ten percentage points of the maximum).`,
       evidence: "exploratory",
       href: "#second-boss",
     });

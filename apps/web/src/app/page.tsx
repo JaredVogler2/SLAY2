@@ -36,8 +36,8 @@ const PILLARS = [
   },
   {
     eyebrow: "Insights",
-    title: "What the games say decides a run",
-    body: "How much each decision is worth in simulation, where runs end, what matters at the second boss, where card ratings and measurements disagree, and what the site does not yet capture of the game — every figure labelled with the kind of evidence it is.",
+    title: "What simulated games say moves the odds",
+    body: "How big the differences between simulated pilots are, where runs end, what matters at the second boss, where card ratings and measurements disagree, and what the site does not yet capture of the game — every figure labelled with the kind of evidence it is.",
     href: "/insights",
     cta: "Read the insights",
     tone: "heuristic" as const,

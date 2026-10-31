@@ -61,20 +61,59 @@ export interface ClassSurprises {
 const MIN_GAMES = 200;
 const SHOWN = 4;
 
-export function surprisesFor(set: CardValueSet): ClassSurprises {
-  const pool = set.cards.filter((c) => c.staticRating !== null && c.gamesWithCard >= MIN_GAMES);
-  const rank = (key: (c: (typeof pool)[number]) => number): Map<string, number> =>
-    new Map(
-      [...pool]
-        .sort((a, b) => key(b) - key(a) || a.id.localeCompare(b.id))
-        .map((c, i) => [c.id, i + 1]),
-    );
-  const ratedRank = rank((c) => c.staticRating ?? 0);
-  const measuredRank = rank((c) => c.beta);
+/**
+ * Places 1 to n for a score, best first. Cards with the same score share the mean of the places they take, so a tie in the hand rating
+ * is not broken by an id and does not make a card look as if it were rated above or below its equals.
+ */
+function placesBy<T>(
+  items: readonly T[],
+  id: (x: T) => string,
+  score: (x: T) => number,
+): Map<string, number> {
+  const sorted = [...items].sort((a, b) => score(b) - score(a) || id(a).localeCompare(id(b)));
+  const out = new Map<string, number>();
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i;
+    while (j + 1 < sorted.length && score(sorted[j + 1] as T) === score(sorted[i] as T)) j += 1;
+    for (let k = i; k <= j; k += 1) out.set(id(sorted[k] as T), (i + j) / 2 + 1);
+    i = j + 1;
+  }
+  return out;
+}
+
+/** Only a card a reward can offer is compared: a card that is never a choice (an event's, a starter) has a rating and a value and no decision. */
+const isRewardCard = (id: string): boolean => getCard(id)?.rewardEligible === true;
+
+export function surprisesFor(
+  set: CardValueSet,
+  rewardEligible: (id: string) => boolean = isRewardCard,
+): ClassSurprises {
+  const pool = set.cards.filter(
+    (c) => c.staticRating !== null && c.gamesWithCard >= MIN_GAMES && rewardEligible(c.id),
+  );
+  const rated = placesBy(
+    pool,
+    (c) => c.id,
+    (c) => c.staticRating ?? 0,
+  );
+  const measured = placesBy(
+    pool,
+    (c) => c.id,
+    (c) => c.beta,
+  );
   // a card is listed as worth more than its rating only if even the low end of its interval ranks far above its rating, and as worth less only if
   // even the high end ranks far below it: noise in a card's value cannot put it on a list
-  const lowRank = rank((c) => c.ci95[0] ?? c.beta);
-  const highRank = rank((c) => c.ci95[1] ?? c.beta);
+  const low = placesBy(
+    pool,
+    (c) => c.id,
+    (c) => c.ci95[0] ?? c.beta,
+  );
+  const high = placesBy(
+    pool,
+    (c) => c.id,
+    (c) => c.ci95[1] ?? c.beta,
+  );
   const rows = pool.map((c) => ({
     surprise: {
       id: c.id,
@@ -82,11 +121,11 @@ export function surprisesFor(set: CardValueSet): ClassSurprises {
       beta: c.beta,
       ci95: c.ci95,
       games: c.gamesWithCard,
-      ratedRank: ratedRank.get(c.id) ?? 0,
-      measuredRank: measuredRank.get(c.id) ?? 0,
+      ratedRank: Math.round(rated.get(c.id) ?? 0),
+      measuredRank: Math.round(measured.get(c.id) ?? 0),
     } satisfies Surprise,
-    gapLow: (ratedRank.get(c.id) ?? 0) - (lowRank.get(c.id) ?? 0),
-    gapHigh: (ratedRank.get(c.id) ?? 0) - (highRank.get(c.id) ?? 0),
+    gapLow: (rated.get(c.id) ?? 0) - (low.get(c.id) ?? 0),
+    gapHigh: (rated.get(c.id) ?? 0) - (high.get(c.id) ?? 0),
   }));
   // far enough to mean something: at least 15 % of the class's measured cards, and never fewer than three places
   const far = Math.max(3, Math.ceil(pool.length * 0.15));
@@ -139,6 +178,8 @@ export interface AtlasMechanic {
     readonly decks: number;
     readonly ratio: number;
     readonly ci95: readonly number[];
+    /** how many mechanics' intervals were read together in that reading (they are not corrected for each other) */
+    readonly of: number;
   } | null;
   readonly suppliers: readonly AtlasCard[];
   readonly payoffs: readonly AtlasCard[];
@@ -149,10 +190,11 @@ const SHAPE = new Set<MechanicId>(["attack", "skill", "power", "cheap", "zero_co
 const PLAYABLE = new Set<string>([...CLASS_IDS, "colorless"]);
 
 export function atlasData(): readonly AtlasMechanic[] {
+  const rowsB1 = synergyEvidence.b1.mechanics.rows;
   const measured = new Map(
-    synergyEvidence.b1.mechanics.rows.map((r) => [
+    rowsB1.map((r) => [
       r.mechanic,
-      { decks: r.decks, ratio: r.ratio.toQuality, ci95: r.ratio.ci95 },
+      { decks: r.decks, ratio: r.ratio.toQuality, ci95: r.ratio.ci95, of: rowsB1.length },
     ]),
   );
   const cards = CATALOG.cards.filter((c) => PLAYABLE.has(c.class));
@@ -210,7 +252,12 @@ const cell = (status: CoverageStatus, text: string): CoverageCell => ({ status, 
 
 export function coverageRows(): readonly CoverageRow[] {
   const inv = INSIGHTS.inventory.counts;
-  const measuredCards = allSets().reduce((n, s) => n + s.cards.length, 0);
+  const valued = new Map<string, number>();
+  for (const set of allSets())
+    for (const c of set.cards) valued.set(c.id, (valued.get(c.id) ?? 0) + 1);
+  const valuedCards = valued.size;
+  const valuesInAll = [...valued.values()].reduce((a, b) => a + b, 0);
+  const valuedInSeveral = [...valued.values()].filter((n) => n > 1).length;
   const taggedCards = Object.keys(SYNERGY.cards).length;
   const taggedRelics = Object.keys(RELIC_SYNERGY.relics).length;
   const openingRelics = NEOW.values?.relics.length ?? 0;
@@ -231,9 +278,12 @@ export function coverageRows(): readonly CoverageRow[] {
       ),
       measured: cell(
         "partial",
-        `A value for ${String(measuredCards)} cards across the five classes, and ${String(taggedCards)} cards tagged for synergy (a judgement)`,
+        `A value for ${String(valuedCards)} of the ${String(CATALOG.cards.length)} cards (${String(valuesInAll)} values class by class, as ${String(valuedInSeveral)} cards are valued in more than one class), and ${String(taggedCards)} cards tagged for synergy (a judgement)`,
       ),
-      tested: cell("full", "The card values and the synergy term, on held-out seeds"),
+      tested: cell(
+        "partial",
+        "The values as a set for each class, and the synergy term, on held-out seeds; no card is tested alone",
+      ),
       advice: cell("full", "The draft advisor"),
     },
     {
@@ -258,14 +308,17 @@ export function coverageRows(): readonly CoverageRow[] {
       inGame: String(inv.potions.total),
       facts: cell("none", "No catalog"),
       odds: cell("full", "How often a fight drops one, and its rarity"),
-      measured: cell("none", "Not measured"),
+      measured: cell(
+        "partial",
+        "Only how many were held at a boss fight (exploratory), not which potion",
+      ),
       tested: cell("none", "Not tested"),
       advice: cell("none", "None"),
     },
     {
       id: "events",
       label: "Events",
-      inGame: String(inv.events.total),
+      inGame: `${String(inv.events.total)} records, some of them not offered by a "?" room`,
       facts: cell("none", "No catalog"),
       odds: cell("partial", `How often a "?" room is an event, not what each event offers`),
       measured: cell("none", "Not measured"),
@@ -285,10 +338,10 @@ export function coverageRows(): readonly CoverageRow[] {
     {
       id: "monsters",
       label: "Enemies",
-      inGame: `${String(inv.monsters.total)} (${String(bosses)} bosses, ${String(elites)} elites)`,
+      inGame: `${String(inv.monsters.total)} monster records (${String(bosses)} boss, ${String(elites)} elite); one fight can be several records`,
       facts: cell(
-        "none",
-        "No catalog; the two Act 1 versions' elites and bosses are named in the advisor",
+        "partial",
+        "No catalog; Act 1's elites, bosses and ordinary fights are in the advisor's briefs, in our own words",
       ),
       odds: cell("none", "Not covered"),
       measured: cell("partial", "Which enemies end simulated runs (below)"),
@@ -316,7 +369,7 @@ export function coverageRows(): readonly CoverageRow[] {
       odds: cell("full", "Route Lab: what the next rooms hold, exactly"),
       measured: cell(
         "partial",
-        "Route and rest thresholds tuned, in a game without relics from elites",
+        "Three elite-fight thresholds tuned (Ironclad), in a game without relics from elites",
       ),
       tested: cell("partial", "The tuned thresholds, in that game"),
       advice: cell("partial", "Route Lab compares routes; it does not choose one"),
@@ -334,10 +387,10 @@ export function coverageRows(): readonly CoverageRow[] {
     {
       id: "rest",
       label: "Rest sites",
-      inGame: "5 to 7 per act",
+      inGame: "5 to 7 per act besides the one before the boss",
       facts: cell("full", "What a rest site offers, and the heal"),
       odds: cell("na", ""),
-      measured: cell("partial", "Heal thresholds tuned"),
+      measured: cell("partial", "Heal thresholds screened; none was adopted"),
       tested: cell("none", "Not tested on their own"),
       advice: cell("none", "None"),
     },
@@ -348,14 +401,17 @@ export function coverageRows(): readonly CoverageRow[] {
       facts: cell("none", "Not covered"),
       odds: cell("partial", "The exact opening-hand report for your deck"),
       measured: cell("partial", "A research planner, not on the site"),
-      tested: cell("partial", "The planner, on 300 held-out games"),
+      tested: cell("partial", "The planner, on held-out games of one class (Ironclad)"),
       advice: cell("none", "None"),
     },
     {
       id: "ascension",
       label: "Ascension 1 to 10",
       inGame: "10 levels",
-      facts: cell("full", "What each level changes"),
+      facts: cell(
+        "partial",
+        "What each level changes, in plain words; the enemy numbers of levels 8 and 9 are corroborated, not read from the game",
+      ),
       odds: cell("na", ""),
       measured: cell("partial", "Level 9 only; level 10 is not modelled"),
       tested: cell("partial", "Level 9, three results"),

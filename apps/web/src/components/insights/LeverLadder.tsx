@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import {
   ADVISOR_LABEL,
-  WHEN_LABEL,
+  behindText,
   count,
   evidenceClass,
   formatP,
@@ -9,7 +9,9 @@ import {
   leverLadder,
   pointRange,
   points,
+  rowLabel,
   share,
+  slowdownText,
   type LeverRow,
 } from "@/lib/insights";
 
@@ -21,11 +23,11 @@ function Bar({ row, scale, name }: { row: LeverRow; scale: number; name: string 
   const width = clamp((Math.max(0, row.difference) / scale) * 100);
   const lo = clamp((Math.max(0, row.ci95[0] ?? 0) / scale) * 100);
   const hi = clamp((Math.max(0, row.ci95[1] ?? 0) / scale) * 100);
-  const label = `${name}, ${WHEN_LABEL[row.when] ?? row.when}: ${points(row.difference)} past the Act-1 boss, 95 % interval ${pointRange(row.ci95)}`;
+  const label = `${name}, ${rowLabel(row)}: ${points(row.difference)} past the Act-1 boss, 95 % interval ${pointRange(row.ci95)}`;
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <span className="text-sm text-muted">{WHEN_LABEL[row.when] ?? row.when}</span>
+        <span className="text-sm text-muted">{rowLabel(row)}</span>
         <span className="num font-display text-xl text-parchment">{points(row.difference)}</span>
       </div>
       <div role="img" aria-label={label} className="relative mt-1 h-3.5 rounded-full bg-charcoal">
@@ -63,6 +65,8 @@ function Bar({ row, scale, name }: { row: LeverRow; scale: number; name: string 
         <EvidenceBadge kind={evidenceClass(row.evidence)} />
         {row.note ? <span className="text-xs text-dim">{row.note}</span> : null}
       </div>
+      {behindText(row) ? <p className="mt-1 text-xs text-rose">{behindText(row)}</p> : null}
+      {slowdownText(row) ? <p className="mt-1 text-xs text-dim">{slowdownText(row)}</p> : null}
     </div>
   );
 }

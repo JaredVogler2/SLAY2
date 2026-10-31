@@ -31,8 +31,11 @@
       "rows": [
         {
           "when": "a0",
+          "label": null,
           "evidence": "descriptive",
           "note": "Played as the descriptive twin of the Ascension 9 test (ADR-058): the same pair at Ascension 0, the relics kept; no decision rests on it.",
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/ascension9/pooled-a0keep-t2-values-shown-vs-rules_v1.json",
           "sha256": "b9a14ff37cc77d80ee83ceb8834b617d9611601537b729f0dcb67dc005f40b52",
           "first": 0.6706586826347305,
@@ -51,8 +54,11 @@
         },
         {
           "when": "a9",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/ascension9/pooled-a9-t2-values-shown-vs-rules_v1.json",
           "sha256": "92ec4d7f6a88b33219ecd42034fe5c422364c312274d4006a01f1443e7a3e188",
           "first": 0.24611346658590752,
@@ -87,8 +93,11 @@
       "rows": [
         {
           "when": "a0",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/synergy/keep-val/pooled-astar-vs-d0star.json",
           "sha256": "0381bc7495466159f40e368c973d2869f3fb787fc327331fcd46bb70bb84c470",
           "first": 0.40395337050177393,
@@ -107,8 +116,11 @@
         },
         {
           "when": "a9",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/ascension9/pooled-a9-t1-synergy-astar-vs-d0star.json",
           "sha256": "0f565efd5b41ab4440ffeac2ba645309243be33c450606615f9255b97b25a7fe",
           "first": 0.1011641910879165,
@@ -143,8 +155,11 @@
       "rows": [
         {
           "when": "a0",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
           "sha256": "5af5ca7230aaa097c1f62e37d9d0b326073cacae6ad05647f2c4d92355ec0b9e",
           "first": 0.6915567556340222,
@@ -163,8 +178,11 @@
         },
         {
           "when": "a9",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/ascension9/pooled-a9-t3-neow-keep-v1-vs-rules_v2.json",
           "sha256": "aeeeb1ee9680f1a3ad8a7c94fcb49ec5265cb2f0d0e23188d4f17dc50e54cb33",
           "first": 0.2642980058710396,
@@ -189,16 +207,29 @@
       "versus": "the values measured without them",
       "first": "a pilot that follows the values measured with the relics kept",
       "second": "a pilot that follows the values the site showed before",
-      "inAdvisor": "yes",
+      "inAdvisor": "four-classes",
       "adr": [
         "ADR-053"
       ],
-      "note": null,
+      "note": "Ironclad's own games favoured its earlier set, so the advisor shows the new values for four classes. Four of the five earlier sets were measured by an older pilot as well, so the gain is not due to the relics alone.",
       "rows": [
         {
           "when": "a0",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [
+            {
+              "character": "ironclad",
+              "first": 0.8174644923724356,
+              "second": 0.8516570226196739,
+              "pairs": 1901,
+              "aOnly": 99,
+              "bOnly": 164,
+              "p": 0.0000733853175975743
+            }
+          ],
+          "slowdown": null,
           "file": "experiments/cardvalue/pooled-keepvals-vs-curvals-val.json",
           "sha256": "1a93b9169555e873bb0adcfa4a760858dd37f9b29259c7faf4070098a5226a23",
           "first": 0.6959843088675545,
@@ -219,21 +250,24 @@
     },
     {
       "id": "thresholds",
-      "label": "Tune when to fight elites, rest and shop",
+      "label": "Avoid more elite fights",
       "versus": "the untuned thresholds",
-      "first": "a pilot with the tuned route and rest thresholds (Ironclad)",
+      "first": "a pilot with three tuned elite-fight thresholds (Ironclad)",
       "second": "the same pilot untuned",
       "inAdvisor": "no",
       "adr": [
         "ADR-036",
         "ADR-045"
       ],
-      "note": "Tuned in a simulator that dropped the relics a run gains, so the elite thresholds in particular may not carry over.",
+      "note": "Three thresholds that decide when to fight an elite, tuned in a simulator that dropped the relics a run gains, so they may not carry over. The heal, rest and shop thresholds were screened too and none was adopted.",
       "rows": [
         {
           "when": "a0-dropped",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/comparisons/rules_v3-vs-rules_v2-ironclad-a0-veteran-val.json",
           "sha256": "104f2ccfd24703e5bf727950fd938e9d2a3a4488dcdf3efb83d8693721a4ff67",
           "first": 0.747865394274234,
@@ -256,19 +290,22 @@
       "id": "search",
       "label": "Plan every fight with a search",
       "versus": "the rules pilot",
-      "first": "a pilot that plans each fight by searching on clones (Ironclad, 300 games)",
+      "first": "a pilot that plans each fight by searching on clones (Ironclad)",
       "second": "the rules pilot",
       "inAdvisor": "no",
       "adr": [
         "ADR-033",
         "ADR-040"
       ],
-      "note": "About 105 times slower than the rules pilot; nothing on the site runs a simulator.",
+      "note": "Nothing on the site runs a simulator.",
       "rows": [
         {
           "when": "a0-dropped",
+          "label": null,
           "evidence": "registered",
           "note": null,
+          "behind": [],
+          "slowdown": 105.02098872506505,
           "file": "experiments/comparisons/search_v3-all-vs-rules_v2-ironclad-a0-veteran-val.json",
           "sha256": "2fcc6f160d12941a043666d1f03e12003d024ba784c9b192e6a4f764d8f13699",
           "first": 0.7433333333333333,
@@ -289,7 +326,7 @@
     },
     {
       "id": "relics-along-the-way",
-      "label": "Keep the relics found along the way",
+      "label": "Simulator fix: keep the relics a run gains (G14)",
       "versus": "losing them at the next fight (the simulator's old behaviour)",
       "first": "the same pilot with the relics it gains kept",
       "second": "the same pilot as the pinned simulator plays it (every relic gained after the first fight is dropped)",
@@ -301,8 +338,11 @@
       "rows": [
         {
           "when": "a0",
+          "label": "Ascension 0, relics kept against relics dropped",
           "evidence": "development",
           "note": null,
+          "behind": [],
+          "slowdown": null,
           "file": "experiments/g14/pooled-keeprelics-vs-base-dev.json",
           "sha256": "9c80dc5d0fe3d40ff3264faf743d221af366d6e42739f5b758ce9b63852ef796",
           "first": 0.6305237315875614,
@@ -329,6 +369,7 @@
       "ascension": 0,
       "pilot": "rules_v2 following the card values shown on the site",
       "relicsKept": true,
+      "seedsPerClass": 2000,
       "completed": 9738,
       "goldMedian": 135,
       "goldShare150": 0.45678496868475993,
@@ -450,10 +491,10 @@
               "atBoss": 679
             },
             {
-              "enemy": "KIN_PRIEST",
-              "deaths": 476,
-              "share": 0.14847161572052403,
-              "atBoss": 476
+              "enemy": "KIN_FOLLOWER,KIN_PRIEST",
+              "deaths": 593,
+              "share": 0.18496568933250157,
+              "atBoss": 593
             },
             {
               "enemy": "FOGMOG",
@@ -468,10 +509,10 @@
               "atBoss": 0
             },
             {
-              "enemy": "KIN_FOLLOWER,KIN_PRIEST",
-              "deaths": 102,
-              "share": 0.031815346225826574,
-              "atBoss": 102
+              "enemy": "FLYCONID",
+              "deaths": 97,
+              "share": 0.03025577043044292,
+              "atBoss": 0
             }
           ]
         },
@@ -486,16 +527,16 @@
               "atBoss": 956
             },
             {
+              "enemy": "CRUSHER,ROCKET",
+              "deaths": 746,
+              "share": 0.1356117069623705,
+              "atBoss": 746
+            },
+            {
               "enemy": "KNOWLEDGE_DEMON",
               "deaths": 512,
               "share": 0.09307398654790038,
               "atBoss": 512
-            },
-            {
-              "enemy": "CRUSHER,ROCKET",
-              "deaths": 482,
-              "share": 0.08762043264860934,
-              "atBoss": 482
             },
             {
               "enemy": "TUNNELER",
@@ -528,10 +569,10 @@
               "atBoss": 0
             },
             {
-              "enemy": "QUEEN",
-              "deaths": 79,
-              "share": 0.09049255441008018,
-              "atBoss": 79
+              "enemy": "QUEEN,TORCH_HEAD_AMALGAM",
+              "deaths": 96,
+              "share": 0.10996563573883161,
+              "atBoss": 96
             },
             {
               "enemy": "AEONGLASS",
@@ -567,6 +608,7 @@
       "ascension": 9,
       "pilot": "rules_v2 following the card values shown on the site",
       "relicsKept": true,
+      "seedsPerClass": 2000,
       "completed": 9934,
       "goldMedian": 118,
       "goldShare150": 0.2776879547291835,
@@ -676,6 +718,12 @@
           "unrecorded": 0,
           "top": [
             {
+              "enemy": "KIN_FOLLOWER,KIN_PRIEST",
+              "deaths": 1063,
+              "share": 0.14213130097606633,
+              "atBoss": 1063
+            },
+            {
               "enemy": "VANTOM",
               "deaths": 1052,
               "share": 0.14066051611177965,
@@ -686,12 +734,6 @@
               "deaths": 983,
               "share": 0.13143468378125417,
               "atBoss": 983
-            },
-            {
-              "enemy": "KIN_PRIEST",
-              "deaths": 780,
-              "share": 0.10429201764941837,
-              "atBoss": 780
             },
             {
               "enemy": "BYGONE_EFFIGY",
@@ -736,16 +778,16 @@
               "atBoss": 205
             },
             {
+              "enemy": "CRUSHER,ROCKET",
+              "deaths": 173,
+              "share": 0.07648099027409372,
+              "atBoss": 173
+            },
+            {
               "enemy": "SPINY_TOAD",
               "deaths": 130,
               "share": 0.05747126436781609,
               "atBoss": 0
-            },
-            {
-              "enemy": "CRUSHER,ROCKET",
-              "deaths": 123,
-              "share": 0.054376657824933686,
-              "atBoss": 123
             },
             {
               "enemy": "KNOWLEDGE_DEMON",
@@ -772,6 +814,12 @@
               "atBoss": 14
             },
             {
+              "enemy": "QUEEN,TORCH_HEAD_AMALGAM",
+              "deaths": 9,
+              "share": 0.05806451612903226,
+              "atBoss": 9
+            },
+            {
               "enemy": "SCROLL_OF_BITING,SCROLL_OF_BITING",
               "deaths": 9,
               "share": 0.05806451612903226,
@@ -787,12 +835,6 @@
               "enemy": "TURRET_OPERATOR",
               "deaths": 8,
               "share": 0.05161290322580645,
-              "atBoss": 0
-            },
-            {
-              "enemy": "DEVOTED_SCULPTOR",
-              "deaths": 7,
-              "share": 0.04516129032258064,
               "atBoss": 0
             }
           ]
@@ -831,6 +873,7 @@
       }
     ],
     "draws": 400,
+    "exploreShare": 0.6,
     "bossFloors": [
       16,
       31,
@@ -1212,6 +1255,7 @@
       "first": "follows the card values shown on the site",
       "second": "the hand-written rules"
     },
+    "seedsPerClass": 2000,
     "pooled": {
       "a0": {
         "first": 0.6706586826347305,
@@ -1230,12 +1274,18 @@
         "a0": {
           "first": 0.8025276461295419,
           "second": 0.6129541864139021,
-          "pairs": 1899
+          "pairs": 1899,
+          "aOnly": 465,
+          "bOnly": 105,
+          "p": 5.208627901528311e-55
         },
         "a9": {
           "first": 0.3541666666666667,
           "second": 0.18699186991869918,
-          "pairs": 1968
+          "pairs": 1968,
+          "aOnly": 436,
+          "bOnly": 107,
+          "p": 4.2937850405020406e-48
         }
       },
       {
@@ -1243,12 +1293,18 @@
         "a0": {
           "first": 0.33182275931520644,
           "second": 0.20342396777442096,
-          "pairs": 1986
+          "pairs": 1986,
+          "aOnly": 396,
+          "bOnly": 141,
+          "p": 4.9934093482506994e-29
         },
         "a9": {
           "first": 0.039559339008512766,
           "second": 0.01902854281422133,
-          "pairs": 1997
+          "pairs": 1997,
+          "aOnly": 62,
+          "bOnly": 21,
+          "p": 0.00000750533232462072
         }
       },
       {
@@ -1256,12 +1312,18 @@
         "a0": {
           "first": 0.6385729058945191,
           "second": 0.21923474663908996,
-          "pairs": 1934
+          "pairs": 1934,
+          "aOnly": 868,
+          "bOnly": 57,
+          "p": 3.758102445496653e-187
         },
         "a9": {
           "first": 0.2233502538071066,
           "second": 0.049746192893401014,
-          "pairs": 1970
+          "pairs": 1970,
+          "aOnly": 372,
+          "bOnly": 30,
+          "p": 3.5035430898103864e-76
         }
       },
       {
@@ -1269,12 +1331,18 @@
         "a0": {
           "first": 0.7587448559670782,
           "second": 0.5781893004115226,
-          "pairs": 1944
+          "pairs": 1944,
+          "aOnly": 481,
+          "bOnly": 130,
+          "p": 2.818320899902014e-48
         },
         "a9": {
           "first": 0.2680100755667506,
           "second": 0.16070528967254408,
-          "pairs": 1985
+          "pairs": 1985,
+          "aOnly": 341,
+          "bOnly": 128,
+          "p": 2.1091070358406906e-23
         }
       },
       {
@@ -1282,12 +1350,18 @@
         "a0": {
           "first": 0.8335933437337494,
           "second": 0.4539781591263651,
-          "pairs": 1923
+          "pairs": 1923,
+          "aOnly": 800,
+          "bOnly": 70,
+          "p": 7.825998284541949e-158
         },
         "a9": {
           "first": 0.3474320241691843,
           "second": 0.06445115810674723,
-          "pairs": 1986
+          "pairs": 1986,
+          "aOnly": 608,
+          "bOnly": 46,
+          "p": 3.416981256618882e-126
         }
       }
     ]
