@@ -1,0 +1,393 @@
+{
+  "schema": 1,
+  "generatedFrom": "docs/DECISIONS.md (ADR-060) + experiments/cardvalue/*-a0-act2-v1.json (the fit) + experiments/act2/*.json (the development screen, the pooled tests, the per-class comparisons, the determinism record) + experiments/batches/*/manifest.json",
+  "adr": "ADR-060",
+  "registered": true,
+  "level": 0.016666666666666666,
+  "classLevel": 0.01,
+  "screenLevel": 0.1,
+  "gate": 0.002,
+  "seeds": 2000,
+  "frozen": false,
+  "fit": {
+    "classes": [
+      {
+        "character": "ironclad",
+        "file": "experiments/cardvalue/ironclad-a0-act2-v1.json",
+        "sha256": "8d0c9ccbae1ecc4b9af295c546585c3859d619db6fb54b350f6053ce4f63267a",
+        "fitted": true,
+        "reason": null,
+        "bossFights": 1513,
+        "passed": 422,
+        "gain": 0.02650119431094977,
+        "bestL2": 30,
+        "indicatorPenalty": 10,
+        "logLoss": {
+          "baseRate": 0.5919266621888165,
+          "scaleOnly": 0.461600336588018,
+          "full": 0.43509914227706825
+        },
+        "scaleOnly": {
+          "estimate": 0.25394690213450916,
+          "ci95": [
+            0.20599736235474633,
+            0.31019120796000893
+          ]
+        },
+        "moved": [
+          {
+            "id": "THRASH",
+            "shown": 0.9828,
+            "value": 1.051,
+            "delta": 0.7462,
+            "ci95": [
+              0.5558,
+              0.8835
+            ],
+            "decks": 224
+          },
+          {
+            "id": "METAMORPHOSIS",
+            "shown": 0,
+            "value": -0.2452,
+            "delta": -0.2452,
+            "ci95": [
+              -0.3635,
+              -0.0875
+            ],
+            "decks": 148
+          },
+          {
+            "id": "ANGER",
+            "shown": 0.8329,
+            "value": 0.0309,
+            "delta": -0.2275,
+            "ci95": [
+              -0.3683,
+              -0.1237
+            ],
+            "decks": 960
+          },
+          {
+            "id": "BURNING_PACT",
+            "shown": -0.5055,
+            "value": 0.0475,
+            "delta": 0.2043,
+            "ci95": [
+              0.0254,
+              0.3473
+            ],
+            "decks": 122
+          },
+          {
+            "id": "RUPTURE_CARD",
+            "shown": 0.3546,
+            "value": 0.3079,
+            "delta": 0.1979,
+            "ci95": [
+              0.0354,
+              0.3403
+            ],
+            "decks": 401
+          },
+          {
+            "id": "STRIKE_IRONCLAD",
+            "shown": -0.5474,
+            "value": 0.025,
+            "delta": 0.1948,
+            "ci95": [
+              0.0952,
+              0.3038
+            ],
+            "decks": 1402
+          },
+          {
+            "id": "RAMPAGE",
+            "shown": 2.2445,
+            "value": 0.8821,
+            "delta": 0.1859,
+            "ci95": [
+              0.0739,
+              0.3136
+            ],
+            "decks": 673
+          },
+          {
+            "id": "TEAR_ASUNDER",
+            "shown": -0.0334,
+            "value": -0.1859,
+            "delta": -0.1755,
+            "ci95": [
+              -0.3233,
+              -0.0523
+            ],
+            "decks": 142
+          },
+          {
+            "id": "FEEL_NO_PAIN_CARD",
+            "shown": -0.1689,
+            "value": -0.2143,
+            "delta": -0.1619,
+            "ci95": [
+              -0.3031,
+              -0.009
+            ],
+            "decks": 129
+          },
+          {
+            "id": "BREAKTHROUGH",
+            "shown": 0.1744,
+            "value": -0.1048,
+            "delta": -0.1589,
+            "ci95": [
+              -0.2869,
+              -0.0275
+            ],
+            "decks": 651
+          },
+          {
+            "id": "IRON_WAVE",
+            "shown": 0.3681,
+            "value": -0.0404,
+            "delta": -0.1546,
+            "ci95": [
+              -0.2578,
+              -0.0315
+            ],
+            "decks": 870
+          },
+          {
+            "id": "OFFERING",
+            "shown": 0.8298,
+            "value": 0.4044,
+            "delta": 0.147,
+            "ci95": [
+              0.0025,
+              0.2916
+            ],
+            "decks": 227
+          }
+        ],
+        "movedCount": 13,
+        "signFlips": 24,
+        "cards": 99
+      },
+      {
+        "character": "silent",
+        "file": "experiments/cardvalue/silent-a0-act2-v1.json",
+        "sha256": "c29da34760046d538ebf2533e900b7a2e17063a595a6afabb9bd02a20221157f",
+        "fitted": false,
+        "reason": "fewer than 100 Act-2 boss fights, or fewer than 30 runs that passed or that did not: nothing fitted, the shown values are kept",
+        "bossFights": 118,
+        "passed": 2,
+        "gain": null,
+        "bestL2": null,
+        "indicatorPenalty": null,
+        "logLoss": null,
+        "scaleOnly": null,
+        "moved": [],
+        "movedCount": 0,
+        "signFlips": 0,
+        "cards": 80
+      },
+      {
+        "character": "regent",
+        "file": "experiments/cardvalue/regent-a0-act2-v1.json",
+        "sha256": "4df24d17b828cf9d436957d1f0c9c7c709a5c4ccfa543080191055110f8448aa",
+        "fitted": false,
+        "reason": "the card-specific part does not predict held-out Act-2 boss fights better than the shown ranking's scale alone: the shown values are kept",
+        "bossFights": 494,
+        "passed": 65,
+        "gain": -0.0003984285148853073,
+        "bestL2": 1000,
+        "indicatorPenalty": 10,
+        "logLoss": {
+          "baseRate": 0.38937723628848175,
+          "scaleOnly": 0.33781501430305094,
+          "full": 0.33821344281793625
+        },
+        "scaleOnly": {
+          "estimate": 0.3824203955811551,
+          "ci95": [
+            0.2589720970399821,
+            0.5461441648920388
+          ]
+        },
+        "moved": [],
+        "movedCount": 0,
+        "signFlips": 0,
+        "cards": 89
+      },
+      {
+        "character": "necrobinder",
+        "file": "experiments/cardvalue/necrobinder-a0-act2-v1.json",
+        "sha256": "6abbb86b30fc6d42026c7b699e85de22f1540cf16e4a4fe47e06faef552ae8ee",
+        "fitted": false,
+        "reason": "the card-specific part does not predict held-out Act-2 boss fights better than the shown ranking's scale alone: the shown values are kept",
+        "bossFights": 810,
+        "passed": 89,
+        "gain": 0.001220349812676269,
+        "bestL2": 30,
+        "indicatorPenalty": 10,
+        "logLoss": {
+          "baseRate": 0.3462571428637329,
+          "scaleOnly": 0.2683840852124376,
+          "full": 0.26716373539976135
+        },
+        "scaleOnly": {
+          "estimate": 0.29634232732797444,
+          "ci95": [
+            0.13754127009983091,
+            0.4908135454098769
+          ]
+        },
+        "moved": [],
+        "movedCount": 0,
+        "signFlips": 0,
+        "cards": 95
+      },
+      {
+        "character": "defect",
+        "file": "experiments/cardvalue/defect-a0-act2-v1.json",
+        "sha256": "2335b5dba50122ca988d658168b0698690a8d4435e2f753c0098c9bdb0f797ee",
+        "fitted": true,
+        "reason": null,
+        "bossFights": 880,
+        "passed": 201,
+        "gain": 0.020953331108981843,
+        "bestL2": 30,
+        "indicatorPenalty": 10,
+        "logLoss": {
+          "baseRate": 0.5373468709563556,
+          "scaleOnly": 0.3821497481388153,
+          "full": 0.36119641702983346
+        },
+        "scaleOnly": {
+          "estimate": 0.4799885791991151,
+          "ci95": [
+            0.3646305093187362,
+            0.5902042509009215
+          ]
+        },
+        "moved": [
+          {
+            "id": "CLAW",
+            "shown": 1.3859,
+            "value": 0.9516,
+            "delta": 0.421,
+            "ci95": [
+              0.2843,
+              0.5328
+            ],
+            "decks": 660
+          },
+          {
+            "id": "STRIKE_DEFECT",
+            "shown": 0.0432,
+            "value": -0.1921,
+            "delta": -0.2087,
+            "ci95": [
+              -0.324,
+              -0.0595
+            ],
+            "decks": 804
+          },
+          {
+            "id": "THUNDER_CARD",
+            "shown": -0.0854,
+            "value": 0.1729,
+            "delta": 0.2056,
+            "ci95": [
+              0.0891,
+              0.2989
+            ],
+            "decks": 67
+          },
+          {
+            "id": "OVERCLOCK",
+            "shown": -0.5483,
+            "value": -0.0055,
+            "delta": 0.2044,
+            "ci95": [
+              0.0518,
+              0.3309
+            ],
+            "decks": 96
+          },
+          {
+            "id": "COLD_SNAP",
+            "shown": 0.7496,
+            "value": 0.0848,
+            "delta": -0.2022,
+            "ci95": [
+              -0.3301,
+              -0.0667
+            ],
+            "decks": 458
+          },
+          {
+            "id": "LIGHTNING_ROD",
+            "shown": 0.5733,
+            "value": 0.028,
+            "delta": -0.1915,
+            "ci95": [
+              -0.3513,
+              -0.0218
+            ],
+            "decks": 449
+          },
+          {
+            "id": "GLACIER",
+            "shown": 0.2666,
+            "value": -0.0564,
+            "delta": -0.1584,
+            "ci95": [
+              -0.2596,
+              -0.0508
+            ],
+            "decks": 137
+          },
+          {
+            "id": "BOOT_SEQUENCE",
+            "shown": -0.024,
+            "value": -0.1666,
+            "delta": -0.1574,
+            "ci95": [
+              -0.2633,
+              -0.0093
+            ],
+            "decks": 102
+          },
+          {
+            "id": "SCRAPE",
+            "shown": -0.0796,
+            "value": 0.1162,
+            "delta": 0.1467,
+            "ci95": [
+              0.0033,
+              0.2919
+            ],
+            "decks": 196
+          },
+          {
+            "id": "BUFFER_CARD",
+            "shown": -0.232,
+            "value": 0.015,
+            "delta": 0.1039,
+            "ci95": [
+              0.0058,
+              0.1958
+            ],
+            "decks": 49
+          }
+        ],
+        "movedCount": 10,
+        "signFlips": 18,
+        "cards": 100
+      }
+    ],
+    "anyFitted": true
+  },
+  "dev": null,
+  "tests": null
+}

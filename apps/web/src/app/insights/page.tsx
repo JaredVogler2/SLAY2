@@ -6,6 +6,7 @@ import { CardSurprises } from "@/components/insights/CardSurprises";
 import { CoverageMatrix } from "@/components/insights/CoverageMatrix";
 import { EvidenceLegend } from "@/components/insights/EvidenceBadge";
 import { Findings } from "@/components/insights/Findings";
+import { LaterStudy } from "@/components/insights/LaterStudy";
 import { LeverLadder } from "@/components/insights/LeverLadder";
 import { OpenQuestions } from "@/components/insights/OpenQuestions";
 import { RunsEnd } from "@/components/insights/RunsEnd";
@@ -13,9 +14,10 @@ import { SecondBoss } from "@/components/insights/SecondBoss";
 import { SynergyAtlas } from "@/components/insights/SynergyAtlas";
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
+import { act2Data } from "@/lib/act2";
 import { INSIGHTS, count, roughly } from "@/lib/insights";
 import { allSets } from "@/lib/cardvalues";
-import { atlasData } from "@/lib/insights-server";
+import { act2CardName, atlasData } from "@/lib/insights-server";
 
 const PLAYED = INSIGHTS.games.completed + INSIGHTS.games.exploration.completed;
 
@@ -24,17 +26,21 @@ export const metadata: Metadata = {
   description: `What simulated Slay the Spire 2 games say about what moves the odds of a run: how big the differences between simulated pilots are, where runs end, what matters at the second boss, where card ratings and measurements disagree, how cards work together, what each Ascension changes, and what this site does and does not capture of the game.`,
 };
 
-const SECTIONS = [
+const LATER = act2Data();
+
+const SECTIONS: readonly (readonly [string, string])[] = [
   ["findings", "Findings"],
   ["levers", "Levers"],
   ["runs-end", "Where runs end"],
   ["second-boss", "The second boss"],
+  // the Act-2 study (ADR-060) is shown once its fit exists
+  ...(LATER?.fit ? ([["later", "After the first boss"]] as const) : []),
   ["cards", "Card surprises"],
   ["synergy", "Synergy atlas"],
   ["ascension", "Ascension"],
   ["coverage", "What the site captures"],
   ["open", "Not known yet"],
-] as const;
+];
 
 export default function InsightsPage() {
   const atlas = atlasData();
@@ -164,6 +170,17 @@ export default function InsightsPage() {
       >
         <SecondBoss />
       </Panel>
+
+      {LATER?.fit ? (
+        <Panel
+          id="later"
+          className="scroll-mt-20"
+          eyebrow="A registered study"
+          title="Does anything change once the first boss is behind the run?"
+        >
+          <LaterStudy data={LATER} nameOf={act2CardName} />
+        </Panel>
+      ) : null}
 
       <Panel
         id="cards"

@@ -419,3 +419,8 @@ export function coverageRows(): readonly CoverageRow[] {
     },
   ];
 }
+
+// ---- the Act-2 study (ADR-060): card names for the cards whose value at the second boss moved
+
+/** The display name of a card id (the id itself when the catalog does not know it). */
+export const act2CardName = (id: string): string => getCard(id)?.name ?? id;

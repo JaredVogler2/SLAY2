@@ -14,6 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
+import { parseAct2 } from "./lib/act2.mjs";
 import { parseAscensionNine } from "./lib/ascension9.mjs";
 import {
   parseAscensionLadder,
@@ -1559,6 +1560,13 @@ const outputs = {
     generatedFrom:
       "experiments/ascension9/precondition.json + experiments/ascension9/ascension-check.json + experiments/ascension9/pooled-a9-*.json (the Ascension 9 transfer study, ADR-058) + experiments/batches/*/manifest.json",
     ...parseAscensionNine({ root, reports, synergyChoice: parseSynergySelection }),
+  },
+  // The Act-2 study (ADR-060): the stage it is at (registered; the fit; the development screen; the three held-out tests), read strictly
+  "act2.generated.json": {
+    schema: 1,
+    generatedFrom:
+      "docs/DECISIONS.md (ADR-060) + experiments/cardvalue/*-a0-act2-v1.json (the fit) + experiments/act2/*.json (the development screen, the pooled tests, the per-class comparisons, the determinism record) + experiments/batches/*/manifest.json",
+    ...parseAct2({ root, reports }),
   },
   // The page of insights reads the committed experiment files; a repository without them (the small copies the exporter's tests build) has
   // nothing to say there, and says so instead of failing. A repository that has some of them and not the rest fails, strictly.
