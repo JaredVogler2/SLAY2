@@ -144,6 +144,7 @@ describe("what every page is sent by the shared shell", () => {
     "app/page.tsx",
     "app/about/page.tsx",
     "app/methods/page.tsx",
+    "app/insights/page.tsx",
   ]) {
     it(`${entry} sends no card catalog, run schema or run store`, () => {
       const sent = sentToBrowser(entry);
@@ -153,6 +154,20 @@ describe("what every page is sent by the shared shell", () => {
       ).toEqual([]);
     });
   }
+
+  it("the insights page sends the atlas and nothing the atlas does not use: not the card catalog, not the exported data it was built from", () => {
+    const sent = sentToBrowser("app/insights/page.tsx");
+    expect(sent.has("components/insights/SynergyAtlas.tsx")).toBe(true);
+    for (const heavy of [
+      "lib/insights-server.ts",
+      "lib/cardvalues.ts",
+      "content/insights.generated.json",
+      "content/cardvalues.generated.json",
+      "content/synergy.generated.json",
+      "content/evidence.generated.json",
+    ])
+      expect(sent.has(heavy), heavy).toBe(false);
+  });
 
   it("the walk sees what it is written to see", () => {
     // the advisor's page does send the store and the catalog, and the header's chip is a client module of the layout

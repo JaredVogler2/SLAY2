@@ -15,6 +15,14 @@ import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
 import { parseAscensionNine } from "./lib/ascension9.mjs";
+import {
+  parseAscensionLadder,
+  parseGames,
+  parseInventory,
+  parseLateDrivers,
+  parseLevers,
+  parseRunsEnd,
+} from "./lib/insights.mjs";
 import { CLASSES, EXACT, commonBatchProblem, readPooledHeldOut } from "./lib/pooled.mjs";
 
 // SLAY2_ROOT lets the tests point the exporter at a tampered copy of the inputs; production always uses the repository.
@@ -1552,6 +1560,25 @@ const outputs = {
       "experiments/ascension9/precondition.json + experiments/ascension9/ascension-check.json + experiments/ascension9/pooled-a9-*.json (the Ascension 9 transfer study, ADR-058) + experiments/batches/*/manifest.json",
     ...parseAscensionNine({ root, reports, synergyChoice: parseSynergySelection }),
   },
+  // The page of insights reads the committed experiment files; a repository without them (the small copies the exporter's tests build) has
+  // nothing to say there, and says so instead of failing. A repository that has some of them and not the rest fails, strictly.
+  "insights.generated.json": existsSync(join(root, "experiments", "insights", "late-drivers.json"))
+    ? (() => {
+        const lateDrivers = parseLateDrivers(root);
+        return {
+          schema: 1,
+          available: true,
+          generatedFrom:
+            "experiments/{ascension9,synergy/keep-val,neow,cardvalue,comparisons,g14}/*.json (the paired comparisons of the lever ladder) + experiments/batches/rules_v2-shownvals-*/ (where runs end) + experiments/insights/late-drivers.json (exploratory) + experiments/insights/game-inventory.json (counts) (ADR-059)",
+          games: parseGames(root, reports),
+          levers: parseLevers(root),
+          runsEnd: parseRunsEnd(root, lateDrivers.bossFloors),
+          lateDrivers,
+          ascension: parseAscensionLadder(root),
+          inventory: parseInventory(root),
+        };
+      })()
+    : { schema: 1, available: false, generatedFrom: "nothing: experiments/insights/late-drivers.json is not in this repository" },
 };
 
 let stale = false;

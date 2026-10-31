@@ -1,6 +1,6 @@
 # SLAY2 IP and rights compliance
 
-Status: **living document**, last updated 2026-10-25. Not legal advice; counsel review is required before any monetization (see "Open decisions").
+Status: **living document**, last updated 2026-10-31 (section 2: enemy names and counts by category, ADR-059). Not legal advice; counsel review is required before any monetization (see "Open decisions").
 
 ## 1. Stance
 
@@ -13,9 +13,9 @@ Mega Crit's Content Policy (retrieved 2026-10-25, site built 2026-09-28) grants 
 | Allowed | Not allowed |
 |---|---|
 | Original code, math, tests, UI design | Game art, icons, audio, fonts, logos, card/relic frames |
-| Factual identifiers: canonical ids, display names, class, rarity, cost, type (minimal, with provenance and attribution) | Card/relic/potion/event **text**, flavour text, descriptions copied from the game or any site |
+| Factual identifiers: canonical ids, display names (of cards, relics, potions and enemies; an enemy's name is the display form of its id), class, rarity, cost, type (minimal, with provenance and attribution) | Card/relic/potion/event **text**, flavour text, descriptions copied from the game or any site |
 | Our own short paraphrased role tags ("attack", "block", "draw", ...) | Bulk dumps of extracted data, JSON mirrors of third-party databases |
-| Aggregated results from our own experiments | Decompiled code or text, `.pck`/`.dll` contents, extracted assets |
+| Aggregated results from our own experiments (counts, shares, intervals, fitted odds ratios, and counts of what the game has by category, with no name, id or text) | Decompiled code or text, `.pck`/`.dll` contents, extracted assets |
 | Hand-authored SVG/CSS illustration | AI-generated imagery presented as art (conflicts with Mega Crit's art policy language) |
 
 `scripts/guard-third-party.sh` (pre-commit hook + CI) rejects forbidden paths (`decompiled/`, `extracted_pck/`, `external/checkouts/`, `*.pck`, `*.dll`, ...), un-allow-listed C# files, env files, and files carrying decompiled-code headers. `scripts/test-guard.sh` covers the guard itself.

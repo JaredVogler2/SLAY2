@@ -1,0 +1,1347 @@
+{
+  "schema": 1,
+  "available": true,
+  "generatedFrom": "experiments/{ascension9,synergy/keep-val,neow,cardvalue,comparisons,g14}/*.json (the paired comparisons of the lever ladder) + experiments/batches/rules_v2-shownvals-*/ (where runs end) + experiments/insights/late-drivers.json (exploratory) + experiments/insights/game-inventory.json (counts) (ADR-059)",
+  "games": {
+    "batches": 174,
+    "started": 265100,
+    "completed": 262759,
+    "wins": 1136,
+    "exploration": {
+      "batches": 66,
+      "started": 90500,
+      "completed": 89632
+    }
+  },
+  "levers": [
+    {
+      "id": "card-values",
+      "label": "Pick cards by measured value",
+      "versus": "the hand-written ratings",
+      "first": "a pilot that follows the card values shown on the site",
+      "second": "the same pilot with the hand-written ratings",
+      "inAdvisor": "second-opinion",
+      "adr": [
+        "ADR-031",
+        "ADR-034",
+        "ADR-053",
+        "ADR-058"
+      ],
+      "note": null,
+      "rows": [
+        {
+          "when": "a0",
+          "evidence": "descriptive",
+          "note": "Played as the descriptive twin of the Ascension 9 test (ADR-058): the same pair at Ascension 0, the relics kept; no decision rests on it.",
+          "file": "experiments/ascension9/pooled-a0keep-t2-values-shown-vs-rules_v1.json",
+          "sha256": "b9a14ff37cc77d80ee83ceb8834b617d9611601537b729f0dcb67dc005f40b52",
+          "first": 0.6706586826347305,
+          "second": 0.41183150939500307,
+          "difference": 0.2588271732397274,
+          "ci95": [
+            0.24822327966387564,
+            0.269325912183055
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9686,
+          "aOnly": 3010,
+          "bOnly": 503,
+          "p": 0,
+          "classes": 5
+        },
+        {
+          "when": "a9",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/ascension9/pooled-a9-t2-values-shown-vs-rules_v1.json",
+          "sha256": "92ec4d7f6a88b33219ecd42034fe5c422364c312274d4006a01f1443e7a3e188",
+          "first": 0.24611346658590752,
+          "second": 0.09600242277407632,
+          "difference": 0.1501110438118312,
+          "ci95": [
+            0.1411562909898093,
+            0.1590566024512249
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9906,
+          "aOnly": 1819,
+          "bOnly": 332,
+          "p": 1.2750674312897172e-247,
+          "classes": 5
+        }
+      ]
+    },
+    {
+      "id": "synergy",
+      "label": "Count how cards work together",
+      "versus": "the same index without the synergy term",
+      "first": "a pilot that picks cards by the index with the synergy term",
+      "second": "the same pilot without it",
+      "inAdvisor": "yes",
+      "adr": [
+        "ADR-050",
+        "ADR-054",
+        "ADR-058"
+      ],
+      "note": null,
+      "rows": [
+        {
+          "when": "a0",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/synergy/keep-val/pooled-astar-vs-d0star.json",
+          "sha256": "0381bc7495466159f40e368c973d2869f3fb787fc327331fcd46bb70bb84c470",
+          "first": 0.40395337050177393,
+          "second": 0.3326913329954384,
+          "difference": 0.07126203750633553,
+          "ci95": [
+            0.06271514852905119,
+            0.07990241545588964
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9865,
+          "aOnly": 1325,
+          "bOnly": 622,
+          "p": 3.0142533676263165e-58,
+          "classes": 5
+        },
+        {
+          "when": "a9",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/ascension9/pooled-a9-t1-synergy-astar-vs-d0star.json",
+          "sha256": "0f565efd5b41ab4440ffeac2ba645309243be33c450606615f9255b97b25a7fe",
+          "first": 0.1011641910879165,
+          "second": 0.07135688478522682,
+          "difference": 0.02980730630268967,
+          "ci95": [
+            0.024576186177149163,
+            0.03513359550550701
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9964,
+          "aOnly": 524,
+          "bOnly": 227,
+          "p": 6.774731132110377e-28,
+          "classes": 5
+        }
+      ]
+    },
+    {
+      "id": "opening-relic",
+      "label": "Take the best-measured opening relic",
+      "versus": "the first helpful relic",
+      "first": "a pilot that takes the opening relic with the largest measured value",
+      "second": "a pilot that takes the first helpful relic",
+      "inAdvisor": "yes",
+      "adr": [
+        "ADR-049",
+        "ADR-055",
+        "ADR-058"
+      ],
+      "note": null,
+      "rows": [
+        {
+          "when": "a0",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
+          "sha256": "5af5ca7230aaa097c1f62e37d9d0b326073cacae6ad05647f2c4d92355ec0b9e",
+          "first": 0.6915567556340222,
+          "second": 0.6445113718973933,
+          "difference": 0.04704538373662892,
+          "ci95": [
+            0.03692503790226423,
+            0.05714894314924524
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9629,
+          "aOnly": 1258,
+          "bOnly": 805,
+          "p": 1.658638235317189e-23,
+          "classes": 5
+        },
+        {
+          "when": "a9",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/ascension9/pooled-a9-t3-neow-keep-v1-vs-rules_v2.json",
+          "sha256": "aeeeb1ee9680f1a3ad8a7c94fcb49ec5265cb2f0d0e23188d4f17dc50e54cb33",
+          "first": 0.2642980058710396,
+          "second": 0.22897054357728516,
+          "difference": 0.035327462293754414,
+          "ci95": [
+            0.0265989575632875,
+            0.044098310913320525
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9879,
+          "aOnly": 1073,
+          "bOnly": 724,
+          "p": 1.796992582005358e-16,
+          "classes": 5
+        }
+      ]
+    },
+    {
+      "id": "values-remeasured",
+      "label": "Measure the card values again when relics are kept",
+      "versus": "the values measured without them",
+      "first": "a pilot that follows the values measured with the relics kept",
+      "second": "a pilot that follows the values the site showed before",
+      "inAdvisor": "yes",
+      "adr": [
+        "ADR-053"
+      ],
+      "note": null,
+      "rows": [
+        {
+          "when": "a0",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/cardvalue/pooled-keepvals-vs-curvals-val.json",
+          "sha256": "1a93b9169555e873bb0adcfa4a760858dd37f9b29259c7faf4070098a5226a23",
+          "first": 0.6959843088675545,
+          "second": 0.6815319500361309,
+          "difference": 0.014452358831423595,
+          "ci95": [
+            0.005995451726276618,
+            0.022870169182038907
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 9687,
+          "aOnly": 972,
+          "bOnly": 832,
+          "p": 0.0010599975693945671,
+          "classes": 5
+        }
+      ]
+    },
+    {
+      "id": "thresholds",
+      "label": "Tune when to fight elites, rest and shop",
+      "versus": "the untuned thresholds",
+      "first": "a pilot with the tuned route and rest thresholds (Ironclad)",
+      "second": "the same pilot untuned",
+      "inAdvisor": "no",
+      "adr": [
+        "ADR-036",
+        "ADR-045"
+      ],
+      "note": "Tuned in a simulator that dropped the relics a run gains, so the elite thresholds in particular may not carry over.",
+      "rows": [
+        {
+          "when": "a0-dropped",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/comparisons/rules_v3-vs-rules_v2-ironclad-a0-veteran-val.json",
+          "sha256": "104f2ccfd24703e5bf727950fd938e9d2a3a4488dcdf3efb83d8693721a4ff67",
+          "first": 0.747865394274234,
+          "second": 0.6509291813159217,
+          "difference": 0.09693621295831234,
+          "ci95": [
+            0.07794178313528838,
+            0.1159306427813363
+          ],
+          "method": "paired Wald interval",
+          "pairs": 1991,
+          "aOnly": 292,
+          "bOnly": 99,
+          "p": 3.337412483441267e-23,
+          "classes": 1
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "label": "Plan every fight with a search",
+      "versus": "the rules pilot",
+      "first": "a pilot that plans each fight by searching on clones (Ironclad, 300 games)",
+      "second": "the rules pilot",
+      "inAdvisor": "no",
+      "adr": [
+        "ADR-033",
+        "ADR-040"
+      ],
+      "note": "About 105 times slower than the rules pilot; nothing on the site runs a simulator.",
+      "rows": [
+        {
+          "when": "a0-dropped",
+          "evidence": "registered",
+          "note": null,
+          "file": "experiments/comparisons/search_v3-all-vs-rules_v2-ironclad-a0-veteran-val.json",
+          "sha256": "2fcc6f160d12941a043666d1f03e12003d024ba784c9b192e6a4f764d8f13699",
+          "first": 0.7433333333333333,
+          "second": 0.6466666666666666,
+          "difference": 0.09666666666666668,
+          "ci95": [
+            0.03600978882392217,
+            0.1573235445094112
+          ],
+          "method": "paired Wald interval",
+          "pairs": 300,
+          "aOnly": 59,
+          "bOnly": 30,
+          "p": 0.0027852689963042145,
+          "classes": 1
+        }
+      ]
+    },
+    {
+      "id": "relics-along-the-way",
+      "label": "Keep the relics found along the way",
+      "versus": "losing them at the next fight (the simulator's old behaviour)",
+      "first": "the same pilot with the relics it gains kept",
+      "second": "the same pilot as the pinned simulator plays it (every relic gained after the first fight is dropped)",
+      "inAdvisor": "no",
+      "adr": [
+        "ADR-052"
+      ],
+      "note": "A measurement of a simulator defect (G14), and the size of what relics from chests, elites, shops and bosses are worth together; no registered test.",
+      "rows": [
+        {
+          "when": "a0",
+          "evidence": "development",
+          "note": null,
+          "file": "experiments/g14/pooled-keeprelics-vs-base-dev.json",
+          "sha256": "9c80dc5d0fe3d40ff3264faf743d221af366d6e42739f5b758ce9b63852ef796",
+          "first": 0.6305237315875614,
+          "second": 0.5249590834697218,
+          "difference": 0.10556464811783961,
+          "ci95": [
+            0.08976429074026385,
+            0.12121243042671612
+          ],
+          "method": "resampling whole seeds",
+          "pairs": 2444,
+          "aOnly": 325,
+          "bOnly": 67,
+          "p": 9.632172425416166e-42,
+          "classes": 5
+        }
+      ]
+    }
+  ],
+  "runsEnd": [
+    {
+      "id": "a0",
+      "label": "Ascension 0",
+      "ascension": 0,
+      "pilot": "rules_v2 following the card values shown on the site",
+      "relicsKept": true,
+      "completed": 9738,
+      "goldMedian": 135,
+      "goldShare150": 0.45678496868475993,
+      "goldShare300": 0.1162839248434238,
+      "diedAct1": 3206,
+      "diedAct2": 5501,
+      "diedAct3": 873,
+      "bossAct1": 1963,
+      "bossAct2": 2214,
+      "bossAct3": 332,
+      "won": 158,
+      "perClass": [
+        {
+          "character": "ironclad",
+          "batchId": "rules_v2-shownvals-ironclad-a0-veteran-keeprelics-val-n2000",
+          "sha256": "915f7190e03b3711752c2922d947754327a5e3deacb29066ee4f19e6e27679cb",
+          "completed": 1917,
+          "diedAct1": 377,
+          "diedAct2": 1101,
+          "diedAct3": 361,
+          "bossAct1": 269,
+          "bossAct2": 574,
+          "bossAct3": 166,
+          "won": 78,
+          "goldMedian": 123,
+          "goldShare150": 0.41381185426862427,
+          "goldShare300": 0.1348558999456226,
+          "deckMean": 24.259380097879284,
+          "relicsMean": 7.781402936378466
+        },
+        {
+          "character": "silent",
+          "batchId": "rules_v2-shownvals-silent-a0-veteran-keeprelics-val-n2000",
+          "sha256": "9864d195018b73a2118fd90bb53b93924ae8a378afeb8d52e96e440f1d738c03",
+          "completed": 1989,
+          "diedAct1": 1329,
+          "diedAct2": 658,
+          "diedAct3": 2,
+          "bossAct1": 767,
+          "bossAct2": 107,
+          "bossAct3": 0,
+          "won": 0,
+          "goldMedian": 155,
+          "goldShare150": 0.5243841126194068,
+          "goldShare300": 0.07088989441930618,
+          "deckMean": 19.698340874811464,
+          "relicsMean": 4.151835093011564
+        },
+        {
+          "character": "regent",
+          "batchId": "rules_v2-shownvals-regent-a0-veteran-keeprelics-val-n2000",
+          "sha256": "c4269866bd82abff3c06d00aa79db291d7567d7ee4cb9ab98942cf73b18db6c6",
+          "completed": 1945,
+          "diedAct1": 705,
+          "diedAct2": 1121,
+          "diedAct3": 107,
+          "bossAct1": 461,
+          "bossAct2": 408,
+          "bossAct3": 19,
+          "won": 12,
+          "goldMedian": 138,
+          "goldShare150": 0.4645628556647698,
+          "goldShare300": 0.12002069322296947,
+          "deckMean": 20.700465597516814,
+          "relicsMean": 5.5933781686497674
+        },
+        {
+          "character": "necrobinder",
+          "batchId": "rules_v2-shownvals-necrobinder-a0-veteran-keeprelics-val-n2000",
+          "sha256": "d45e0ac08126304cc6a18232c3c30526078ddef51d9ded5ba69390e44f9c07a8",
+          "completed": 1957,
+          "diedAct1": 472,
+          "diedAct2": 1349,
+          "diedAct3": 136,
+          "bossAct1": 308,
+          "bossAct2": 618,
+          "bossAct3": 37,
+          "won": 0,
+          "goldMedian": 121,
+          "goldShare150": 0.43331630045988756,
+          "goldShare300": 0.1262135922330097,
+          "deckMean": 23.04292284108329,
+          "relicsMean": 6.225344915687277
+        },
+        {
+          "character": "defect",
+          "batchId": "rules_v2-shownvals-defect-a0-veteran-keeprelics-val-n2000",
+          "sha256": "6cd2aae1a725f9dfe8ce73ab8d55f68ca3fd15861bc5030d8f8c4d71ad575fcf",
+          "completed": 1930,
+          "diedAct1": 323,
+          "diedAct2": 1272,
+          "diedAct3": 267,
+          "bossAct1": 158,
+          "bossAct2": 507,
+          "bossAct3": 110,
+          "won": 68,
+          "goldMedian": 128,
+          "goldShare150": 0.44360902255639095,
+          "goldShare300": 0.13211600429645542,
+          "deckMean": 23.30236305048335,
+          "relicsMean": 6.462406015037594
+        }
+      ],
+      "killersByAct": [
+        {
+          "deaths": 3206,
+          "unrecorded": 0,
+          "top": [
+            {
+              "enemy": "VANTOM",
+              "deaths": 691,
+              "share": 0.2155333749220212,
+              "atBoss": 691
+            },
+            {
+              "enemy": "CEREMONIAL_BEAST",
+              "deaths": 679,
+              "share": 0.21179039301310043,
+              "atBoss": 679
+            },
+            {
+              "enemy": "KIN_PRIEST",
+              "deaths": 476,
+              "share": 0.14847161572052403,
+              "atBoss": 476
+            },
+            {
+              "enemy": "FOGMOG",
+              "deaths": 175,
+              "share": 0.05458515283842795,
+              "atBoss": 0
+            },
+            {
+              "enemy": "BYGONE_EFFIGY",
+              "deaths": 119,
+              "share": 0.03711790393013101,
+              "atBoss": 0
+            },
+            {
+              "enemy": "KIN_FOLLOWER,KIN_PRIEST",
+              "deaths": 102,
+              "share": 0.031815346225826574,
+              "atBoss": 102
+            }
+          ]
+        },
+        {
+          "deaths": 5501,
+          "unrecorded": 86,
+          "top": [
+            {
+              "enemy": "THE_INSATIABLE",
+              "deaths": 956,
+              "share": 0.17378658425740776,
+              "atBoss": 956
+            },
+            {
+              "enemy": "KNOWLEDGE_DEMON",
+              "deaths": 512,
+              "share": 0.09307398654790038,
+              "atBoss": 512
+            },
+            {
+              "enemy": "CRUSHER,ROCKET",
+              "deaths": 482,
+              "share": 0.08762043264860934,
+              "atBoss": 482
+            },
+            {
+              "enemy": "TUNNELER",
+              "deaths": 381,
+              "share": 0.06926013452099618,
+              "atBoss": 0
+            },
+            {
+              "enemy": "THIEVING_HOPPER",
+              "deaths": 374,
+              "share": 0.06798763861116161,
+              "atBoss": 0
+            },
+            {
+              "enemy": "SPINY_TOAD",
+              "deaths": 332,
+              "share": 0.06035266315215415,
+              "atBoss": 0
+            }
+          ]
+        },
+        {
+          "deaths": 873,
+          "unrecorded": 139,
+          "top": [
+            {
+              "enemy": "AXEBOT,AXEBOT",
+              "deaths": 158,
+              "share": 0.18098510882016036,
+              "atBoss": 0
+            },
+            {
+              "enemy": "QUEEN",
+              "deaths": 79,
+              "share": 0.09049255441008018,
+              "atBoss": 79
+            },
+            {
+              "enemy": "AEONGLASS",
+              "deaths": 75,
+              "share": 0.0859106529209622,
+              "atBoss": 75
+            },
+            {
+              "enemy": "DEVOTED_SCULPTOR",
+              "deaths": 47,
+              "share": 0.053837342497136315,
+              "atBoss": 0
+            },
+            {
+              "enemy": "LIVING_SHIELD,TURRET_OPERATOR",
+              "deaths": 40,
+              "share": 0.045819014891179836,
+              "atBoss": 0
+            },
+            {
+              "enemy": "TURRET_OPERATOR",
+              "deaths": 38,
+              "share": 0.043528064146620846,
+              "atBoss": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a9",
+      "label": "Ascension 9",
+      "ascension": 9,
+      "pilot": "rules_v2 following the card values shown on the site",
+      "relicsKept": true,
+      "completed": 9934,
+      "goldMedian": 118,
+      "goldShare150": 0.2776879547291835,
+      "goldShare300": 0.024353274050121262,
+      "diedAct1": 7479,
+      "diedAct2": 2262,
+      "diedAct3": 155,
+      "bossAct1": 3098,
+      "bossAct2": 496,
+      "bossAct3": 61,
+      "won": 38,
+      "perClass": [
+        {
+          "character": "ironclad",
+          "batchId": "rules_v2-shownvals-ironclad-a9-veteran-keeprelics-val-n2000",
+          "sha256": "9093bd22142fe0cdca342b925aa5c5eab11737ab8bf526e79f3f87209a2bd364",
+          "completed": 1980,
+          "diedAct1": 1273,
+          "diedAct2": 600,
+          "diedAct3": 90,
+          "bossAct1": 744,
+          "bossAct2": 202,
+          "bossAct3": 36,
+          "won": 17,
+          "goldMedian": 117,
+          "goldShare150": 0.33163525216505346,
+          "goldShare300": 0.04279164544065207,
+          "deckMean": 20.491085073866532,
+          "relicsMean": 5.144167091186959
+        },
+        {
+          "character": "silent",
+          "batchId": "rules_v2-shownvals-silent-a9-veteran-keeprelics-val-n2000",
+          "sha256": "be14852fa4a154e6a0c8e142f8bcacf9747689ea5cd0a0d7931f082890b2ba60",
+          "completed": 2000,
+          "diedAct1": 1920,
+          "diedAct2": 79,
+          "diedAct3": 1,
+          "bossAct1": 515,
+          "bossAct2": 3,
+          "bossAct3": 0,
+          "won": 0,
+          "goldMedian": 117,
+          "goldShare150": 0.1895,
+          "goldShare300": 0.007,
+          "deckMean": 18.2835,
+          "relicsMean": 2.9935
+        },
+        {
+          "character": "regent",
+          "batchId": "rules_v2-shownvals-regent-a9-veteran-keeprelics-val-n2000",
+          "sha256": "c7c7dc6830c6711e58f8d9a35a2041e7c5eced1e6dc4be1b103fce17b3e6f570",
+          "completed": 1979,
+          "diedAct1": 1537,
+          "diedAct2": 427,
+          "diedAct3": 13,
+          "bossAct1": 747,
+          "bossAct2": 63,
+          "bossAct3": 3,
+          "won": 2,
+          "goldMedian": 117,
+          "goldShare150": 0.30045523520485584,
+          "goldShare300": 0.02276176024279211,
+          "deckMean": 18.145169448659587,
+          "relicsMean": 3.9711684370257965
+        },
+        {
+          "character": "necrobinder",
+          "batchId": "rules_v2-shownvals-necrobinder-a9-veteran-keeprelics-val-n2000",
+          "sha256": "7b3c4ad4a609dedcb8567e2936e34973b8e87668359f27d33f80594a1df545e3",
+          "completed": 1988,
+          "diedAct1": 1453,
+          "diedAct2": 528,
+          "diedAct3": 6,
+          "bossAct1": 635,
+          "bossAct2": 119,
+          "bossAct3": 1,
+          "won": 1,
+          "goldMedian": 118,
+          "goldShare150": 0.2888777050830398,
+          "goldShare300": 0.02315047810770005,
+          "deckMean": 19.082033215903373,
+          "relicsMean": 4.010568696527428
+        },
+        {
+          "character": "defect",
+          "batchId": "rules_v2-shownvals-defect-a9-veteran-keeprelics-val-n2000",
+          "sha256": "fb0583cb31e67b3438dc67ff8cb6b28563a3473ace9923c84a72718f7c17846c",
+          "completed": 1987,
+          "diedAct1": 1296,
+          "diedAct2": 628,
+          "diedAct3": 45,
+          "bossAct1": 457,
+          "bossAct2": 109,
+          "bossAct3": 21,
+          "won": 18,
+          "goldMedian": 119,
+          "goldShare150": 0.27932960893854747,
+          "goldShare300": 0.026409344845099034,
+          "deckMean": 19.24530218384967,
+          "relicsMean": 4.183341797866937
+        }
+      ],
+      "killersByAct": [
+        {
+          "deaths": 7479,
+          "unrecorded": 0,
+          "top": [
+            {
+              "enemy": "VANTOM",
+              "deaths": 1052,
+              "share": 0.14066051611177965,
+              "atBoss": 1052
+            },
+            {
+              "enemy": "CEREMONIAL_BEAST",
+              "deaths": 983,
+              "share": 0.13143468378125417,
+              "atBoss": 983
+            },
+            {
+              "enemy": "KIN_PRIEST",
+              "deaths": 780,
+              "share": 0.10429201764941837,
+              "atBoss": 780
+            },
+            {
+              "enemy": "BYGONE_EFFIGY",
+              "deaths": 440,
+              "share": 0.05883139457146677,
+              "atBoss": 0
+            },
+            {
+              "enemy": "FOGMOG",
+              "deaths": 432,
+              "share": 0.05776173285198556,
+              "atBoss": 0
+            },
+            {
+              "enemy": "BYRDONIS",
+              "deaths": 419,
+              "share": 0.05602353255782859,
+              "atBoss": 0
+            }
+          ]
+        },
+        {
+          "deaths": 2262,
+          "unrecorded": 60,
+          "top": [
+            {
+              "enemy": "TUNNELER",
+              "deaths": 304,
+              "share": 0.134394341290893,
+              "atBoss": 0
+            },
+            {
+              "enemy": "THIEVING_HOPPER",
+              "deaths": 258,
+              "share": 0.11405835543766578,
+              "atBoss": 0
+            },
+            {
+              "enemy": "THE_INSATIABLE",
+              "deaths": 205,
+              "share": 0.09062776304155615,
+              "atBoss": 205
+            },
+            {
+              "enemy": "SPINY_TOAD",
+              "deaths": 130,
+              "share": 0.05747126436781609,
+              "atBoss": 0
+            },
+            {
+              "enemy": "CRUSHER,ROCKET",
+              "deaths": 123,
+              "share": 0.054376657824933686,
+              "atBoss": 123
+            },
+            {
+              "enemy": "KNOWLEDGE_DEMON",
+              "deaths": 118,
+              "share": 0.052166224580017684,
+              "atBoss": 118
+            }
+          ]
+        },
+        {
+          "deaths": 155,
+          "unrecorded": 29,
+          "top": [
+            {
+              "enemy": "AXEBOT,AXEBOT",
+              "deaths": 28,
+              "share": 0.18064516129032257,
+              "atBoss": 0
+            },
+            {
+              "enemy": "AEONGLASS",
+              "deaths": 14,
+              "share": 0.09032258064516129,
+              "atBoss": 14
+            },
+            {
+              "enemy": "SCROLL_OF_BITING,SCROLL_OF_BITING",
+              "deaths": 9,
+              "share": 0.05806451612903226,
+              "atBoss": 0
+            },
+            {
+              "enemy": "TEST_SUBJECT",
+              "deaths": 9,
+              "share": 0.05806451612903226,
+              "atBoss": 9
+            },
+            {
+              "enemy": "TURRET_OPERATOR",
+              "deaths": 8,
+              "share": 0.05161290322580645,
+              "atBoss": 0
+            },
+            {
+              "enemy": "DEVOTED_SCULPTOR",
+              "deaths": 7,
+              "share": 0.04516129032258064,
+              "atBoss": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lateDrivers": {
+    "file": "experiments/insights/late-drivers.json",
+    "role": "exploratory",
+    "batches": [
+      {
+        "id": "explore4-defect-a0-keeprelics-dev-o5000-n5000",
+        "character": "Defect",
+        "completed": 4946
+      },
+      {
+        "id": "explore4-ironclad-a0-keeprelics-dev-o5000-n5000",
+        "character": "Ironclad",
+        "completed": 4921
+      },
+      {
+        "id": "explore4-necrobinder-a0-keeprelics-dev-o5000-n5000",
+        "character": "Necrobinder",
+        "completed": 4932
+      },
+      {
+        "id": "explore4-regent-a0-keeprelics-dev-o5000-n5000",
+        "character": "Regent",
+        "completed": 4917
+      },
+      {
+        "id": "explore4-silent-a0-keeprelics-dev-o5000-n5000",
+        "character": "Silent",
+        "completed": 4992
+      }
+    ],
+    "draws": 400,
+    "bossFloors": [
+      16,
+      31,
+      45
+    ],
+    "endpoints": {
+      "act1": {
+        "passed": 10549,
+        "rate": 0.5695389266817839,
+        "runs": 18522
+      },
+      "act2": {
+        "passed": 779,
+        "rate": 0.20419397116644822,
+        "runs": 3815
+      }
+    },
+    "classes": {
+      "Defect": {
+        "passedAct1Boss": 2753,
+        "passedAct2Boss": 201,
+        "reachedAct1Boss": 3850,
+        "reachedAct2Boss": 880,
+        "runs": 3850
+      },
+      "Ironclad": {
+        "passedAct1Boss": 2764,
+        "passedAct2Boss": 422,
+        "reachedAct1Boss": 4275,
+        "reachedAct2Boss": 1513,
+        "runs": 4275
+      },
+      "Necrobinder": {
+        "passedAct1Boss": 2384,
+        "passedAct2Boss": 89,
+        "reachedAct1Boss": 3829,
+        "reachedAct2Boss": 810,
+        "runs": 3829
+      },
+      "Regent": {
+        "passedAct1Boss": 1734,
+        "passedAct2Boss": 65,
+        "reachedAct1Boss": 3543,
+        "reachedAct2Boss": 494,
+        "runs": 3543
+      },
+      "Silent": {
+        "passedAct1Boss": 914,
+        "passedAct2Boss": 2,
+        "reachedAct1Boss": 3025,
+        "reachedAct2Boss": 118,
+        "runs": 3025
+      }
+    },
+    "features": [
+      {
+        "id": "attacks",
+        "label": "Attack cards",
+        "unit": "per extra card",
+        "act1": {
+          "oddsRatio": 1.3115575763245662,
+          "ci95": [
+            1.2815735829575483,
+            1.3463581421988364
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.0762745959585294,
+          "ci95": [
+            1.0359161439723132,
+            1.114881888137835
+          ]
+        },
+        "difference": {
+          "beta": -0.19770979059911595,
+          "ci95": [
+            -0.242234433198515,
+            -0.15558490356235827
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "skills",
+        "label": "Skill cards",
+        "unit": "per extra card",
+        "act1": {
+          "oddsRatio": 1.0803244804754184,
+          "ci95": [
+            1.0523770577730527,
+            1.1085058542907194
+          ]
+        },
+        "act2": {
+          "oddsRatio": 0.9892653945481764,
+          "ci95": [
+            0.9455983295003711,
+            1.0314048112902472
+          ]
+        },
+        "difference": {
+          "beta": -0.0880540778960021,
+          "ci95": [
+            -0.140501803185398,
+            -0.03609860488960072
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "powers",
+        "label": "Power cards",
+        "unit": "per extra card",
+        "act1": {
+          "oddsRatio": 1.2682029910689432,
+          "ci95": [
+            1.1982757959532948,
+            1.3527389565431236
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.003157756851562,
+          "ci95": [
+            0.9126008617164398,
+            1.1057181229458584
+          ]
+        },
+        "difference": {
+          "beta": -0.23444814918780393,
+          "ci95": [
+            -0.3529131217588152,
+            -0.12093903557192942
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "other",
+        "label": "Curses, statuses and quest cards",
+        "unit": "per extra card",
+        "act1": {
+          "oddsRatio": 1.0061431725799255,
+          "ci95": [
+            0.9595158720293777,
+            1.0516907463240932
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.030387326798265,
+          "ci95": [
+            0.9620803764689551,
+            1.0971575202687442
+          ]
+        },
+        "difference": {
+          "beta": 0.023810396770264426,
+          "ci95": [
+            -0.05592697249675197,
+            0.09795104418282591
+          ]
+        },
+        "matters": "same",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "starters",
+        "label": "Starting cards still in the deck (Strikes, Defends and the class's other basics)",
+        "unit": "per extra card",
+        "act1": {
+          "oddsRatio": 0.7018869469219126,
+          "ci95": [
+            0.6535367622870354,
+            0.7495755475165105
+          ]
+        },
+        "act2": {
+          "oddsRatio": 0.9503408627249943,
+          "ci95": [
+            0.9110187325190607,
+            0.9897219073972366
+          ]
+        },
+        "difference": {
+          "beta": 0.3030483763226353,
+          "ci95": [
+            0.2232948129855458,
+            0.38042556851527715
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "upgraded",
+        "label": "Upgraded cards",
+        "unit": "per extra upgraded card",
+        "act1": {
+          "oddsRatio": 1.2417725297781321,
+          "ci95": [
+            1.2214631962315663,
+            1.2610495493863245
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.0414979247545813,
+          "ci95": [
+            1.02600787048119,
+            1.0586797753378092
+          ]
+        },
+        "difference": {
+          "beta": -0.17587982924830453,
+          "ci95": [
+            -0.19669548370998713,
+            -0.15458491248599993
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "hp",
+        "label": "HP when the boss fight starts",
+        "unit": "per ten percentage points of the maximum",
+        "act1": {
+          "oddsRatio": 1.8248547902977201,
+          "ci95": [
+            1.7756647753034596,
+            1.8767904770498705
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.613151073304674,
+          "ci95": [
+            1.4803073454550035,
+            1.7876882950560558
+          ]
+        },
+        "difference": {
+          "beta": -0.12331096232211103,
+          "ci95": [
+            -0.20813456381594592,
+            -0.022863849861418557
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 2,
+        "classesAlone": 3
+      },
+      {
+        "id": "max_hp",
+        "label": "Maximum HP",
+        "unit": "per ten more",
+        "act1": {
+          "oddsRatio": 1.5114422821817943,
+          "ci95": [
+            1.4061595377823215,
+            1.6610169341612075
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.077907417720213,
+          "ci95": [
+            0.9568427448981484,
+            1.210308547765767
+          ]
+        },
+        "difference": {
+          "beta": -0.3380427632983244,
+          "ci95": [
+            -0.5084892618724598,
+            -0.201665977370428
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "potions",
+        "label": "Potions held",
+        "unit": "per extra potion",
+        "act1": {
+          "oddsRatio": 1.6718620875399488,
+          "ci95": [
+            1.60996337962599,
+            1.7381288173445326
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.4739216986208832,
+          "ci95": [
+            1.3648878825768063,
+            1.6160932442646996
+          ]
+        },
+        "difference": {
+          "beta": -0.12601135707114625,
+          "ci95": [
+            -0.22167321425040193,
+            -0.03621492989481727
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "relics",
+        "label": "Relics held",
+        "unit": "per extra relic",
+        "act1": {
+          "oddsRatio": 1.3549057420107748,
+          "ci95": [
+            1.2916274589151298,
+            1.43626267843504
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.0036829682115105,
+          "ci95": [
+            0.9443302466900348,
+            1.0647954270436821
+          ]
+        },
+        "difference": {
+          "beta": -0.30005568612989636,
+          "ci95": [
+            -0.3912151565745022,
+            -0.2190774838796445
+          ]
+        },
+        "matters": "earlier",
+        "classesAgreeing": 3,
+        "classesAlone": 3
+      },
+      {
+        "id": "gold",
+        "label": "Gold unspent",
+        "unit": "per hundred more",
+        "act1": {
+          "oddsRatio": 1.0776655430866693,
+          "ci95": [
+            1.029905527273627,
+            1.1306686685973413
+          ]
+        },
+        "act2": {
+          "oddsRatio": 1.0512123315716644,
+          "ci95": [
+            0.9673908159202408,
+            1.1331701803910763
+          ]
+        },
+        "difference": {
+          "beta": -0.024853067843681756,
+          "ci95": [
+            -0.1262939132354316,
+            0.06732833434893133
+          ]
+        },
+        "matters": "same",
+        "classesAgreeing": 2,
+        "classesAlone": 3
+      }
+    ]
+  },
+  "ascension": {
+    "pilots": {
+      "first": "follows the card values shown on the site",
+      "second": "the hand-written rules"
+    },
+    "pooled": {
+      "a0": {
+        "first": 0.6706586826347305,
+        "second": 0.41183150939500307,
+        "pairs": 9686
+      },
+      "a9": {
+        "first": 0.24611346658590752,
+        "second": 0.09600242277407632,
+        "pairs": 9906
+      }
+    },
+    "perClass": [
+      {
+        "character": "ironclad",
+        "a0": {
+          "first": 0.8025276461295419,
+          "second": 0.6129541864139021,
+          "pairs": 1899
+        },
+        "a9": {
+          "first": 0.3541666666666667,
+          "second": 0.18699186991869918,
+          "pairs": 1968
+        }
+      },
+      {
+        "character": "silent",
+        "a0": {
+          "first": 0.33182275931520644,
+          "second": 0.20342396777442096,
+          "pairs": 1986
+        },
+        "a9": {
+          "first": 0.039559339008512766,
+          "second": 0.01902854281422133,
+          "pairs": 1997
+        }
+      },
+      {
+        "character": "regent",
+        "a0": {
+          "first": 0.6385729058945191,
+          "second": 0.21923474663908996,
+          "pairs": 1934
+        },
+        "a9": {
+          "first": 0.2233502538071066,
+          "second": 0.049746192893401014,
+          "pairs": 1970
+        }
+      },
+      {
+        "character": "necrobinder",
+        "a0": {
+          "first": 0.7587448559670782,
+          "second": 0.5781893004115226,
+          "pairs": 1944
+        },
+        "a9": {
+          "first": 0.2680100755667506,
+          "second": 0.16070528967254408,
+          "pairs": 1985
+        }
+      },
+      {
+        "character": "defect",
+        "a0": {
+          "first": 0.8335933437337494,
+          "second": 0.4539781591263651,
+          "pairs": 1923
+        },
+        "a9": {
+          "first": 0.3474320241691843,
+          "second": 0.06445115810674723,
+          "pairs": 1986
+        }
+      }
+    ]
+  },
+  "inventory": {
+    "build": "sts2-main-0.107.1",
+    "contentSha256": "3b4938cdd391242f495c0b10af3a8fc3919f47a4a1259da4409ec2769c4ebe81",
+    "counts": {
+      "cards": {
+        "total": 577
+      },
+      "characters": {
+        "total": 5
+      },
+      "enchantments": {
+        "total": 22
+      },
+      "events": {
+        "total": 66
+      },
+      "monsters": {
+        "byType": {
+          "Boss": 14,
+          "Elite": 13,
+          "Normal": 78,
+          "Weak": 6
+        },
+        "total": 111
+      },
+      "potions": {
+        "byRarity": {
+          "Common": 20,
+          "Event": 2,
+          "Rare": 20,
+          "Token": 1,
+          "Uncommon": 20
+        },
+        "total": 63
+      },
+      "powers": {
+        "total": 241
+      },
+      "relics": {
+        "total": 296
+      }
+    },
+    "kind": "game-inventory",
+    "note": "Counts by category only: no name, id or text of the game is stored here (docs/IP-COMPLIANCE.md).",
+    "schema": 1,
+    "source": {
+      "id": "spire-archive",
+      "retrievedAt": "2026-10-25",
+      "sha": "4e6b0e040ccd00eb04fb1ab7fb0b298c222d2f29",
+      "snapshot": "data/sts2"
+    }
+  }
+}

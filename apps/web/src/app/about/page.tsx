@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 
 const INCLUDED = [
   "Original code, mathematics, tests and interface design.",
-  "Factual identifiers for cards: canonical id, display name, class, rarity, cost and type, with provenance.",
+  "Factual identifiers: canonical ids and display names of cards, relics and enemies, and the class, rarity, cost and type of cards, with provenance.",
   "Our own short role tags such as “attack”, “block” or “draw”, written by us.",
-  "Aggregated results from our own simulator experiments, always labelled as simulator output.",
+  "Aggregated results from our own simulator experiments (counts, shares, intervals, fitted odds ratios), always labelled as simulator output.",
   "A hand-drawn SVG illustration made for this site.",
 ] as const;
 

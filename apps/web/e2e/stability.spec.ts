@@ -8,7 +8,7 @@ import { expect, test, type BrowserContext, type Page } from "@playwright/test";
  */
 const MAX_SHIFT = 0.02;
 
-const ROUTES = ["/", "/advisor", "/odds", "/routes", "/methods", "/codex", "/about"];
+const ROUTES = ["/", "/advisor", "/odds", "/routes", "/methods", "/codex", "/insights", "/about"];
 
 async function observeShifts(page: Page): Promise<void> {
   await page.addInitScript(() => {

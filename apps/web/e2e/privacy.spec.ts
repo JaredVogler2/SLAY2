@@ -16,6 +16,7 @@ const ROUTES = [
   "/odds?tab=shop",
   "/routes?a=M%3FMER&b=M%3F%3FRE",
   "/codex",
+  "/insights",
   "/methods",
   "/about",
 ];

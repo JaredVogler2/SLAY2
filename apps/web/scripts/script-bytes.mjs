@@ -20,11 +20,12 @@ const BUDGET_KB_GZIPPED = {
   codex: 285,
   methods: 192,
   about: 192,
+  insights: 192,
 };
 
 const check = process.argv.includes("--check");
 const next = join(import.meta.dirname, "..", ".next");
-const pages = (process.env.PAGES ?? "index,advisor,odds,routes,codex,methods,about").split(",");
+const pages = (process.env.PAGES ?? "index,advisor,odds,routes,codex,insights,methods,about").split(",");
 
 const rows = [];
 for (const page of pages) {
