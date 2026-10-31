@@ -14,7 +14,9 @@ not "values from scratch": the values the site shows are the prior, and the data
 
 where ``kappa`` (not penalised, kept at 0 or more: a negative estimate is set to 0) scales the shown ranking and
 ``delta_c`` is what is left for one card (ridge-penalised, the penalty chosen by 5-fold cross-validation grouped by game seed). The
-covariates are those of ``cardvalue.design`` (HP share, maximum HP, potions, upgraded cards, the boss, the relics held). A class whose
+covariates are those of ``cardvalue.design`` (HP share, maximum HP, potions, upgraded cards, the boss, the relics held); the boss and relic
+indicators carry a ridge penalty (``LAMBDA_GRID``, chosen on the scale-only model by the same cross-validation: at the second boss a relic held in a
+dozen fights, none of which passed, separates the outcome completely without it, which is what the first run of this fit showed, ADR-060 addendum A). A class whose
 cross-validation does not find that the card-specific part predicts held-out Act-2 boss fights better than the scale alone (``GATE`` nats per
 boss fight) keeps its shown values: ``fitted`` is false and every ``beta`` is the shown one. ``scaleOnly`` is the scale of the shown
 ranking when nothing card-specific is allowed (the cross-validation's baseline model), with a bootstrap interval over game seeds: it is the
@@ -43,6 +45,8 @@ from . import cardvalue as cv
 
 SCHEMA = 1
 L2_GRID = (1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0)
+LAMBDA_GRID = (1.0, 3.0, 10.0, 30.0, 100.0)   # the ridge on the relic and boss indicators (addendum A of ADR-060)
+TINY = 1e-6                                   # the hair of a penalty on the other covariates, as in cardvalue.py
 GATE = 0.002        # nats per boss fight: the best penalty has to beat the scale-only model by this much, held out
 DRAWS = 200
 BOOTSTRAP_SEED = 20261031
@@ -66,11 +70,58 @@ def design(records: list[dict], vocab: dict, shown: dict[str, float]) -> tuple[n
     return X, y, g, names, penalised
 
 
+def lam_vector(names: list[str], penalised: np.ndarray, l2: float, lam_ind: float) -> np.ndarray:
+    """The ridge penalty of every column: ``l2`` on the card deviations, ``lam_ind`` on the relic and boss indicators, a hair on the rest."""
+    lam = np.full(len(names), TINY)
+    for j, name in enumerate(names):
+        if name.startswith(("relic:", "boss:")):
+            lam[j] = lam_ind
+        elif penalised[j]:
+            lam[j] = l2
+    return lam
+
+
+def fit_logistic(X: np.ndarray, y: np.ndarray, lam: np.ndarray, iters: int = 40, tol: float = 1e-8) -> np.ndarray:
+    """Ridge logistic regression by Newton steps with one penalty per column (``cardvalue.fit_logistic`` with a vector in place of a mask)."""
+    beta = np.zeros(X.shape[1])
+    prev = -np.inf
+    for _ in range(iters):
+        p = cv.predict(X, beta)
+        ll = float(np.sum(y * np.log(p + 1e-12) + (1 - y) * np.log(1 - p + 1e-12)) - 0.5 * np.sum(lam * beta * beta))
+        grad = X.T @ (y - p) - lam * beta
+        hess = (X * (p * (1 - p))[:, None]).T @ X + np.diag(lam)
+        beta = beta + np.linalg.solve(hess, grad)
+        if abs(ll - prev) < tol * (1 + abs(ll)):
+            break
+        prev = ll
+    return beta
+
+
+def held_out_loss(X: np.ndarray, y: np.ndarray, g: np.ndarray, lam: np.ndarray, folds: int = cv.FOLDS) -> float:
+    """Held-out log loss per boss fight, five folds grouped by game seed (a seed is never on both sides)."""
+    fold = g % folds
+    total, n = 0.0, 0
+    for k in range(folds):
+        tr, te = fold != k, fold == k
+        total += cv.log_loss(y[te], cv.predict(X[te], fit_logistic(X[tr], y[tr], lam))) * int(te.sum())
+        n += int(te.sum())
+    return total / max(1, n)
+
+
+def _argmin(losses: dict[float, float]) -> float:
+    """The grid value with the lowest loss; among equal losses the larger penalty (the simpler model)."""
+    return min(losses, key=lambda k: (losses[k], -k))
+
+
 def fit_records(
-    records: list[dict], shown: dict[str, float], *, l2_grid: tuple[float, ...] = L2_GRID, gate: float = GATE, draws: int = DRAWS,
-    seed: int = BOOTSTRAP_SEED, min_fights: int = MIN_FIGHTS, min_outcomes: int = MIN_OUTCOMES,
+    records: list[dict], shown: dict[str, float], *, l2_grid: tuple[float, ...] = L2_GRID, lam_grid: tuple[float, ...] = LAMBDA_GRID,
+    gate: float = GATE, draws: int = DRAWS, seed: int = BOOTSTRAP_SEED, min_fights: int = MIN_FIGHTS, min_outcomes: int = MIN_OUTCOMES,
 ) -> dict:
-    """The fit for one class: kappa, the deviations, the cross-validation, the gate, and the value of every card (``cards``)."""
+    """The fit for one class: kappa, the deviations, the cross-validation, the gate, and the value of every card (``cards``).
+
+    The relic and boss indicators carry a ridge penalty ``lam_ind`` (addendum A of ADR-060), chosen from ``lam_grid`` by the grouped
+    cross-validation of the scale-only model, which has no card terms and so cannot see the cards; it is the same in the scale-only model (the
+    gate's baseline) and in the full one."""
     vocab = cv.vocabulary(records)
     shown_cards = sorted(shown)
     out: dict = {
@@ -87,50 +138,66 @@ def fit_records(
         out["gate"].update(passed=False, bestL2=None, gain=None)
         return out
     X, y, g, names, penalised = design(records, vocab, shown)
-    cross = cv.cross_validate(X, y, g, penalised, l2_grid=l2_grid)
-    best = float(cross["best_l2"])
-    baseline = float(cross["baseline_log_loss"])
-    gain = baseline - float(cross["l2"][str(best)]["log_loss"])
-    passed = bool(gain >= gate)
-    out["crossValidation"] = {"folds": cv.FOLDS, "baselineLogLoss": baseline, "byPenalty": cross["l2"], "bestL2": best, "gain": gain}
-    out["gate"].update(passed=passed, bestL2=best, gain=gain)
     j_prior = names.index("prior")
-    beta = cv.fit_logistic(X, y, best, penalised)
+    base = np.flatnonzero(~penalised)
+    Xb, names_b = X[:, base], [names[j] for j in base]
+    no_cards = np.zeros(len(base), dtype=bool)
+    # 1. the indicators' penalty, from the scale-only model alone
+    by_lam = {lam: held_out_loss(Xb, y, g, lam_vector(names_b, no_cards, 0.0, lam)) for lam in lam_grid}
+    lam_ind = _argmin(by_lam)
+    baseline = by_lam[lam_ind]
+    # 2. the card deviations' penalty, from the full model
+    by_l2 = {l2: held_out_loss(X, y, g, lam_vector(names, penalised, l2, lam_ind)) for l2 in l2_grid}
+    best = _argmin(by_l2)
+    gain = baseline - by_l2[best]
+    passed = bool(gain >= gate)
+    out["crossValidation"] = {
+        "folds": cv.FOLDS, "baselineLogLoss": baseline, "baselineLogLossOfTheBaseRate": cv.log_loss(y, np.full(len(y), y.mean())),
+        "byPenalty": {str(k): {"log_loss": v} for k, v in by_l2.items()}, "bestL2": best, "gain": gain,
+        "indicatorPenalty": {"grid": list(lam_grid), "chosen": lam_ind, "byPenalty": {str(k): {"log_loss": v} for k, v in by_lam.items()}},
+    }
+    out["gate"].update(passed=passed, bestL2=best, gain=gain)
+    lam = lam_vector(names, penalised, best, lam_ind)
+    beta = fit_logistic(X, y, lam)
     clipped = bool(beta[j_prior] < 0)
     if clipped:  # a negative scale would turn the shown ranking upside down: drop the term and fit the deviations alone
         keep = [j for j in range(len(names)) if j != j_prior]
-        sub = cv.fit_logistic(X[:, keep], y, best, penalised[keep])
-        beta = np.insert(sub, j_prior, 0.0)
-    draws_b = cv.bootstrap(X, y, g, penalised, best, draws, seed) if draws else np.empty((0, len(names)))
-    if clipped and draws:
-        draws_b[:, j_prior] = np.maximum(draws_b[:, j_prior], 0.0)
-    kappa = float(beta[j_prior])
-    kappa_ci = [float(v) for v in np.percentile(draws_b[:, j_prior], [2.5, 97.5])] if draws else None
-    # the scale of the shown ranking when nothing card-specific is allowed (the cross-validation's baseline model): the number to read as
-    # "how much of the shown ranking carries over"; the joint kappa above is not, because with a weak penalty the deviations can absorb it
-    base = np.flatnonzero(~penalised)
+        beta = np.insert(fit_logistic(X[:, keep], y, lam[keep]), j_prior, 0.0)
+    lam_b = lam_vector(names_b, no_cards, 0.0, lam_ind)
     j0 = int(np.flatnonzero(base == j_prior)[0])
-    off = np.zeros(len(base), dtype=bool)
-    scale = float(cv.fit_logistic(X[:, base], y, 0.0, off)[j0])
-    scale_ci = None
+    scale = float(fit_logistic(Xb, y, lam_b)[j0])
+    draws_full = np.empty((0, len(names)))
+    draws_scale = np.empty(0)
     if draws:
-        scale_draws = cv.bootstrap(X[:, base], y, g, off, 0.0, draws, seed)[:, j0]
-        scale_ci = [float(v) for v in np.percentile(scale_draws, [2.5, 97.5])]
+        rng = np.random.default_rng(seed)
+        seeds = np.unique(g)
+        rows_of = {s: np.flatnonzero(g == s) for s in seeds}
+        full, small = [], []
+        for _ in range(draws):  # whole game seeds are resampled; the same resampled runs serve the full and the scale-only model
+            idx = np.concatenate([rows_of[s] for s in rng.choice(seeds, size=len(seeds), replace=True)])
+            full.append(fit_logistic(X[idx], y[idx], lam))
+            small.append(fit_logistic(Xb[idx], y[idx], lam_b)[j0])
+        draws_full, draws_scale = np.asarray(full), np.asarray(small)
+        if clipped:
+            draws_full[:, j_prior] = np.maximum(draws_full[:, j_prior], 0.0)
+    kappa = float(beta[j_prior])
+    pct = lambda a: [float(v) for v in np.percentile(a, [2.5, 97.5])]  # noqa: E731
     delta: dict[str, dict] = {}
     for j, name in enumerate(names):
         if name.startswith("card:"):
             cid = name[5:]
             row = {"delta": float(beta[j]), "games_with_card": int(vocab["exposure"].get(cid, 0))}
             if draws:
-                lo, hi = np.percentile(draws_b[:, j], [2.5, 97.5])
-                row["delta_ci95"] = [float(lo), float(hi)]
+                row["delta_ci95"] = pct(draws_full[:, j])
             delta[cid] = row
     out.update(
         fitted=passed, reason=None if passed else "the card-specific part does not predict held-out Act-2 boss fights better than the shown ranking's scale alone: the shown values are kept",
-        kappa={"estimate": kappa, "ci95": kappa_ci, "clippedAtZero": clipped},
-        scaleOnly={"estimate": scale, "ci95": scale_ci},
+        kappa={"estimate": kappa, "ci95": pct(draws_full[:, j_prior]) if draws else None, "clippedAtZero": clipped},
+        # the scale of the shown ranking when nothing card-specific is allowed (the gate's baseline model): the number to read as "how much of the
+        # shown ranking carries over"; the joint kappa above is not, because with a weak penalty the deviations can absorb it
+        scaleOnly={"estimate": scale, "ci95": pct(draws_scale) if draws else None},
         covariates={n: float(beta[j]) for j, n in enumerate(names) if not n.startswith("card:")},
-        l2=best, bootstrap={"draws": draws, "seed": seed, "unit": "game seed"},
+        l2=best, indicatorPenalty=lam_ind, bootstrap={"draws": draws, "seed": seed, "unit": "game seed"},
         cards=_values(shown_cards, shown, delta, kappa) if passed else _shown_cards(shown_cards, shown, delta),
         deviationsKept=bool(passed),
     )

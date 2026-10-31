@@ -10,9 +10,9 @@ git fetch -q origin 2>/dev/null || fail "cannot reach the remote to check that t
 ADR=$(adr_section)
 [ -n "$ADR" ] || fail "docs/DECISIONS.md does not carry ADR-060"
 
-# the registration is complete: part 2 (the frozen choices) is in the record, and the code and data the arms read are those of the commit that carries it
-REG=${REG:-$(git log -S'Frozen for the held-out run' --format=%H -- docs/DECISIONS.md | tail -1)}
-[ -n "$REG" ] || fail "cannot find the commit that carries ADR-060 part 2 (the text 'Frozen for the held-out run')"
+# the registration is complete: part 2 (the frozen choices; its heading text is the marker, which nothing before it contains) is in the record, and the code and data the arms read are those of the commit that carries it
+REG=${REG:-$(git log -S'Frozen choices of ADR-060 (part 2)' --format=%H -- docs/DECISIONS.md | tail -1)}
+[ -n "$REG" ] || fail "cannot find the commit that carries ADR-060 part 2 (the text 'Frozen choices of ADR-060 (part 2)')"
 git merge-base --is-ancestor "$REG" HEAD || fail "the registration commit $REG is not an ancestor of HEAD"
 # shellcheck disable=SC2086
 git diff --quiet "$REG" HEAD -- $PINNED_PATHS experiments/act2/dev-selection.json || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $(git diff --name-only "$REG" HEAD -- $PINNED_PATHS experiments/act2/dev-selection.json | head -5 | tr '\n' ' ')"

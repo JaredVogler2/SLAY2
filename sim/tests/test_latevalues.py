@@ -102,6 +102,50 @@ def test_too_few_runs_or_too_few_passes_fit_nothing_and_keep_the_shown_values():
     assert lv.fit_records(rare, SHOWN, draws=0)["fitted"] is False
 
 
+def rare_relic_world(n: int, seed: int, relics: int = 80) -> list[dict]:
+    """A class like Regent at the second boss: few passes (about 12 %), many relics each held in a few fights, none of them with any effect."""
+    rng = np.random.default_rng(seed)
+    out = world(n, seed, kappa=0.3, intercept=-2.3)
+    ids = [f"RELIC_{i:02d}" for i in range(relics)]
+    for r in out:
+        r["relics"] = ["BURNING_BLOOD"] + [x for x in ids if rng.random() < 0.04]
+    return out
+
+
+def test_relics_held_in_a_few_fights_do_not_break_the_baseline_or_the_intervals():
+    """The first run of the fit (ADR-060 addendum A): a relic held in a dozen fights that none passed separates the outcome, the scale-only model
+    scored 3.66 nats held out for Regent (a model of the base rate scores 0.39) and the intervals of the scale were 10**9 wide."""
+    recs = rare_relic_world(500, 11)
+    vocab = cv.vocabulary(recs)
+    X, y, g, names, pen = lv.design(recs, vocab, SHOWN)
+    base = np.flatnonzero(~pen)
+    Xb, names_b = X[:, base], [names[j] for j in base]
+    none = np.zeros(len(base), dtype=bool)
+    assert sum(n.startswith("relic:") for n in names_b) > 40            # the world has the many rare relics of a real class
+    entropy = cv.log_loss(y, np.full(len(y), y.mean()))
+    bare = lv.held_out_loss(Xb, y, g, lv.lam_vector(names_b, none, 0.0, lv.TINY))      # the specification of the first run
+    ridged = lv.held_out_loss(Xb, y, g, lv.lam_vector(names_b, none, 0.0, 10.0))
+    assert bare > 2 * entropy, (bare, entropy)      # without a penalty on the indicators the baseline is far worse than the base rate
+    assert ridged < 1.15 * entropy, (ridged, entropy)
+    fit = lv.fit_records(recs, SHOWN, draws=20, seed=4)
+    cvr = fit["crossValidation"]
+    assert cvr["baselineLogLoss"] < 1.15 * cvr["baselineLogLossOfTheBaseRate"] and cvr["indicatorPenalty"]["chosen"] >= 3.0
+    lo, hi = fit["scaleOnly"]["ci95"]
+    assert -20 < lo < fit["scaleOnly"]["estimate"] < hi < 20 and -20 < fit["kappa"]["ci95"][0] and fit["kappa"]["ci95"][1] < 20
+    assert fit["fitted"] is False and fit["gate"]["gain"] < lv.GATE          # and nothing card-specific is found where nothing is there
+
+
+def test_the_indicator_penalty_is_chosen_without_the_cards_and_applied_to_both_models():
+    recs = rare_relic_world(500, 12)
+    fit = lv.fit_records(recs, SHOWN, draws=0)
+    pen = fit["crossValidation"]["indicatorPenalty"]
+    assert pen["grid"] == list(lv.LAMBDA_GRID) and pen["chosen"] in lv.LAMBDA_GRID
+    assert pen["byPenalty"][str(pen["chosen"])]["log_loss"] == fit["crossValidation"]["baselineLogLoss"]   # the gate's baseline is the best this grid does
+    assert fit["indicatorPenalty"] == pen["chosen"] and fit["l2"] in lv.L2_GRID
+    lam = lv.lam_vector(["intercept", "relic:X", "boss:Y", "prior", "card:Z"], np.array([False, False, False, False, True]), 7.0, 3.0)
+    assert list(lam) == [lv.TINY, 3.0, 3.0, lv.TINY, 7.0]
+
+
 def test_the_fit_is_reproducible():
     a = lv.fit_records(world(3000, 6, kappa=0.4, delta={"CARD_01": 0.7}), SHOWN, draws=20, seed=11)
     b = lv.fit_records(world(3000, 6, kappa=0.4, delta={"CARD_01": 0.7}), SHOWN, draws=20, seed=11)
