@@ -53,14 +53,18 @@ function Stack({
         {segs.map((s) => (
           <div
             key={s.id}
-            className="num flex items-center justify-center overflow-hidden text-[0.68rem] font-medium"
+            className="@container/seg num flex items-center justify-center overflow-hidden text-[0.68rem] font-medium"
             style={{
               width: `${String(s.share * 100)}%`,
               background: COLOR[s.id],
               color: TEXT_ON[s.id],
             }}
           >
-            {s.share >= 0.07 ? String(Math.round(s.share * 100)) : ""}
+            {/* the number is shown only where the segment is wide enough to hold it: the width is asked in rem, so it follows the
+                reader's text size, and a segment too narrow for its number shows none (the share is in the name of the bar and in the table) */}
+            <span className="hidden @min-[1.5rem]/seg:inline">
+              {String(Math.round(s.share * 100))}
+            </span>
           </div>
         ))}
       </div>
