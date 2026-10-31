@@ -111,7 +111,7 @@ was run once; re-computing it from the committed games changes nothing and is no
 
 ### The Insights page, command by command
 
-The page plays no game; it reads committed files (ADR-059). Its one new analysis needs no simulator and is deterministic: it was rebuilt a second time from the committed batches and came out byte for byte the committed file (`sim/tests/test_latedrivers.py` requires it).
+The page plays no game; it reads committed files (ADR-059). Its one new analysis needs no simulator. Rebuilt on the machine that wrote it, it comes out byte for byte the committed file; on another machine (another OpenBLAS kernel) every count, id and hash is the same and the fitted numbers differ in their last digits, by up to about 5e-14 relative, so `sim/tests/test_latedrivers.py` requires equality to 1e-9 for those.
 
 ```bash
 # the exploratory reading of the Act-1 and Act-2 boss fights, from the five committed exploration batches: about 9 s, writes experiments/insights/late-drivers.json

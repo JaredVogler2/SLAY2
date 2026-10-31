@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -154,6 +155,48 @@ def test_the_analysis_is_reproducible_from_its_seed() -> None:
     assert a == b
 
 
+def _assert_same(expected: object, actual: object, path: str = "", rel: float = 1e-9) -> None:
+    """Equal in structure, types, ids, counts and hashes; fitted numbers equal to a relative `rel`.
+
+    The last digits of a float fit depend on the machine's BLAS: one numpy rebuilds this file with the AVX-512, AVX2 and SSE kernels of
+    OpenBLAS to values that differ by up to 5e-14 (relative) in 185 to 191 of its 234 floats, and the continuous-integration runner's
+    numbers differ from the committed ones the same way. 1e-9 is far above that and far below anything a changed batch, seed or line of
+    code would move.
+    """
+    if isinstance(expected, dict):
+        assert isinstance(actual, dict), f"{path}: {type(actual).__name__} is not a mapping"
+        assert expected.keys() == actual.keys(), f"{path}: keys differ by {sorted(expected.keys() ^ actual.keys())}"
+        for key in expected:
+            _assert_same(expected[key], actual[key], f"{path}/{key}", rel)
+    elif isinstance(expected, list):
+        assert isinstance(actual, list) and len(expected) == len(actual), f"{path}: lists of different length"
+        for i, (e, a) in enumerate(zip(expected, actual)):
+            _assert_same(e, a, f"{path}[{i}]", rel)
+    elif isinstance(expected, float):
+        assert isinstance(actual, float), f"{path}: {expected!r} is a float and {actual!r} is not"
+        assert math.isclose(expected, actual, rel_tol=rel, abs_tol=1e-12), f"{path}: {expected!r} vs {actual!r}"
+    else:
+        assert type(expected) is type(actual) and expected == actual, f"{path}: {expected!r} != {actual!r}"
+
+
+def test_the_comparison_of_two_fits_ignores_rounding_and_nothing_else() -> None:
+    base = {"n": 3, "id": "a", "xs": [1.0, 2.5], "d": {"beta": 0.123456789012345}, "none": None}
+    rounded = {**base, "xs": [1.0 + 1e-13, 2.5], "d": {"beta": 0.123456789012345 * (1 + 5e-14)}}
+    _assert_same(base, rounded)
+    for bad in (
+        {**base, "n": 4},  # a count
+        {**base, "n": 3.0},  # a count that became a float
+        {**base, "id": "b"},  # an id
+        {**base, "xs": [1.0, 2.5, 3.0]},  # a list of another length
+        {**base, "xs": [1.0 + 1e-6, 2.5]},  # a fitted number that moved
+        {**base, "d": {}},  # a missing key
+        {**base, "extra": 1},  # an extra key
+        {**base, "none": 0.0},  # None became a number
+    ):
+        with pytest.raises(AssertionError):
+            _assert_same(base, bad)
+
+
 def test_the_committed_file_is_what_the_committed_batches_give() -> None:
     committed = json.loads(COMMITTED.read_text(encoding="utf-8"))
     assert committed["kind"] == "late-drivers" and committed["role"] == "exploratory"
@@ -180,6 +223,6 @@ def test_the_committed_file_is_what_the_committed_batches_give() -> None:
     assert (committed["endpoints"]["act1"]["runs"], committed["endpoints"]["act1"]["passed"]) == (reach[0], passed[0])
     assert (committed["endpoints"]["act2"]["runs"], committed["endpoints"]["act2"]["passed"]) == (reach[1], passed[1])
     assert all(len(s) == 1 for s in floors.values()) and committed["bossFloors"] == [next(iter(floors[a])) for a in (0, 1, 2)]
-    # and the whole file is what the module writes now (the same draws, the same seed)
-    rebuilt = ld.build(batches, CATALOG, committed["bootstrap"]["draws"])
-    assert rebuilt == committed
+    # and the whole file is what the module writes now (the same draws, the same seed), up to the rounding of the machine's BLAS
+    rebuilt = json.loads(json.dumps(ld.build(batches, CATALOG, committed["bootstrap"]["draws"])))
+    _assert_same(committed, rebuilt)
