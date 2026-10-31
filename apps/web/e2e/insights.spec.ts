@@ -11,6 +11,7 @@ const SECTIONS = [
   "levers",
   "runs-end",
   "second-boss",
+  "later",
   "cards",
   "synergy",
   "ascension",

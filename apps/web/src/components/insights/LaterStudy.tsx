@@ -365,8 +365,8 @@ export function LaterStudy({ data, nameOf }: { data: Act2Data; nameOf: NameOf })
         The card values on this site are for getting past the first boss. This study asked three
         things about what happens after it, and fixed how each would be read before any game of it
         was played ({data.adr}). Every answer is about the rules-playing pilots of this project in a
-        simulator that has never been compared with the live game; none is about winning, which
-        these pilots do very rarely, or about a player.
+        simulator that is unverified against the live game; none is about winning, which these
+        pilots do very rarely, or about a player.
       </p>
       {data.tests ? null : (
         <p className="max-w-3xl rounded-lg border border-line bg-charcoal/40 px-3 py-2 text-sm text-parchment">
