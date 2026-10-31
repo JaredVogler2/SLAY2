@@ -165,7 +165,7 @@ const dev = (
   sha256: "c".repeat(64),
   slice: { partition: "dev", offset: 1000, n: 600 },
   arms: [
-    devRow("lead", -0.02, false),
+    { ...devRow("lead", -0.02, false), actOne: { arm: 0.55, baseline: 0.6, differs: 480 } },
     devRow("p020", 0.012, true, 0.2),
     devRow("pnone", -0.01, false, 100),
     devRow("v", 0.001, false),
@@ -224,7 +224,7 @@ describe("the fit stage", () => {
     );
     expect(container).toHaveTextContent("none is about winning");
     expect(container).toHaveTextContent(
-      "the fit is done; the development screen and the held-out games have not been played, so there is no test result yet",
+      "the fit is done; the development screen has not been read and no held-out result exists, so there is no test result yet",
     );
   });
 });
@@ -242,8 +242,25 @@ describe("the development screen", () => {
     expect(within(at(rows, 3)).getByText(/never takes a card/)).toBeInTheDocument();
     expect(screen.getByText(/the threshold that went forward is 0\.2/)).toBeInTheDocument();
     expect(
-      screen.getByText(/the development screen is read; the held-out games have not been played/),
+      screen.getByText(
+        /the development screen is read; the held-out games are not finished and none of their results has been read/,
+      ),
     ).toBeInTheDocument();
+  });
+
+  it("shows the lead as always tested, with what it costs at the first boss, and no such line for the Act-2-only rules", () => {
+    show(data({ dev: dev() }));
+    const table = screen.getByRole("table", { name: /candidate rules on development seeds/ });
+    const rows = within(table).getAllByRole("row");
+    // the lead is tested on held-out seeds whatever the screen shows, so its badge never reads "no"
+    expect(within(at(rows, 1)).getByText("always tested")).toBeInTheDocument();
+    expect(within(at(rows, 1)).queryByText("no")).toBeNull();
+    expect(
+      within(at(rows, 1)).getByText(/its price: 55\.0 % against 60\.0 % past the first boss/),
+    ).toBeInTheDocument();
+    // the rules that differ from the baseline in Act 2 only play the same first boss: nothing to price
+    expect(within(at(rows, 2)).queryByText(/its price/)).toBeNull();
+    expect(within(at(rows, 3)).queryByText(/its price/)).toBeNull();
   });
 
   it("says when nothing qualified, and why the refitted values were not played", () => {
@@ -325,7 +342,7 @@ describe("the ledger panel in Methods", () => {
     const { container } = render(<Act2Panel data={data()} />);
     expect(container).toHaveTextContent("Where the study stands");
     expect(container).toHaveTextContent(
-      "the development screen and the held-out games have not been played",
+      "the development screen has not been read and no held-out result exists",
     );
     expect(screen.queryByRole("table")).toBeNull();
     cleanup();

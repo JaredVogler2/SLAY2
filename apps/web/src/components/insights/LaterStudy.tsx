@@ -169,13 +169,21 @@ function fitText(c: Act2FitClass, gate: number): string {
 function ScreenBlock({ data }: { data: Act2Data }) {
   const dev = data.dev;
   if (!dev) return null;
-  const pairs = Math.max(...dev.arms.map((r) => r.pairs));
+  const fewest = Math.min(...dev.arms.map((r) => r.pairs));
+  const most = Math.max(...dev.arms.map((r) => r.pairs));
+  const pairs = fewest === most ? n(most) : `${n(fewest)} to ${n(most)}`;
   const row = (r: Act2DevRow) => (
     <tr key={r.arm} className="border-b border-line/60">
       <th scope="row" className={`${TD} font-normal text-parchment`}>
         {ARM_LABEL[r.arm] ?? r.arm}
         {r.lateThreshold !== null ? (
           <span className="block text-xs text-dim">{thresholdLabel(r.lateThreshold)}</span>
+        ) : null}
+        {r.actOne.differs > 0 ? (
+          <span className="block text-xs text-dim">
+            its price: {pctShare(r.actOne.arm)} against {pctShare(r.actOne.baseline)} past the first
+            boss
+          </span>
         ) : null}
       </th>
       <td className={`${TD} num text-muted`}>
@@ -186,7 +194,9 @@ function ScreenBlock({ data }: { data: Act2Data }) {
         {r.armOnly} / {r.baselineOnly} · {formatP(r.p)}
       </td>
       <td className={TD}>
-        {r.eligible ? (
+        {r.arm === "lead" ? (
+          <Badge tone="neutral">always tested</Badge>
+        ) : r.eligible ? (
           <Badge tone="neutral">went forward</Badge>
         ) : (
           <span className="text-dim">no</span>
@@ -201,9 +211,11 @@ function ScreenBlock({ data }: { data: Act2Data }) {
         <EvidenceBadge kind="development" />
       </div>
       <p className="max-w-3xl text-sm text-muted">
-        Before any held-out game, each candidate rule played {n(pairs)} paired games on development
-        seeds, and a rule went forward only if it was ahead of the baseline and its exact p was
-        below {data.screenLevel} (a generous screen, not evidence).{" "}
+        Before any held-out game, each candidate rule played {pairs} paired games on development
+        seeds (600 seeds in each of five classes; a pair is left out when either game did not
+        finish), and a rule went forward only if it was ahead of the baseline and its exact p was
+        below {data.screenLevel} (a generous screen, not evidence). The pickier-in-every-act rule is
+        tested whatever it shows; the line under its name says what it costs at the first boss.{" "}
         {dev.P.advance
           ? `For the second act, the threshold that went forward is ${String(dev.P.lateThreshold)} (${thresholdLabel(dev.P.lateThreshold)}).`
           : "No threshold for the second act qualified, so no pickier second act was tested on held-out seeds."}{" "}
@@ -378,8 +390,8 @@ export function LaterStudy({ data, nameOf }: { data: Act2Data; nameOf: NameOf })
         <p className="max-w-3xl rounded-lg border border-line bg-charcoal/40 px-3 py-2 text-sm text-parchment">
           Where the study stands:{" "}
           {data.dev
-            ? "the fit is done and the development screen is read; the held-out games have not been played, so there is no test result yet."
-            : "the fit is done; the development screen and the held-out games have not been played, so there is no test result yet."}
+            ? "the fit is done and the development screen is read; the held-out games are not finished and none of their results has been read, so there is no test result yet."
+            : "the fit is done; the development screen has not been read and no held-out result exists, so there is no test result yet."}
         </p>
       )}
       <FitBlock data={data} nameOf={nameOf} />

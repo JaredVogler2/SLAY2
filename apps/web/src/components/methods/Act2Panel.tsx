@@ -144,8 +144,8 @@ export function Act2Panel({ data = act2Data() }: { data?: Act2Data | null }) {
           <p className="rounded-lg border border-line bg-charcoal/40 px-3 py-2 text-parchment">
             Where the study stands:{" "}
             {stage === "screen"
-              ? "the fit is done and the development screen is read; the held-out games have not been played."
-              : "the fit is done; the development screen and the held-out games have not been played."}
+              ? "the fit is done and the development screen is read; the held-out games are not finished and none of their results has been read."
+              : "the fit is done; the development screen has not been read and no held-out result exists."}
           </p>
         )}
         {tests ? (
