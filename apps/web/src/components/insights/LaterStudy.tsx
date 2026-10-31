@@ -181,7 +181,7 @@ function ScreenBlock({ data }: { data: Act2Data }) {
       </td>
       <td className={`${TD} num text-parchment`}>{pts(r.difference)}</td>
       <td className={`${TD} num text-muted`}>
-        {r.armOnly} / {r.baselineOnly} · p {formatP(r.p)}
+        {r.armOnly} / {r.baselineOnly} · {formatP(r.p)}
       </td>
       <td className={TD}>
         {r.eligible ? (
@@ -301,7 +301,7 @@ function TestCard({ t, data }: { t: Act2Test; data: Act2Data }) {
                   </td>
                   <td className={`${TD} num text-parchment`}>{pts(c.difference)}</td>
                   <td className={`${TD} num text-muted`}>
-                    {c.armOnly} / {c.baselineOnly} · p {formatP(c.p)}
+                    {c.armOnly} / {c.baselineOnly} · {formatP(c.p)}
                   </td>
                   <td className={`${TD} text-muted`}>{CLASS_VERDICT_TEXT[c.verdict]}</td>
                 </tr>

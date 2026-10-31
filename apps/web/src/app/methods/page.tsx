@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { Act2Panel } from "@/components/methods/Act2Panel";
 import { AscensionPanel } from "@/components/methods/AscensionPanel";
 import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { NeowValuesPanel } from "@/components/methods/NeowValuesPanel";
@@ -481,6 +482,8 @@ export default function MethodsPage() {
       <NeowValuesPanel />
 
       <AscensionPanel />
+
+      <Act2Panel />
 
       <Panel eyebrow="Not yet evaluated" title="Things this site does not know" headingLevel={2}>
         <dl className="grid gap-3 md:grid-cols-2">

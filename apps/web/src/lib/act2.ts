@@ -236,10 +236,10 @@ export function testSentence(t: Act2Test): string {
   const ci = `${pts(t.ci[0] ?? 0)} to ${pts(t.ci[1] ?? 0)}`;
   switch (t.verdict) {
     case "passed":
-      return `Ahead of the baseline by ${d} (interval ${ci}; exact p ${formatP(t.p)}): ${pctShare(t.shares.arm)} of ${t.pairs.toLocaleString("en-US")} paired games got past the Act-2 boss against ${pctShare(t.shares.baseline)}.`;
+      return `Ahead of the baseline by ${d} (interval ${ci}; exact ${formatP(t.p)}): ${pctShare(t.shares.arm)} of ${t.pairs.toLocaleString("en-US")} paired games got past the Act-2 boss against ${pctShare(t.shares.baseline)}.`;
     case "reversed":
-      return `Behind the baseline by ${pts(-t.difference)} (interval ${ci}; exact p ${formatP(t.p)}): ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games.`;
+      return `Behind the baseline by ${pts(-t.difference)} (interval ${ci}; exact ${formatP(t.p)}): ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games.`;
     case "not-shown":
-      return `No difference shown: ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games (${d}, interval ${ci}; exact p ${formatP(t.p)}).`;
+      return `No difference shown: ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games (${d}, interval ${ci}; exact ${formatP(t.p)}).`;
   }
 }

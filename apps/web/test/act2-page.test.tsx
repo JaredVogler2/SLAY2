@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { LaterStudy } from "@/components/insights/LaterStudy";
+import { Act2Panel } from "@/components/methods/Act2Panel";
 import {
   testSentence,
   type Act2ClassResult,
@@ -299,5 +300,61 @@ describe("the held-out tests", () => {
     expect(container).toHaveTextContent("ahead only if the exact p is below 0.0167");
     expect(container).toHaveTextContent("registered before any of these games");
     expect(container).not.toHaveTextContent("Where the study stands");
+  });
+});
+
+describe("the ledger panel in Methods", () => {
+  it("says where the study stands before any test, and shows nothing before the fit", () => {
+    const { container } = render(<Act2Panel data={data()} />);
+    expect(container).toHaveTextContent("Where the study stands");
+    expect(container).toHaveTextContent(
+      "the development screen and the held-out games have not been played",
+    );
+    expect(screen.queryByRole("table")).toBeNull();
+    cleanup();
+    expect(render(<Act2Panel data={data({ fit: null })} />).container).toBeEmptyDOMElement();
+    expect(render(<Act2Panel data={null} />).container).toBeEmptyDOMElement();
+  });
+
+  it("lists the three tests with the verdict of each, and the reason a test was not played", () => {
+    render(
+      <Act2Panel
+        data={data({
+          dev: dev({ P: { advance: false, arm: null, lateThreshold: null } }),
+          tests: results(test("L", "not-shown", 0.002), test("V", "passed")),
+        })}
+      />,
+    );
+    const table = screen.getByRole("table", { name: /three tests/i });
+    const rows = within(table).getAllByRole("row");
+    expect(rows).toHaveLength(4);
+    expect(within(at(rows, 1)).getByText("not shown ahead")).toBeInTheDocument();
+    expect(
+      within(at(rows, 2)).getByText(/Not played: no threshold for the second act qualified/),
+    ).toBeInTheDocument();
+    expect(within(at(rows, 3)).getByText("ahead of the baseline")).toBeInTheDocument();
+    expect(table).toHaveTextContent("+1.2 points");
+  });
+
+  it("carries the determinism record and the post hoc check, labelled as such", () => {
+    const t = results(test("L", "not-shown"));
+    t.determinism = { shared: 9738, identical: 9700, different: 38 };
+    t.robustness = {
+      L: {
+        pairs: 9900,
+        difference: 0.001,
+        armOnly: 300,
+        baselineOnly: 280,
+        p: 0.4,
+        errors: { arm: 300, baseline: 280 },
+      },
+    };
+    const { container } = render(<Act2Panel data={data({ dev: dev(), tests: t })} />);
+    expect(container).toHaveTextContent(
+      "9,700 of 9,738 of its games are the games the Ascension 9 study played earlier",
+    );
+    expect(container).toHaveTextContent("38 differ; the tests use the replayed baseline");
+    expect(container).toHaveTextContent("Post hoc, not the registered endpoint");
+    expect(container).toHaveTextContent("L +0.1 points (exact p = 0.40)");
   });
 });
