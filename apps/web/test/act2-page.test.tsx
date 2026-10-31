@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { LaterStudy } from "@/components/insights/LaterStudy";
 import { Act2Panel } from "@/components/methods/Act2Panel";
 import {
+  downgradeNote,
   testSentence,
   type Act2ClassResult,
   type Act2Data,
@@ -112,6 +113,19 @@ const test = (key: Act2TestKey, verdict: Act2Verdict, difference = 0.012): Act2T
   baselineOnly: 180,
   p: verdict === "not-shown" ? 0.2 : 1e-6,
   verdict,
+  primaryVerdict: verdict,
+  downgrade: null,
+  excludedFraction: 0.03,
+  robust: {
+    pairs: 9900,
+    droppedUnknown: 100,
+    erroredAfterTheBoss: { arm: 55, baseline: 54 },
+    shares: { arm: 0.118, baseline: 0.106 },
+    difference: 0.012,
+    armOnly: 310,
+    baselineOnly: 190,
+    p: 1e-6,
+  },
   actOne: { shares: { arm: 0.6, baseline: 0.66 }, armOnly: 100, baselineOnly: 400, p: 1e-30 },
   wins: { arm: 160, baseline: 158, p: 0.9 },
   floorDifference: { meanAMinusB: 0.4, ci95: [0.2, 0.6] },
@@ -164,7 +178,6 @@ const dev = (
 const results = (...ts: Act2Test[]): NonNullable<Act2Data["tests"]> => ({
   results: Object.fromEntries(ts.map((t) => [t.key, t])),
   determinism: { shared: 9738, identical: 9738, different: 0 },
-  robustness: null,
 });
 
 function show(d: Act2Data) {
@@ -298,6 +311,10 @@ describe("the held-out tests", () => {
   it("names the level the tests were read at and the rule that was fixed first", () => {
     const { container } = show(data({ dev: dev(), tests: results(test("L", "not-shown")) }));
     expect(container).toHaveTextContent("ahead only if the exact p is below 0.0167");
+    expect(container).toHaveTextContent(
+      "a second analysis on every pair whose two endpoints are known",
+    );
+    expect(container).toHaveTextContent("no more than a tenth of the pairs were dropped");
     expect(container).toHaveTextContent("registered before any of these games");
     expect(container).not.toHaveTextContent("Where the study stands");
   });
@@ -336,27 +353,51 @@ describe("the ledger panel in Methods", () => {
     expect(table).toHaveTextContent("+1.2 points");
   });
 
-  it("carries the determinism record and the post hoc check, labelled as such", () => {
+  it("carries the determinism record and, for each test, the check on every pair with known endpoints", () => {
     const t = {
       ...results(test("L", "not-shown")),
       determinism: { shared: 9738, identical: 9700, different: 38 },
-      robustness: {
-        L: {
-          pairs: 9900,
-          difference: 0.001,
-          armOnly: 300,
-          baselineOnly: 280,
-          p: 0.4,
-          errors: { arm: 300, baseline: 280 },
-        },
-      },
     };
     const { container } = render(<Act2Panel data={data({ dev: dev(), tests: t })} />);
     expect(container).toHaveTextContent(
       "9,700 of 9,738 of its games are the games the Ascension 9 study played earlier",
     );
     expect(container).toHaveTextContent("38 differ; the tests use the replayed baseline");
-    expect(container).toHaveTextContent("Post hoc, not the registered endpoint");
-    expect(container).toHaveTextContent("L +0.1 points (exact p = 0.40)");
+    expect(container).toHaveTextContent("also read on the pairs whose two endpoints are known");
+    expect(container).toHaveTextContent("L: +1.2 points (exact p = 1.0e-6, 9,900 pairs)");
+  });
+});
+
+describe("the second analysis and what it can withhold", () => {
+  it("shows the check on known endpoints under every test, and says nothing was withheld when nothing was", () => {
+    const { container } = show(data({ dev: dev(), tests: results(test("P", "passed")) }));
+    expect(container).toHaveTextContent(
+      "Checked again on the 9,900 pairs whose two endpoints are known",
+    );
+    expect(container).toHaveTextContent("55 of the rule's, 54 of the baseline's");
+    expect(container).not.toHaveTextContent("The primary test alone would read");
+  });
+
+  it("explains a result that the check withheld, and one that the dropped pairs withheld", () => {
+    const withheld = {
+      ...test("P", "not-shown"),
+      primaryVerdict: "passed" as const,
+      downgrade: "robustness" as const,
+    };
+    const dropped = {
+      ...test("L", "not-shown"),
+      primaryVerdict: "reversed" as const,
+      downgrade: "excluded" as const,
+      excludedFraction: 0.14,
+    };
+    expect(downgradeNote(withheld)).toBe(
+      "The primary test alone would read the rule as ahead, but the check on every pair with known endpoints does not show the same difference at an exact p below 0.05, so the result is read as not shown.",
+    );
+    expect(downgradeNote(dropped)).toMatch(
+      /would read the rule as behind, but 14\.0 % of the pairs were dropped/,
+    );
+    expect(downgradeNote(test("V", "passed"))).toBe("");
+    const { container } = show(data({ dev: dev(), tests: results(withheld) }));
+    expect(container).toHaveTextContent("so the result is read as not shown");
   });
 });

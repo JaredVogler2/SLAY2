@@ -27,9 +27,10 @@ def act_of(i: int, extra_to_act3: int = 0, lose_act3: int = 0, act1_break: int =
     return base
 
 
-def write_dev(root: Path, arm: str, **kw) -> None:
+def write_dev(root: Path, arm: str, only: frozenset[str] | None = None, **kw) -> None:
+    """One development batch per class; ``only`` limits the change to those classes (the others are played exactly as S plays them)."""
     for cls in st.CLASSES:
-        rows = [(i, "death", 40, 1.0, act_of(i, **kw)) for i in range(N)]
+        rows = [(i, "death", 40, 1.0, act_of(i, **({} if only is not None and cls not in only else kw))) for i in range(N)]
         make_batch(root, st.dev_id(arm, cls), rows, character=cls)
 
 
@@ -75,6 +76,7 @@ def test_the_eligible_candidate_with_the_largest_gain_goes_forward_and_ties_go_t
     assert arms["p020"]["difference"] == arms["p035"]["difference"] == arms["pall"]["difference"] > 0
     assert sel["P"] == {"advance": True, "arm": "p020", "lateThreshold": 0.2}   # the tie goes to the smaller |threshold|
     assert sel["actOneIdentical"] is True and arms["p020"]["actOneDiffers"] == 0
+    assert arms["p020"]["identity"] == {"actZeroPairs": 5 * (N // 4), "actZeroDifferent": 0, "wholeDifferent": 0} and "identity" not in arms["lead"]
     assert sel["V"] == {"advance": False, "anyClassFitted": False} and "v" not in arms   # no class kept fitted values: V is S
     assert sel["L"] == {"advance": True} and arms["lead"]["eligible"] is False
 
@@ -104,8 +106,8 @@ def test_five_pairs_in_one_direction_pass_the_generous_screen_which_is_what_it_i
 
 
 def test_the_act_2_values_go_forward_only_if_eligible_and_some_class_kept_its_fit(tmp_path):
-    root = build(tmp_path, v={"extra_to_act3": 16})
-    # the v batches exist; the rule reads the committed value files for the gate
+    root = build(tmp_path, v={"extra_to_act3": 16, "only": frozenset({"Ironclad"})})
+    # the v batches exist (the changed ones are the fitted class's); the rule reads the committed value files for the gate
     sel = st.select(root, values(tmp_path / "v1", {**dict.fromkeys(st.CLASSES, False), "Ironclad": True}))
     assert sel["V"] == {"advance": True, "anyClassFitted": True} and sel["arms"]["v"]["eligible"] is True
     quiet = build(tmp_path / "second", v={})   # V identical to S: nothing to test even though a class kept its fit
@@ -113,11 +115,79 @@ def test_the_act_2_values_go_forward_only_if_eligible_and_some_class_kept_its_fi
     assert sel["V"]["advance"] is False and sel["arms"]["v"]["difference"] == 0 and sel["arms"]["v"]["p"] == 1.0
 
 
-def test_arms_that_are_not_identical_to_the_baseline_in_act_one_are_reported(tmp_path):
+def test_arms_that_are_not_identical_to_the_baseline_in_act_one_stop_the_study(tmp_path):
     root = build(tmp_path, p010={"act1_break": 5})
-    sel = st.select(root, values(tmp_path / "values", dict.fromkeys(st.CLASSES, False)))
-    assert sel["arms"]["p010"]["actOneDiffers"] == len(st.CLASSES) and sel["actOneIdentical"] is False   # the seed is in all five classes
-    assert sel["arms"]["lead"]["actOneDiffers"] == 0   # the lead differs from S in Act 1 by design: its row is not part of the check
+    with pytest.raises(st.StudyStop, match=r"p010: 5 pairs differ about the Act-1 boss"):   # the seed is in all five classes
+        st.select(root, values(tmp_path / "values", dict.fromkeys(st.CLASSES, False)))
+    # the lead differs from S in Act 1 by design: its own row is not part of the check
+    ok = build(tmp_path / "ok", lead={"act1_break": 5})
+    assert st.select(ok, values(tmp_path / "ok-values", dict.fromkeys(st.CLASSES, False)))["actOneIdentical"] is True
+
+
+def rewrite(root: Path, arm: str, cls: str, seed: int, **fields) -> None:
+    """Change fields of one game of a development batch (the binary outcomes stay as they were)."""
+    f = root / st.dev_id(arm, cls) / "episodes.jsonl"
+    rows = [json.loads(line) for line in f.read_text().splitlines()]
+    for r in rows:
+        if r["seed"] == seed:
+            r.update(fields)
+    f.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+
+
+def test_a_game_that_s_ended_in_act_one_must_be_the_same_record_even_if_the_binary_outcome_agrees(tmp_path):
+    root = build(tmp_path)
+    rewrite(root, "p035", "Regent", 3, floor=9)     # seed 3 ends in Act 1 in S (floor 40 in these synthetic rows; both are 'not past the Act-1 boss')
+    with pytest.raises(st.StudyStop, match=r"p035: 1 of \d+ games that S ended in Act 1 differ"):
+        st.select(root, values(tmp_path / "values", dict.fromkeys(st.CLASSES, False)))
+    # a game S took into Act 2 may differ, and does not stop the study
+    ok = build(tmp_path / "ok")
+    rewrite(ok, "p035", "Regent", 4, floor=44)
+    assert st.select(ok, values(tmp_path / "ok-values", dict.fromkeys(st.CLASSES, False)))["P"]["advance"] is False
+
+
+def test_a_class_that_kept_its_shown_values_must_play_every_game_of_s_in_the_refit_arm(tmp_path):
+    root = build(tmp_path, v={})
+    fitted = {**dict.fromkeys(st.CLASSES, False), "Ironclad": True}
+    ok = st.select(root, values(tmp_path / "values", fitted))
+    assert ok["arms"]["v"]["identity"]["wholeDifferent"] == 0
+    rewrite(root, "v", "Silent", 4, floor=44)        # an Act-2 game of an unfitted class that is not S's game
+    with pytest.raises(st.StudyStop, match=r"v: 0 of \d+ games that S ended in Act 1 differ, 1 games of a class that kept its shown values differ"):
+        st.select(root, values(tmp_path / "values2", fitted))
+    # the same change in the fitted class is allowed
+    ok2 = build(tmp_path / "ok2", v={})
+    rewrite(ok2, "v", "Ironclad", 4, floor=44)
+    assert st.select(ok2, values(tmp_path / "ok2-values", fitted))["arms"]["v"]["identity"]["wholeDifferent"] == 0
+
+
+def test_the_dev_command_stops_without_writing_a_selection_and_the_identity_command_checks_the_held_out_arms(tmp_path, capsys):
+    root = build(tmp_path, p010={"act1_break": 5})
+    out = tmp_path / "sel.json"
+    vals = values(tmp_path / "values", dict.fromkeys(st.CLASSES, False))
+    assert st.main(["dev", "--batches", str(root), "--values", str(vals), "--out", str(out)]) == 1
+    assert not out.exists() and "STOP:" in capsys.readouterr().err
+    # the held-out arms: P (the one the selection names) and V, in val batches
+    held = tmp_path / "held"
+    held.mkdir()
+    for cls in st.CLASSES:
+        make_batch(held, st.val_id("s", cls), [(i, "death", 40, 1.0, act_of(i)) for i in range(N)], character=cls)
+        make_batch(held, st.val_id("p020", cls), [(i, "death", 40, 1.0, act_of(i, extra_to_act3=16)) for i in range(N)], character=cls)
+        make_batch(held, st.val_id("v", cls), [(i, "death", 40, 1.0, act_of(i)) for i in range(N)], character=cls)
+    sel = tmp_path / "selection.json"
+    sel.write_text(json.dumps({"P": {"advance": True, "arm": "p020"}, "V": {"advance": True}}))
+    fitted = values(tmp_path / "fit", {**dict.fromkeys(st.CLASSES, False), "Defect": True})
+    for test in ("P", "V"):
+        report = tmp_path / f"{test}.json"
+        args = [test, "--batches", str(held), "--values", str(fitted), "--selection", str(sel), "--out", str(report)]
+        assert st.main(["identity", *args]) == 0
+        body = json.loads(report.read_text())
+        assert body["kind"] == "act2-identity" and body["actZeroDifferent"] == 0 and body["wholeDifferent"] == 0 and body["actZeroPairs"] > 0
+    assert st.main(["identity", "L", "--batches", str(held), "--values", str(fitted), "--selection", str(sel), "--out", str(tmp_path / "L.json")]) == 0
+    # a game of an unfitted class that differs: the identity check fails (the study stops)
+    f = held / st.val_id("v", "Silent") / "episodes.jsonl"
+    rows = [json.loads(line) for line in f.read_text().splitlines()]
+    rows[4]["steps"] = 1
+    f.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    assert st.main(["identity", "V", "--batches", str(held), "--values", str(fitted), "--selection", str(sel), "--out", str(tmp_path / "V2.json")]) == 1
 
 
 def test_the_determinism_record_counts_identical_and_different_episodes_and_ignores_the_wall_clock(tmp_path):
@@ -128,7 +198,7 @@ def test_the_determinism_record_counts_identical_and_different_episodes_and_igno
     assert rec["shared"] == 3 and rec["identical"] == 2 and rec["different"] == 1 and rec["differingSeeds"] == [2]
     assert rec["fieldsThatDiffer"] == {"floor": 1} and rec["seedsReplayed"] == 3 and rec["seedsEarlier"] == 4
     out = tmp_path / "d.json"
-    assert st.main(["determinism", str(a), str(b), "--out", str(out)]) == 1 and json.loads(out.read_text())["different"] == 1
+    assert st.main(["determinism", str(a), str(b), "--out", str(out)]) == 0 and json.loads(out.read_text())["different"] == 1   # a finding, not an error
     assert st.main(["determinism", str(a), str(a)]) == 0
 
 

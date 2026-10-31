@@ -17,9 +17,11 @@ that has a manifest is checked and never touched. Nothing here plays a `test` se
    It runs `preflight-val.sh` first, takes a lock, records the commit it started from and checks every batch against its own manifest when it ends.
 6. `audit.sh val` : every win re-derived, a 40-game sample audit of every batch.
 7. `pool.sh` : refuses to run unless every batch is finished and audited; then each class on its own, the pooled tests (exact McNemar over the five
-   classes at the endpoint "got past the Act-2 boss", with the whole-seed interval at level 1 - 0.05 / 3) and the determinism record, each run once.
+   classes at the endpoint "got past the Act-2 boss", with the whole-seed interval at level 1 - 0.05 / 3), the identity checks of P and V against S
+   (`experiments/act2/identity/`), the determinism record and the observed-endpoint analysis (`robustness.py`, a condition of the reading rule,
+   ADR-060 addendum B), each run once.
 8. `python3 scripts/verify-pooled.py experiments/act2/pooled-act2-*.json --bootstrap` : the pooled files recomputed from the raw episodes.
-9. `python3 scripts/studies/act2/robustness.py --out experiments/act2/robustness-errors.json` : post hoc, labelled so (errors kept, scored by floor).
+9. (`robustness.py` is run by `pool.sh`; nothing to run by hand.)
 
 | Test | Arm | Against |
 |---|---|---|

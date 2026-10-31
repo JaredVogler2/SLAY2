@@ -77,6 +77,13 @@ interface Options {
   actOneDiffers?: number;
   /** a test of an arm that must not differ from S in Act 1 and nevertheless does (the design's own check) */
   breakActOne?: Key;
+  /** the discordant pairs of the observed-endpoint analysis, per test (default: those of the primary test) */
+  robust?: Partial<Record<Key, readonly (readonly [number, number])[]>>;
+  /** the pairs each class keeps in the primary test (default 1,950 of 2,000) */
+  kept?: number;
+  /** leave the observed-endpoint analysis out, or the identity check of P and V */
+  noRobustness?: boolean;
+  noIdentity?: boolean;
 }
 
 interface World {
@@ -182,6 +189,9 @@ async function buildWorld(options: Options = {}): Promise<World> {
       p: mcnemarP(aOnly, bOnly),
       pastAct1Boss: { arm: 0.6, baseline: 0.6 },
       actOneDiffers: arm === "lead" ? 40 : 0,
+      ...(arm === "lead"
+        ? {}
+        : { identity: { actZeroPairs: 1200, actZeroDifferent: 0, wholeDifferent: 0 } }),
       wins: { arm: 3, baseline: 3 },
       meanFloorDifference: 0,
       lateThreshold,
@@ -327,7 +337,7 @@ async function buildWorld(options: Options = {}): Promise<World> {
     readonly (readonly [number, number])[],
   ][]) {
     const arm = armOf(k);
-    const n = 1950;
+    const n = o.kept ?? 1950;
     let sums: [number, number, number, number] = [0, 0, 0, 0];
     const members = CLASSES.map((c, i) => {
       addBatch(arm, c);
@@ -412,6 +422,71 @@ async function buildWorld(options: Options = {}): Promise<World> {
       contentSha256: hex(`pooled-${k}`),
     });
   }
+  if (Object.keys(o.tests).length > 0 && !o.noRobustness) {
+    const rob: Record<string, unknown> = {};
+    for (const [k, discordant] of Object.entries(o.tests) as [
+      Key,
+      readonly (readonly [number, number])[],
+    ][]) {
+      const mine = o.robust?.[k] ?? discordant;
+      const per: Record<string, Json> = {};
+      const tot = {
+        shared: 0,
+        primaryPairs: 0,
+        pairs: 0,
+        droppedUnknown: 0,
+        armOnly: 0,
+        baselineOnly: 0,
+        arm: 0,
+        baseline: 0,
+      };
+      CLASSES.forEach((c, i) => {
+        const [a, b] = mine[i] ?? [0, 0];
+        const part = {
+          shared: 2000,
+          primaryPairs: o.kept ?? 1950,
+          pairs: 1960,
+          droppedUnknown: 40,
+          armOnly: a,
+          baselineOnly: b,
+          arm: a + 120,
+          baseline: b + 120,
+          erroredAfterTheBoss: { arm: 5, baseline: 5 },
+          p: mcnemarP(a, b),
+        };
+        per[EXACT[c]] = part;
+        for (const key of Object.keys(tot) as (keyof typeof tot)[]) tot[key] += part[key];
+      });
+      rob[k] = {
+        arm: armOf(k),
+        pooled: {
+          ...tot,
+          erroredAfterTheBoss: { arm: 25, baseline: 25 },
+          p: mcnemarP(tot.armOnly, tot.baselineOnly),
+          difference: (tot.arm - tot.baseline) / tot.pairs,
+          primaryExcludedFraction: 1 - (5 * (o.kept ?? 1950)) / 10000,
+        },
+        perClass: per,
+      };
+    }
+    write(path("experiments", "act2", "robustness-errors.json"), {
+      kind: "act2-robustness",
+      schema: 2,
+      tests: rob,
+    });
+  }
+  if (!o.noIdentity)
+    for (const k of ["P", "V"] as const)
+      if (o.tests[k])
+        write(path("experiments", "act2", "identity", `${k}.json`), {
+          kind: "act2-identity",
+          schema: 1,
+          test: k,
+          arm: armOf(k),
+          actZeroPairs: 1200,
+          actZeroDifferent: 0,
+          wholeDifferent: 0,
+        });
   if (Object.keys(o.tests).length > 0) {
     for (const c of CLASSES)
       write(path("experiments", "act2", "determinism", `${c}.json`), {
@@ -708,5 +783,152 @@ describe("the exporter reads the Act-2 study only when it belongs together", () 
       ["necrobinder", "arm"],
       ["defect", "baseline"],
     ]);
+  });
+
+  it("reads a gain as passed only if the check on every pair with known endpoints agrees, and says why when it withholds it", async () => {
+    const agrees = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+    });
+    const ok = read(agrees) as unknown as Out;
+    expect(ok.tests?.results.P?.verdict).toBe("passed");
+    expect(ok.tests?.results.P).toMatchObject({ primaryVerdict: "passed", downgrade: null });
+    // the primary says ahead; the observed-endpoint analysis finds nothing
+    const disagrees = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+      robust: { P: every(250, 250) },
+    });
+    const out = read(disagrees) as unknown as Out;
+    expect(out.tests?.results.P).toMatchObject({
+      verdict: "not-shown",
+      primaryVerdict: "passed",
+      downgrade: "robustness",
+    });
+    // the check shows the other arm ahead: the same
+    const opposite = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+      robust: { P: every(200, 300) },
+    });
+    expect((read(opposite) as unknown as Out).tests?.results.P).toMatchObject({
+      verdict: "not-shown",
+      downgrade: "robustness",
+    });
+    // a gain that the check shows at a p above 0.05 is withheld too (5 x (260, 240) is p about 0.045 pooled; (255, 245) is not below 0.05)
+    const weak = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+      robust: { P: every(255, 245) },
+    });
+    expect((read(weak) as unknown as Out).tests?.results.P).toMatchObject({
+      verdict: "not-shown",
+      downgrade: "robustness",
+    });
+  });
+
+  it("withholds a reading when more than a tenth of the pairs were dropped, and reads a reversal under the same conditions", async () => {
+    const dropped = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+      kept: 1700,
+    });
+    expect((read(dropped) as unknown as Out).tests?.results.P).toMatchObject({
+      verdict: "not-shown",
+      primaryVerdict: "passed",
+      downgrade: "excluded",
+    });
+    const reversed = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(200, 300) },
+    });
+    expect((read(reversed) as unknown as Out).tests?.results.P).toMatchObject({
+      verdict: "reversed",
+      downgrade: null,
+    });
+    const reversedButNot = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(200, 300) },
+      robust: { P: every(250, 250) },
+    });
+    expect((read(reversedButNot) as unknown as Out).tests?.results.P).toMatchObject({
+      verdict: "not-shown",
+      primaryVerdict: "reversed",
+      downgrade: "robustness",
+    });
+  });
+
+  it("refuses results without the observed-endpoint analysis or with one that is not the tests' own", async () => {
+    const none = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+      noRobustness: true,
+    });
+    expect(() => read(none)).toThrow(/robustness-errors.json is missing/);
+    const wrong = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+    });
+    wrong.amend("experiments/act2/robustness-errors.json", (j) => {
+      delete (j.tests as Json).P;
+    });
+    expect(() => read(wrong)).toThrow(
+      /not the observed-endpoint analysis of the tests that were played/,
+    );
+    const pvalue = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+    });
+    pvalue.amend("experiments/act2/robustness-errors.json", (j) => {
+      ((j.tests as Json).P as { pooled: Json }).pooled.p = 0.5;
+    });
+    expect(() => read(pvalue)).toThrow(/its p is not the exact McNemar p of its counts/);
+    const sums = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+    });
+    sums.amend("experiments/act2/robustness-errors.json", (j) => {
+      const silent = ((j.tests as Json).P as { perClass: Record<string, Json | undefined> })
+        .perClass.Silent;
+      if (silent) silent.armOnly = 1;
+    });
+    expect(() => read(sums)).toThrow(/do not add up to the pooled one/);
+    const other = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+    });
+    other.amend("experiments/act2/robustness-errors.json", (j) => {
+      ((j.tests as Json).P as { pooled: Json }).pooled.primaryExcludedFraction = 0.2;
+    });
+    expect(() => read(other)).toThrow(/its excluded share is not the pooled file's/);
+  });
+
+  it("stops when the arms that differ from S in Act 2 only are not S's record for record", async () => {
+    const noCheck = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+      noIdentity: true,
+    });
+    expect(() => read(noCheck)).toThrow(/identity\/P.json: not a passing identity check/);
+    const broken = await buildWorld({
+      dev: { P: "p020", V: false },
+      tests: { L: every(250, 250), P: every(300, 200) },
+    });
+    broken.amend("experiments/act2/identity/P.json", (j) => {
+      j.actZeroDifferent = 2;
+    });
+    expect(() => read(broken)).toThrow(/not a passing identity check/);
+    const screen = await buildWorld();
+    screen.amend("experiments/act2/dev-selection.json", (j) => {
+      (((j.arms as Json).p010 as Json).identity as Json).wholeDifferent = 1;
+    });
+    expect(() => read(screen)).toThrow(
+      /is not record for record S's in the games S ended in Act 1/,
+    );
+    const missing = await buildWorld();
+    missing.amend("experiments/act2/dev-selection.json", (j) => {
+      delete ((j.arms as Json).pall as Json).identity;
+    });
+    expect(() => read(missing)).toThrow(/pall is not record for record S's/);
   });
 });

@@ -161,17 +161,21 @@ export function Act2Panel({ data = act2Data() }: { data?: Act2Data | null }) {
                   : ""}
                 .
               </li>
-              {tests.robustness ? (
-                <li>
-                  Post hoc, not the registered endpoint: with the games that ended in a simulator
-                  error kept and scored by the floor they had reached, the pooled differences are{" "}
-                  {KEYS.flatMap((k) => {
-                    const r = tests.robustness?.[k];
-                    return r ? [`${k} ${pts(r.difference)} (exact ${formatP(r.p)})`] : [];
-                  }).join(", ")}
-                  .
-                </li>
-              ) : null}
+              <li>
+                Every test was also read on the pairs whose two endpoints are known, with the games
+                that ended in an error after the Act-2 boss counted as passes: a result is read as
+                ahead or behind only if that check agrees at an exact p below 0.05 and at most a
+                tenth of the pairs were dropped.{" "}
+                {KEYS.flatMap((k) => {
+                  const t = tests.results[k];
+                  return t
+                    ? [
+                        `${k}: ${pts(t.robust.difference)} (exact ${formatP(t.robust.p)}, ${n(t.robust.pairs)} pairs)`,
+                      ]
+                    : [];
+                }).join("; ")}
+                .
+              </li>
               <li>
                 Files:{" "}
                 {KEYS.flatMap((k) => {

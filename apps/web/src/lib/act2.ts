@@ -97,7 +97,23 @@ export interface Act2Test {
   readonly armOnly: number;
   readonly baselineOnly: number;
   readonly p: number;
+  /** the reading: the primary test's verdict, unless the observed-endpoint analysis or the share of dropped pairs withholds it (ADR-060 addendum B) */
   readonly verdict: Act2Verdict;
+  readonly primaryVerdict: Act2Verdict;
+  readonly downgrade: "robustness" | "excluded" | null;
+  /** the share of the pairs the primary test dropped because an episode did not end in a win or a death */
+  readonly excludedFraction: number;
+  /** every pair whose two endpoints are known, a game that ended in an error after the Act-2 boss counted as a pass */
+  readonly robust: {
+    readonly pairs: number;
+    readonly droppedUnknown: number;
+    readonly erroredAfterTheBoss: { readonly arm: number; readonly baseline: number };
+    readonly shares: { readonly arm: number; readonly baseline: number };
+    readonly difference: number;
+    readonly armOnly: number;
+    readonly baselineOnly: number;
+    readonly p: number;
+  };
   readonly actOne: {
     readonly shares: { readonly arm: number; readonly baseline: number };
     readonly armOnly: number;
@@ -139,19 +155,6 @@ export interface Act2Data {
       readonly identical: number;
       readonly different: number;
     };
-    readonly robustness: Partial<
-      Record<
-        Act2TestKey,
-        {
-          readonly pairs: number;
-          readonly difference: number;
-          readonly armOnly: number;
-          readonly baselineOnly: number;
-          readonly p: number;
-          readonly errors: { readonly arm: number; readonly baseline: number };
-        }
-      >
-    > | null;
   } | null;
 }
 
@@ -242,4 +245,19 @@ export function testSentence(t: Act2Test): string {
     case "not-shown":
       return `No difference shown: ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games (${d}, interval ${ci}; exact ${formatP(t.p)}).`;
   }
+}
+
+/** The second analysis of a test: the same comparison on every pair whose two endpoints are known (errors after the Act-2 boss are passes). */
+export function robustSentence(t: Act2Test): string {
+  const r = t.robust;
+  return `Checked again on the ${r.pairs.toLocaleString("en-US")} pairs whose two endpoints are known, with the games that ended in an error after the Act-2 boss counted as passes (${String(r.erroredAfterTheBoss.arm)} of the rule's, ${String(r.erroredAfterTheBoss.baseline)} of the baseline's): ${pctShare(r.shares.arm)} against ${pctShare(r.shares.baseline)} (${pts(r.difference)}, ${String(r.armOnly)} against ${String(r.baselineOnly)} pairs, exact ${formatP(r.p)}).`;
+}
+
+/** Why a result the primary test would have called ahead or behind is read as not shown (empty when nothing was withheld). */
+export function downgradeNote(t: Act2Test): string {
+  if (t.downgrade === null) return "";
+  const was = t.primaryVerdict === "passed" ? "ahead" : "behind";
+  return t.downgrade === "excluded"
+    ? `The primary test alone would read the rule as ${was}, but ${pctShare(t.excludedFraction)} of the pairs were dropped because a game did not end in a win or a death (the rule written down first allows a tenth), so the result is read as not shown.`
+    : `The primary test alone would read the rule as ${was}, but the check on every pair with known endpoints does not show the same difference at an exact p below 0.05, so the result is read as not shown.`;
 }

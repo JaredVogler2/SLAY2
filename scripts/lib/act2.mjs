@@ -22,6 +22,8 @@ const A2 = {
   classLevel: 0.01,
   screenLevel: 0.1,
   gate: 0.002,
+  maxExcludedFraction: 0.1,
+  robustLevel: 0.05,
   seeds: 2000,
   devSlice: { partition: "dev", offset: 1000, n: 600 },
   seedsFile: "experiments/seeds/ironclad-a0-v2.json",
@@ -37,12 +39,39 @@ const TESTS = [
   { key: "V", arm: "v", file: "pooled-act2-V.json" },
 ];
 
-/** The reading rule of ADR-060 item 4, applied to the numbers alone (the order of the arguments is the arm's, then S's). */
+/** The reading rule of ADR-060 item 4 applied to the numbers of the registered primary test alone (the order of the arguments is the arm's, then S's). */
 export function verdictOf({ armOnly, baselineOnly, p, ci, level = A2.level }) {
   const [lo, hi] = ci;
   if (p < level && armOnly > baselineOnly && lo > 0) return "passed";
   if (p < level && baselineOnly > armOnly && hi < 0) return "reversed";
   return "not-shown";
+}
+
+/**
+ * The whole reading (item 4 and addendum B): a result is "passed" or "reversed" only if the primary test says so AND the observed-endpoint analysis (every
+ * pair whose two endpoints are known, a game that ended in an error after the Act-2 boss counted as a pass) has the same arm ahead at an exact p below 0.05
+ * AND the primary dropped at most a tenth of the pairs. Anything else is "not-shown", with the reason that stopped it.
+ */
+export function readingOf({
+  armOnly,
+  baselineOnly,
+  p,
+  ci,
+  level = A2.level,
+  robust,
+  excludedFraction,
+}) {
+  const primary = verdictOf({ armOnly, baselineOnly, p, ci, level });
+  if (primary === "not-shown") return { verdict: "not-shown", primary, downgrade: null };
+  if (excludedFraction > A2.maxExcludedFraction)
+    return { verdict: "not-shown", primary, downgrade: "excluded" };
+  const ahead =
+    primary === "passed"
+      ? robust.armOnly > robust.baselineOnly
+      : robust.baselineOnly > robust.armOnly;
+  if (!(robust.p < A2.robustLevel && ahead))
+    return { verdict: "not-shown", primary, downgrade: "robustness" };
+  return { verdict: primary, primary, downgrade: null };
 }
 
 /** The development screen's rule (item 5): higher than S's and an exact two-sided McNemar p below 0.10. */
@@ -236,6 +265,15 @@ export function parseAct2({ root, reports }) {
     if (r.eligible !== eligible(r))
       throw new Error(
         `experiments/act2/dev-selection.json: ${arm}'s eligibility is not what the rule says`,
+      );
+    if (
+      arm !== "lead" &&
+      (r.identity?.actZeroDifferent !== 0 ||
+        r.identity?.wholeDifferent !== 0 ||
+        !(r.identity?.actZeroPairs > 0))
+    )
+      throw new Error(
+        `experiments/act2/dev-selection.json: ${arm} is not record for record S's in the games S ended in Act 1 (ADR-060 addendum B stops the study)`,
       );
     return {
       arm,
@@ -516,6 +554,70 @@ export function parseAct2({ root, reports }) {
           `${where}: the classes' ${k} (${String(sum[k])}) do not add up to the pooled one (${String(t2.pairedTable[k])})`,
         );
     const tab = t2.pairedTable;
+    // the observed-endpoint analysis of this test (addendum B), written by pool.sh with the pooled files, and the identity check of P and V
+    const entry = robustness.tests[spec.key];
+    if (!entry || entry.arm !== arm)
+      throw new Error(
+        `experiments/act2/robustness-errors.json: no analysis of test ${spec.key} for the arm ${arm}`,
+      );
+    const rb = entry.pooled;
+    const sumOf = (k) => CLASSES.reduce((n, c) => n + entry.perClass[EXACT[c]][k], 0);
+    for (const k of [
+      "shared",
+      "primaryPairs",
+      "pairs",
+      "droppedUnknown",
+      "armOnly",
+      "baselineOnly",
+      "arm",
+      "baseline",
+    ])
+      if (sumOf(k) !== rb[k])
+        throw new Error(
+          `experiments/act2/robustness-errors.json: test ${spec.key}: the classes' ${k} do not add up to the pooled one`,
+        );
+    if (!closeP(mcnemarExact(rb.armOnly, rb.baselineOnly), rb.p))
+      throw new Error(
+        `experiments/act2/robustness-errors.json: test ${spec.key}: its p is not the exact McNemar p of its counts`,
+      );
+    if (rb.shared !== test.pairedSeeds || rb.primaryPairs !== test.bothCompleted)
+      throw new Error(
+        `experiments/act2/robustness-errors.json: test ${spec.key}: it does not count the pairs of ${where}`,
+      );
+    if (
+      rb.pairs + rb.droppedUnknown !== rb.shared ||
+      !near(rb.difference, (rb.arm - rb.baseline) / rb.pairs, 1e-9)
+    )
+      throw new Error(
+        `experiments/act2/robustness-errors.json: test ${spec.key}: its counts do not add up`,
+      );
+    const excludedFraction = 1 - test.bothCompleted / test.pairedSeeds;
+    if (!near(rb.primaryExcludedFraction, excludedFraction, 1e-9))
+      throw new Error(
+        `experiments/act2/robustness-errors.json: test ${spec.key}: its excluded share is not the pooled file's`,
+      );
+    if (spec.key !== "L") {
+      const idPath = join(act2Dir, "identity", `${spec.key}.json`);
+      const idn = existsSync(idPath) ? JSON.parse(readFileSync(idPath, "utf8")) : null;
+      if (
+        idn?.kind !== "act2-identity" ||
+        idn.arm !== arm ||
+        idn.actZeroDifferent !== 0 ||
+        idn.wholeDifferent !== 0 ||
+        !(idn.actZeroPairs > 0)
+      )
+        throw new Error(
+          `experiments/act2/identity/${spec.key}.json: not a passing identity check of ${arm} against S (ADR-060 addendum B stops the study)`,
+        );
+    }
+    const reading = readingOf({
+      armOnly: tab.a_only,
+      baselineOnly: tab.b_only,
+      p: tab.mcnemar_p,
+      ci: cl.ciAtLevel.ci,
+      robust: rb,
+      excludedFraction,
+    });
     return {
       key: spec.key,
       arm,
@@ -533,12 +635,20 @@ export function parseAct2({ root, reports }) {
       armOnly: tab.a_only,
       baselineOnly: tab.b_only,
       p: tab.mcnemar_p,
-      verdict: verdictOf({
-        armOnly: tab.a_only,
-        baselineOnly: tab.b_only,
-        p: tab.mcnemar_p,
-        ci: cl.ciAtLevel.ci,
-      }),
+      verdict: reading.verdict,
+      primaryVerdict: reading.primary,
+      downgrade: reading.downgrade,
+      excludedFraction,
+      robust: {
+        pairs: rb.pairs,
+        droppedUnknown: rb.droppedUnknown,
+        erroredAfterTheBoss: rb.erroredAfterTheBoss,
+        shares: { arm: rb.arm / rb.pairs, baseline: rb.baseline / rb.pairs },
+        difference: rb.difference,
+        armOnly: rb.armOnly,
+        baselineOnly: rb.baselineOnly,
+        p: rb.p,
+      },
       actOne: {
         shares: { arm: test.reachedAct2.a.rate, baseline: test.reachedAct2.b.rate },
         armOnly: test.reachedAct2.pairedTable.a_only,
@@ -550,6 +660,20 @@ export function parseAct2({ root, reports }) {
       perClass,
     };
   };
+  const robPath = join(act2Dir, "robustness-errors.json");
+  if (!existsSync(robPath))
+    throw new Error(
+      `experiments/act2/robustness-errors.json is missing: the observed-endpoint analysis is a condition of the reading rule (${A2.adr} addendum B)`,
+    );
+  const robustness = JSON.parse(readFileSync(robPath, "utf8"));
+  if (
+    robustness.kind !== "act2-robustness" ||
+    robustness.schema !== 2 ||
+    canonical(Object.keys(robustness.tests).sort()) !== canonical(present.map((t) => t.key).sort())
+  )
+    throw new Error(
+      "experiments/act2/robustness-errors.json: not the observed-endpoint analysis of the tests that were played",
+    );
   const results = Object.fromEntries(present.map((t) => [t.key, readOne(t)]));
   if (heads.size !== 1)
     throw new Error(
@@ -569,26 +693,9 @@ export function parseAct2({ root, reports }) {
   );
   if (readdirSync(detDir).filter((f) => f.endsWith(".json")).length !== CLASSES.length)
     throw new Error("experiments/act2/determinism: not one record for each of the five classes");
-  const robPath = join(act2Dir, "robustness-errors.json");
-  const robustness = existsSync(robPath) ? JSON.parse(readFileSync(robPath, "utf8")) : null;
   out.tests = {
     results,
     determinism,
-    robustness: robustness
-      ? Object.fromEntries(
-          Object.entries(robustness.tests).map(([k, v]) => [
-            k,
-            {
-              pairs: v.pooled.pairs,
-              difference: v.pooled.difference,
-              armOnly: v.pooled.armOnly,
-              baselineOnly: v.pooled.baselineOnly,
-              p: v.pooled.p,
-              errors: v.pooled.errors,
-            },
-          ]),
-        )
-      : null,
   };
   return out;
 }

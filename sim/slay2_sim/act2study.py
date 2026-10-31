@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from .compare import build_pooled_comparison
@@ -70,6 +71,59 @@ def summarise(pooled: dict) -> dict:
     }
 
 
+IGNORED_FIELDS = frozenset({"wall_seconds", "batch_id", "policy"})
+
+
+class StudyStop(Exception):
+    """A condition the design relies on does not hold (ADR-060 item 6 and addendum B): the study stops and the cause is written in the record."""
+
+
+def _rows(batch: Path) -> list[dict]:
+    """The batch's raw episode records (every field), not the typed rows ``batch.read_episodes`` returns."""
+    import gzip
+
+    gz, plain = batch / "episodes.jsonl.gz", batch / "episodes.jsonl"
+    if gz.exists():
+        with gzip.open(gz, "rt", encoding="utf-8") as fh:
+            return [json.loads(line) for line in fh if line.strip()]
+    return [json.loads(line) for line in plain.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def identity(arm: Path, baseline: Path, *, whole: bool) -> dict:
+    """How the games of an arm that differs from S in Act 2 only compare with S's, record by record (every field but the wall clock, the batch id and
+    the policy's name). A game that S ended in Act 1 never reached the Act-2 rule, so the arm's must be the same record; for a class that keeps
+    its shown values (``whole``) every game must be the same record. Both are free, strong checks of the pairing the design rests on."""
+    a = {int(r["seed"]): r for r in _rows(arm)}
+    b = {int(r["seed"]): r for r in _rows(baseline)}
+
+    def same(x: dict, y: dict) -> bool:
+        return all(x.get(k) == y.get(k) for k in (set(x) | set(y)) - IGNORED_FIELDS)
+
+    shared = sorted(set(a) & set(b))
+    act0 = [s for s in shared if int(b[s].get("act", 0)) == 0]
+    return {
+        "shared": len(shared),
+        "actZeroPairs": len(act0),
+        "actZeroDifferent": sum(1 for s in act0 if not same(a[s], b[s])),
+        "whole": whole,
+        "wholeDifferent": sum(1 for s in shared if not same(a[s], b[s])) if whole else 0,
+    }
+
+
+def identity_for(root: Path, arm_tag: str, ident, fitted: dict[str, bool]) -> dict:
+    """The identity counts of one arm in the five classes; the unfitted classes of V are held to whole-game identity."""
+    per = {}
+    for c in CLASSES:
+        whole = arm_tag == "v" and not fitted[c]
+        per[c] = identity(root / ident(arm_tag, c), root / ident("s", c), whole=whole)
+    return {
+        "actZeroPairs": sum(v["actZeroPairs"] for v in per.values()),
+        "actZeroDifferent": sum(v["actZeroDifferent"] for v in per.values()),
+        "wholeDifferent": sum(v["wholeDifferent"] for v in per.values()),
+        "perClass": per,
+    }
+
+
 def eligible(row: dict) -> bool:
     return row["difference"] > 0 and row["p"] < SCREEN_ALPHA
 
@@ -92,6 +146,20 @@ def select(root: Path, values_dir: Path) -> dict:
     rows["lead"] = summarise(pool_arms(root, "lead", "s", dev_id))
     if any(fitted.values()):
         rows["v"] = summarise(pool_arms(root, "v", "s", dev_id))
+    ids: dict[str, dict] = {t: identity_for(root, t, dev_id, fitted) for t in [*P_TAGS, *(["v"] if "v" in rows else [])]}
+    for tag, rec in ids.items():
+        rows[tag]["identity"] = {k: rec[k] for k in ("actZeroPairs", "actZeroDifferent", "wholeDifferent")}
+    broken = [
+        f"{tag}: {rec['actZeroDifferent']} of {rec['actZeroPairs']} games that S ended in Act 1 differ, {rec['wholeDifferent']} games of a class that kept its shown values differ"
+        for tag, rec in ids.items()
+        if rec["actZeroDifferent"] or rec["wholeDifferent"]
+    ]
+    differs = [t for t in rows if t != "lead" and rows[t]["actOneDiffers"]]
+    if broken or differs:
+        raise StudyStop(
+            "the design's own check failed (ADR-060 item 6 and addendum B): "
+            + "; ".join([*broken, *(f"{t}: {rows[t]['actOneDiffers']} pairs differ about the Act-1 boss" for t in differs)])
+        )
     candidates = sorted((t for t in P_TAGS if eligible(rows[t])), key=lambda t: (-rows[t]["difference"], abs(P_TAGS[t]), P_TAGS[t]))
     p_pick = candidates[0] if candidates else None
     v_ok = "v" in rows and eligible(rows["v"])
@@ -112,7 +180,7 @@ def select(root: Path, values_dir: Path) -> dict:
         "P": {"advance": p_pick is not None, "arm": p_pick, "lateThreshold": P_TAGS[p_pick] if p_pick else None},
         "V": {"advance": bool(v_ok), "anyClassFitted": any(fitted.values())},
         "L": {"advance": True},
-        "actOneIdentical": all(rows[t]["actOneDiffers"] == 0 for t in rows if t != "lead"),
+        "actOneIdentical": True,   # select() stops with StudyStop otherwise: a selection file never says anything else
     }
 
 
@@ -136,17 +204,6 @@ def determinism(replayed: Path, earlier: Path) -> dict:
     }
 
 
-def _rows(batch: Path) -> list[dict]:
-    """The batch's raw episode records (every field), not the typed rows ``batch.read_episodes`` returns."""
-    import gzip
-
-    gz, plain = batch / "episodes.jsonl.gz", batch / "episodes.jsonl"
-    if gz.exists():
-        with gzip.open(gz, "rt", encoding="utf-8") as fh:
-            return [json.loads(line) for line in fh if line.strip()]
-    return [json.loads(line) for line in plain.read_text(encoding="utf-8").splitlines() if line.strip()]
-
-
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -154,13 +211,34 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--batches", type=Path, default=Path("experiments/batches"))
     d.add_argument("--values", type=Path, default=Path("experiments/cardvalue"))
     d.add_argument("--out", type=Path, required=True)
+    i = sub.add_parser("identity", help="the held-out arms that differ from S in Act 2 only against S, record by record")
+    i.add_argument("test", choices=["L", "P", "V"])
+    i.add_argument("--batches", type=Path, default=Path("experiments/batches"))
+    i.add_argument("--values", type=Path, default=Path("experiments/cardvalue"))
+    i.add_argument("--selection", type=Path, default=Path("experiments/act2/dev-selection.json"))
+    i.add_argument("--out", type=Path, required=True)
     t = sub.add_parser("determinism", help="how many games of a replayed batch are the games of the earlier batch")
     t.add_argument("replayed", type=Path)
     t.add_argument("earlier", type=Path)
     t.add_argument("--out", type=Path)
     args = ap.parse_args(argv)
+    if args.cmd == "identity":
+        fitted = fitted_classes(args.values)
+        tag = {"L": None, "P": json.loads(Path(args.selection).read_text(encoding="utf-8"))["P"].get("arm"), "V": "v"}[args.test]
+        if tag is None:
+            print("test L differs from S from Act 1 on: nothing to check")
+            return 0
+        rec = identity_for(args.batches, tag, val_id, fitted)
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps({"kind": "act2-identity", "schema": 1, "test": args.test, "arm": tag, **rec}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(f"test {args.test} ({tag}): {rec['actZeroDifferent']} of {rec['actZeroPairs']} games that S ended in Act 1 differ; {rec['wholeDifferent']} games of the classes that kept their shown values differ")
+        return 0 if not (rec["actZeroDifferent"] or rec["wholeDifferent"]) else 1
     if args.cmd == "dev":
-        body = select(args.batches, args.values)
+        try:
+            body = select(args.batches, args.values)
+        except StudyStop as e:
+            print(f"STOP: {e}", file=sys.stderr)
+            return 1
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(body, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         for tag, row in body["arms"].items():
@@ -174,7 +252,7 @@ def main(argv: list[str] | None = None) -> int:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(rec, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"{rec['replayed']} against {rec['earlier']}: {rec['identical']} of {rec['shared']} shared episodes identical, {rec['different']} different {rec['fieldsThatDiffer']}")
-    return 0 if rec["different"] == 0 else 1
+    return 0   # that some games differ is a finding the record carries, not an error of this command (an exception is)
 
 
 if __name__ == "__main__":

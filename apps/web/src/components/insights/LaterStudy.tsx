@@ -10,6 +10,8 @@ import {
   formatP,
   pctShare,
   pts,
+  robustSentence,
+  downgradeNote,
   testSentence,
   thresholdLabel,
   type Act2Data,
@@ -257,6 +259,8 @@ function TestCard({ t, data }: { t: Act2Test; data: Act2Data }) {
       </div>
       <p className="mt-1 text-sm text-muted">{info.asks}</p>
       <p className="mt-2 text-sm text-parchment">{testSentence(t)}</p>
+      <p className="mt-1 text-xs text-muted">{robustSentence(t)}</p>
+      {t.downgrade !== null ? <p className="mt-1 text-xs text-rose">{downgradeNote(t)}</p> : null}
       <p className="num mt-1 text-xs text-dim">
         {t.armOnly} pairs in which only the rule got past the second boss, {t.baselineOnly} in which
         only the baseline did · read at {fixed(data.level, 4)} (the study-wise 0.05 divided by
@@ -337,8 +341,10 @@ function TestsBlock({ data }: { data: Act2Data }) {
         baseline (the pilot that follows the shown values), with the relics kept, and was compared
         pair by pair on whether the run got past the second boss. The rule for reading each result
         was registered before any of these games: ahead only if the exact p is below{" "}
-        {fixed(data.level, 4)}, the rule is ahead, and the whole-seed interval at that level
-        excludes zero.
+        {fixed(data.level, 4)}, the rule is ahead, the whole-seed interval at that level excludes
+        zero, a second analysis on every pair whose two endpoints are known (a game that ended in an
+        error after the second boss counts as getting past it) shows the same difference at an exact
+        p below 0.05, and no more than a tenth of the pairs were dropped.
       </p>
       <div className="space-y-3">
         {keys.map((k) => {

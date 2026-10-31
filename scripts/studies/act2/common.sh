@@ -48,36 +48,33 @@ shown_files() { local c; for c in $CLASSES; do shown_values "$c"; done; }
 act2_files() { local c; for c in $CLASSES; do act2_values "$c"; done; }
 # Everything the arms read or run: the code and data that must be those of the registration commit when the first held-out game is played.
 PINNED_PATHS="sim scripts/studies/act2 scripts/verify-pooled.py packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json"
+# What the arms execute: the code and data that must be the same in the commit the development stage was played from (DEV_HEAD, quoted in
+# part 2 of the record) and in the commit that registers the held-out run, so that the arms chosen are the arms that were screened (addendum B).
+# The analysis tool of the study (act2study.py) plays no game and is left out; the definitions of the arms in this file are compared as a table
+# of what each arm runs (arm_table, below) and not as text, so that the scripts around them can be hardened without moving the arms.
+SCREENED_PATHS=(sim/slay2_sim ':(exclude)sim/slay2_sim/act2study.py' packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json)
+arm_table() { # every arm's policy and parameters, batch ids and value files for every class, and the seeds and sizes (what the arms are)
+  local arm C
+  for arm in s v lead $P_TAGS; do
+    for C in $CLASSES; do
+      echo "$arm|$C|$(arm_policy "$arm")|$(arm_params "$arm" "$C")|$(dev_id "$arm" "$C")|$(val_id "$arm" "$C")|$(shown_values "$C")|$(act2_values "$C")"
+    done
+  done
+  echo "$SEEDS|$DEV_OFFSET|$DEV_N|$VAL_N|$LEAD_THRESHOLD|$P_TAGS"
+}
+# The reading code: frozen at the registration commit, checked again when the tests are pooled (addendum B).
+READING_PATHS="scripts/lib/act2.mjs scripts/lib/pooled.mjs scripts/verify-pooled.py"
 
 # The text of ADR-060 itself (its heading to the next one, or the end of the log): what the preflight reads the quoted hashes from.
 adr_section() { awk '/^## .*ADR-060:/ { p = 1; print; next } /^## / { if (p) exit } p' docs/DECISIONS.md; }
 
-# What a finished batch has to be (read from its own manifest): the policy, the seeds and the Ascension it was asked to play, the relics
-# kept, the class start verified, played from a clean working tree, no game ended in an abort or an error of ours (simulator errors, step
-# limits and timeouts are excluded and counted, as ADR-060 item 3 says) and at least 90 % of the games completed.
-verify_batch() { # <batch dir> <policy> <partition> <n> <offset>
-  "$PY" - "$@" <<'PYEOF'
-import json, sys
-d, policy, part, n, off = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), int(sys.argv[5])
-try:
-    m = json.load(open(d + "/manifest.json"))
-except Exception as e:  # noqa: BLE001
-    sys.exit(f"verify_batch: {d}: no readable manifest ({e})")
-c = m["summary"]["counts"]
-bad = sum(c[k] for k in ("aborted", "harness_error", "policy_error", "invalid_action"))
-env = (m.get("environment") or {}).get("slay2") or {}
-problems = []
-if m["policy"]["name"] != policy: problems.append(f"policy {m['policy']['name']}")
-if m["config"]["ascension"] != 0: problems.append(f"Ascension {m['config']['ascension']}")
-if m["config"].get("keep_relics") is not True: problems.append("relics not kept")
-s = m["seeds"]
-if s["partition"] != part or s["n"] != n or m["summary"]["episodes"] != n or int(s.get("offset", 0)) != off: problems.append("seeds")
-if bad: problems.append(f"{bad} games ended in an abort, a harness error, a policy error or an invalid action")
-if m["summary"]["completed"] < 0.9 * n: problems.append(f"only {m['summary']['completed']} of {n} completed")
-if m.get("class_start_verified") is not True or m.get("canonical_process_state") is not True: problems.append("class start or canonical process state not recorded")
-if env.get("dirty") is not False: problems.append("played from a working tree with uncommitted changes")
-if problems: sys.exit(f"verify_batch: {d}: " + "; ".join(problems))
-PYEOF
+# What a finished batch has to be (read from its own manifest): the policy and the parameters, the class, the seeds and the Ascension it was
+# asked to play, the relics kept, the class start verified, played from a clean working tree of the commit the stage started from ($STUDY_HEAD,
+# when set), no game ended in an abort or an error of ours (simulator errors, step limits and timeouts are excluded and counted, as ADR-060
+# item 3 says) and at least 90 % of the games completed (ADR-060 addendum B hardened this: a finished batch left under the same id by another
+# policy, class, parameters or commit no longer passes).
+verify_batch() { # <batch dir> <policy> <params json> <ExactClass> <partition> <n> <offset>   (scripts/studies/act2/verify_batch.py)
+  STUDY_HEAD_EXPECTED="${STUDY_HEAD:-}" "$PY" "$ROOT/scripts/studies/act2/verify_batch.py" "$@"
 }
 
 # The working tree is the commit the stage started from, with no tracked file changed (a held-out run takes hours).
@@ -92,7 +89,7 @@ guard_tree() {
 run_batch() {
   local id=$1 policy=$2 params=$3 cls=$4 part=$5 n=$6 off=$7 W=${WORKERS:-4}
   local dest=experiments/batches/$id
-  if [ -f "$dest/manifest.json" ]; then verify_batch "$dest" "$policy" "$part" "$n" "$off"; return $?; fi
+  if [ -f "$dest/manifest.json" ]; then verify_batch "$dest" "$policy" "$params" "$cls" "$part" "$n" "$off"; return $?; fi
   guard_tree || return 1
   nice -n 8 "$PY" -m slay2_sim run --policy "$policy" --policy-params "$params" --character "$cls" --ascension 0 --profile veteran \
     --seeds "$SEEDS" --partition "$part" --offset "$off" --n "$n" --keep-relics --workers "$W" --trace 0 --batch-id "$id" >> "$OUT/$part-$id.log" 2>&1
@@ -101,7 +98,7 @@ run_batch() {
   # exit code 2 means that some episodes ended in a simulator error, which is normal (a usage error exits 2 as well, and leaves no manifest:
   # verify_batch is what tells them apart); anything else stops the run (RESUME=1 continues it)
   if [ "$status" != 0 ] && [ "$status" != 2 ]; then echo "run_batch: $id failed with status $status (see $OUT/$part-$id.log)" >&2; return "$status"; fi
-  verify_batch "$dest" "$policy" "$part" "$n" "$off"
+  verify_batch "$dest" "$policy" "$params" "$cls" "$part" "$n" "$off"
 }
 
 # The arms of the held-out run: S (replayed under the study's commit, the baseline of all three tests), the lead L, and P and V if the development

@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""Post hoc robustness of the Act-2 tests to the games that ended in a simulator error (ADR-060 item 3; labelled as such, never the registered endpoint).
+"""The observed-endpoint analysis of the Act-2 tests (ADR-060 addendum B), a condition of the reading rule.
 
-The registered endpoint drops every pair in which either episode ended in anything but a win or a death, and counts the drops. Simulator errors
-are not random: most of them (G6 to G8) happen after the Act-1 boss, which is where this study looks, and an arm could meet them more often. So
-the same pooled test is run once more with the games that ended in a simulator error *kept*, scored by the floor they had reached (a run is "past
-the Act-2 boss" when it won or its last floor is beyond the boss floor), and the number of errors of each arm by class is listed. Timeouts and any
-other ending still drop the pair. This reads the batches' episode files and shares no code with `slay2_sim`.
+The registered primary endpoint drops every pair in which either episode did not end in a win or a death. Most of the games that end in a
+simulator error do so after the Act-1 boss, and an error in the third act ends a game that has *already got past the Act-2 boss*: in the
+baseline's games of ADR-058, 55 of 1,086 passers were dropped for that reason, and an arm whose third-act errors differ in number would then
+look better or worse than it is. So the same pooled test is run once more on every pair whose two endpoints are known:
+
+* a game that ended in a win or a death: the run got past the Act-2 boss when it won or its last act index is 2 or more (the definition of
+  `slay2_sim.compare`);
+* a game that ended in a simulator error, a step limit or a timeout: the run got past the Act-2 boss when its last act index is 2 or more (it
+  had), and its endpoint is unknown when the index is 0 or 1 (the pair is dropped, and counted).
+
+The reading rule asks this analysis to show the arm ahead (or behind) at an exact McNemar p below 0.05 when the primary says so, and the share
+of pairs the primary dropped to be at most a tenth. This script reads the batches' episode files and shares no code with `slay2_sim`.
 
     python3 scripts/studies/act2/robustness.py --out experiments/act2/robustness-errors.json
 """
@@ -19,7 +26,9 @@ from math import comb
 from pathlib import Path
 
 CLASSES = ("Ironclad", "Silent", "Regent", "Necrobinder", "Defect")
-BOSS_FLOOR_ACT2 = 31
+SCHEMA = 2
+MAX_EXCLUDED_FRACTION = 0.10
+LEVEL = 0.05
 
 
 def episodes(batch: Path) -> dict[int, dict]:
@@ -29,8 +38,17 @@ def episodes(batch: Path) -> dict[int, dict]:
         return {int(r["seed"]): r for r in (json.loads(line) for line in fh if line.strip())}
 
 
-def past_act2(r: dict) -> bool:
-    return r["outcome"] == "win" or int(r["floor"]) > BOSS_FLOOR_ACT2
+def completed(r: dict) -> bool:
+    return r["outcome"] in ("win", "death")
+
+
+def endpoint(r: dict) -> bool | None:
+    """True: got past the Act-2 boss. False: did not. None: unknown (the game ended in an error or a timeout before the Act-2 boss was passed)."""
+    if r["outcome"] == "win":
+        return True
+    if int(r["act"]) >= 2:
+        return True
+    return False if completed(r) else None
 
 
 def mcnemar_exact(a_only: int, b_only: int) -> float:
@@ -42,44 +60,70 @@ def mcnemar_exact(a_only: int, b_only: int) -> float:
 
 def compare(arm: Path, base: Path) -> dict:
     a, b = episodes(arm), episodes(base)
-    counted = ("win", "death", "simulator_error")
     shared = sorted(set(a) & set(b))
-    pairs = [s for s in shared if a[s]["outcome"] in counted and b[s]["outcome"] in counted]
-    fa, fb = [past_act2(a[s]) for s in pairs], [past_act2(b[s]) for s in pairs]
+    primary = [s for s in shared if completed(a[s]) and completed(b[s])]
+    known = [s for s in shared if endpoint(a[s]) is not None and endpoint(b[s]) is not None]
+    fa, fb = [bool(endpoint(a[s])) for s in known], [bool(endpoint(b[s])) for s in known]
     a_only = sum(1 for x, y in zip(fa, fb) if x and not y)
     b_only = sum(1 for x, y in zip(fa, fb) if y and not x)
-    return {
-        "pairs": len(pairs), "droppedPairs": len(shared) - len(pairs),
-        "errors": {"arm": sum(1 for s in shared if a[s]["outcome"] == "simulator_error"), "baseline": sum(1 for s in shared if b[s]["outcome"] == "simulator_error")},
-        "armOnly": a_only, "baselineOnly": b_only, "arm": sum(fa), "baseline": sum(fb), "p": mcnemar_exact(a_only, b_only),
+    errored_pass = {
+        "arm": sum(1 for s in shared if not completed(a[s]) and endpoint(a[s]) is True),
+        "baseline": sum(1 for s in shared if not completed(b[s]) and endpoint(b[s]) is True),
     }
+    return {
+        "shared": len(shared),
+        "primaryPairs": len(primary),
+        "pairs": len(known),
+        "droppedUnknown": len(shared) - len(known),
+        "erroredAfterTheBoss": errored_pass,
+        "armOnly": a_only,
+        "baselineOnly": b_only,
+        "arm": sum(fa),
+        "baseline": sum(fb),
+        "p": mcnemar_exact(a_only, b_only),
+    }
+
+
+def add(total: dict, part: dict) -> None:
+    for k in ("shared", "primaryPairs", "pairs", "droppedUnknown", "armOnly", "baselineOnly", "arm", "baseline"):
+        total[k] += part[k]
+    for k in ("arm", "baseline"):
+        total["erroredAfterTheBoss"][k] += part["erroredAfterTheBoss"][k]
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--batches", type=Path, default=Path("experiments/batches"))
+    ap.add_argument("--selection", type=Path, default=Path("experiments/act2/dev-selection.json"))
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args(argv)
-    sel = json.loads(Path("experiments/act2/dev-selection.json").read_text(encoding="utf-8"))
+    sel = json.loads(args.selection.read_text(encoding="utf-8"))
     arms = {"L": "lead"}
     if sel["P"]["advance"]:
         arms["P"] = sel["P"]["arm"]
     if sel["V"]["advance"]:
         arms["V"] = "v"
-    out: dict = {"kind": "act2-robustness-errors", "label": "post hoc, not the registered endpoint: simulator errors kept and scored by the floor reached", "tests": {}}
+    out: dict = {
+        "kind": "act2-robustness", "schema": SCHEMA,
+        "label": "a condition of the reading rule (ADR-060 addendum B): every pair whose two endpoints are known, errors after the Act-2 boss counted as passes",
+        "maxExcludedFraction": MAX_EXCLUDED_FRACTION, "level": LEVEL, "tests": {},
+    }
     for test, arm in arms.items():
-        per, tot = {}, {"pairs": 0, "droppedPairs": 0, "armOnly": 0, "baselineOnly": 0, "arm": 0, "baseline": 0, "errors": {"arm": 0, "baseline": 0}}
+        per: dict[str, dict] = {}
+        tot = {"shared": 0, "primaryPairs": 0, "pairs": 0, "droppedUnknown": 0, "armOnly": 0, "baselineOnly": 0, "arm": 0, "baseline": 0, "erroredAfterTheBoss": {"arm": 0, "baseline": 0}}
         for c in CLASSES:
             r = compare(args.batches / f"act2-{arm}-{c.lower()}-a0-veteran-keeprelics-val-n2000", args.batches / f"act2-s-{c.lower()}-a0-veteran-keeprelics-val-n2000")
             per[c] = r
-            for k in ("pairs", "droppedPairs", "armOnly", "baselineOnly", "arm", "baseline"):
-                tot[k] += r[k]
-            for k in ("arm", "baseline"):
-                tot["errors"][k] += r["errors"][k]
+            add(tot, r)
         tot["p"] = mcnemar_exact(tot["armOnly"], tot["baselineOnly"])
         tot["difference"] = (tot["arm"] - tot["baseline"]) / tot["pairs"]
+        tot["primaryExcludedFraction"] = 1 - tot["primaryPairs"] / tot["shared"]
         out["tests"][test] = {"arm": arm, "pooled": tot, "perClass": per}
-        print(f"{test} ({arm}): {tot['pairs']} pairs, past the Act-2 boss {tot['arm']} against {tot['baseline']} (only-arm {tot['armOnly']}, only-S {tot['baselineOnly']}, exact p {tot['p']:.4g}); errors {tot['errors']}")
+        print(
+            f"{test} ({arm}): {tot['pairs']} pairs with both endpoints known ({tot['droppedUnknown']} dropped; the primary kept {tot['primaryPairs']} of {tot['shared']}), "
+            f"past the Act-2 boss {tot['arm']} against {tot['baseline']} (only-arm {tot['armOnly']}, only-S {tot['baselineOnly']}, exact p {tot['p']:.4g}); "
+            f"errored after the boss {tot['erroredAfterTheBoss']}"
+        )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return 0

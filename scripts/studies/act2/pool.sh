@@ -16,6 +16,7 @@ import json, sys
 from pathlib import Path
 
 problems = []
+heads = set()
 for bid in sys.argv[1:]:
     d = Path("experiments/batches") / bid
     try:
@@ -23,6 +24,7 @@ for bid in sys.argv[1:]:
     except Exception as e:  # noqa: BLE001
         problems.append(f"{bid}: no readable manifest ({e})")
         continue
+    heads.add(((m.get("environment") or {}).get("slay2") or {}).get("head"))
     try:
         s = json.loads((d / "sample-audit.json").read_text())
         ok = (s["all_verified"] is True and s["verified"] == s["sample"]["drawn"] >= 40 and s["ledger"]["ok"] is True
@@ -39,12 +41,29 @@ for bid in sys.argv[1:]:
                 problems.append(f"{bid}: not every win is re-derived")
         except Exception as e:  # noqa: BLE001
             problems.append(f"{bid}: {wins} wins and no readable win audit ({e})")
+if len(heads) != 1:
+    problems.append(f"the batches were played from {len(heads)} different commits ({sorted(str(h)[:12] for h in heads)}); ADR-060 item 9 has one")
 for p in problems:
     print(p, file=sys.stderr)
 sys.exit(1 if problems else 0)
 PYEOF
 for t in L P V; do
   [ ! -e "experiments/act2/pooled-act2-$t.json" ] || fail "experiments/act2/pooled-act2-$t.json exists: each test is run once"
+done
+[ ! -e experiments/act2/robustness-errors.json ] || fail "experiments/act2/robustness-errors.json exists: it is written once"
+# the reading code (the exporter's reader, the shared reader of pooled files, the independent verifier) is that of the registration commit
+MARKER='Frozen choices of ADR-060 (part 2)'
+REG=$(git log -S"$MARKER" --format=%H -- docs/DECISIONS.md | tail -1)
+[ -n "$REG" ] || fail "cannot find the commit that carries ADR-060 part 2"
+# shellcheck disable=SC2086
+git diff --quiet "$REG" HEAD -- $READING_PATHS || fail "the reading code changed after the registration commit ${REG:0:12}: $(git diff --name-only "$REG" HEAD -- $READING_PATHS | tr '\n' ' ')"
+# the design's own check, on the held-out games: an arm that differs from S in Act 2 only is S's record for every game S ended in Act 1, and a class that
+# kept its shown values is S's record in every game (ADR-060 addendum B); a failure stops the study
+mkdir -p experiments/act2/identity
+for arm in $ARMS; do
+  t=$(test_name "$arm" 2>/dev/null) || continue      # the baseline has no test
+  [ "$t" = L ] && continue                           # the lead differs from S from Act 1 on: nothing to check
+  "$PY" -m slay2_sim.act2study identity "$t" --out "experiments/act2/identity/$t.json" || fail "the identity check of test $t failed: the study stops (ADR-060 item 6 and addendum B)"
 done
 for d in per-class determinism; do
   if ls "experiments/act2/$d" 2>/dev/null | grep -Eq '\.json$'; then fail "experiments/act2/$d holds output: the comparisons are run once"; fi
@@ -55,7 +74,7 @@ done
 for C in $CLASSES; do
   l=$(lower "$C")
   "$PY" -m slay2_sim.act2study determinism "experiments/batches/$(val_id s "$C")" "experiments/batches/rules_v2-shownvals-$l-a0-veteran-keeprelics-val-n2000" \
-    --out "experiments/act2/determinism/$l.json" >> "$OUT/determinism.log" 2>&1   # exit status 1 = some games differ: recorded, not an error of the pool
+    --out "experiments/act2/determinism/$l.json" >> "$OUT/determinism.log" 2>&1 || fail "the determinism record of $C failed (see $OUT/determinism.log)"   # that some games differ is data, not an error
 done
 
 pool_test() { # <test> <arm>
@@ -73,4 +92,6 @@ pool_test() { # <test> <arm>
 for arm in $ARMS; do
   [ "$arm" = s ] || pool_test "$(test_name "$arm")" "$arm"
 done
+# the observed-endpoint analysis, a condition of the reading rule (ADR-060 addendum B)
+"$PY" scripts/studies/act2/robustness.py --out experiments/act2/robustness-errors.json || fail "the observed-endpoint analysis failed"
 echo POOL_DONE
