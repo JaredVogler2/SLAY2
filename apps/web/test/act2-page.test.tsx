@@ -337,16 +337,18 @@ describe("the ledger panel in Methods", () => {
   });
 
   it("carries the determinism record and the post hoc check, labelled as such", () => {
-    const t = results(test("L", "not-shown"));
-    t.determinism = { shared: 9738, identical: 9700, different: 38 };
-    t.robustness = {
-      L: {
-        pairs: 9900,
-        difference: 0.001,
-        armOnly: 300,
-        baselineOnly: 280,
-        p: 0.4,
-        errors: { arm: 300, baseline: 280 },
+    const t = {
+      ...results(test("L", "not-shown")),
+      determinism: { shared: 9738, identical: 9700, different: 38 },
+      robustness: {
+        L: {
+          pairs: 9900,
+          difference: 0.001,
+          armOnly: 300,
+          baselineOnly: 280,
+          p: 0.4,
+          errors: { arm: 300, baseline: 280 },
+        },
       },
     };
     const { container } = render(<Act2Panel data={data({ dev: dev(), tests: t })} />);
