@@ -470,9 +470,9 @@ def build_parser() -> argparse.ArgumentParser:
     pp.add_argument("--confidence", type=float, default=None,
                     help="also write the whole-seed bootstrap interval of the pooled difference at this level (e.g. 0.98333 for a test read at 0.05 / 3); "
                          "without it the output is unchanged")
-    pp.add_argument("--endpoint", choices=["act1", "act2"], default="act1",
+    pp.add_argument("--endpoint", choices=["act1", "act2", "win"], default="act1",
                     help="the endpoint whose pooled difference gets the whole-seed interval: the share past the Act-1 boss (the default; the output is "
-                         "unchanged) or past the Act-2 boss (ADR-060)")
+                         "unchanged), past the Act-2 boss (ADR-060) or the share of the games that were won (ADR-061)")
     pp.set_defaults(fn=cmd_pool)
     return p
 

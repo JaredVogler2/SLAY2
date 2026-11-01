@@ -64,17 +64,17 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 24 | 48,000 | 47,302 | 674 | 698 | 0 |
+| Defect | held-out (val, val2) | 24 | 48,000 | 47,302 | 674 | 698 | 0 |
 | Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
-| Ironclad | held-out (val) | 27 | 52,300 | 51,389 | 912 | 909 | 2 |
+| Ironclad | held-out (val, val2) | 27 | 52,300 | 51,389 | 912 | 909 | 2 |
 | Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
-| Necrobinder | held-out (val) | 24 | 48,000 | 47,486 | 7 | 505 | 9 |
+| Necrobinder | held-out (val, val2) | 24 | 48,000 | 47,486 | 7 | 505 | 9 |
 | Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
-| Regent | held-out (val) | 24 | 48,000 | 47,305 | 75 | 354 | 341 |
+| Regent | held-out (val, val2) | 24 | 48,000 | 47,305 | 75 | 354 | 341 |
 | Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
-| Silent | held-out (val) | 24 | 48,000 | 47,867 | 0 | 133 | 0 |
+| Silent | held-out (val, val2) | 24 | 48,000 | 47,867 | 0 | 133 | 0 |
 | Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
-| **All classes** | **held-out (val)** | **123** | **244,300** | **241,349** | **1,668** | **2,599** | **352** |
+| **All classes** | **held-out (val, val2)** | **123** | **244,300** | **241,349** | **1,668** | **2,599** | **352** |
 | **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 

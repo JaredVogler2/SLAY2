@@ -96,6 +96,28 @@ def test_v2_manifest_keeps_every_v1_seed_where_it_was_and_adds_disjoint_developm
     assert mf.partition_seeds(v2, "dev", limit=3) == v2["partitions"]["dev"][:3]  # development seeds are not sealed
 
 
+def test_v3_manifest_keeps_every_v2_seed_where_it_was_and_adds_disjoint_held_out_seeds():
+    """val2 exists so that a study planned after val had been read is played on seeds nobody has played: the sealed test partition stays sealed."""
+    root = mf.Path(__file__).resolve().parents[2] / "experiments" / "seeds"
+    v2 = mf.load_seed_manifest(root / "ironclad-a0-v2.json")
+    v3 = mf.load_seed_manifest(root / "ironclad-a0-v3.json")
+    for part in ("train", "val", "test", "dev"):
+        assert v3["partitions"][part] == v2["partitions"][part], part
+    assert "val2" not in v2["partitions"] and v3["sizes"]["val2"] == 3000
+    everything = [s for part in v3["partitions"].values() for s in part]
+    assert len(everything) == len(set(everything)) == 24000
+    regenerated = mf.make_seed_manifest("ironclad-a0-v3", 20261025, {"train": 5000, "val": 2000, "test": 4000, "dev": 10000, "val2": 3000})
+    assert regenerated["sha256"] == v3["sha256"]
+    # asking for no val2 leaves a v2-style manifest exactly as it was, so v2's checksum is still what the committed file says
+    assert mf.make_seed_manifest("ironclad-a0-v2", 20261025, {"train": 5000, "val": 2000, "test": 4000, "dev": 10000})["sha256"] == v2["sha256"]
+    assert mf.partition_seeds(v3, "val2", limit=3) == v3["partitions"]["val2"][:3]  # held-out, but not sealed
+    with pytest.raises(PermissionError):
+        mf.partition_seeds(v3, "test")
+    with pytest.raises(ValueError, match="no 'val2' partition"):
+        mf.partition_seeds(v2, "val2")  # an older manifest says so instead of a bare KeyError
+    assert "val2" not in mf.DEVELOPMENT_PARTITIONS and set(mf.DEVELOPMENT_PARTITIONS) == {"train", "dev"}
+
+
 def test_seed_manifest_tamper_detected(tmp_path):
     m = mf.make_seed_manifest("t", 7, {"train": 5, "val": 5, "test": 5})
     m["partitions"]["train"][0] += 1

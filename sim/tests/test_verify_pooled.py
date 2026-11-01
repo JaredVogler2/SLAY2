@@ -86,7 +86,8 @@ def test_it_refuses_a_pooled_file_whose_batch_is_missing(tmp_path: Path) -> None
 
 
 def synthetic_pooled(root: Path, endpoint: str) -> tuple[Path, Path]:
-    """A pooled file written by `slay2_sim pool` for two classes of synthetic batches whose arms differ only at the Act-2 boss, and the batches' directory."""
+    """A pooled file written by `slay2_sim pool` for two classes of synthetic batches whose arms differ only at the Act-2 boss (and, for the
+    endpoint `win`, in the games they win: the games that got past the Act-2 boss win), and the batches' directory."""
     from slay2_sim.compare import build_pooled_comparison, write_comparison
 
     from test_compare import make_batch
@@ -95,6 +96,9 @@ def synthetic_pooled(root: Path, endpoint: str) -> tuple[Path, Path]:
     batches.mkdir(parents=True)
     rows_a = [(s, "death", 40, 1.0, 2 if s % 4 == 0 else 1 if s % 4 in (1, 2) else 0) for s in range(400)]
     rows_b = [(s, "death", 40, 1.0, 2 if s % 8 == 0 else 1 if s % 4 in (0, 1, 2) else 0) for s in range(400)]
+    if endpoint == "win":
+        rows_a = [(s, "win" if act == 2 else outcome, floor, wall, act) for s, outcome, floor, wall, act in rows_a]
+        rows_b = [(s, "win" if act == 2 else outcome, floor, wall, act) for s, outcome, floor, wall, act in rows_b]
     pairs = [(make_batch(batches, f"alpha-v{k}", rows_a, character=c), make_batch(batches, f"beta-v{k}", rows_b, character=c)) for k, c in enumerate(("Ironclad", "Silent"))]
     out = root / f"pooled-{endpoint}.json"
     write_comparison(build_pooled_comparison(pairs, iters=2000, confidence=0.975, endpoint=endpoint), out)
@@ -118,3 +122,16 @@ def test_it_follows_the_endpoint_a_pooled_file_names_and_notices_a_difference_of
     wrong.write_text(json.dumps(body), encoding="utf-8")
     problems, _ = verify_pooled.verify(wrong, batches)
     assert any("endpoint of the whole-seed interval" in p for p in problems)
+
+
+def test_it_follows_the_wins_endpoint_of_adr_061_and_notices_a_difference_of_another_one(tmp_path: Path) -> None:
+    path, batches = synthetic_pooled(tmp_path / "win", "win")
+    problems, checked = verify_pooled.verify(path, batches, bootstrap=True)
+    assert problems == [] and checked > 40, problems
+    body = json.loads(path.read_text(encoding="utf-8"))
+    assert body["clusteredDifference"]["endpoint"] == "win" and body["wins"]["a"] > body["wins"]["b"] > 0
+    body["clusteredDifference"]["meanAMinusB"] = 0.0  # the Act-1 difference of these arms (none), under a file that says wins
+    wrong = tmp_path / "wrong-win.json"
+    wrong.write_text(json.dumps(body), encoding="utf-8")
+    problems, _ = verify_pooled.verify(wrong, batches)
+    assert any("pooled difference of the shares" in p for p in problems)

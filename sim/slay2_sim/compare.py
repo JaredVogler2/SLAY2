@@ -17,7 +17,7 @@ from pathlib import Path
 from . import external
 from .batch import read_episodes
 from .classes import exact_character
-from .manifest import load_seed_manifest, partition_seeds, sha256_file
+from .manifest import DEVELOPMENT_PARTITIONS, load_seed_manifest, partition_seeds, sha256_file
 from .stats import clustered_bootstrap_ci, paired_bootstrap_ci, paired_win_table, wilson_interval
 
 SCHEMA = 1
@@ -195,7 +195,7 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
         "wallTimeRatioBOverA": round(wall_b / wall_a, 3) if wall_a > 0 else None,
         "role": (
             f"development ({sa['partition']} partition): not a held-out result"
-            if sa["partition"] in ("train", "dev")
+            if sa["partition"] in DEVELOPMENT_PARTITIONS
             else "held-out"
         ),
         "simulator": {
@@ -210,6 +210,10 @@ def build_comparison(a_dir: Path, b_dir: Path, *, iters: int = 20000, seed: int 
     return body
 
 
+# What each endpoint of the whole-seed interval counts, in the words of the file's own definition (the two older ones word for word as written).
+ENDPOINT_PHRASE = {"act1": "got past the Act-1 boss", "act2": "got past the Act-2 boss", "win": "won the run"}
+
+
 def build_pooled_comparison(
     pairs: list[tuple[Path, Path]], *, iters: int = 20000, seed: int = 0, confidence: float | None = None, endpoint: str = "act1"
 ) -> dict:
@@ -222,10 +226,10 @@ def build_pooled_comparison(
     seed-clustered interval at the same level to exclude zero, because the classes' games of one seed are not independent pairs).
 
     ``endpoint`` ("act1" by default, which leaves the output exactly as it was): the endpoint whose pooled difference gets the whole-seed
-    interval, "act1" the share that got past the Act-1 boss and "act2" the share that got past the Act-2 boss (ADR-060 reads that one). Both
-    endpoints' exact McNemar tables are in the file whichever is chosen."""
-    if endpoint not in ("act1", "act2"):
-        raise ValueError(f"endpoint must be 'act1' or 'act2', got {endpoint!r}")
+    interval, "act1" the share that got past the Act-1 boss, "act2" the share that got past the Act-2 boss (ADR-060 reads that one) and "win"
+    the share of the games that were won (ADR-061 reads that one). The exact McNemar tables of all three are in the file whichever is chosen."""
+    if endpoint not in ENDPOINT_PHRASE:
+        raise ValueError(f"endpoint must be one of {sorted(ENDPOINT_PHRASE)}, got {endpoint!r}")
     if len(pairs) < 2:
         raise ValueError("a pooled comparison needs at least two cohorts")
     members, flags = [], {k: ([], []) for k in ("win", "act1", "act2")}
@@ -300,7 +304,7 @@ def build_pooled_comparison(
             "pairedTable": paired_win_table(*flags["act2"]),
         },
         "clusteredDifference": {
-            "definition": f"pooled difference (A minus B) in the share that got past the Act-{'1' if endpoint == 'act1' else '2'} boss, with a bootstrap interval that "
+            "definition": f"pooled difference (A minus B) in the share that {ENDPOINT_PHRASE[endpoint]}, with a bootstrap interval that "
                           "resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
             "meanAMinusB": cl_mean,
             "ci95": [cl_lo, cl_hi],
@@ -314,7 +318,7 @@ def build_pooled_comparison(
             "method": f"paired percentile bootstrap over all pooled pairs, {iters} resamples, rng seed {seed}",
         },
         "role": (
-            f"development ({partition} partition): not a held-out result" if partition in ("train", "dev") else "held-out"
+            f"development ({partition} partition): not a held-out result" if partition in DEVELOPMENT_PARTITIONS else "held-out"
         ),
     }
     body["contentSha256"] = hashlib.sha256(_canonical(body).encode("utf-8")).hexdigest()
