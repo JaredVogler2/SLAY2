@@ -1,4 +1,11 @@
 import { act2Data, hasPrice, pctShare, pts, type Act2Test, type Act2TestKey } from "@/lib/act2";
+import {
+  ACTS_KEYS,
+  actsData,
+  pctShare as winShare,
+  pts as winPts,
+  type ActsTestKey,
+} from "@/lib/acts";
 import { allSets } from "@/lib/cardvalues";
 import { count, INSIGHTS, points, share } from "@/lib/insights";
 
@@ -114,6 +121,44 @@ function studyLine(t: Act2Test): string {
   return `${PILOT_OF[t.key]} ${verdict} (${second}, ${pts(t.difference)}${price})`;
 }
 
+const PILOT_OF_ACTS: Record<ActsTestKey, string> = {
+  L: "the pilot that is pickier in every act",
+  A1: "the one that is pickier in Act 1 only",
+  A2: "the one that is pickier in Act 2 only",
+  A3: "the one that is pickier in Act 3 only",
+};
+
+/** What the acts study (ADR-061) adds, at whichever stage the repository has reached; null before it is registered. */
+function actsStudy(): { readonly why: string; readonly first: string } | null {
+  const a = actsData();
+  if (!a) return null;
+  const results = a.tests?.results;
+  if (!results) {
+    return {
+      why: " A second registered study (ADR-061) asks whether such a pilot wins more games and in which act; it was registered before any of its games and they are not finished, so there is no result yet.",
+      first:
+        "Wait for the held-out tests of the acts study (ADR-061): they say whether a pickier pilot wins more games and whether one act's picks carry it.",
+    };
+  }
+  const line = ACTS_KEYS.map((k) => {
+    const t = results[k];
+    const verdict =
+      t.verdict === "passed"
+        ? "won more games"
+        : t.verdict === "reversed"
+          ? "won fewer games"
+          : "was not shown to differ";
+    return `${PILOT_OF_ACTS[k]} ${verdict} (${winShare(t.shares.arm)} against ${winShare(t.shares.baseline)} won, ${winPts(t.difference)})`;
+  }).join("; ");
+  const anyPassed = ACTS_KEYS.some((k) => results[k].verdict === "passed");
+  return {
+    why: ` A second registered study (ADR-061) then asked it of winning, on seeds no earlier study used: ${line}. These are statements about simulated rules pilots that win very few games.`,
+    first: anyPassed
+      ? "Test other thresholds in the act or acts that carry it, and put to the owner whether the advisor should offer a pickier mode."
+      : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).",
+  };
+}
+
 /**
  * What the registered Act-2 study (ADR-060) adds to the question "what wins a run", at whichever stage the repository has reached; every
  * figure is read from its exported data, and which next step follows depends on whether any test passed.
@@ -143,11 +188,14 @@ function laterStudy(): { readonly why: string; readonly first: string } {
   ];
   const why = ` A registered study (ADR-060) then asked it of the second boss on held-out seeds: ${played.map(studyLine).join("; ")}${skipped.length > 0 ? `; ${skipped.join(", and ")}` : ""}. Every one of these is a statement about simulated rules pilots, and none is about winning.`;
   const anyPassed = played.some((t) => t.verdict === "passed");
+  const acts = actsStudy();
   return {
-    why,
-    first: anyPassed
-      ? "Find which acts' card picks carry the effect and whether it reaches winning: a new registration with wins as its endpoint (the study's win counts are descriptive, not a registered endpoint)."
-      : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).",
+    why: why + (acts?.why ?? ""),
+    first: acts
+      ? acts.first
+      : anyPassed
+        ? "Find which acts' card picks carry the effect and whether it reaches winning: a new registration with wins as its endpoint (the study's win counts are descriptive, not a registered endpoint)."
+        : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).",
   };
 }
 

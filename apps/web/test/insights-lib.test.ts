@@ -26,6 +26,7 @@ import {
   type RunsEnd,
 } from "@/lib/insights";
 import { act2Data, hasPrice, pctShare, pts } from "@/lib/act2";
+import { actsData, pctShare as winShare } from "@/lib/acts";
 import { ASCENSION_LEVELS, ascensionStatus, openQuestions } from "@/lib/insights-content";
 import { allSets } from "@/lib/cardvalues";
 import { allSurprises, atlasData, coverageRows, surprisesFor } from "@/lib/insights-server";
@@ -560,10 +561,40 @@ describe("what is not known yet", () => {
         );
     }
     const anyPassed = played.some((t) => t.verdict === "passed");
+    const acts = actsData();
+    const actsPassed = Object.values(acts?.tests?.results ?? {}).some(
+      (t) => t.verdict === "passed",
+    );
+    // once the acts study (ADR-061) is registered it is the next step; its own result then picks the one after
     expect(q.later?.first).toMatch(
-      anyPassed ? /which acts' card picks carry the effect/ : /elite thresholds/,
+      acts
+        ? acts.tests
+          ? actsPassed
+            ? /Test other thresholds/
+            : /elite thresholds/
+          : /Wait for the held-out tests of the acts study/
+        : anyPassed
+          ? /which acts' card picks carry the effect/
+          : /elite thresholds/,
     );
     expect(q.later?.why).toContain("none is about winning");
+  });
+
+  it("says what the acts study (ADR-061) asks, or found, from its own data", () => {
+    const acts = actsData();
+    if (!acts) return;
+    expect(q.later?.why).toContain("ADR-061");
+    if (!acts.tests) {
+      // registered, not read: no result is quoted
+      expect(q.later?.why).toMatch(/no result yet/);
+      const own = (q.later?.why ?? "").slice((q.later?.why ?? "").indexOf("ADR-061"));
+      expect(own).not.toMatch(/won more games|won fewer games|was not shown to differ/);
+      return;
+    }
+    for (const t of Object.values(acts.tests.results))
+      expect(q.later?.why).toContain(
+        `${winShare(t.shares.arm)} against ${winShare(t.shares.baseline)} won`,
+      );
   });
 
   it("says that nothing is known about the live game, not that the answer is no", () => {
