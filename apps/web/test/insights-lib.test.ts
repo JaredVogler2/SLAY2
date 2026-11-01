@@ -25,6 +25,7 @@ import {
   share,
   type RunsEnd,
 } from "@/lib/insights";
+import { act2Data, hasPrice, pctShare, pts } from "@/lib/act2";
 import { ASCENSION_LEVELS, ascensionStatus, openQuestions } from "@/lib/insights-content";
 import { allSets } from "@/lib/cardvalues";
 import { allSurprises, atlasData, coverageRows, surprisesFor } from "@/lib/insights-server";
@@ -534,6 +535,35 @@ describe("what is not known yet", () => {
     expect(q.gold?.why).toContain(count(a0?.goldMedian ?? 0));
     const relics = INSIGHTS.levers.find((l) => l.id === "relics-along-the-way")?.rows[0];
     expect(q.relics?.why).toContain(points(relics?.difference ?? 0));
+  });
+
+  it("says what the registered Act-2 study found, from its own data, and picks the next step by whether any test passed", () => {
+    const d = act2Data();
+    const results = d?.tests?.results;
+    expect(q.later?.why).toContain("ADR-060");
+    if (!results) {
+      // before the held-out tests: the study is under way (or the repository has not got that far) and no result is quoted
+      expect(q.later?.why).not.toMatch(/past the second boss, [+−]/);
+      return;
+    }
+    const played = Object.values(results);
+    expect(played.length).toBeGreaterThan(0);
+    for (const t of played) {
+      expect(q.later?.why).toContain(
+        `${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} past the second boss`,
+      );
+      expect(q.later?.why).toContain(pts(t.difference));
+      // a rule that changes the first boss's share has it quoted beside the second boss's
+      if (hasPrice(t))
+        expect(q.later?.why).toContain(
+          `${pctShare(t.actOne.shares.arm)} against ${pctShare(t.actOne.shares.baseline)} past the first`,
+        );
+    }
+    const anyPassed = played.some((t) => t.verdict === "passed");
+    expect(q.later?.first).toMatch(
+      anyPassed ? /which acts' card picks carry the effect/ : /elite thresholds/,
+    );
+    expect(q.later?.why).toContain("none is about winning");
   });
 
   it("says that nothing is known about the live game, not that the answer is no", () => {

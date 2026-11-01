@@ -124,6 +124,25 @@ python3 scripts/inventory-game-data.py --check
 node scripts/export-site-data.mjs --check
 ```
 
+### The Act-2 study, command by command
+
+Registered in ADR-060 (part 1, addenda A and B, part 2). Every step below is a script of `scripts/studies/act2/` (frozen from the commit that registers the held-out run, `cc88476`) and refuses to run twice or from the wrong commit. The held-out run is about two hours on four workers; the development stage about two hours; the fit and the audits minutes. The simulator is the pinned local copy (`SLAY2_EXTERNAL_ROOT`, ADR-011).
+
+```bash
+export PY=python3 SLAY2_EXTERNAL_ROOT=/path/to/external/checkouts OMP_NUM_THREADS=1
+bash scripts/studies/act2/fit.sh                 # the Act-2 fit: ten files in experiments/cardvalue/ (about a minute); commit them
+bash scripts/studies/act2/dev.sh 4               # the development stage, 45 batches (resumable; start from a clean worktree of the commit that carries the fit)
+bash scripts/studies/act2/select-dev.sh          # the registered rule, once: experiments/act2/dev-selection.json (stops, writing nothing, if an identity check fails)
+python3 scripts/studies/act2/part2.py            # the numbers of part 2 of the record; write it, commit it with the batches and the selection, push it
+bash scripts/studies/act2/run-val.sh 4           # the held-out run from a clean worktree of the pushed commit (the preflight refuses anything else); RESUME=1 finishes an interrupted run
+bash scripts/studies/act2/audit.sh val           # every win re-derived, a 40-game sample of every batch
+bash scripts/studies/act2/pool.sh                # the two pooled tests once, the identity, determinism and observed-endpoint records
+python3 scripts/verify-pooled.py experiments/act2/pooled-act2-*.json --bootstrap    # an independent recomputation from the episodes (98 checks a file)
+node scripts/export-site-data.mjs && python3 scripts/act2-result-numbers.py         # the page's data and the numbers of the result section
+```
+
+What a third party can check without the simulator: the committed batches' manifests and compressed episodes (`python3 scripts/verify-pooled.py ... --bootstrap` and `slay2_sim pool` read only those), the hashes quoted in ADR-060 against the ten value files and the selection, and that the registration commit is an ancestor of the commit that holds the result. What needs the simulator: replaying the games, the win audits, and the fit's exploration batches' provenance. The replayed baseline of the held-out run is identical, game for game, to the baseline played at `687db50` for ADR-058 (10,000 of 10,000), which is the determinism record.
+
 ## The website's data
 
 `apps/web/src/content/*.generated.json` are generated, never edited: `node scripts/export-site-data.mjs` writes them from the

@@ -8,7 +8,9 @@ import {
   TEST_INFO,
   VERDICT_TEXT,
   formatP,
+  hasPrice,
   pctShare,
+  priceSentence,
   pts,
   robustSentence,
   downgradeNote,
@@ -271,15 +273,13 @@ function TestCard({ t, data }: { t: Act2Test; data: Act2Data }) {
       </div>
       <p className="mt-1 text-sm text-muted">{info.asks}</p>
       <p className="mt-2 text-sm text-parchment">{testSentence(t)}</p>
+      {hasPrice(t) ? <p className="mt-1 text-sm text-parchment">{priceSentence(t)}</p> : null}
       <p className="mt-1 text-xs text-muted">{robustSentence(t)}</p>
       {t.downgrade !== null ? <p className="mt-1 text-xs text-rose">{downgradeNote(t)}</p> : null}
       <p className="num mt-1 text-xs text-dim">
         {t.armOnly} pairs in which only the rule got past the second boss, {t.baselineOnly} in which
         only the baseline did · read at {fixed(data.level, 4)} (the study-wise 0.05 divided by
-        three)
-        {t.key === "L"
-          ? ` · past the first boss: ${pctShare(t.actOne.shares.arm)} against ${pctShare(t.actOne.shares.baseline)}`
-          : ""}
+        three) · wins (not a registered endpoint): {t.wins.arm} against {t.wins.baseline}
       </p>
       <Disclosure summary={<span>Each class on its own</span>}>
         <ScrollRegion label={`${info.title}: each class on its own`}>

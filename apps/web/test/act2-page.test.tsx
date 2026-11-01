@@ -126,7 +126,10 @@ const test = (key: Act2TestKey, verdict: Act2Verdict, difference = 0.012): Act2T
     baselineOnly: 190,
     p: 1e-6,
   },
-  actOne: { shares: { arm: 0.6, baseline: 0.66 }, armOnly: 100, baselineOnly: 400, p: 1e-30 },
+  actOne:
+    key === "L"
+      ? { shares: { arm: 0.6, baseline: 0.66 }, armOnly: 100, baselineOnly: 400, p: 1e-30 }
+      : { shares: { arm: 0.66, baseline: 0.66 }, armOnly: 0, baselineOnly: 0, p: 1 },
   wins: { arm: 160, baseline: 158, p: 0.9 },
   floorDifference: { meanAMinusB: 0.4, ci95: [0.2, 0.6] },
   perClass: CLASSES.map((c) => classResult(c, c === "silent" ? "level" : "arm")),
@@ -304,7 +307,9 @@ describe("the held-out tests", () => {
     );
     expect(screen.getByRole("heading", { name: "The old lead" })).toBeInTheDocument();
     expect(container).toHaveTextContent("behind the baseline");
-    expect(container).toHaveTextContent("past the first boss: 60.0 % against 66.0 %");
+    expect(container).toHaveTextContent(
+      "What it costs at the first boss: 60.0 % of the paired games got past it against 66.0 %",
+    );
     expect(container).toHaveTextContent(
       "No threshold for the second act qualified in the development screen, so it was not played on held-out seeds.",
     );
@@ -323,6 +328,19 @@ describe("the held-out tests", () => {
     expect(rows).toHaveLength(6);
     expect(within(at(rows, 2)).getByText("not shown")).toBeInTheDocument(); // Silent
     expect(within(at(rows, 1)).getByText("ahead")).toBeInTheDocument();
+  });
+
+  it("gives a rule that differs before Act 2 its price at the first boss in a sentence of its own, and none to a rule that plays the same first boss", () => {
+    const { container } = show(
+      data({ dev: dev(), tests: results(test("L", "passed"), test("P", "not-shown", 0.003)) }),
+    );
+    expect(container).toHaveTextContent(
+      "What it costs at the first boss: 60.0 % of the paired games got past it against 66.0 % (−6.0 points; 100 pairs in which only the rule did, 400 in which only the baseline did)",
+    );
+    const text = container.textContent;
+    expect(text.match(/What it (costs|changes) at the first boss/g)).toHaveLength(1); // the lead's, not P's
+    // the wins are shown as a count that is not a registered endpoint
+    expect(container).toHaveTextContent("wins (not a registered endpoint): 160 against 158");
   });
 
   it("names the level the tests were read at and the rule that was fixed first", () => {
@@ -368,6 +386,11 @@ describe("the ledger panel in Methods", () => {
     ).toBeInTheDocument();
     expect(within(at(rows, 3)).getByText("ahead of the baseline")).toBeInTheDocument();
     expect(table).toHaveTextContent("+1.2 points");
+    // the lead's price is in its row (the shares past the first boss), the others have none
+    expect(
+      within(at(rows, 1)).getByText("at the first boss: 60.0 % against 66.0 %"),
+    ).toBeInTheDocument();
+    expect(within(at(rows, 3)).queryByText(/at the first boss/)).toBeNull();
   });
 
   it("carries the determinism record and, for each test, the check on every pair with known endpoints", () => {

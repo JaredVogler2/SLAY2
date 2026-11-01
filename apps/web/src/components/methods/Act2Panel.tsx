@@ -9,6 +9,7 @@ import {
   VERDICT_TEXT,
   act2Data,
   formatP,
+  hasPrice,
   pctShare,
   pts,
   stageOf,
@@ -41,6 +42,12 @@ function Row({ k, t, d }: { k: Act2TestKey; t: Act2Test | undefined; d: Act2Data
         <>
           <td className="num py-2 pr-3 text-muted">
             {pctShare(t.shares.arm)} against {pctShare(t.shares.baseline)}
+            {hasPrice(t) ? (
+              <span className="block text-xs text-dim">
+                at the first boss: {pctShare(t.actOne.shares.arm)} against{" "}
+                {pctShare(t.actOne.shares.baseline)}
+              </span>
+            ) : null}
           </td>
           <td className="num py-2 pr-3 text-parchment">
             {pts(t.difference)}
