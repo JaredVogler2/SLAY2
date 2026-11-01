@@ -182,6 +182,31 @@ def test_the_whole_seed_interval_can_be_asked_for_the_act_two_endpoint_and_nothi
         build_pooled_comparison(pairs, iters=50, endpoint="act3")
 
 
+def test_the_whole_seed_interval_can_be_asked_for_the_wins_endpoint_and_nothing_else_moves(tmp_path: Path):
+    """ADR-061 reads the share of the games that were won: the file then says so, the other endpoints' tables are as they were, and a seed list
+    that is held out (the val2 partition) is not taken for development seeds."""
+    # a seed in 4 is won by A (the win ends in the third act); a seed in 8 by B; the rest die, some of them in the second act
+    rows_a = [(s, "win" if s % 4 == 0 else "death", 51 if s % 4 == 0 else 20, 1.0, 2 if s % 4 == 0 else 1 if s % 4 == 1 else 0) for s in range(400)]
+    rows_b = [(s, "win" if s % 8 == 0 else "death", 51 if s % 8 == 0 else 20, 1.0, 2 if s % 8 == 0 else 1 if s % 4 == 1 else 0) for s in range(400)]
+    held_out = {"file_sha256": "s" * 64, "partition": "val2"}
+    pairs = [(make_batch(tmp_path, f"alpha-w{k}", rows_a, character=c, seeds=held_out), make_batch(tmp_path, f"beta-w{k}", rows_b, character=c, seeds=held_out))
+             for k, c in enumerate(("Ironclad", "Silent"))]
+    plain = build_pooled_comparison(pairs, iters=2000, confidence=0.975)
+    won = build_pooled_comparison(pairs, iters=2000, confidence=0.975, endpoint="win")
+    cl = won["clusteredDifference"]
+    assert cl["endpoint"] == "win" and "won the run" in cl["definition"] and "boss" not in cl["definition"]
+    assert cl["meanAMinusB"] == pytest.approx(0.25 - 0.125)  # 1 seed in 4 against 1 in 8 won
+    assert cl["meanAMinusB"] == pytest.approx(won["wins"]["a"] / won["bothCompleted"] - won["wins"]["b"] / won["bothCompleted"])
+    lo, hi = cl["ciAtLevel"]["ci"]
+    assert lo < cl["meanAMinusB"] < hi and cl["ci95"][0] > lo
+    # the exact tables of all three endpoints are in the file whichever is asked for, and nothing but the interval's endpoint moved
+    assert won["wins"] == plain["wins"] and won["reachedAct2"] == plain["reachedAct2"] and won["reachedAct3"] == plain["reachedAct3"]
+    assert {k: v for k, v in won.items() if k not in ("clusteredDifference", "contentSha256")} == {k: v for k, v in plain.items() if k not in ("clusteredDifference", "contentSha256")}
+    assert won["role"] == "held-out" and plain["role"] == "held-out"
+    with pytest.raises(ValueError, match="endpoint"):
+        build_pooled_comparison(pairs, iters=50, endpoint="wins")
+
+
 def test_the_pooled_difference_is_also_checked_with_whole_seeds_as_the_resampling_unit(tmp_path: Path):
     from slay2_sim.stats import clustered_bootstrap_ci, paired_bootstrap_ci
 

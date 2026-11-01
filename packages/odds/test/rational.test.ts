@@ -75,6 +75,16 @@ describe("Rational arithmetic", () => {
     expect(sum([]).eq(0)).toBe(true);
   });
 
+  it("compares equal values as 0 in both directions, never as -0 (the property test below once failed on this)", () => {
+    for (const x of [R(0), R(-1), R(1, 3), R(-7, 2)]) {
+      expect(x.cmp(R(x.n, x.d))).toBe(0);
+      expect(R(x.n, x.d).cmp(x)).toBe(0);
+      expect(x.cmp(x) + x.cmp(x)).toBe(0);
+    }
+    expect(R(1, 2).cmp(R(1, 3))).toBe(1);
+    expect(R(1, 3).cmp(R(1, 2))).toBe(-1);
+  });
+
   it("satisfies the field axioms (property tests)", () => {
     fc.assert(
       fc.property(arbRational, arbRational, arbRational, (a, b, c) => {
@@ -91,7 +101,8 @@ describe("Rational arithmetic", () => {
         if (!a.isZero()) {
           expect(a.mul(a.inv()).eq(1)).toBe(true);
         }
-        expect(a.cmp(b)).toBe(-b.cmp(a));
+        // antisymmetry, written as a sum: -b.cmp(a) is -0 when the two are equal, and toBe compares with Object.is
+        expect(a.cmp(b) + b.cmp(a)).toBe(0);
       }),
       { numRuns: 300 },
     );

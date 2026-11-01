@@ -6,6 +6,7 @@ import { CardSurprises } from "@/components/insights/CardSurprises";
 import { CoverageMatrix } from "@/components/insights/CoverageMatrix";
 import { EvidenceLegend } from "@/components/insights/EvidenceBadge";
 import { Findings } from "@/components/insights/Findings";
+import { ActsStudy } from "@/components/insights/ActsStudy";
 import { LaterStudy } from "@/components/insights/LaterStudy";
 import { LeverLadder } from "@/components/insights/LeverLadder";
 import { OpenQuestions } from "@/components/insights/OpenQuestions";
@@ -15,6 +16,7 @@ import { SynergyAtlas } from "@/components/insights/SynergyAtlas";
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { act2Data } from "@/lib/act2";
+import { actsData } from "@/lib/acts";
 import { INSIGHTS, count, roughly } from "@/lib/insights";
 import { allSets } from "@/lib/cardvalues";
 import { act2CardName, atlasData } from "@/lib/insights-server";
@@ -27,6 +29,7 @@ export const metadata: Metadata = {
 };
 
 const LATER = act2Data();
+const ACTS = actsData();
 
 const SECTIONS: readonly (readonly [string, string])[] = [
   ["findings", "Findings"],
@@ -35,6 +38,8 @@ const SECTIONS: readonly (readonly [string, string])[] = [
   ["second-boss", "The second boss"],
   // the Act-2 study (ADR-060) is shown once its fit exists
   ...(LATER?.fit ? ([["later", "After the first boss"]] as const) : []),
+  // the acts study (ADR-061) is shown once it is registered
+  ...(ACTS ? ([["acts", "Does it win more?"]] as const) : []),
   ["cards", "Card surprises"],
   ["synergy", "Synergy atlas"],
   ["ascension", "Ascension"],
@@ -179,6 +184,17 @@ export default function InsightsPage() {
           title="Does anything change once the first boss is behind the run?"
         >
           <LaterStudy data={LATER} nameOf={act2CardName} />
+        </Panel>
+      ) : null}
+
+      {ACTS ? (
+        <Panel
+          id="acts"
+          className="scroll-mt-20"
+          eyebrow="A registered study"
+          title="Does a pickier card rule win more games, and in which act?"
+        >
+          <ActsStudy data={ACTS} />
         </Panel>
       ) : null}
 

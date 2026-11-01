@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
 import { parseAct2 } from "./lib/act2.mjs";
+import { parseActs } from "./lib/acts.mjs";
 import { parseAscensionNine } from "./lib/ascension9.mjs";
 import {
   parseAscensionLadder,
@@ -1567,6 +1568,13 @@ const outputs = {
     generatedFrom:
       "docs/DECISIONS.md (ADR-060) + experiments/cardvalue/*-a0-act2-v1.json (the fit) + experiments/act2/*.json (the development screen, the pooled tests, the per-class comparisons, the determinism record) + experiments/batches/*/manifest.json",
     ...parseAct2({ root, reports }),
+  },
+  // The acts study (ADR-061): the stage it is at (registered; the four held-out tests), read strictly by the reading code its registration froze
+  "acts.generated.json": {
+    schema: 1,
+    generatedFrom:
+      "docs/DECISIONS.md (ADR-061) + experiments/acts/*.json (the pooled tests, the per-class comparisons, the design checks, the all-pairs analysis, the independent recomputation) + experiments/batches/*/manifest.json",
+    ...parseActs({ root, reports }),
   },
   // The page of insights reads the committed experiment files; a repository without them (the small copies the exporter's tests build) has
   // nothing to say there, and says so instead of failing. A repository that has some of them and not the rest fails, strictly.

@@ -339,6 +339,19 @@ def manifest_paths() -> list[str]:
     )
 
 
+HELD_OUT = "held-out (val, val2)"
+DEVELOPMENT = "development (train, dev)"
+
+
+def seed_use(partition: str) -> str:
+    """What the seeds of a batch were for. A partition this does not know (the sealed ``test`` one above all) is an error to see, not a row."""
+    if partition in ("val", "val2"):
+        return HELD_OUT
+    if partition in ("train", "dev"):
+        return DEVELOPMENT
+    raise ValueError(f"no known use for batches on the {partition!r} partition")
+
+
 def table_games() -> str:
     """Games actually played and completed (a win or a death), by class and by what the seeds were for. Void batches are not here."""
     manifests = manifest_paths()
@@ -347,7 +360,7 @@ def table_games() -> str:
     for p in manifests:
         m = load(p)
         c = m["summary"]["counts"]
-        kind = "held-out (val)" if m["seeds"]["partition"] == "val" else "development (train, dev)"
+        kind = seed_use(m["seeds"]["partition"])
         key = (m["config"]["character"], kind)
         a = acc.setdefault(key, dict.fromkeys(cols, 0))
         a["batches"] += 1
@@ -357,8 +370,8 @@ def table_games() -> str:
         a["errors"] += c["simulator_error"]
         a["timeouts"] += c["timeout"]
     rows = []
-    total = {k: dict.fromkeys(cols, 0) for k in ("held-out (val)", "development (train, dev)")}
-    for (cls, kind), a in sorted(acc.items(), key=lambda kv: (kv[0][0], kv[0][1] != "held-out (val)")):
+    total = {k: dict.fromkeys(cols, 0) for k in (HELD_OUT, DEVELOPMENT)}
+    for (cls, kind), a in sorted(acc.items(), key=lambda kv: (kv[0][0], kv[0][1] != HELD_OUT)):
         rows.append(f"| {cls} | {kind} | " + " | ".join(f"{a[k]:,}" for k in cols) + " |")
         for k in cols:
             total[kind][k] += a[k]

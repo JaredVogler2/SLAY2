@@ -143,6 +143,21 @@ node scripts/export-site-data.mjs && python3 scripts/act2-result-numbers.py     
 
 What a third party can check without the simulator: the committed batches' manifests and compressed episodes (`python3 scripts/verify-pooled.py ... --bootstrap` and `slay2_sim pool` read only those), the hashes quoted in ADR-060 against the ten value files and the selection, and that the registration commit is an ancestor of the commit that holds the result. What needs the simulator: replaying the games, the win audits, and the fit's exploration batches' provenance. The replayed baseline of the held-out run is identical, game for game, to the baseline played at `687db50` for ADR-058 (10,000 of 10,000), which is the determinism record.
 
+### The acts study, command by command
+
+Registered in ADR-061 (one registration, no development stage). Every step below is a script of `scripts/studies/acts/` (frozen from the commit that registers the held-out run) and refuses to run twice or from the wrong commit. The held-out run is about five hours on four workers (75,000 games); the audits and the pooling under an hour.
+
+```bash
+export PY=python3 SLAY2_EXTERNAL_ROOT=/path/to/external/checkouts OMP_NUM_THREADS=1
+bash scripts/studies/acts/run-val.sh 4           # S, the lead, A1, A2, A3 on the 3,000 val2 seeds of each class, from a clean worktree of the pushed registration commit (the preflight refuses anything else); RESUME=1 finishes an interrupted run
+bash scripts/studies/acts/audit.sh val2          # every win re-derived, a 40-game sample of every batch
+bash scripts/studies/acts/pool.sh                # the four pooled tests once (--endpoint win), the identity and boss-agreement checks, the all-pairs analysis
+python3 scripts/verify-pooled.py experiments/acts/pooled-acts-*.json --bootstrap    # an independent recomputation from the episodes
+node scripts/export-site-data.mjs                # the page's data (scripts/lib/acts.mjs reads the files strictly)
+```
+
+The seed file `experiments/seeds/ironclad-a0-v3.json` is made by `python3 -m slay2_sim seeds --name ironclad-a0-v3 --master 20261025 --sizes train=5000,val=2000,test=4000,dev=10000,val2=3000` (the first four partitions are those of v2, byte for byte; `val2` is appended after `dev` in the same stream). What a third party can check without the simulator is as for the Act-2 study: the committed batches' manifests and compressed episodes, the hashes quoted in ADR-061, and that the registration commit is an ancestor of the commit that holds the result.
+
 ## The website's data
 
 `apps/web/src/content/*.generated.json` are generated, never edited: `node scripts/export-site-data.mjs` writes them from the

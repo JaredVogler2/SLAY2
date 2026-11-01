@@ -34,12 +34,12 @@ export const closeP = (x, y) => Math.abs(x - y) <= 1e-9 * Math.max(x, y) + 1e-35
 export function commonBatchProblem(
   current,
   cls,
-  { seeds, keepRelics, adr, classStartExempt = false, ascension = 0 },
+  { seeds, keepRelics, adr, classStartExempt = false, ascension = 0, partition = "val" },
 ) {
   if (current.character !== EXACT[cls])
     return `it was played as "${current.character}", not as ${EXACT[cls]}`;
-  if (current.partition !== "val" || current.seeds !== seeds)
-    return `it is not the ${seeds} val seeds`;
+  if (current.partition !== partition || current.seeds !== seeds)
+    return `it is not the ${seeds} ${partition} seeds`;
   if (current.ascension !== ascension || current.profile !== "veteran")
     return `it is not Ascension ${ascension} with the veteran profile`;
   if (current.keepRelics !== keepRelics)
@@ -57,11 +57,20 @@ export function commonBatchProblem(
 // held-out comparison of the five classes once each, every batch it names is the batch on disk (same content hash) and passes `check`
 // (the registration's own conditions) and carries a passing sample audit, the pooled counts are the sums of the classes', every table adds
 // up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts.
-export function readPooledHeldOut({ where, path, names: [a, b], seeds, byId, check, ascension = 0 }) {
+export function readPooledHeldOut({
+  where,
+  path,
+  names: [a, b],
+  seeds,
+  byId,
+  check,
+  ascension = 0,
+  partition = "val",
+}) {
   const t = JSON.parse(readFileSync(path, "utf8"));
   if (t.kind !== "pooled-paired-comparison" || t.schema !== 1)
     throw new Error(`${where}: not a pooled paired comparison of schema 1`);
-  if (t.cohort?.partition !== "val" || t.role !== "held-out")
+  if (t.cohort?.partition !== partition || t.role !== "held-out")
     throw new Error(`${where}: not a held-out comparison`);
   if (t.cohort.ascension !== ascension || t.cohort.profile !== "veteran")
     throw new Error(`${where}: not played at Ascension ${ascension} with the veteran profile`);

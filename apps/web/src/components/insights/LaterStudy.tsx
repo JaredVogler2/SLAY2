@@ -7,6 +7,7 @@ import {
   CLASS_VERDICT_TEXT,
   TEST_INFO,
   VERDICT_TEXT,
+  excludedSentence,
   formatP,
   hasPrice,
   pctShare,
@@ -97,7 +98,8 @@ function FitBlock({ data, nameOf }: { data: Act2Data; nameOf: NameOf }) {
         ranking carries over at a quarter of its strength. The intervals resample whole game seeds.
         The values are fitted to runs a rules pilot played with partly random picks, so a card that
         pilot plays badly is undervalued, and one hundred cards fitted to a few hundred passes leave
-        each single card uncertain; that is why the tests below ask whether following them helps.
+        each single card uncertain; that is why the question is whether a pilot that follows them
+        does better, which a development screen asked first.
       </p>
       {fit.classes
         .filter((c) => c.fitted && c.moved.length > 0)
@@ -165,7 +167,7 @@ function fitText(c: Act2FitClass, gate: number): string {
     return `too few runs to ask (${n(c.passed)} passed): the shown ranking is kept`;
   if (!c.fitted)
     return `none found (held-out gain ${signed(c.gain, 4)} nats a fight, below ${fixed(gate, 3)}): the shown ranking is kept`;
-  return `found: ${c.movedCount} cards, held-out loss ${fixed(c.logLoss?.full ?? 0, 3)} against ${fixed(c.logLoss?.scaleOnly ?? 0, 3)} nats a fight with the scale alone; the refitted values are used in the tests`;
+  return `found: ${c.movedCount} cards, held-out loss ${fixed(c.logLoss?.full ?? 0, 3)} against ${fixed(c.logLoss?.scaleOnly ?? 0, 3)} nats a fight with the scale alone; a pilot that follows them was screened on development seeds`;
 }
 
 function ScreenBlock({ data }: { data: Act2Data }) {
@@ -274,6 +276,7 @@ function TestCard({ t, data }: { t: Act2Test; data: Act2Data }) {
       <p className="mt-1 text-sm text-muted">{info.asks}</p>
       <p className="mt-2 text-sm text-parchment">{testSentence(t)}</p>
       {hasPrice(t) ? <p className="mt-1 text-sm text-parchment">{priceSentence(t)}</p> : null}
+      <p className="mt-1 text-xs text-muted">{excludedSentence(t)}</p>
       <p className="mt-1 text-xs text-muted">{robustSentence(t)}</p>
       {t.downgrade !== null ? <p className="mt-1 text-xs text-rose">{downgradeNote(t)}</p> : null}
       <p className="num mt-1 text-xs text-dim">
@@ -381,10 +384,10 @@ export function LaterStudy({ data, nameOf }: { data: Act2Data; nameOf: NameOf })
     <div className="space-y-8">
       <p className="max-w-3xl text-sm text-muted">
         The card values on this site are for getting past the first boss. This study asked three
-        things about what happens after it, and fixed how each would be read before any game of it
-        was played ({data.adr}). Every answer is about the rules-playing pilots of this project in a
-        simulator that is unverified against the live game; none is about winning, which these
-        pilots do very rarely, or about a player.
+        things about what happens after it, and fixed how each would be read before any held-out
+        game of it was played ({data.adr}). Every answer is about the rules-playing pilots of this
+        project in a simulator that is unverified against the live game, at Ascension 0 with the
+        relics kept; none is about winning, which these pilots do very rarely, or about a player.
       </p>
       {data.tests ? null : (
         <p className="max-w-3xl rounded-lg border border-line bg-charcoal/40 px-3 py-2 text-sm text-parchment">
