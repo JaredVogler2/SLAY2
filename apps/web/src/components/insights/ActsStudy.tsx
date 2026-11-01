@@ -161,8 +161,8 @@ export function ActsStudy({ data }: { data: ActsData }) {
           Where the study stands: it is registered and its held-out games have not all been played
           and read, so there is no result yet. The registration also states what the sample can and
           cannot see: the pilot that is pickier in Act 3 only can differ from the baseline only in
-          the runs that reach Act 3, so &ldquo;not shown&rdquo; is the expected result for it
-          whatever the effect.
+          the runs that reach Act 3, so &ldquo;not shown&rdquo; is the likely result for it unless
+          its effect is large.
         </p>
       )}
       <TestsBlock data={data} />

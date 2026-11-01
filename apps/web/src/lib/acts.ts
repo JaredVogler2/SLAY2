@@ -290,5 +290,5 @@ export function meaningOf(results: Record<ActsTestKey, ActsTest>): readonly stri
 
 /** The limit the registration put beside the third-act test: it can differ from the baseline only in the runs that reach the third act. */
 export function actThreeNote(t: ActsTest): string {
-  return `The third-act test can differ from the baseline only in the runs that get that far (${pctShare(t.actTwo.shares.baseline, 1)} of the baseline's paired games got past the second boss), so a result of not shown there was the expected one whatever the effect.`;
+  return `The third-act test can differ from the baseline only in the runs that get that far (${pctShare(t.actTwo.shares.baseline, 1)} of the baseline's paired games got past the second boss), so a result of not shown there was the likely one unless the effect is large.`;
 }
