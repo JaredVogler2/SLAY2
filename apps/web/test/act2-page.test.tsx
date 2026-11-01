@@ -223,7 +223,7 @@ describe("the fit stage", () => {
     expect(screen.queryByText("The development screen")).toBeNull();
     expect(screen.queryByText("The held-out tests")).toBeNull();
     expect(container).toHaveTextContent(
-      "fixed how each would be read before any game of it was played (ADR-060)",
+      "fixed how each would be read before any held-out game of it was played (ADR-060)",
     );
     expect(container).toHaveTextContent("none is about winning");
     expect(container).toHaveTextContent(
@@ -343,6 +343,15 @@ describe("the held-out tests", () => {
     expect(container).toHaveTextContent("wins (not a registered endpoint): 160 against 158");
   });
 
+  it("says on each card how many pairs were left out and the level of the interval, and that wins are not an endpoint", () => {
+    const { container } = show(data({ dev: dev(), tests: results(test("L", "passed")) }));
+    expect(container).toHaveTextContent(
+      "300 of 10,000 pairs were left out because a game did not finish (a simulator error or a step limit), never read as a loss.",
+    );
+    expect(container).toHaveTextContent("98.3 % interval");
+    expect(container).toHaveTextContent("at Ascension 0 with the relics kept");
+  });
+
   it("names the level the tests were read at and the rule that was fixed first", () => {
     const { container } = show(data({ dev: dev(), tests: results(test("L", "not-shown")) }));
     expect(container).toHaveTextContent("ahead only if the exact p is below 0.0167");
@@ -386,6 +395,7 @@ describe("the ledger panel in Methods", () => {
     ).toBeInTheDocument();
     expect(within(at(rows, 3)).getByText("ahead of the baseline")).toBeInTheDocument();
     expect(table).toHaveTextContent("+1.2 points");
+    expect(table).toHaveTextContent("300 left out");
     // the lead's price is in its row (the shares past the first boss), the others have none
     expect(
       within(at(rows, 1)).getByText("at the first boss: 60.0 % against 66.0 %"),
@@ -400,11 +410,51 @@ describe("the ledger panel in Methods", () => {
     };
     const { container } = render(<Act2Panel data={data({ dev: dev(), tests: t })} />);
     expect(container).toHaveTextContent(
-      "9,700 of 9,738 of its games are the games the Ascension 9 study played earlier",
+      "9,700 of 9,738 of its games are the games the baseline played for ADR-058 (the Ascension 0 twin of its Ascension 9 study)",
     );
     expect(container).toHaveTextContent("38 differ; the tests use the replayed baseline");
     expect(container).toHaveTextContent("also read on the pairs whose two endpoints are known");
     expect(container).toHaveTextContent("L: +1.2 points (exact p = 1.0e-6, 9,900 pairs)");
+  });
+});
+
+describe("what the Methods panel says besides the table", () => {
+  it("says that it is a simulation never checked against the game, at Ascension 0, and not about winning", () => {
+    const { container } = render(
+      <Act2Panel
+        data={data({
+          dev: dev(),
+          tests: results(test("L", "passed"), test("P", "not-shown", 0.003)),
+        })}
+      />,
+    );
+    expect(container).toHaveTextContent(
+      "a simulator that has never been compared with the live game",
+    );
+    expect(container).toHaveTextContent("at Ascension 0 with the relics kept");
+    expect(container).toHaveTextContent("none of it is about winning or about a player");
+    expect(container).toHaveTextContent("how to read a result was fixed before any held-out game");
+    // the number of tests that were played, and what the screen sent forward
+    expect(container).toHaveTextContent("two of the three were");
+    expect(container).toHaveTextContent("sent the pickier second act forward at the threshold 0.2");
+    expect(container).toHaveTextContent("did not send the refitted values forward");
+  });
+
+  it("gives each played test class by class, as the registration asks of every page that says passed", () => {
+    render(
+      <Act2Panel
+        data={data({
+          dev: dev(),
+          tests: results(test("L", "passed"), test("P", "not-shown", 0.003)),
+        })}
+      />,
+    );
+    const table = screen.getByRole("table", { name: /class and each test played/ });
+    const rows = within(table).getAllByRole("row");
+    expect(rows).toHaveLength(6); // the header and five classes
+    expect(within(at(rows, 1)).getByText("Ironclad")).toBeInTheDocument();
+    expect(table).toHaveTextContent("12.0 % against 10.0 %");
+    expect(screen.getByText(/ten class tests were read/)).toBeInTheDocument();
   });
 });
 
@@ -414,7 +464,10 @@ describe("the second analysis and what it can withhold", () => {
     expect(container).toHaveTextContent(
       "Checked again on the 9,900 pairs whose two endpoints are known",
     );
-    expect(container).toHaveTextContent("55 of the rule's, 54 of the baseline's");
+    // the counts are over the games each arm played, not over the pairs kept: the sentence says so
+    expect(container).toHaveTextContent(
+      "of the 10,000 games each played, 55 of the rule's and 54 of the baseline's ended that way",
+    );
     expect(container).not.toHaveTextContent("The primary test alone would read");
   });
 

@@ -233,17 +233,20 @@ export function pctShare(x: number, digits = 1): string {
 
 export { formatP };
 
+/** The level of the interval a test is read at, 1 - 0.05 / 3 (ADR-060 item 3), as a percentage. */
+const LEVEL_TEXT = `${((1 - 0.05 / 3) * 100).toFixed(1)} %`;
+
 /** The one-sentence reading of a test, by its verdict and with its figures. */
 export function testSentence(t: Act2Test): string {
   const d = pts(t.difference);
   const ci = `${pts(t.ci[0] ?? 0)} to ${pts(t.ci[1] ?? 0)}`;
   switch (t.verdict) {
     case "passed":
-      return `Ahead of the baseline by ${d} (interval ${ci}; exact ${formatP(t.p)}): ${pctShare(t.shares.arm)} of ${t.pairs.toLocaleString("en-US")} paired games got past the Act-2 boss against ${pctShare(t.shares.baseline)}.`;
+      return `Ahead of the baseline by ${d} (${LEVEL_TEXT} interval ${ci}; exact ${formatP(t.p)}): ${pctShare(t.shares.arm)} of ${t.pairs.toLocaleString("en-US")} paired games got past the Act-2 boss against ${pctShare(t.shares.baseline)}.`;
     case "reversed":
-      return `Behind the baseline by ${pts(-t.difference)} (interval ${ci}; exact ${formatP(t.p)}): ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games.`;
+      return `Behind the baseline by ${pts(-t.difference)} (${LEVEL_TEXT} interval ${ci}; exact ${formatP(t.p)}): ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games.`;
     case "not-shown":
-      return `No difference shown: ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games (${d}, interval ${ci}; exact ${formatP(t.p)}).`;
+      return `No difference shown: ${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} in ${t.pairs.toLocaleString("en-US")} paired games (${d}, ${LEVEL_TEXT} interval ${ci}; exact ${formatP(t.p)}).`;
   }
 }
 
@@ -268,7 +271,14 @@ export function priceSentence(t: Act2Test): string {
 /** The second analysis of a test: the same comparison on every pair whose two endpoints are known (errors after the Act-2 boss are passes). */
 export function robustSentence(t: Act2Test): string {
   const r = t.robust;
-  return `Checked again on the ${r.pairs.toLocaleString("en-US")} pairs whose two endpoints are known, with the games that ended in an error after the Act-2 boss counted as passes (${String(r.erroredAfterTheBoss.arm)} of the rule's, ${String(r.erroredAfterTheBoss.baseline)} of the baseline's): ${pctShare(r.shares.arm)} against ${pctShare(r.shares.baseline)} (${pts(r.difference)}, ${String(r.armOnly)} against ${String(r.baselineOnly)} pairs, exact ${formatP(r.p)}).`;
+  const n = (x: number): string => x.toLocaleString("en-US");
+  return `Checked again on the ${n(r.pairs)} pairs whose two endpoints are known, a game that ended in an error after the Act-2 boss counting as having got past it (of the ${n(t.pairedSeeds)} games each played, ${String(r.erroredAfterTheBoss.arm)} of the rule's and ${String(r.erroredAfterTheBoss.baseline)} of the baseline's ended that way): ${pctShare(r.shares.arm)} against ${pctShare(r.shares.baseline)} (${pts(r.difference)}, ${String(r.armOnly)} against ${String(r.baselineOnly)} pairs, exact ${formatP(r.p)}).`;
+}
+
+/** How many pairs a test left out, said where the figures are, because "excluded and counted" is a rule of the design (ADR-060 item 3). */
+export function excludedSentence(t: Act2Test): string {
+  const n = (x: number): string => x.toLocaleString("en-US");
+  return `${n(t.excluded)} of ${n(t.pairedSeeds)} pairs were left out because a game did not finish (a simulator error or a step limit), never read as a loss.`;
 }
 
 /** Why a result the primary test would have called ahead or behind is read as not shown (empty when nothing was withheld). */

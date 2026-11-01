@@ -20,6 +20,8 @@ import {
 
 const n = (x: number): string => x.toLocaleString("en-US");
 const KEYS: readonly Act2TestKey[] = ["L", "P", "V"];
+const COUNT_WORD = ["none", "one", "two", "three"] as const;
+const cap = (c: string): string => c.charAt(0).toUpperCase() + c.slice(1);
 
 function why(key: Act2TestKey, d: Act2Data): string {
   if (key === "L") return "always tested";
@@ -58,7 +60,7 @@ function Row({ k, t, d }: { k: Act2TestKey; t: Act2Test | undefined; d: Act2Data
           <td className="num py-2 pr-3 text-muted">
             {n(t.pairs)}
             <span className="block text-xs text-dim">
-              {t.armOnly} / {t.baselineOnly} discordant
+              {t.armOnly} / {t.baselineOnly} discordant · {n(t.excluded)} left out
             </span>
           </td>
           <td className="num py-2 pr-3 text-muted">{formatP(t.p)}</td>
@@ -91,6 +93,7 @@ export function Act2Panel({ data = act2Data() }: { data?: Act2Data | null }) {
   if (!d?.fit) return null;
   const stage = stageOf(d);
   const tests = d.tests;
+  const played = KEYS.filter((k) => tests?.results[k] !== undefined);
   return (
     <Panel
       id="act2"
@@ -101,16 +104,32 @@ export function Act2Panel({ data = act2Data() }: { data?: Act2Data | null }) {
     >
       <div className="space-y-4 text-sm text-muted">
         <p>
-          Three pilots were compared with the baseline (the pilot that follows the shown card
-          values) on whether the run got past the <strong className="text-parchment">second</strong>{" "}
-          boss: one that takes only cards worth 0.2 or more in every act (the old lead of ADR-036),
-          one that is pickier only in Act 2, and one that follows card values refitted for the
-          second boss, in Act 2 only. Each test pools the five classes into one exact McNemar test
-          on {n(d.seeds)} held-out seeds a class with the relics kept, and is read at{" "}
-          {d.level.toFixed(4)} (0.05 divided by three) with a whole-seed interval that must exclude
-          zero. Which of the pickier-Act-2 thresholds and whether the refitted values were played
-          was decided by a rule written down before the development games.
+          Does any rule for taking cards change how often a simulated run gets past the{" "}
+          <strong className="text-parchment">second</strong> boss? Three pilots were registered
+          against the baseline (the pilot that follows the shown card values): one that takes only
+          cards worth 0.2 or more in every act (the old lead of ADR-036), one that is pickier only
+          in Act 2, and one that follows card values refitted for the second boss, in Act 2 only. A
+          development screen on other seeds chose which of them were played on held-out seeds
+          {tests
+            ? ` (${COUNT_WORD[played.length] ?? String(played.length)} of the three were)`
+            : ""}
+          . Each test pools the five classes into one exact McNemar test on {n(d.seeds)} held-out
+          seeds a class and is read at {d.level.toFixed(4)} (0.05 divided by three) with a
+          whole-seed interval that must exclude zero; how to read a result was fixed before any
+          held-out game. Everything here is play by rules-based pilots in a simulator that has never
+          been compared with the live game, at Ascension 0 with the relics kept: none of it is about
+          winning or about a player.
         </p>
+        {d.dev ? (
+          <p>
+            The screen{" "}
+            {d.dev.P.advance
+              ? `sent the pickier second act forward at the threshold ${String(d.dev.P.lateThreshold)}`
+              : "sent no threshold for the second act forward"}{" "}
+            and {d.dev.V.advance ? "sent" : "did not send"} the refitted values forward; its table
+            is on the Insights page.
+          </p>
+        ) : null}
         {tests ? (
           <ScrollRegion label="The three held-out tests of the Act-2 study">
             <table className="w-full min-w-[40rem] text-left text-sm">
@@ -127,7 +146,7 @@ export function Act2Panel({ data = act2Data() }: { data?: Act2Data | null }) {
                     Past the second boss
                   </th>
                   <th scope="col" className="py-2 pr-3 font-medium">
-                    Difference (interval at {d.level.toFixed(4)})
+                    Difference ({((1 - d.level) * 100).toFixed(1)} % interval)
                   </th>
                   <th scope="col" className="py-2 pr-3 font-medium">
                     Pairs
@@ -155,14 +174,71 @@ export function Act2Panel({ data = act2Data() }: { data?: Act2Data | null }) {
               : "the fit is done; the development screen has not been read and no held-out result exists."}
           </p>
         )}
+        {tests && played.length > 0 ? (
+          <Disclosure summary={<span>Each class on its own</span>}>
+            <ScrollRegion label="The Act-2 tests, class by class">
+              <table className="w-full min-w-[32rem] text-left text-sm">
+                <caption className="sr-only">
+                  For each class and each test played: the share past the Act-2 boss for the rule
+                  against the baseline, the difference and the exact p (each class on its own,
+                  uncorrected)
+                </caption>
+                <thead>
+                  <tr className="border-b border-line text-muted">
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      Class
+                    </th>
+                    {played.map((k) => (
+                      <th key={k} scope="col" className="py-2 pr-3 font-medium">
+                        {TEST_INFO[k].title}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(tests.results[played[0] ?? "L"]?.perClass ?? []).map((c0, i) => (
+                    <tr key={c0.character} className="border-b border-line/60 align-top">
+                      <th scope="row" className="py-2 pr-3 text-left font-normal text-parchment">
+                        {cap(c0.character)}
+                      </th>
+                      {played.map((k) => {
+                        const c = tests.results[k]?.perClass[i];
+                        return (
+                          <td key={k} className="num py-2 pr-3 text-muted">
+                            {c ? (
+                              <>
+                                {pctShare(c.shares.arm)} against {pctShare(c.shares.baseline)}
+                                <span className="block text-xs text-dim">
+                                  {pts(c.difference)} · {c.armOnly} / {c.baselineOnly} ·{" "}
+                                  {formatP(c.p)}
+                                </span>
+                              </>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </ScrollRegion>
+            <p className="mt-2 text-xs text-dim">
+              Secondary and uncorrected: ten class tests were read, so one of them being below 0.01
+              is not a finding by itself; each class is shown so that a gain is not read as the same
+              everywhere.
+            </p>
+          </Disclosure>
+        ) : null}
         {tests ? (
           <Disclosure summary={<span>The records behind the tests</span>}>
             <ul className="list-disc space-y-1.5 pl-5">
               <li>
                 The baseline was played again for this study:{" "}
                 <span className="num text-parchment">{n(tests.determinism.identical)}</span> of{" "}
-                {n(tests.determinism.shared)} of its games are the games the Ascension 9 study
-                played earlier, game for game
+                {n(tests.determinism.shared)} of its games are the games the baseline played for
+                ADR-058 (the Ascension 0 twin of its Ascension 9 study), game for game
                 {tests.determinism.different > 0
                   ? ` (${n(tests.determinism.different)} differ; the tests use the replayed baseline)`
                   : ""}

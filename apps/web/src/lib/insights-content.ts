@@ -107,7 +107,7 @@ function studyLine(t: Act2Test): string {
       ? "got more runs past it"
       : t.verdict === "reversed"
         ? "got fewer runs past it"
-        : "showed no difference there";
+        : "was not shown to differ there";
   const price = hasPrice(t)
     ? `, and ${pctShare(t.actOne.shares.arm)} against ${pctShare(t.actOne.shares.baseline)} past the first (${pts(t.actOne.shares.arm - t.actOne.shares.baseline)})`
     : "";

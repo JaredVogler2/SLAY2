@@ -54,7 +54,7 @@ def main() -> int:
         r = t["robust"]
         print(
             f"- **Observed-endpoint check (addendum B):** {r['pairs']:,} pairs whose two endpoints are known ({r['droppedUnknown']:,} dropped); games that ended in an error after the Act-2 boss "
-            f"counted as passes ({r['erroredAfterTheBoss']['arm']} of the arm's, {r['erroredAfterTheBoss']['baseline']} of S's); {pct(r['shares']['arm'])} against {pct(r['shares']['baseline'])}, "
+            f"counted as passes (of the {t['pairedSeeds']:,} games each played, {r['erroredAfterTheBoss']['arm']} of the arm's and {r['erroredAfterTheBoss']['baseline']} of S's ended that way); {pct(r['shares']['arm'])} against {pct(r['shares']['baseline'])}, "
             f"{pts(r['difference'])}, {r['armOnly']:,} against {r['baselineOnly']:,}, exact {pval(r['p'])}. Share of the primary's pairs dropped: {pct(t['excludedFraction'])}."
         )
         why = {None: "nothing was withheld", "robustness": "withheld: the check did not show the same difference at an exact p below 0.05", "excluded": "withheld: more than a tenth of the pairs were dropped"}[t["downgrade"]]
