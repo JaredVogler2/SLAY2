@@ -62,14 +62,17 @@ def record(i: int, arm: str) -> tuple:
 def build(tmp: Path, audited: bool = True) -> Path:
     work = tmp / "work"
     (work / "sim").mkdir(parents=True)
-    for rel in ("scripts/lib/acts.mjs", "scripts/lib/pooled.mjs", "scripts/verify-pooled.py"):
+    for rel in ("scripts/lib/acts.mjs", "scripts/lib/pooled.mjs", "packages/game-data/data/stub.txt", "experiments/cardvalue/stub.txt", "experiments/seeds/stub.txt", "external/pins.json"):
         (work / rel).parent.mkdir(parents=True, exist_ok=True)
         (work / rel).write_text("stub " + rel + "\n")
+    shutil.copy(REPO / "scripts" / "verify-pooled.py", work / "scripts" / "verify-pooled.py")    # the real independent verifier: pool.sh runs it
+    (work / ".gitignore").write_text("__pycache__/\n*.pyc\n")             # as the repository's own: the interpreter's caches are not untracked files
     (work / "docs").mkdir()
     (work / "docs" / "DECISIONS.md").write_text("## 2026-11-01 — ADR-061: the study\n\nThe registration is headed 'Registration of ADR-061 (frozen choices)'.\n")
-    shutil.copytree(REPO / "sim" / "slay2_sim", work / "sim" / "slay2_sim", ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copytree(REPO / "sim" / "slay2_sim", work / "sim" / "slay2_sim", ignore=shutil.ignore_patterns("__pycache__", "tests"))
     shutil.copytree(REPO / "scripts" / "studies" / "acts", work / "scripts" / "studies" / "acts", ignore=shutil.ignore_patterns("__pycache__"))
-    batches = work / "experiments" / "batches"
+    git(work, "git init -q -b main && git add -A && git commit -q -m registration")   # HEAD carries the marker: the code and the reading code are the registration's
+    batches = work / "experiments" / "batches"                                         # the batches are new, untracked files, as they are in the worktree that plays them
     batches.mkdir(parents=True)
     for c in CLASSES:
         for arm in ("s", "lead", "a1", "a2", "a3"):
@@ -82,7 +85,6 @@ def build(tmp: Path, audited: bool = True) -> Path:
             if audited:
                 (d / "sample-audit.json").write_text(json.dumps({"all_verified": True, "verified": 40, "sample": {"drawn": 40}, "ledger": {"ok": True}, "batch_content_sha256": "c" * 64}))
                 (d / "wins-audit.json").write_text(json.dumps({"all_verified": True, "wins_audited": m["summary"]["counts"]["win"], "wins_in_batch": m["summary"]["counts"]["win"]}))
-    git(work, "git init -q -b main && git add -A && git commit -q -m registration")   # HEAD carries the marker: the reading code is the registration's
     return work
 
 
@@ -118,6 +120,19 @@ def test_it_writes_each_comparison_once_at_the_wins_endpoint_and_the_checks_of_t
     rob = json.loads((out / "robustness-all-pairs.json").read_text())
     assert rob["kind"] == "acts-robustness" and rob["schema"] == 1 and sorted(rob["tests"]) == ["A1", "A2", "A3", "L"]
     assert rob["tests"]["A3"]["pooled"]["primaryExcludedFraction"] == 0 and rob["tests"]["A3"]["pooled"]["pairs"] == 5 * N
+    # the records are made from the batches: their content hashes are the manifests' (make_batch writes one hash for all)
+    assert set(rob["contentSha256"]) == {f"acts-{a}-{c}-a0-veteran-keeprelics-val2-n3000" for a in ("s", "lead", "a1", "a2", "a3") for c in CLASSES}
+    assert all(h == "c" * 64 for h in rob["contentSha256"].values())
+    assert set(json.loads((out / "identity" / "A3.json").read_text())["contentSha256"]) == {f"acts-{a}-{c}-a0-veteran-keeprelics-val2-n3000" for a in ("s", "a3") for c in CLASSES}
+    # the independent recomputation is a step of the script and its record is written with the results
+    ver = json.loads((out / "verification.json").read_text())
+    assert ver["kind"] == "acts-verification" and sorted(ver["files"]) == [f"pooled-acts-{t}.json" for t in ("A1", "A2", "A3", "L")]
+    import hashlib
+
+    for name, rec in ver["files"].items():
+        assert rec["exactProblems"] == [] and rec["exactChecks"] > 60 and rec["bootstrapChecks"] > rec["exactChecks"]
+        assert rec["sha256"] == hashlib.sha256((out / name).read_bytes()).hexdigest()
+    assert not list((work / "artifacts" / "acts").glob("pool.*"))                  # the scratch directory is gone
     # each test is run once
     again = run(work)
     assert again.returncode != 0 and "each test is run once" in again.stderr
@@ -142,7 +157,7 @@ def test_the_reading_code_must_be_the_registration_s(tmp_path):
     (work / "scripts" / "lib" / "acts.mjs").write_text("changed\n")
     git(work, "git add -A && git commit -q -m 'changed the reader'")
     r = run(work)
-    assert r.returncode != 0 and "the reading code changed after the registration commit" in r.stderr and "scripts/lib/acts.mjs" in r.stderr
+    assert r.returncode != 0 and "is not that of the registration commit" in r.stderr and "scripts/lib/acts.mjs" in r.stderr
 
 
 def test_batches_played_from_two_commits_are_refused(tmp_path):
@@ -166,8 +181,10 @@ def test_an_arm_that_differs_from_s_in_a_game_s_ended_before_its_act_stops_the_p
         lines[seed] = json.dumps(row)
         f.write_text("\n".join(lines) + "\n")
         r = run(work)
-        assert r.returncode != 0 and f"the identity check of test {test} failed" in r.stderr, r.stderr
-        assert not (work / "experiments" / "acts" / f"pooled-acts-{test}.json").exists()
+        assert r.returncode != 0 and f"the design check of test {test} failed" in r.stderr and "nothing is pooled" in r.stderr, r.stderr
+        assert not (work / "experiments" / "acts").exists()                                           # nothing was written where the results go
+        scratch = list((work / "artifacts" / "acts").glob("pool.*"))                                   # the cause is kept for the addendum
+        assert len(scratch) == 1 and not list(scratch[0].glob("pooled-acts-*.json")) and (scratch[0] / "identity" / f"{test}.json").exists()
     # a2 may differ in a game S ended in Act 2: seed 5 is such a game
     work = build(tmp_path / "ok")
     f = work / "experiments" / "batches" / "acts-a2-ironclad-a0-veteran-keeprelics-val2-n3000" / "episodes.jsonl"
@@ -189,4 +206,93 @@ def test_an_arm_that_is_s_until_act_three_cannot_differ_about_the_second_boss(tm
     lines[4] = json.dumps(row)
     f.write_text("\n".join(lines) + "\n")
     r = run(work)
-    assert r.returncode != 0 and "differs from S about the Act-2 boss" in r.stderr and "the study stops" in r.stderr
+    assert r.returncode != 0 and "the design check of test A3 failed" in r.stderr and "nothing is pooled" in r.stderr, r.stderr
+    assert not (work / "experiments" / "acts").exists()                                               # (c) is read before any test is pooled
+    scratch = list((work / "artifacts" / "acts").glob("pool.*"))
+    assert len(scratch) == 1 and not list(scratch[0].glob("pooled-acts-*.json"))
+    rec = json.loads((scratch[0] / "identity" / "A3.json").read_text())
+    assert rec["beforeDifferent"] == 0 and rec["bossDifferent"] == 1
+
+
+def test_the_working_tree_must_be_the_registration_s_in_everything_the_study_pins(tmp_path):
+    for rel, how in (("sim/slay2_sim/compare.py", "uncommitted"), ("scripts/studies/acts/robustness.py", "uncommitted"), ("sim/slay2_sim/stats.py", "committed")):
+        work = build(tmp_path / rel.replace("/", "_"))
+        (work / rel).write_text((work / rel).read_text() + "\n# changed\n")
+        if how == "committed":
+            git(work, "git add -A && git commit -q -m 'changed after the registration'")
+        r = run(work)
+        assert r.returncode != 0, rel
+        assert ("tracked files are modified" if how == "uncommitted" else "is not that of the registration commit") in r.stderr and not (work / "experiments" / "acts").exists(), (rel, r.stderr)
+    work = build(tmp_path / "untracked")
+    (work / "scripts" / "extra.py").write_text("x = 1\n")
+    r = run(work)
+    assert r.returncode != 0 and "untracked files outside experiments/ and artifacts/" in r.stderr
+    # what runs nothing may change: a test of the harness or the README
+    work = build(tmp_path / "free")
+    (work / "scripts" / "studies" / "acts" / "README.md").write_text("changed\n")
+    (work / "sim" / "tests").mkdir(parents=True)
+    (work / "sim" / "tests" / "test_new.py").write_text("def test_x(): pass\n")
+    git(work, "git add -A && git commit -q -m 'a test and a readme'")
+    assert run(work).returncode == 0
+
+
+def test_a_path_the_study_pins_that_is_missing_stops_the_pooling(tmp_path):
+    work = build(tmp_path)
+    git(work, "git rm -q external/pins.json && git commit -q -m gone")
+    r = run(work)
+    assert r.returncode != 0 and "external/pins.json does not exist" in r.stderr
+
+
+def test_a_crash_after_some_steps_leaves_nothing_that_counts_as_a_first_look(tmp_path):
+    """The independent recomputation is the last step: if it fails, nothing is in experiments/acts, so the run-once guards allow the same computation again."""
+    work = build(tmp_path)
+    wrapper = tmp_path / "pyfail.sh"
+    wrapper.write_text('#!/usr/bin/env bash\ncase "$1" in *verify_all.py) echo "stand-in: the recomputation fails" >&2; exit 1 ;; esac\nexec ' + sys.executable + ' "$@"\n')
+    wrapper.chmod(0o755)
+    env = {**os.environ, "PY": str(wrapper), "OUT": str(work / "artifacts" / "acts"), "PYTHONPATH": ""}
+    r = subprocess.run(["bash", "scripts/studies/acts/pool.sh"], cwd=work, env=env, capture_output=True, text=True)
+    assert r.returncode != 0 and "independent recomputation" in r.stderr and "nothing is written to experiments/acts" in r.stderr
+    assert not (work / "experiments" / "acts").exists()
+    again = run(work)                                    # the same computation, now with the real interpreter: it is allowed and it succeeds
+    assert again.returncode == 0 and "POOL_DONE" in again.stdout, again.stderr
+    assert (work / "experiments" / "acts" / "pooled-acts-L.json").exists()
+
+
+def test_the_recomputation_disagreeing_about_a_count_stops_the_pooling(tmp_path):
+    """verify_all.py on a pooled file whose count is not what the episodes give: exit 1, the problem is in the record."""
+    import importlib.util
+
+    work = build(tmp_path)
+    assert run(work).returncode == 0
+    spec = importlib.util.spec_from_file_location("verify_all", work / "scripts" / "studies" / "acts" / "verify_all.py")
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    pooled = work / "experiments" / "acts" / "pooled-acts-A2.json"
+    body = json.loads(pooled.read_text())
+    body["wins"]["pairedTable"]["a_only"] += 1
+    body["wins"]["pairedTable"]["neither"] -= 1
+    altered = tmp_path / "pooled-acts-A2.json"
+    altered.write_text(json.dumps(body))
+    out = tmp_path / "ver.json"
+    cwd = os.getcwd()
+    os.chdir(work)
+    try:
+        assert mod.main([str(altered), "--out", str(out)]) == 1
+    finally:
+        os.chdir(cwd)
+    rec = json.loads(out.read_text())["files"]["pooled-acts-A2.json"]
+    assert rec["exactProblems"] and any("pooled wins" in line for line in rec["exactProblems"])
+    # an interval shifted by a tenth of its width is a disagreement of the resample: recorded, and it decides nothing
+    body = json.loads(pooled.read_text())
+    lo, hi = body["clusteredDifference"]["ciAtLevel"]["ci"]
+    body["clusteredDifference"]["ciAtLevel"]["ci"] = [lo + 0.2 * (hi - lo), hi + 0.2 * (hi - lo)]
+    shifted = tmp_path / "pooled-acts-A3.json"
+    shifted.write_text(json.dumps(body))
+    os.chdir(work)
+    try:
+        assert mod.main([str(shifted), "--out", str(tmp_path / "ver2.json")]) == 0
+    finally:
+        os.chdir(cwd)
+    rec = json.loads((tmp_path / "ver2.json").read_text())["files"]["pooled-acts-A3.json"]
+    assert rec["exactProblems"] == [] and rec["bootstrapDisagreements"]

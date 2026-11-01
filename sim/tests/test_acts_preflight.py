@@ -119,7 +119,8 @@ def test_a_shallow_clone_is_refused(tmp_path):
 
 
 @pytest.mark.parametrize("path", [
-    "sim/slay2_sim/stub.txt", "sim/tests/stub.txt", "scripts/studies/acts/common.sh", "scripts/studies/acts/pool.sh", "scripts/studies/acts/robustness.py",
+    "sim/slay2_sim/stub.txt", "packages/game-data/data/stub.txt", "scripts/studies/acts/common.sh", "scripts/studies/acts/pool.sh", "scripts/studies/acts/robustness.py",
+    "scripts/studies/acts/verify_all.py", "scripts/studies/acts/val2_played.py", "scripts/studies/acts/audit.sh", "scripts/studies/acts/verify_batch.py",
     "experiments/seeds/ironclad-a0-v3.json", "external/pins.json", "scripts/lib/acts.mjs", "scripts/lib/pooled.mjs", "scripts/verify-pooled.py",
     "experiments/cardvalue/ironclad-a0-v2.json",
 ])
@@ -130,13 +131,33 @@ def test_code_or_data_that_changed_after_the_registration_commit_stops_it(tmp_pa
     assert r.returncode != 0 and "changed after the registration commit" in r.stderr, path
 
 
+@pytest.mark.parametrize("path", ["sim/tests/stub.txt", "sim/tests/test_anything.py", "scripts/studies/acts/README.md", "docs/STATUS.md"])
+def test_what_runs_nothing_may_change_after_the_registration_commit(tmp_path, path):
+    """The tests of the harness, the README of the folder and the documents are not pinned: a test added after the registration forces no new registration."""
+    work = build_world(tmp_path)
+    (work / path).parent.mkdir(parents=True, exist_ok=True)
+    push_change(work, path, ((work / path).read_text() if (work / path).exists() else "") + "\n# changed\n")
+    r = preflight(work)
+    assert r.returncode == 0, (path, r.stderr)
+
+
+def test_a_path_the_registration_pins_that_does_not_exist_stops_it(tmp_path):
+    """`git diff --quiet` succeeds for a pathspec that matches nothing, so a deleted or misspelt path would pass without this check."""
+    work = build_world(tmp_path)
+    sh("git rm -q external/pins.json && git commit -q -m gone && git push -q origin main", work)
+    r = preflight(work, REG=head(work), ALLOW_REG_OVERRIDE="1")
+    assert r.returncode != 0 and "external/pins.json does not exist" in r.stderr
+
+
 def test_the_registration_commit_cannot_be_named_from_the_environment_unless_a_test_says_so(tmp_path):
     work = build_world(tmp_path)
     push_change(work, "sim/slay2_sim/stub.txt")
     sneaky = preflight(work, REG=head(work))
     assert sneaky.returncode != 0 and "REG is set in the environment; refused" in sneaky.stderr
     allowed = preflight(work, REG=head(work), ALLOW_REG_OVERRIDE="1")
-    assert allowed.returncode != 0 or "preflight-val: ok" in allowed.stdout   # the override exists for tests; it is not silent about what it does
+    # the override exists for tests; it is not silent about what it does
+    assert allowed.returncode == 0 and "preflight-val: ok" in allowed.stdout, allowed.stderr
+    assert "NOTICE: the registration commit was named from the environment" in allowed.stderr
 
 
 def test_a_marker_that_is_only_in_the_history_and_not_at_head_stops_it(tmp_path):
@@ -151,6 +172,16 @@ def test_a_marker_that_is_only_in_the_history_and_not_at_head_stops_it(tmp_path)
 def test_a_record_that_never_carries_the_marker_stops_it(tmp_path):
     r = preflight(build_world(tmp_path, marker="Something else"))
     assert r.returncode != 0 and "does not carry its registration" in r.stderr
+
+
+def test_a_record_that_names_its_registration_twice_stops_it(tmp_path):
+    """The first commit that adds the text is taken for the registration, so a second mention (in the design, say) would make the design the registration."""
+    work = build_world(tmp_path)
+    p = work / "docs" / "DECISIONS.md"
+    p.write_text(p.read_text().replace("Part 1 text.", f"Part 1 text, which names the heading '{MARKER}' too."))
+    sh("git add -A && git commit -q -m twice && git push -q origin main", work)
+    r = preflight(work)
+    assert r.returncode != 0 and "exactly once, it carries it 2 times" in r.stderr
 
 
 def test_a_record_without_the_adr_stops_it(tmp_path):
@@ -238,14 +269,48 @@ def test_val2_batches_that_exist_stop_it_unless_an_interrupted_run_is_being_resu
 
 
 def test_a_batch_on_the_val2_seeds_under_any_other_name_stops_it_too(tmp_path):
+    """The seed of a batch's first episode is looked up, so a run that died before its manifest was written, under any batch id, is found."""
+    import gzip
+
     work = build_world(tmp_path)
+    val2 = json.loads((work / SEEDS).read_text())["partitions"]["val2"]
+    dev = json.loads((work / SEEDS).read_text())["partitions"]["dev"]
     d = work / "experiments" / "batches" / "my-own-trial"
     d.mkdir(parents=True)
-    (d / "manifest.json").write_text(json.dumps({"seeds": {"partition": "val2", "n": 10}}, indent=2))
+    (d / "episodes.jsonl").write_text(json.dumps({"seed": val2[7], "outcome": "death"}) + "\n")          # no manifest: it died
     r = preflight(work)
     assert r.returncode != 0 and "batches on the val2 seeds already exist" in r.stderr and "my-own-trial" in r.stderr
+    assert preflight(work, RESUME="1").returncode == 0                                                      # an interrupted run is being finished
+    zipped = work / "experiments" / "batches" / "another"
+    zipped.mkdir()
+    with gzip.open(zipped / "episodes.jsonl.gz", "wt", encoding="utf-8") as fh:
+        fh.write(json.dumps({"seed": val2[0]}) + "\n")
+    shutil.rmtree(d)
+    r = preflight(work)
+    assert r.returncode != 0 and "another" in r.stderr
     other = build_world(tmp_path / "other")
     d = other / "experiments" / "batches" / "dev-trial"
     d.mkdir(parents=True)
+    (d / "episodes.jsonl").write_text(json.dumps({"seed": dev[3], "outcome": "death"}) + "\n")
     (d / "manifest.json").write_text(json.dumps({"seeds": {"partition": "dev", "n": 10}}, indent=2))
     assert preflight(other).returncode == 0                          # batches on other partitions are none of its business
+
+
+def test_the_detector_of_val2_games_reads_only_the_first_episode_and_survives_junk(tmp_path):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("val2_played", REPO / "scripts" / "studies" / "acts" / "val2_played.py")
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    seeds = tmp_path / "seeds.json"
+    save_json(seeds, make_seed_manifest("t", 5, {"train": 3, "val": 3, "test": 3, "dev": 3, "val2": 5}))
+    val2 = json.loads(seeds.read_text())["partitions"]["val2"]
+    batches = tmp_path / "batches"
+    for name, content in (("a", json.dumps({"seed": val2[4]})), ("b", json.dumps({"seed": 12345})), ("c", ""), ("d", "{not json"), ("e", "\n\n" + json.dumps({"seed": val2[0]}))):
+        (batches / name).mkdir(parents=True)
+        (batches / name / "episodes.jsonl").write_text(content + "\n")
+    (batches / "f").mkdir()                       # no episodes at all
+    (batches / "g.txt").write_text("a file, not a batch")
+    assert mod.played(batches, seeds) == ["a", "e"]
+    assert mod.played(tmp_path / "nowhere", seeds) == []

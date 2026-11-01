@@ -84,7 +84,7 @@ def test_the_command_writes_the_record_and_fails_on_a_difference_or_on_nothing_t
     assert ac.main(["identity", "A3", "--batches", str(batches), "--out", str(out)]) == 0
     body = json.loads(out.read_text())
     assert body["kind"] == "acts-identity" and body["schema"] == 1 and body["test"] == "A3" and body["arm"] == "a3" and body["firstAct"] == 2
-    assert body["beforeDifferent"] == 0 and body["beforePairs"] == 150
+    assert body["beforeDifferent"] == 0 and body["beforePairs"] == 150 and body["bossDifferent"] == 0 and body["bossPairs"] == 200
     # the lead and A1 differ from S from the first act on: nothing to check, nothing written
     skipped = tmp_path / "out" / "L.json"
     assert ac.main(["identity", "L", "--batches", str(batches), "--out", str(skipped)]) == 0 and not skipped.exists()
@@ -95,17 +95,40 @@ def test_the_command_writes_the_record_and_fails_on_a_difference_or_on_nothing_t
     assert json.loads(failing.read_text())["beforeDifferent"] == 1
 
 
-def test_an_arm_that_is_s_until_act_k_cannot_differ_about_the_bosses_before_it():
-    def pooled(act1: tuple[int, int], act2: tuple[int, int]) -> dict:
-        return {"reachedAct2": {"pairedTable": {"a_only": act1[0], "b_only": act1[1]}}, "reachedAct3": {"pairedTable": {"a_only": act2[0], "b_only": act2[1]}}}
+def test_the_record_is_made_from_the_batches_it_names(tmp_path):
+    batches = world(tmp_path)
+    for c in CLASSES:
+        for arm in ("s", "a2", "a3"):
+            (batches / ac.val_id(arm, c) / "manifest.json").write_text(json.dumps({"content_sha256": f"{arm}-{c}".ljust(64, "0")}))
+    rec = ac.identity_for(batches, "A2")
+    assert rec["contentSha256"] == {ac.val_id(arm, c): f"{arm}-{c}".ljust(64, "0") for c in CLASSES for arm in ("a2", "s")}
+    # a directory without a manifest (only a test makes one) has no hash to record
+    assert ac.identity_for(world(tmp_path / "bare"), "A3")["contentSha256"][ac.val_id("s", "Silent")] is None
 
-    assert ac.boss_agreement_problem("L", pooled((50, 90), (30, 20))) is None          # the lead differs from the first card reward on
-    assert ac.boss_agreement_problem("A1", pooled((50, 90), (30, 20))) is None
-    assert ac.boss_agreement_problem("A2", pooled((0, 0), (30, 20))) is None            # A2 may differ about the second boss, not the first
-    assert "Act-1 boss in 3 pairs" in (ac.boss_agreement_problem("A2", pooled((1, 2), (0, 0))) or "")
-    assert ac.boss_agreement_problem("A3", pooled((0, 0), (0, 0))) is None
-    assert "Act-1 boss" in (ac.boss_agreement_problem("A3", pooled((1, 0), (0, 0))) or "")
-    assert "Act-2 boss in 1 pairs" in (ac.boss_agreement_problem("A3", pooled((0, 0), (0, 1))) or "")
+
+def test_an_arm_that_is_s_until_act_k_cannot_differ_about_the_bosses_before_it(tmp_path):
+    """(c) of ADR-061 item 5, made on the records before any test is pooled: the Act-1 boss for A2, both bosses for A3, none for A1 and the lead."""
+    # seed 5 is a game S ended in Act 2 (index 1): the arm "died in Act 1" instead, a difference about the first boss that (b) does not see
+    first_boss = [(5, "death", 12, 0)]
+    batches = world(tmp_path / "a", {"a2": {"Regent": first_boss}, "a3": {"Regent": first_boss}, "a1": {"Regent": first_boss}})
+    assert ac.identity_for(batches, "A2")["bossDifferent"] == 1
+    assert ac.identity_for(batches, "A3")["bossDifferent"] == 1
+    assert ac.identity_for(batches, "A3")["beforeDifferent"] == 1 and ac.identity_for(batches, "A2")["beforeDifferent"] == 0  # (b) sees it for A3 only
+    # seed 7 is a game S ended in Act 3 (index 2): the arm "died in Act 2" instead, a difference about the second boss, which only A3 may not have
+    second_boss = [(7, "death", 33, 1)]
+    batches = world(tmp_path / "b", {"a2": {"Silent": second_boss}, "a3": {"Silent": second_boss}})
+    assert ac.identity_for(batches, "A2")["bossDifferent"] == 0               # A2 is allowed to differ about the second boss
+    assert ac.identity_for(batches, "A3")["bossDifferent"] == 1 and ac.identity_for(batches, "A3")["beforeDifferent"] == 0
+    # a win is past both bosses whatever its last act (the definitions of slay2_sim.compare)
+    assert ac.boss_flags({"outcome": "win", "act": 0}) == (True, True)
+    assert ac.boss_flags({"outcome": "death", "act": 1}) == (True, False)
+    assert ac.boss_flags({"outcome": "simulator_error", "act": 2}) == (True, True)
+    assert ac.boss_flags({"outcome": "timeout", "act": 0}) == (False, False)
+    # the command fails on (c) alone
+    out = tmp_path / "c.json"
+    assert ac.main(["identity", "A3", "--batches", str(batches), "--out", str(out)]) == 1
+    rec = json.loads(out.read_text())
+    assert rec["beforeDifferent"] == 0 and rec["bossDifferent"] == 1
 
 
 # ---- the shell definitions of the arms -----------------------------------------------------------------------------------------------------
@@ -170,9 +193,10 @@ def test_the_shown_values_are_the_files_the_site_shows():
 
 
 def test_the_pinned_and_the_reading_paths_cover_what_the_arms_read_and_what_reads_them():
-    pinned = common("echo $PINNED_PATHS")[0].split()
-    reading = common("echo $READING_PATHS")[0].split()
+    pinned = common('printf "%s\\n" "${PINNED_PATHS[@]}"')
+    reading = common('printf "%s\\n" "${READING_PATHS[@]}"')
     assert {"sim", "scripts/studies/acts", "scripts/verify-pooled.py", "packages/game-data/data", "experiments/cardvalue", "experiments/seeds", "external/pins.json"} <= set(pinned)
+    assert {":(exclude)sim/tests", ":(exclude)scripts/studies/acts/README.md"} <= set(pinned)       # what runs nothing is not pinned
     assert reading == ["scripts/lib/acts.mjs", "scripts/lib/pooled.mjs", "scripts/verify-pooled.py"]
     table = common("arm_table")
     assert len(table) == 5 * 5 + 1 and table[-1] == f"{ac.SEEDS_FILE}|{ac.PARTITION}|{ac.VAL_N}|0.2|0.9875|L A1 A2 A3"
@@ -192,3 +216,20 @@ def test_the_acts_copy_of_verify_batch_is_the_act_two_logic_under_a_new_heading(
     a = load("acts_verify_batch", REPO / "scripts" / "studies" / "acts" / "verify_batch.py")
     b = load("act2_verify_batch_copy", REPO / "scripts" / "studies" / "act2" / "verify_batch.py")
     assert inspect.getsource(a.problems) == inspect.getsource(b.problems) and inspect.getsource(a.main) == inspect.getsource(b.main)
+
+
+
+def test_the_record_of_adr_061_names_its_registration_once_and_quotes_every_hash_it_pins():
+    """The real docs/DECISIONS.md: the preflight finds the registration by the first commit that adds this text, so the text occurs once."""
+    log = (REPO / "docs" / "DECISIONS.md").read_text(encoding="utf-8")
+    start = log.index("ADR-061: does a pickier card rule win more games")
+    nxt = log.find("\n## ", start)
+    record = log[start:nxt if nxt >= 0 else len(log)]
+    marker = "Registration of ADR-061 (frozen choices)"
+    assert record.count(marker) == 1 and log.count(marker) == 1
+    mjs = (REPO / "scripts" / "lib" / "acts.mjs").read_text(encoding="utf-8")
+    assert f'marker: "{marker}"' in mjs and 'headline: "does a pickier card rule win more games"' in mjs
+    import hashlib
+
+    for rel in [common(f"shown_values {c}")[0] for c in CLASSES] + [ac.SEEDS_FILE]:
+        assert hashlib.sha256((REPO / rel).read_bytes()).hexdigest() in record, rel

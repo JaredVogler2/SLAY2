@@ -40,6 +40,14 @@ def episodes(batch: Path) -> dict[int, dict]:
         return {int(r["seed"]): r for r in (json.loads(line) for line in fh if line.strip())}
 
 
+def content_hash(batch: Path) -> str | None:
+    """The content hash the batch's manifest records (the reader ties the analysis to the batches by it)."""
+    try:
+        return json.loads((batch / "manifest.json").read_text(encoding="utf-8")).get("content_sha256")
+    except (OSError, ValueError):
+        return None
+
+
 def completed(r: dict) -> bool:
     return r["outcome"] in ("win", "death")
 
@@ -90,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     out: dict = {
         "kind": "acts-robustness", "schema": SCHEMA,
         "label": "a condition of the reading rule (ADR-061 item 4): every pair of seeds both batches hold, a game that did not end in a win scored as not a win",
-        "maxExcludedFraction": MAX_EXCLUDED_FRACTION, "level": LEVEL, "tests": {},
+        "maxExcludedFraction": MAX_EXCLUDED_FRACTION, "level": LEVEL, "tests": {}, "contentSha256": {},
     }
     for test, arm in TESTS.items():
         per: dict[str, dict] = {}
@@ -99,6 +107,8 @@ def main(argv: list[str] | None = None) -> int:
             r = compare(args.batches / batch_id(arm, c), args.batches / batch_id("s", c))
             per[c] = r
             add(tot, r)
+            for who in (arm, "s"):
+                out["contentSha256"][batch_id(who, c)] = content_hash(args.batches / batch_id(who, c))
         tot["p"] = mcnemar_exact(tot["armOnly"], tot["baselineOnly"])
         tot["difference"] = (tot["arm"] - tot["baseline"]) / tot["pairs"]
         tot["primaryExcludedFraction"] = 1 - tot["primaryPairs"] / tot["shared"]

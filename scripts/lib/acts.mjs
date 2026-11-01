@@ -18,7 +18,7 @@ import {
 // the study is at: registered; the tests.
 export const AC = {
   adr: "ADR-061",
-  headline: "which acts carry the effect",
+  headline: "does a pickier card rule win more games",
   tests: 4,
   level: 0.05 / 4,
   classLevel: 0.01,
@@ -50,7 +50,7 @@ export function verdictOf({ armOnly, baselineOnly, p, ci, level = AC.level }) {
 /**
  * The whole reading (item 4): a result is "passed" or "reversed" only if the primary test says so AND the all-pairs analysis (every pair of seeds both arms
  * hold, a game that did not end in a win scored as not a win) has the same arm ahead at an exact p below 0.05 AND the primary dropped at most a tenth of the
- * pairs. Anything else is "not-shown", with the reason that stopped it.
+ * pairs. Anything else is "not-shown"; `downgrades` lists every condition that withheld it ("excluded", "robustness"), `downgrade` the first.
  */
 export function readingOf({
   armOnly,
@@ -62,16 +62,18 @@ export function readingOf({
   excludedFraction,
 }) {
   const primary = verdictOf({ armOnly, baselineOnly, p, ci, level });
-  if (primary === "not-shown") return { verdict: "not-shown", primary, downgrade: null };
-  if (excludedFraction > AC.maxExcludedFraction)
-    return { verdict: "not-shown", primary, downgrade: "excluded" };
+  if (primary === "not-shown")
+    return { verdict: "not-shown", primary, downgrade: null, downgrades: [] };
+  const downgrades = [];
+  if (excludedFraction > AC.maxExcludedFraction) downgrades.push("excluded");
   const ahead =
     primary === "passed"
       ? robust.armOnly > robust.baselineOnly
       : robust.baselineOnly > robust.armOnly;
-  if (!(robust.p < AC.robustLevel && ahead))
-    return { verdict: "not-shown", primary, downgrade: "robustness" };
-  return { verdict: primary, primary, downgrade: null };
+  if (!(robust.p < AC.robustLevel && ahead)) downgrades.push("robustness");
+  if (downgrades.length > 0)
+    return { verdict: "not-shown", primary, downgrade: downgrades[0], downgrades };
+  return { verdict: primary, primary, downgrade: null, downgrades: [] };
 }
 
 const shaOf = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -100,13 +102,18 @@ export function parseActs({ root, reports }) {
   }
   const next = decisions.indexOf("\n## ", at);
   const record = decisions.slice(at, next < 0 ? undefined : next);
+  const heading = record.split(AC.marker).length - 1;
+  if (heading > 1)
+    throw new Error(
+      `${AC.adr} carries the text "${AC.marker}" ${String(heading)} times; the registration heading occurs once`,
+    );
   const out = {
     adr: AC.adr,
     registered: true,
     level: AC.level,
     classLevel: AC.classLevel,
     seeds: AC.seeds,
-    frozen: record.includes(AC.marker),
+    frozen: heading === 1,
     tests: null,
   };
   if (present.length === 0) return out;
@@ -234,6 +241,16 @@ export function parseActs({ root, reports }) {
       "experiments/acts/robustness-all-pairs.json: not the all-pairs analysis of the four tests",
     );
 
+  // the independent recomputation from the raw episodes (verify_all.py, run by pool.sh): every exact check agreed; the resample's disagreements, if any, are carried
+  const verPath = join(actsDir, "verification.json");
+  if (!existsSync(verPath))
+    throw new Error(
+      `experiments/acts/verification.json is missing: the pooled files are recomputed from the episodes by pool.sh (${AC.adr} item 10)`,
+    );
+  const verification = JSON.parse(readFileSync(verPath, "utf8"));
+  if (verification.kind !== "acts-verification" || verification.schema !== 1)
+    throw new Error("experiments/acts/verification.json: not a verification record of schema 1");
+
   const readOne = (spec) => {
     const file = join(actsDir, spec.file);
     const where = `experiments/acts/${spec.file}`;
@@ -293,11 +310,21 @@ export function parseActs({ root, reports }) {
       throw new Error(
         `${where}: the pooled difference is not the difference of its two win shares`,
       );
-    // an arm that is S until act k plays S's game up to the first card reward of act k: it cannot differ from S about the bosses before it (item 6)
+    // the estimate lies in both of its intervals, and the 95 % interval lies in the wider one (a hand-edited interval is caught here; one that is merely wrong is
+    // caught by the recomputation in verification.json)
+    const [lo, hi] = cl.ciAtLevel.ci;
+    const [lo95, hi95] = cl.ci95;
+    if (
+      !(lo <= cl.meanAMinusB && cl.meanAMinusB <= hi) ||
+      !(lo95 <= cl.meanAMinusB && cl.meanAMinusB <= hi95) ||
+      !(lo <= lo95 && hi95 <= hi)
+    )
+      throw new Error(`${where}: its two intervals do not nest around the pooled difference`);
+    // an arm that is S until act k plays S's game up to the first card reward of act k: it cannot differ from S about the bosses before it (item 5)
     const checkBoss = (act, label, t2) => {
       if (spec.first >= act && (t2.pairedTable.a_only !== 0 || t2.pairedTable.b_only !== 0))
         throw new Error(
-          `${where}: an arm that is S until act ${String(spec.first + 1)} differs from S about the ${label} boss in ${String(t2.pairedTable.a_only + t2.pairedTable.b_only)} pairs (${AC.adr} item 6)`,
+          `${where}: an arm that is S until act ${String(spec.first + 1)} differs from S about the ${label} boss in ${String(t2.pairedTable.a_only + t2.pairedTable.b_only)} pairs (${AC.adr} item 5)`,
         );
     };
     checkBoss(1, "Act-1", test.reachedAct2);
@@ -378,6 +405,22 @@ export function parseActs({ root, reports }) {
       throw new Error(
         `experiments/acts/robustness-all-pairs.json: test ${spec.key}: it has fewer wins than the pairs both arms completed`,
       );
+    // the discordant wins are the difference of the two arms' wins, in the pool and in every class
+    for (const [who, row] of [
+      ["pooled", rb],
+      ...CLASSES.map((c) => [EXACT[c], entry.perClass[EXACT[c]]]),
+    ])
+      if (row.armOnly - row.baselineOnly !== row.arm - row.baseline)
+        throw new Error(
+          `experiments/acts/robustness-all-pairs.json: test ${spec.key}: ${who}: the discordant wins are not the difference of the two arms' wins`,
+        );
+    // it was made from the batches the pooled file names
+    for (const m of test.members)
+      for (const side of [m.a, m.b])
+        if (robustness.contentSha256?.[side.batchId] !== side.contentSha256)
+          throw new Error(
+            `experiments/acts/robustness-all-pairs.json: test ${spec.key}: it was not made from the content of ${side.batchId}`,
+          );
     const excludedFraction = 1 - test.bothCompleted / test.pairedSeeds;
     if (!near(rb.primaryExcludedFraction, excludedFraction, 1e-9))
       throw new Error(
@@ -392,12 +435,31 @@ export function parseActs({ root, reports }) {
         idn.arm !== spec.arm ||
         idn.firstAct !== spec.first ||
         idn.beforeDifferent !== 0 ||
-        !(idn.beforePairs > 0)
+        idn.bossDifferent !== 0 ||
+        !(idn.beforePairs > 0) ||
+        !(idn.bossPairs > 0)
       )
         throw new Error(
-          `experiments/acts/identity/${spec.key}.json: not a passing identity check of ${spec.arm} against S (${AC.adr} item 6 stops the study)`,
+          `experiments/acts/identity/${spec.key}.json: not a passing design check of ${spec.arm} against S (${AC.adr} item 5 stops the study)`,
         );
+      for (const m of test.members)
+        for (const side of [m.a, m.b])
+          if (idn.contentSha256?.[side.batchId] !== side.contentSha256)
+            throw new Error(
+              `experiments/acts/identity/${spec.key}.json: it was not made from the content of ${side.batchId}`,
+            );
     }
+    const ver = verification.files?.[spec.file];
+    if (
+      !ver ||
+      ver.sha256 !== shaOf(file) ||
+      !Array.isArray(ver.exactProblems) ||
+      ver.exactProblems.length !== 0 ||
+      !(ver.exactChecks > 0)
+    )
+      throw new Error(
+        `experiments/acts/verification.json: no passing recomputation of ${spec.file} (every exact check has to agree with the episodes; ${AC.adr} item 10)`,
+      );
     const reading = readingOf({
       armOnly: tab.a_only,
       baselineOnly: tab.b_only,
@@ -427,7 +489,14 @@ export function parseActs({ root, reports }) {
       verdict: reading.verdict,
       primaryVerdict: reading.primary,
       downgrade: reading.downgrade,
+      downgrades: reading.downgrades,
       excludedFraction,
+      verification: {
+        exactChecks: ver.exactChecks,
+        bootstrapChecks: ver.bootstrapChecks,
+        // the resample's disagreements about an interval end: the pooled file's interval governs, the disagreement is shown and decides nothing
+        bootstrapDisagreements: ver.bootstrapDisagreements ?? [],
+      },
       robust: {
         pairs: rb.pairs,
         notCompleted: rb.notCompleted,

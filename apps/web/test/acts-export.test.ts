@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -77,6 +77,9 @@ interface Options {
   kept?: number;
   noRobustness?: boolean;
   noIdentity?: boolean;
+  noVerification?: boolean;
+  /** the registration heading named a second time in the record (the defect ADR-060's addendum A.4 fixed) */
+  markerTwice?: boolean;
 }
 
 interface World {
@@ -84,7 +87,7 @@ interface World {
   reports: Json[];
   path: (...p: string[]) => string;
   parse: Parse;
-  amend: (file: string, change: (j: Json) => void) => void;
+  amend: (file: string, change: (j: Json) => void, resync?: boolean) => void;
 }
 
 async function buildWorld(options: Options = {}): Promise<World> {
@@ -108,7 +111,7 @@ async function buildWorld(options: Options = {}): Promise<World> {
   const quotes = [...CLASSES.map((c) => shownSha(c)), sha(path(SEEDS_FILE))];
   writeFileSync(
     path("docs", "DECISIONS.md"),
-    `## 2026-11-01 — ADR-061: which acts carry the effect of a pickier card rule, and does it reach winning?\n\nPart 1.\n${o.frozen ? `**${MARKER}.**\n` : ""}${o.quoted ? quotes.join("\n") : "no hashes"}\n`,
+    `## 2026-11-01 — ADR-061: does a pickier card rule win more games, and in which act?\n\nPart 1.\n${o.frozen ? `**${MARKER}.**\n` : ""}${o.markerTwice ? `Item 9 names the heading '${MARKER}' too.\n` : ""}${o.quoted ? quotes.join("\n") : "no hashes"}\n`,
   );
   const reports: Json[] = [];
   const reportsById = new Map<string, Json>();
@@ -338,6 +341,11 @@ async function buildWorld(options: Options = {}): Promise<World> {
           firstAct: t.first,
           beforePairs: 1200,
           beforeDifferent: 0,
+          bossPairs: 15000,
+          bossDifferent: 0,
+          contentSha256: Object.fromEntries(
+            CLASSES.flatMap((c) => [t.arm, "s"].map((a) => [idOf(a, c), hex(idOf(a, c))])),
+          ),
         });
     }
     if (!o.noRobustness)
@@ -345,6 +353,29 @@ async function buildWorld(options: Options = {}): Promise<World> {
         kind: "acts-robustness",
         schema: 1,
         tests: rob,
+        contentSha256: Object.fromEntries(
+          CLASSES.flatMap((c) =>
+            TESTS.flatMap((t) => [t.arm, "s"].map((a) => [idOf(a, c), hex(idOf(a, c))])),
+          ),
+        ),
+      });
+    // the independent recomputation of every pooled file (verify_all.py)
+    if (!o.noVerification)
+      write(path("experiments", "acts", "verification.json"), {
+        kind: "acts-verification",
+        schema: 1,
+        files: Object.fromEntries(
+          TESTS.map((t) => [
+            `pooled-acts-${t.key}.json`,
+            {
+              sha256: sha(path("experiments", "acts", `pooled-acts-${t.key}.json`)),
+              exactChecks: 98,
+              exactProblems: [],
+              bootstrapChecks: 100,
+              bootstrapDisagreements: [],
+            },
+          ]),
+        ),
       });
   }
   return {
@@ -352,10 +383,21 @@ async function buildWorld(options: Options = {}): Promise<World> {
     reports,
     path,
     parse: await loadParser(),
-    amend: (file, change) => {
+    amend: (file, change, resync = true) => {
       const j = JSON.parse(readFileSync(path(file), "utf8")) as Json;
       change(j);
       write(path(file), j);
+      const pooled = /pooled-acts-(\w+)\.json$/.exec(file);
+      if (pooled && resync && existsSync(path("experiments", "acts", "verification.json"))) {
+        const v = JSON.parse(
+          readFileSync(path("experiments", "acts", "verification.json"), "utf8"),
+        ) as {
+          files: Record<string, { sha256: string }>;
+        };
+        const entry = v.files[`pooled-acts-${pooled[1]}.json`];
+        if (entry) entry.sha256 = sha(path(file));
+        write(path("experiments", "acts", "verification.json"), v);
+      }
     },
   };
 }
@@ -674,16 +716,128 @@ describe("the exporter reads the acts study only when it belongs together", () =
 
   it("stops when an arm that is S in the early acts is not S's record for record", async () => {
     const noCheck = await buildWorld({ tests: withTests({}), noIdentity: true });
-    expect(() => read(noCheck)).toThrow(/identity\/A2.json: not a passing identity check/);
+    expect(() => read(noCheck)).toThrow(/identity\/A2.json: not a passing design check/);
     const broken = await buildWorld({ tests: withTests({}) });
     broken.amend("experiments/acts/identity/A3.json", (j) => {
       j.beforeDifferent = 2;
     });
-    expect(() => read(broken)).toThrow(/identity\/A3.json: not a passing identity check/);
+    expect(() => read(broken)).toThrow(/identity\/A3.json: not a passing design check/);
     const empty = await buildWorld({ tests: withTests({}) });
     empty.amend("experiments/acts/identity/A2.json", (j) => {
       j.beforePairs = 0;
     });
-    expect(() => read(empty)).toThrow(/not a passing identity check/);
+    expect(() => read(empty)).toThrow(/not a passing design check/);
+    // (c): an arm that is S until its act differs from S about a boss before it (the record of the check, not only the pooled tables, says so)
+    const boss = await buildWorld({ tests: withTests({}) });
+    boss.amend("experiments/acts/identity/A3.json", (j) => {
+      j.bossDifferent = 1;
+    });
+    expect(() => read(boss)).toThrow(/identity\/A3.json: not a passing design check/);
+    // the record has to be made from the batches the pooled file names
+    const other = await buildWorld({ tests: withTests({}) });
+    other.amend("experiments/acts/identity/A2.json", (j) => {
+      (j.contentSha256 as Record<string, string>)[
+        "acts-a2-regent-a0-veteran-keeprelics-val2-n3000"
+      ] = "0".repeat(64);
+    });
+    expect(() => read(other)).toThrow(
+      /identity\/A2.json: it was not made from the content of acts-a2-regent/,
+    );
+  });
+
+  it("ties the all-pairs analysis to the batches, and checks its arithmetic", async () => {
+    const hash = await buildWorld({ tests: withTests({}) });
+    hash.amend("experiments/acts/robustness-all-pairs.json", (j) => {
+      (j.contentSha256 as Record<string, string>)[
+        "acts-s-defect-a0-veteran-keeprelics-val2-n3000"
+      ] = "f".repeat(64);
+    });
+    expect(() => read(hash)).toThrow(/it was not made from the content of acts-s-defect/);
+    // one class's wins moved by one, the pool's by the same one and its difference with them: the sums agree and the arithmetic does not
+    const arith = await buildWorld({ tests: withTests({}) });
+    arith.amend("experiments/acts/robustness-all-pairs.json", (j) => {
+      const t = (j.tests as Json).L as {
+        pooled: { arm: number; baseline: number; pairs: number; difference: number };
+        perClass: Record<string, { arm: number } | undefined>;
+      };
+      const silent = t.perClass.Silent;
+      if (silent) silent.arm += 1;
+      t.pooled.arm += 1;
+      t.pooled.difference = (t.pooled.arm - t.pooled.baseline) / t.pooled.pairs;
+    });
+    expect(() => read(arith)).toThrow(
+      /the discordant wins are not the difference of the two arms' wins/,
+    );
+  });
+
+  it("requires the independent recomputation of every pooled file, and carries what its resample disagreed about", async () => {
+    const none = await buildWorld({ tests: withTests({}), noVerification: true });
+    expect(() => read(none)).toThrow(/verification.json is missing/);
+    // a pooled file changed after it was recomputed
+    const stale = await buildWorld({ tests: withTests({}) });
+    stale.amend(
+      "experiments/acts/pooled-acts-A1.json",
+      (j) => {
+        (j.floorDifference as Json).meanAMinusB = 0.2;
+      },
+      false,
+    );
+    expect(() => read(stale)).toThrow(/no passing recomputation of pooled-acts-A1.json/);
+    // an exact check that disagreed
+    const bad = await buildWorld({ tests: withTests({}) });
+    bad.amend("experiments/acts/verification.json", (j) => {
+      ((j.files as Json)["pooled-acts-L.json"] as { exactProblems: string[] }).exactProblems = [
+        "pooled wins a_only: the file says 1, the episodes give 2",
+      ];
+    });
+    expect(() => read(bad)).toThrow(/no passing recomputation of pooled-acts-L.json/);
+    // the resample's disagreement about an interval end decides nothing and is carried
+    const soft = await buildWorld({ tests: withTests({ L: every(300, 200) }) });
+    soft.amend("experiments/acts/verification.json", (j) => {
+      (
+        (j.files as Json)["pooled-acts-L.json"] as { bootstrapDisagreements: string[] }
+      ).bootstrapDisagreements = [
+        "the whole-seed interval at level 0.9875, lower end: the file says 0.001, an independent resample gives 0.0009",
+      ];
+    });
+    const out = read(soft) as unknown as Out;
+    expect(out.tests?.results.L).toMatchObject({ verdict: "passed" });
+    expect(
+      (out.tests?.results.L as unknown as { verification: { bootstrapDisagreements: string[] } })
+        .verification.bootstrapDisagreements,
+    ).toHaveLength(1);
+  });
+
+  it("checks that the intervals nest around the estimate", async () => {
+    const w = await buildWorld({ tests: withTests({ L: every(300, 200) }) });
+    w.amend("experiments/acts/pooled-acts-L.json", (j) => {
+      const cl = j.clusteredDifference as { ci95: number[]; meanAMinusB: number };
+      cl.ci95 = [cl.meanAMinusB - 0.01, cl.meanAMinusB + 0.01]; // wider than the interval at the level 0.9875
+    });
+    expect(() => read(w)).toThrow(/its two intervals do not nest around the pooled difference/);
+    const off = await buildWorld({ tests: withTests({ L: every(300, 200) }) });
+    off.amend("experiments/acts/pooled-acts-L.json", (j) => {
+      const cl = j.clusteredDifference as { ciAtLevel: { ci: number[] }; meanAMinusB: number };
+      cl.ciAtLevel.ci = [cl.meanAMinusB + 0.001, cl.meanAMinusB + 0.01]; // does not contain the estimate
+    });
+    expect(() => read(off)).toThrow(/its two intervals do not nest around the pooled difference/);
+  });
+
+  it("names every condition that withheld a reading, and refuses a record that names its registration twice", async () => {
+    const both = await buildWorld({
+      tests: withTests({ L: every(300, 200) }),
+      kept: 2600,
+      robust: { L: every(250, 250) },
+    });
+    expect((read(both) as unknown as Out).tests?.results.L).toMatchObject({
+      verdict: "not-shown",
+      primaryVerdict: "passed",
+      downgrade: "excluded",
+      downgrades: ["excluded", "robustness"],
+    });
+    const twice = await buildWorld({ tests: false, markerTwice: true });
+    expect(() => read(twice)).toThrow(
+      /carries the text .* 2 times; the registration heading occurs once/,
+    );
   });
 });

@@ -237,3 +237,23 @@ def test_the_three_acts_together_play_the_very_game_the_lead_plays(sim):
         ra, rb = a.to_dict() if hasattr(a, "to_dict") else a.__dict__, b.to_dict() if hasattr(b, "to_dict") else b.__dict__
         ignore = {"policy", "wall_seconds"}
         assert {k: v for k, v in ra.items() if k not in ignore} == {k: v for k, v in rb.items() if k not in ignore}, seed
+
+
+def test_the_card_reward_after_a_boss_is_reported_in_the_act_the_boss_belongs_to(sim):
+    """ADR-061 item 1: A1's rule covers the card reward after the Act-1 boss and A2's the one after the Act-2 boss, because the act index only advances
+    after the boss relic is picked (the simulator's `_do_boss_relic_pick` -> `_transition_next_act`), which comes after the reward."""
+    seen: dict[int, list[tuple[int, int]]] = {}
+    for seed in (845573669, 2):          # both runs get past the Act-2 boss
+        mgr = new_run(RunConfig(keep_relics=True), seed)
+        policy = make_policy("rules_v2", values=SHOWN)
+        policy.reset(POLICY_SEED)
+        for _ in range(8000):
+            if mgr.is_over:
+                break
+            actions = mgr.get_available_actions()
+            obs = observe(mgr, actions)
+            if obs["phase"] == "CARD_REWARD" and any(a.get("action") == "pick_card" for a in obs["actions"]) and "BOSS" in str(mgr._current_room_type).upper():
+                seen.setdefault(seed, []).append((obs["run"]["act"], obs["run"]["total_floor"]))
+            mgr.take_action(actions[policy.act(obs, actions, None)])
+    # (act index reported, total floor): the Act-1 boss is on floor 16 and its reward reports act 0; the Act-2 boss on floor 31 and its reward reports act 1
+    assert seen == {845573669: [(0, 16), (1, 31)], 2: [(0, 16), (1, 31)]}

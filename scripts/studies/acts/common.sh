@@ -42,11 +42,23 @@ TESTS="L A1 A2 A3"
 
 # Every value file an arm reads: the five shown sets (their SHA-256 is quoted in ADR-061).
 shown_files() { local c; for c in $CLASSES; do shown_values "$c"; done; }
-# Everything the arms read or run, and the tools that decide what is read: the code and data that must be those of the registration commit when
-# the first held-out game is played.
-PINNED_PATHS="sim scripts/studies/acts scripts/verify-pooled.py packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json"
+# Everything the arms read or run, and the tools that decide how they are read: the code and data that must be those of the registration commit when
+# the first held-out game is played and again when the tests are pooled. The tests of the harness and the README of this folder run nothing.
+PINNED_PATHS=(sim scripts/studies/acts scripts/verify-pooled.py packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json ':(exclude)sim/tests' ':(exclude)scripts/studies/acts/README.md')
 # The reading code: frozen at the registration commit, checked again when the tests are pooled.
-READING_PATHS="scripts/lib/acts.mjs scripts/lib/pooled.mjs scripts/verify-pooled.py"
+READING_PATHS=(scripts/lib/acts.mjs scripts/lib/pooled.mjs scripts/verify-pooled.py)
+# What differs between a commit and the working tree (tracked files, so uncommitted edits count) in the pinned and the reading paths. Prints it and fails
+# if anything does, or if a path the registration pins does not exist (a pathspec that matches nothing would make `git diff --quiet` succeed).
+pinned_problem() { # <commit>
+  local ref=$1 p
+  for p in "${PINNED_PATHS[@]}" "${READING_PATHS[@]}"; do
+    case "$p" in ':('*) continue ;; esac
+    [ -e "$p" ] || { echo "$p does not exist"; return 1; }
+  done
+  git diff --quiet "$ref" -- "${PINNED_PATHS[@]}" "${READING_PATHS[@]}" && return 0
+  git diff --name-only "$ref" -- "${PINNED_PATHS[@]}" "${READING_PATHS[@]}" | head -5 | tr '\n' ' '
+  return 1
+}
 arm_table() { # every arm's policy and parameters, batch ids and value file for every class, and the seeds, the partition and the sizes (what the arms are)
   local arm C
   for arm in $ARMS_ALL; do

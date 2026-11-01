@@ -16,13 +16,18 @@ ADR=$(adr_section)
 # record AT HEAD, and the code and data the arms read are those of the first commit that carries them. REG from the environment is refused unless
 # ALLOW_REG_OVERRIDE=1.
 MARKER='Registration of ADR-061 (frozen choices)'
-grep -qF "$MARKER" <<< "$ADR" || fail "the ADR-061 record at HEAD does not carry its registration (the text '$MARKER')"
-if [ -n "${REG:-}" ] && [ "${ALLOW_REG_OVERRIDE:-}" != 1 ]; then fail "REG is set in the environment; refused (it would make the check that nothing changed since the registration empty). ALLOW_REG_OVERRIDE=1 allows it, for a test"; fi
+# (the marker is the record's last heading and occurs once: a second mention would make the first commit that has the text not the registration)
+marks=$(grep -oF "$MARKER" <<< "$ADR" | wc -l)
+[ "$marks" != 0 ] || fail "the ADR-061 record at HEAD does not carry its registration (the text '$MARKER')"
+[ "$marks" = 1 ] || fail "the ADR-061 record at HEAD must carry its registration (the text '$MARKER') exactly once, it carries it $marks times"
+if [ -n "${REG:-}" ]; then
+  [ "${ALLOW_REG_OVERRIDE:-}" = 1 ] || fail "REG is set in the environment; refused (it would make the check that nothing changed since the registration empty). ALLOW_REG_OVERRIDE=1 allows it, for a test"
+  echo "preflight-val: NOTICE: the registration commit was named from the environment (ALLOW_REG_OVERRIDE=1), not found from the record: ${REG:0:12}" >&2
+fi
 REG=${REG:-$(git log -S"$MARKER" --format=%H -- docs/DECISIONS.md | tail -1)}
 [ -n "$REG" ] || fail "cannot find the commit that carries the registration of ADR-061 (the text '$MARKER')"
 git merge-base --is-ancestor "$REG" HEAD || fail "the registration commit $REG is not an ancestor of HEAD"
-# shellcheck disable=SC2086
-git diff --quiet "$REG" HEAD -- $PINNED_PATHS $READING_PATHS || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $(git diff --name-only "$REG" HEAD -- $PINNED_PATHS $READING_PATHS | head -5 | tr '\n' ' ')"
+bad=$(pinned_problem "$REG") || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $bad"
 
 # every file an arm reads is the file the registration names: its SHA-256 is quoted in ADR-061 itself (not elsewhere in the log), and it is committed.
 # The seed file is one of them: it holds the val2 seeds (and the partitions the earlier studies were played on, which are the same as in the earlier files).
@@ -50,8 +55,9 @@ for d in per-class identity; do
   [ -z "$(git log --all --oneline -1 -- "experiments/acts/$d")" ] || fail "experiments/acts/$d is in the history: the comparisons are run once"
 done
 
-# no game of the val2 seeds has been played, under any batch id, unless an interrupted run is being finished (a finished batch is checked and never touched)
-played=$(grep -l "\"partition\": \"$PARTITION\"" experiments/batches/*/manifest.json 2>/dev/null | head -3 | tr '\n' ' ')
+# no game of the val2 seeds has been played, under any batch id (the seed of a batch's first episode is looked up: a run that died before its manifest was written
+# is found too), unless an interrupted run is being finished (a finished batch is checked and never touched)
+played=$("$PY" "$ROOT/scripts/studies/acts/val2_played.py" --batches experiments/batches --seeds "$SEEDS" | head -3 | tr '\n' ' ') || fail "cannot look for batches on the $PARTITION seeds"
 if [ -n "$played" ] || ls experiments/batches 2>/dev/null | grep -Eq -- "^acts-.*-${PARTITION}-"; then
   [ "${RESUME:-}" = 1 ] || fail "batches on the $PARTITION seeds already exist (${played:-acts-*}); if a run was interrupted, finish it with RESUME=1 (a finished batch is checked and never touched)"
 fi

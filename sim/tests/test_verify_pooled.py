@@ -1,7 +1,7 @@
 """`scripts/verify-pooled.py` recomputes a pooled comparison from the episode files with code that shares nothing with `slay2_sim`.
 
-It has to agree with the pooled files the registered studies were read from (ADR-054, ADR-055 and ADR-058: published, with their batches
-committed; the four files of ADR-058 were checked with it once, after `pool.sh`, and are checked here again) and has to notice when a
+It has to agree with the pooled files the registered studies were read from (ADR-054, ADR-055, ADR-058 and ADR-060: published, with their batches
+committed; the files of ADR-058 and ADR-060 were checked with it once, after `pool.sh`, and are checked here again) and has to notice when a
 number of such a file is not what the episodes give.
 """
 
@@ -29,6 +29,8 @@ PUBLISHED = [
     ASCENSION_9 / "pooled-a9-t2-values-shown-vs-rules_v1.json",
     ASCENSION_9 / "pooled-a9-t3-neow-keep-v1-vs-rules_v2.json",
     ASCENSION_9 / "pooled-a0keep-t2-values-shown-vs-rules_v1.json",
+    REPO / "experiments" / "act2" / "pooled-act2-L.json",   # ADR-060: the endpoint a file names is the Act-2 boss
+    REPO / "experiments" / "act2" / "pooled-act2-P.json",
 ]
 BATCHES = REPO / "experiments" / "batches"
 
