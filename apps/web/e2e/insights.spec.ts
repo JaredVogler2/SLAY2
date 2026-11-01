@@ -12,6 +12,7 @@ const SECTIONS = [
   "runs-end",
   "second-boss",
   "later",
+  "acts",
   "cards",
   "synergy",
   "ascension",
