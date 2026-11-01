@@ -1,0 +1,251 @@
+{
+  "bothCompleted": 9643,
+  "clusteredDifference": {
+    "ci95": [
+      0.002990686333958254,
+      0.015179756210313233
+    ],
+    "ciAtLevel": {
+      "ci": [
+        0.001557466658775843,
+        0.016465323188943247
+      ],
+      "level": 0.98333333333333
+    },
+    "definition": "pooled difference (A minus B) in the share that got past the Act-2 boss, with a bootstrap interval that resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
+    "endpoint": "act2",
+    "meanAMinusB": 0.009022088561650939,
+    "method": "percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "cohort": {
+    "ascension": 0,
+    "characters": [
+      "Ironclad",
+      "Silent",
+      "Regent",
+      "Necrobinder",
+      "Defect"
+    ],
+    "partition": "val",
+    "profile": "veteran"
+  },
+  "contentSha256": "ca5a93cab8ec7e747f4fafecdf6af25f6f09a3f1fdac360406e19d23782e1381",
+  "difference": "a minus b",
+  "excludedNotCompleted": 357,
+  "floorDifference": {
+    "ci95": [
+      -0.9392331224722597,
+      -0.6138131286943898
+    ],
+    "meanAMinusB": -0.7755885097998548,
+    "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+  },
+  "kind": "pooled-paired-comparison",
+  "members": [
+    {
+      "a": {
+        "batchId": "act2-lead-ironclad-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "5a13374e6f630ffd4b64d507b9b3c80284c8d8be5020587fba82e7d902ab3b0d",
+        "wins": 132
+      },
+      "b": {
+        "batchId": "act2-s-ironclad-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "5cc6cc714233e8568427189a71228cf1c9cd394bda05e9175e470799940a6840",
+        "wins": 77
+      },
+      "bothCompleted": 1887,
+      "character": "Ironclad",
+      "meanFloorDifference": -2.157922628510864,
+      "pairedSeeds": 2000,
+      "reachedAct2": {
+        "a": 0.6597774244833068,
+        "b": 0.8012718600953895,
+        "pairedTable": {
+          "a_only": 104,
+          "b_only": 371,
+          "both": 1141,
+          "mcnemar_p": 3.3064430709803145e-36,
+          "neither": 271
+        }
+      }
+    },
+    {
+      "a": {
+        "batchId": "act2-lead-silent-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "e3a5c97c39c34d00747b65e425260244ea80664a5c39d0985b025c954847a283",
+        "wins": 0
+      },
+      "b": {
+        "batchId": "act2-s-silent-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "f1f64a9d8eca2350f8dd6c8e04892899432b3040c065ab67cf6ad038d050e896",
+        "wins": 0
+      },
+      "bothCompleted": 1982,
+      "character": "Silent",
+      "meanFloorDifference": -0.42230070635721495,
+      "pairedSeeds": 2000,
+      "reachedAct2": {
+        "a": 0.30373360242179614,
+        "b": 0.33148335015136227,
+        "pairedTable": {
+          "a_only": 178,
+          "b_only": 233,
+          "both": 424,
+          "mcnemar_p": 0.007654646390095336,
+          "neither": 1147
+        }
+      }
+    },
+    {
+      "a": {
+        "batchId": "act2-lead-regent-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "2b5d9cc0b38cb4b3478465e6398fe49e5b52c18da998509424a2454aa1a9f9ea",
+        "wins": 9
+      },
+      "b": {
+        "batchId": "act2-s-regent-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "3090fde6f076e8137215c039d53363100a357a7c2eb207dacdd9597df0808f1f",
+        "wins": 11
+      },
+      "bothCompleted": 1921,
+      "character": "Regent",
+      "meanFloorDifference": -0.28995314940135347,
+      "pairedSeeds": 2000,
+      "reachedAct2": {
+        "a": 0.5996876626756897,
+        "b": 0.6361270171785528,
+        "pairedTable": {
+          "a_only": 176,
+          "b_only": 246,
+          "both": 976,
+          "mcnemar_p": 0.000763348861097695,
+          "neither": 523
+        }
+      }
+    },
+    {
+      "a": {
+        "batchId": "act2-lead-necrobinder-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "32d7afdc481fc2b8bcb17fec61e4e024d271a325c218c2b7edb227f2f42dd823",
+        "wins": 0
+      },
+      "b": {
+        "batchId": "act2-s-necrobinder-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "1481dedafe6dc5376a3f8f05d77f55cbfcbf3d78b30d48b11980d1de89d1509f",
+        "wins": 0
+      },
+      "bothCompleted": 1941,
+      "character": "Necrobinder",
+      "meanFloorDifference": -0.9273570324574961,
+      "pairedSeeds": 2000,
+      "reachedAct2": {
+        "a": 0.6950025759917569,
+        "b": 0.75682637815559,
+        "pairedTable": {
+          "a_only": 105,
+          "b_only": 225,
+          "both": 1244,
+          "mcnemar_p": 3.5066590725725945e-11,
+          "neither": 367
+        }
+      }
+    },
+    {
+      "a": {
+        "batchId": "act2-lead-defect-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "3c6a2f34788204829fd131a0a45c3a69982ee81584901d816e7584050a969976",
+        "wins": 90
+      },
+      "b": {
+        "batchId": "act2-s-defect-a0-veteran-keeprelics-val-n2000",
+        "contentSha256": "a8d8399a64d1497d04caae487e8d1c7f77f87b518840fe587e5b8c3b24b5def5",
+        "wins": 67
+      },
+      "bothCompleted": 1912,
+      "character": "Defect",
+      "meanFloorDifference": -0.11140167364016737,
+      "pairedSeeds": 2000,
+      "reachedAct2": {
+        "a": 0.8064853556485355,
+        "b": 0.8321129707112971,
+        "pairedTable": {
+          "a_only": 95,
+          "b_only": 144,
+          "both": 1447,
+          "mcnemar_p": 0.0018434907113688622,
+          "neither": 226
+        }
+      }
+    }
+  ],
+  "pairedSeeds": 10000,
+  "policies": {
+    "a": "rules_v2",
+    "b": "rules_v2"
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 5890,
+      "rate": 0.610805765840506,
+      "wilson95": [
+        0.6010320472958901,
+        0.6204912366849005
+      ]
+    },
+    "b": {
+      "games": 6451,
+      "rate": 0.6689826817380483,
+      "wilson95": [
+        0.6595246588980329,
+        0.6783061237380906
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 658,
+      "b_only": 1219,
+      "both": 5232,
+      "mcnemar_p": 8.906917643850519e-39,
+      "neither": 2534
+    }
+  },
+  "reachedAct3": {
+    "a": {
+      "games": 1099,
+      "rate": 0.11396868194545266,
+      "wilson95": [
+        0.10777932014675655,
+        0.12046548601281983
+      ]
+    },
+    "b": {
+      "games": 1012,
+      "rate": 0.10494659338380172,
+      "wilson95": [
+        0.09898593091813747,
+        0.11122188347136049
+      ]
+    },
+    "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+    "pairedTable": {
+      "a_only": 518,
+      "b_only": 431,
+      "both": 581,
+      "mcnemar_p": 0.005216548986493226,
+      "neither": 8113
+    }
+  },
+  "role": "held-out",
+  "schema": 1,
+  "wins": {
+    "a": 231,
+    "b": 155,
+    "pairedTable": {
+      "a_only": 150,
+      "b_only": 74,
+      "both": 81,
+      "mcnemar_p": 4.236078261453434e-07,
+      "neither": 9338
+    }
+  }
+}

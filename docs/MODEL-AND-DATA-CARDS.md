@@ -93,17 +93,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 21 | 42,000 | 41,506 | 433 | 494 | 0 |
+| Defect | held-out (val) | 24 | 48,000 | 47,302 | 674 | 698 | 0 |
 | Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
-| Ironclad | held-out (val) | 24 | 46,300 | 45,617 | 601 | 681 | 2 |
+| Ironclad | held-out (val) | 27 | 52,300 | 51,389 | 912 | 909 | 2 |
 | Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
-| Necrobinder | held-out (val) | 21 | 42,000 | 41,614 | 7 | 378 | 8 |
+| Necrobinder | held-out (val) | 24 | 48,000 | 47,486 | 7 | 505 | 9 |
 | Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
-| Regent | held-out (val) | 21 | 42,000 | 41,467 | 43 | 249 | 284 |
+| Regent | held-out (val) | 24 | 48,000 | 47,305 | 75 | 354 | 341 |
 | Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
-| Silent | held-out (val) | 21 | 42,000 | 41,904 | 0 | 96 | 0 |
+| Silent | held-out (val) | 24 | 48,000 | 47,867 | 0 | 133 | 0 |
 | Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
-| **All classes** | **held-out (val)** | **108** | **214,300** | **212,108** | **1,084** | **1,898** | **294** |
+| **All classes** | **held-out (val)** | **123** | **244,300** | **241,349** | **1,668** | **2,599** | **352** |
 | **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 
@@ -348,27 +348,37 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v1 | Silent | A0, relics kept | 2000 | 1993 | 0 | 0.00 to 0.19 % | 14.40 | 7 · 0 |
 | rules_v1 | Silent | A9, relics kept | 2000 | 1997 | 0 | 0.00 to 0.19 % | 9.65 | 3 · 0 |
 | rules_v2 | Defect | A0, relics dropped | 2000 | 1996 | 7 | 0.17 to 0.72 % | 21.30 | 4 · 0 |
+| rules_v2 | Defect | A0, relics kept | 2000 | 1930 | 68 | 2.79 to 4.44 % | 25.36 | 70 · 0 |
 | rules_v2 | Defect | A0, relics kept | 2000 | 1934 | 62 | 2.51 to 4.09 % | 25.01 | 66 · 0 |
+| rules_v2 | Defect | A0, relics kept | 2000 | 1940 | 92 | 3.88 to 5.78 % | 25.27 | 60 · 0 |
 | rules_v2 | Defect | A9, relics kept | 2000 | 1986 | 15 | 0.46 to 1.24 % | 15.25 | 14 · 0 |
 | rules_v2 [the card values shown on the site] | Defect | A0, relics kept | 2000 | 1930 | 68 | 2.79 to 4.44 % | 25.36 | 70 · 0 |
 | rules_v2 [the card values shown on the site] | Defect | A9, relics kept | 2000 | 1987 | 18 | 0.57 to 1.43 % | 15.21 | 13 · 0 |
 | rules_v2 | Ironclad | A0, relics dropped | 2000 | 1994 | 6 | 0.14 to 0.65 % | 21.07 | 6 · 0 |
+| rules_v2 | Ironclad | A0, relics kept | 2000 | 1917 | 78 | 3.27 to 5.05 % | 27.33 | 83 · 0 |
+| rules_v2 | Ironclad | A0, relics kept | 2000 | 1932 | 137 | 6.03 to 8.32 % | 25.20 | 68 · 0 |
 | rules_v2 | Ironclad | A0, relics kept | 2000 | 1936 | 91 | 3.84 to 5.74 % | 26.65 | 64 · 0 |
 | rules_v2 | Ironclad | A9, relics kept | 2000 | 1985 | 12 | 0.35 to 1.05 % | 17.02 | 15 · 0 |
 | rules_v2 [the card values shown on the site] | Ironclad | A0, relics kept | 2000 | 1917 | 78 | 3.27 to 5.05 % | 27.33 | 83 · 0 |
 | rules_v2 [the card values shown on the site] | Ironclad | A9, relics kept | 2000 | 1980 | 17 | 0.54 to 1.37 % | 17.81 | 20 · 0 |
 | rules_v2 | Necrobinder | A0, relics dropped | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
+| rules_v2 | Necrobinder | A0, relics kept | 2000 | 1957 | 0 | 0.00 to 0.20 % | 23.46 | 43 · 0 |
+| rules_v2 | Necrobinder | A0, relics kept | 2000 | 1959 | 0 | 0.00 to 0.20 % | 22.50 | 41 · 0 |
 | rules_v2 | Necrobinder | A0, relics kept | 2000 | 1961 | 2 | 0.03 to 0.37 % | 22.60 | 37 · 2 |
 | rules_v2 | Necrobinder | A9, relics kept | 2000 | 1992 | 0 | 0.00 to 0.19 % | 13.85 | 8 · 0 |
 | rules_v2 [the card values shown on the site] | Necrobinder | A0, relics kept | 2000 | 1957 | 0 | 0.00 to 0.20 % | 23.46 | 43 · 0 |
 | rules_v2 [the card values shown on the site] | Necrobinder | A9, relics kept | 2000 | 1988 | 1 | 0.01 to 0.28 % | 14.53 | 12 · 0 |
 | rules_v2 | Regent | A0, relics dropped | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
+| rules_v2 | Regent | A0, relics kept | 2000 | 1945 | 12 | 0.35 to 1.08 % | 21.14 | 35 · 20 |
+| rules_v2 | Regent | A0, relics kept | 2000 | 1948 | 9 | 0.24 to 0.88 % | 20.80 | 35 · 17 |
 | rules_v2 | Regent | A0, relics kept | 2000 | 1956 | 6 | 0.14 to 0.67 % | 20.37 | 33 · 11 |
 | rules_v2 | Regent | A9, relics kept | 2000 | 1981 | 1 | 0.01 to 0.29 % | 13.59 | 3 · 16 |
 | rules_v2 [the card values shown on the site] | Regent | A0, relics kept | 2000 | 1945 | 12 | 0.35 to 1.08 % | 21.14 | 35 · 20 |
 | rules_v2 [the card values shown on the site] | Regent | A9, relics kept | 2000 | 1979 | 2 | 0.03 to 0.37 % | 14.25 | 8 · 13 |
 | rules_v2 | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
+| rules_v2 | Silent | A0, relics kept | 2000 | 1985 | 0 | 0.00 to 0.19 % | 15.27 | 15 · 0 |
 | rules_v2 | Silent | A0, relics kept | 2000 | 1987 | 0 | 0.00 to 0.19 % | 15.84 | 13 · 0 |
+| rules_v2 | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
 | rules_v2 | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.36 | 0 · 0 |
 | rules_v2 [the card values shown on the site] | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
 | rules_v2 [the card values shown on the site] | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.21 | 0 · 0 |
@@ -415,30 +425,35 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | advisor_v1 [synergy term on, A*] | Defect | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 16.18 | 0 · 0 |
 | advisor_v1 [synergy term on, A*] | Defect | A0, relics kept | 2000 | 1983 | 0 | 0.00 to 0.19 % | 17.94 | 17 · 0 |
 | advisor_v1 [synergy term on, A*] | Defect | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 11.46 | 1 · 0 |
+| rules_v2_late | Defect | A0, relics kept | 2000 | 1926 | 81 | 3.40 to 5.20 % | 25.30 | 74 · 0 |
 | advisor_v1 [synergy term off, d0*] | Ironclad | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 17.18 | 2 · 0 |
 | advisor_v1 [synergy term off, d0*] | Ironclad | A0, relics kept | 2000 | 1969 | 12 | 0.35 to 1.06 % | 19.70 | 31 · 0 |
 | advisor_v1 [synergy term off, d0*] | Ironclad | A9, relics kept | 2000 | 1994 | 2 | 0.03 to 0.36 % | 13.73 | 5 · 1 |
 | advisor_v1 [synergy term on, A*] | Ironclad | A0, relics dropped | 2000 | 1997 | 2 | 0.03 to 0.36 % | 18.66 | 3 · 0 |
 | advisor_v1 [synergy term on, A*] | Ironclad | A0, relics kept | 2000 | 1959 | 13 | 0.39 to 1.13 % | 21.70 | 41 · 0 |
 | advisor_v1 [synergy term on, A*] | Ironclad | A9, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 14.97 | 11 · 0 |
+| rules_v2_late | Ironclad | A0, relics kept | 2000 | 1923 | 96 | 4.11 to 6.06 % | 27.28 | 77 · 0 |
 | advisor_v1 [synergy term off, d0*] | Necrobinder | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.88 | 2 · 0 |
 | advisor_v1 [synergy term off, d0*] | Necrobinder | A0, relics kept | 2000 | 1983 | 1 | 0.01 to 0.29 % | 17.30 | 17 · 0 |
 | advisor_v1 [synergy term off, d0*] | Necrobinder | A9, relics kept | 2000 | 1997 | 0 | 0.00 to 0.19 % | 11.45 | 3 · 0 |
 | advisor_v1 [synergy term on, A*] | Necrobinder | A0, relics dropped | 2000 | 1997 | 0 | 0.00 to 0.19 % | 16.44 | 3 · 0 |
 | advisor_v1 [synergy term on, A*] | Necrobinder | A0, relics kept | 2000 | 1978 | 0 | 0.00 to 0.19 % | 18.09 | 22 · 0 |
 | advisor_v1 [synergy term on, A*] | Necrobinder | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 11.76 | 1 · 0 |
+| rules_v2_late | Necrobinder | A0, relics kept | 2000 | 1956 | 0 | 0.00 to 0.20 % | 23.48 | 43 · 1 |
 | advisor_v1 [synergy term off, d0*] | Regent | A0, relics dropped | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.04 | 1 · 11 |
 | advisor_v1 [synergy term off, d0*] | Regent | A0, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.74 | 6 · 6 |
 | advisor_v1 [synergy term off, d0*] | Regent | A9, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 9.84 | 0 · 11 |
 | advisor_v1 [synergy term on, A*] | Regent | A0, relics dropped | 2000 | 1990 | 0 | 0.00 to 0.19 % | 14.31 | 1 · 9 |
 | advisor_v1 [synergy term on, A*] | Regent | A0, relics kept | 2000 | 1982 | 0 | 0.00 to 0.19 % | 15.24 | 7 · 11 |
 | advisor_v1 [synergy term on, A*] | Regent | A9, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 10.90 | 0 · 12 |
+| rules_v2_late | Regent | A0, relics kept | 2000 | 1945 | 11 | 0.32 to 1.01 % | 21.23 | 35 · 20 |
 | advisor_v1 [synergy term off, d0*] | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.31 | 0 · 0 |
 | advisor_v1 [synergy term off, d0*] | Silent | A0, relics kept | 2000 | 1995 | 0 | 0.00 to 0.19 % | 12.88 | 5 · 0 |
 | advisor_v1 [synergy term off, d0*] | Silent | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 9.24 | 1 · 0 |
 | advisor_v1 [synergy term on, A*] | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.61 | 0 · 0 |
 | advisor_v1 [synergy term on, A*] | Silent | A0, relics kept | 2000 | 1994 | 0 | 0.00 to 0.19 % | 13.41 | 6 · 0 |
 | advisor_v1 [synergy term on, A*] | Silent | A9, relics kept | 2000 | 1998 | 0 | 0.00 to 0.19 % | 9.35 | 2 · 0 |
+| rules_v2_late | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
 <!-- table:policies:end -->
 
 **Every comparison that was made** (the held-out ones registered as shown, the development ones labelled; exact McNemar on the shared seeds, mean-floor differences with a seed bootstrap):

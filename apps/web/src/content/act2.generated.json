@@ -600,5 +600,407 @@
       "anyClassFitted": true
     }
   },
-  "tests": null
+  "tests": {
+    "results": {
+      "L": {
+        "key": "L",
+        "arm": "lead",
+        "file": "experiments/act2/pooled-act2-L.json",
+        "sha256": "543aa136c4b8efc9a512b8bc17426433c6d2149468e8c0543632f8e451e486fc",
+        "pairs": 9643,
+        "pairedSeeds": 10000,
+        "excluded": 357,
+        "notFinished": {
+          "a": 236,
+          "b": 262
+        },
+        "shares": {
+          "arm": 0.11396868194545266,
+          "baseline": 0.10494659338380172
+        },
+        "games": {
+          "arm": 1099,
+          "baseline": 1012
+        },
+        "difference": 0.009022088561650939,
+        "ci": [
+          0.001557466658775843,
+          0.016465323188943247
+        ],
+        "ci95": [
+          0.002990686333958254,
+          0.015179756210313233
+        ],
+        "armOnly": 518,
+        "baselineOnly": 431,
+        "p": 0.005216548986493226,
+        "verdict": "passed",
+        "primaryVerdict": "passed",
+        "downgrade": null,
+        "excludedFraction": 0.035699999999999954,
+        "robust": {
+          "pairs": 9727,
+          "droppedUnknown": 273,
+          "erroredAfterTheBoss": {
+            "arm": 54,
+            "baseline": 55
+          },
+          "shares": {
+            "arm": 0.11966690654878175,
+            "baseline": 0.11051711730235428
+          },
+          "difference": 0.00914978924642747,
+          "armOnly": 539,
+          "baselineOnly": 450,
+          "p": 0.005112602677693695
+        },
+        "actOne": {
+          "shares": {
+            "arm": 0.610805765840506,
+            "baseline": 0.6689826817380483
+          },
+          "armOnly": 658,
+          "baselineOnly": 1219,
+          "p": 8.906917643850519e-39
+        },
+        "wins": {
+          "arm": 231,
+          "baseline": 155,
+          "p": 4.236078261453434e-7
+        },
+        "floorDifference": {
+          "ci95": [
+            -0.9392331224722597,
+            -0.6138131286943898
+          ],
+          "meanAMinusB": -0.7755885097998548,
+          "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+        },
+        "perClass": [
+          {
+            "character": "ironclad",
+            "pairs": 1887,
+            "shares": {
+              "arm": 0.24377318494965552,
+              "baseline": 0.2299947005829359
+            },
+            "difference": 0.013778484366719634,
+            "armOnly": 202,
+            "baselineOnly": 176,
+            "p": 0.19842705716513334,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.6597774244833068,
+              "baseline": 0.8012718600953895,
+              "armOnly": 104,
+              "baselineOnly": 371
+            },
+            "wins": {
+              "arm": 132,
+              "baseline": 77
+            },
+            "meanFloorDifference": -2.157922628510864
+          },
+          {
+            "character": "silent",
+            "pairs": 1982,
+            "shares": {
+              "arm": 0.0015136226034308778,
+              "baseline": 0.0010090817356205853
+            },
+            "difference": 0.0005045408678102925,
+            "armOnly": 3,
+            "baselineOnly": 2,
+            "p": 1,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.30373360242179614,
+              "baseline": 0.33148335015136227,
+              "armOnly": 178,
+              "baselineOnly": 233
+            },
+            "wins": {
+              "arm": 0,
+              "baseline": 0
+            },
+            "meanFloorDifference": -0.42230070635721495
+          },
+          {
+            "character": "regent",
+            "pairs": 1921,
+            "shares": {
+              "arm": 0.07652264445601249,
+              "baseline": 0.05830296720458095
+            },
+            "difference": 0.018219677251431546,
+            "armOnly": 96,
+            "baselineOnly": 61,
+            "p": 0.00647287256307108,
+            "verdict": "arm",
+            "actOne": {
+              "arm": 0.5996876626756897,
+              "baseline": 0.6361270171785528,
+              "armOnly": 176,
+              "baselineOnly": 246
+            },
+            "wins": {
+              "arm": 9,
+              "baseline": 11
+            },
+            "meanFloorDifference": -0.28995314940135347
+          },
+          {
+            "character": "necrobinder",
+            "pairs": 1941,
+            "shares": {
+              "arm": 0.07109737248840804,
+              "baseline": 0.0695517774343122
+            },
+            "difference": 0.0015455950540958358,
+            "armOnly": 79,
+            "baselineOnly": 76,
+            "p": 0.8724408026046266,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.6950025759917569,
+              "baseline": 0.75682637815559,
+              "armOnly": 105,
+              "baselineOnly": 225
+            },
+            "wins": {
+              "arm": 0,
+              "baseline": 0
+            },
+            "meanFloorDifference": -0.9273570324574961
+          },
+          {
+            "character": "defect",
+            "pairs": 1912,
+            "shares": {
+              "arm": 0.18357740585774057,
+              "baseline": 0.17207112970711297
+            },
+            "difference": 0.011506276150627603,
+            "armOnly": 138,
+            "baselineOnly": 116,
+            "p": 0.1875122933880526,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.8064853556485355,
+              "baseline": 0.8321129707112971,
+              "armOnly": 95,
+              "baselineOnly": 144
+            },
+            "wins": {
+              "arm": 90,
+              "baseline": 67
+            },
+            "meanFloorDifference": -0.11140167364016737
+          }
+        ]
+      },
+      "P": {
+        "key": "P",
+        "arm": "p020",
+        "file": "experiments/act2/pooled-act2-P.json",
+        "sha256": "299a2ad7ee87a16089b8b57ff68f70b7e70053fd66c96c6398f204d9af1adeee",
+        "pairs": 9698,
+        "pairedSeeds": 10000,
+        "excluded": 302,
+        "notFinished": {
+          "a": 261,
+          "b": 262
+        },
+        "shares": {
+          "arm": 0.10816663229531863,
+          "baseline": 0.10476386883893586
+        },
+        "games": {
+          "arm": 1049,
+          "baseline": 1016
+        },
+        "difference": 0.0034027634563827593,
+        "ci": [
+          -0.0021648892690525347,
+          0.009043996039404777
+        ],
+        "ci95": [
+          -0.0010356443005327936,
+          0.007945516458569807
+        ],
+        "armOnly": 284,
+        "baselineOnly": 251,
+        "p": 0.16645726145665823,
+        "verdict": "not-shown",
+        "primaryVerdict": "not-shown",
+        "downgrade": null,
+        "excludedFraction": 0.030200000000000005,
+        "robust": {
+          "pairs": 9776,
+          "droppedUnknown": 224,
+          "erroredAfterTheBoss": {
+            "arm": 54,
+            "baseline": 55
+          },
+          "shares": {
+            "arm": 0.11395253682487726,
+            "baseline": 0.1104746317512275
+          },
+          "difference": 0.0034779050736497546,
+          "armOnly": 298,
+          "baselineOnly": 264,
+          "p": 0.16385750104909888
+        },
+        "actOne": {
+          "shares": {
+            "arm": 0.6694163745102083,
+            "baseline": 0.6694163745102083
+          },
+          "armOnly": 0,
+          "baselineOnly": 0,
+          "p": 1
+        },
+        "wins": {
+          "arm": 185,
+          "baseline": 155,
+          "p": 0.018367392110610604
+        },
+        "floorDifference": {
+          "ci95": [
+            -0.07310785729016292,
+            0.06517323159414266
+          ],
+          "meanAMinusB": -0.004227675809445246,
+          "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+        },
+        "perClass": [
+          {
+            "character": "ironclad",
+            "pairs": 1902,
+            "shares": {
+              "arm": 0.22712933753943218,
+              "baseline": 0.22870662460567823
+            },
+            "difference": -0.001577287066246047,
+            "armOnly": 118,
+            "baselineOnly": 121,
+            "p": 0.8971007883412816,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.8017875920084122,
+              "baseline": 0.8017875920084122,
+              "armOnly": 0,
+              "baselineOnly": 0
+            },
+            "wins": {
+              "arm": 93,
+              "baseline": 77
+            },
+            "meanFloorDifference": -0.09884332281808622
+          },
+          {
+            "character": "silent",
+            "pairs": 1989,
+            "shares": {
+              "arm": 0.001005530417295123,
+              "baseline": 0.001005530417295123
+            },
+            "difference": 0,
+            "armOnly": 1,
+            "baselineOnly": 1,
+            "p": 1,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.33182503770739064,
+              "baseline": 0.33182503770739064,
+              "armOnly": 0,
+              "baselineOnly": 0
+            },
+            "wins": {
+              "arm": 0,
+              "baseline": 0
+            },
+            "meanFloorDifference": -0.001005530417295123
+          },
+          {
+            "character": "regent",
+            "pairs": 1938,
+            "shares": {
+              "arm": 0.06449948400412797,
+              "baseline": 0.05985552115583075
+            },
+            "difference": 0.004643962848297219,
+            "armOnly": 46,
+            "baselineOnly": 37,
+            "p": 0.379999396411918,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.6362229102167183,
+              "baseline": 0.6362229102167183,
+              "armOnly": 0,
+              "baselineOnly": 0
+            },
+            "wins": {
+              "arm": 11,
+              "baseline": 12
+            },
+            "meanFloorDifference": 0.08152734778121776
+          },
+          {
+            "character": "necrobinder",
+            "pairs": 1953,
+            "shares": {
+              "arm": 0.07322068612391193,
+              "baseline": 0.06912442396313365
+            },
+            "difference": 0.004096262160778283,
+            "armOnly": 49,
+            "baselineOnly": 41,
+            "p": 0.46079247271897156,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.7583205325140809,
+              "baseline": 0.7583205325140809,
+              "armOnly": 0,
+              "baselineOnly": 0
+            },
+            "wins": {
+              "arm": 0,
+              "baseline": 0
+            },
+            "meanFloorDifference": 0.014336917562724014
+          },
+          {
+            "character": "defect",
+            "pairs": 1916,
+            "shares": {
+              "arm": 0.18110647181628392,
+              "baseline": 0.17118997912317327
+            },
+            "difference": 0.009916492693110651,
+            "armOnly": 70,
+            "baselineOnly": 51,
+            "p": 0.10136765353309228,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.831419624217119,
+              "baseline": 0.831419624217119,
+              "armOnly": 0,
+              "baselineOnly": 0
+            },
+            "wins": {
+              "arm": 81,
+              "baseline": 66
+            },
+            "meanFloorDifference": -0.019311064718162838
+          }
+        ]
+      }
+    },
+    "determinism": {
+      "shared": 10000,
+      "identical": 10000,
+      "different": 0
+    }
+  }
 }
