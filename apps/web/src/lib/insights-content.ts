@@ -1,3 +1,4 @@
+import { act2Data, hasPrice, pctShare, pts, type Act2Test, type Act2TestKey } from "@/lib/act2";
 import { allSets } from "@/lib/cardvalues";
 import { count, INSIGHTS, points, share } from "@/lib/insights";
 
@@ -93,6 +94,63 @@ export interface OpenQuestion {
   readonly first: string;
 }
 
+const PILOT_OF: Record<Act2TestKey, string> = {
+  L: "a pilot that takes only cards worth 0.2 or more in every act",
+  P: "a pilot that is pickier in the second act only",
+  V: "a pilot that follows values refitted for the second boss",
+};
+
+function studyLine(t: Act2Test): string {
+  const second = `${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} past the second boss`;
+  const verdict =
+    t.verdict === "passed"
+      ? "got more runs past it"
+      : t.verdict === "reversed"
+        ? "got fewer runs past it"
+        : "showed no difference there";
+  const price = hasPrice(t)
+    ? `, and ${pctShare(t.actOne.shares.arm)} against ${pctShare(t.actOne.shares.baseline)} past the first (${pts(t.actOne.shares.arm - t.actOne.shares.baseline)})`
+    : "";
+  return `${PILOT_OF[t.key]} ${verdict} (${second}, ${pts(t.difference)}${price})`;
+}
+
+/**
+ * What the registered Act-2 study (ADR-060) adds to the question "what wins a run", at whichever stage the repository has reached; every
+ * figure is read from its exported data, and which next step follows depends on whether any test passed.
+ */
+function laterStudy(): { readonly why: string; readonly first: string } {
+  const refit =
+    "Refit the values for the Act-2 boss from the runs that exist, then test a pilot that follows them on held-out seeds.";
+  const d = act2Data();
+  if (!d?.fit) return { why: "", first: refit };
+  const results = d.tests?.results;
+  if (!results) {
+    return {
+      why: " A registered study (ADR-060) is under way: the values were refitted for the second boss, a development screen chose what to play, and the held-out games are not finished, so there is no result yet.",
+      first:
+        "Wait for the held-out tests of that study (ADR-060): they say whether a pickier pilot or the refitted values get more runs past the second boss.",
+    };
+  }
+  const played = (["L", "P", "V"] as const).flatMap((k) => {
+    const t = results[k];
+    return t ? [t] : [];
+  });
+  const skipped = [
+    ...(d.dev && !d.dev.P.advance
+      ? ["no threshold for the second act qualified in its development screen"]
+      : []),
+    ...(d.dev && !d.dev.V.advance ? ["the refitted values did not qualify in it either"] : []),
+  ];
+  const why = ` A registered study (ADR-060) then asked it of the second boss on held-out seeds: ${played.map(studyLine).join("; ")}${skipped.length > 0 ? `; ${skipped.join(", and ")}` : ""}. Every one of these is a statement about simulated rules pilots, and none is about winning.`;
+  const anyPassed = played.some((t) => t.verdict === "passed");
+  return {
+    why,
+    first: anyPassed
+      ? "Find which acts' card picks carry the effect and whether it reaches winning: a new registration with wins as its endpoint (the study's win counts are descriptive, not a registered endpoint)."
+      : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).",
+  };
+}
+
 /** What the evidence does not reach, in the order this project means to close it. Numbers are quoted from the data. */
 export function openQuestions(): readonly OpenQuestion[] {
   const a0 = INSIGHTS.runsEnd.find((v) => v.id === "a0");
@@ -103,13 +161,13 @@ export function openQuestions(): readonly OpenQuestion[] {
   const silentAct1 = silent ? silent.diedAct1 / silent.completed : 0;
   const relicsKept =
     INSIGHTS.levers.find((l) => l.id === "relics-along-the-way")?.rows[0]?.difference ?? 0;
+  const study = laterStudy();
   return [
     {
       id: "later",
       question: "What wins a run, as opposed to getting past the first boss?",
-      why: `Every card value on this site is measured at the Act-1 boss, and the pilot that follows the shown values wins ${share((a0?.won ?? 0) / (a0?.completed ?? 1))} of its games at Ascension 0. In the exploration games ${count(late.act2.runs)} runs reached the Act-2 boss and ${count(late.act2.passed)} got past it; the endings of the pilot's own games above are another reading. Neither was designed to answer the question.`,
-      first:
-        "Refit the values for the Act-2 boss from the runs that exist, then test a pilot that follows them on held-out seeds.",
+      why: `Every card value on this site is measured at the Act-1 boss, and the pilot that follows the shown values wins ${share((a0?.won ?? 0) / (a0?.completed ?? 1))} of its games at Ascension 0. In the exploration games ${count(late.act2.runs)} runs reached the Act-2 boss and ${count(late.act2.passed)} got past it; the endings of the pilot's own games above are another reading. Neither was designed to answer the question.${study.why}`,
+      first: study.first,
     },
     {
       id: "elites",

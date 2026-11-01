@@ -124,6 +124,25 @@ python3 scripts/inventory-game-data.py --check
 node scripts/export-site-data.mjs --check
 ```
 
+### The Act-2 study, command by command
+
+Registered in ADR-060 (part 1, addenda A and B, part 2). Every step below is a script of `scripts/studies/act2/` (frozen from the commit that registers the held-out run, `cc88476`) and refuses to run twice or from the wrong commit. The held-out run is about two hours on four workers; the development stage about two hours; the fit and the audits minutes. The simulator is the pinned local copy (`SLAY2_EXTERNAL_ROOT`, ADR-011).
+
+```bash
+export PY=python3 SLAY2_EXTERNAL_ROOT=/path/to/external/checkouts OMP_NUM_THREADS=1
+bash scripts/studies/act2/fit.sh                 # the Act-2 fit: ten files in experiments/cardvalue/ (about a minute); commit them
+bash scripts/studies/act2/dev.sh 4               # the development stage, 45 batches (resumable; start from a clean worktree of the commit that carries the fit)
+bash scripts/studies/act2/select-dev.sh          # the registered rule, once: experiments/act2/dev-selection.json (stops, writing nothing, if an identity check fails)
+python3 scripts/studies/act2/part2.py            # the numbers of part 2 of the record; write it, commit it with the batches and the selection, push it
+bash scripts/studies/act2/run-val.sh 4           # the held-out run from a clean worktree of the pushed commit (the preflight refuses anything else); RESUME=1 finishes an interrupted run
+bash scripts/studies/act2/audit.sh val           # every win re-derived, a 40-game sample of every batch
+bash scripts/studies/act2/pool.sh                # the two pooled tests once, the identity, determinism and observed-endpoint records
+python3 scripts/verify-pooled.py experiments/act2/pooled-act2-*.json --bootstrap    # an independent recomputation from the episodes (98 checks a file)
+node scripts/export-site-data.mjs && python3 scripts/act2-result-numbers.py         # the page's data and the numbers of the result section
+```
+
+What a third party can check without the simulator: the committed batches' manifests and compressed episodes (`python3 scripts/verify-pooled.py ... --bootstrap` and `slay2_sim pool` read only those), the hashes quoted in ADR-060 against the ten value files and the selection, and that the registration commit is an ancestor of the commit that holds the result. What needs the simulator: replaying the games, the win audits, and the fit's exploration batches' provenance. The replayed baseline of the held-out run is identical, game for game, to the baseline played at `687db50` for ADR-058 (10,000 of 10,000), which is the determinism record.
+
 ## The website's data
 
 `apps/web/src/content/*.generated.json` are generated, never edited: `node scripts/export-site-data.mjs` writes them from the
@@ -148,6 +167,21 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 <!-- table:batches:begin -->
 | Batch id | Policy | Class | Partition · n | Completed | Wins | Content sha256 | Tree | Audits | Class check |
 |---|---|---|---|---|---|---|---|---|---|
+| `act2-lead-defect-a0-veteran-keeprelics-val-n2000` | rules_v2 | Defect | val · 2000 | 1940 | 92 | `3c6a2f347882…` | clean | wins,sample | yes |
+| `act2-lead-ironclad-a0-veteran-keeprelics-val-n2000` | rules_v2 | Ironclad | val · 2000 | 1932 | 137 | `5a13374e6f63…` | clean | wins,sample | yes |
+| `act2-lead-necrobinder-a0-veteran-keeprelics-val-n2000` | rules_v2 | Necrobinder | val · 2000 | 1959 | 0 | `32d7afdc481f…` | clean | sample | yes |
+| `act2-lead-regent-a0-veteran-keeprelics-val-n2000` | rules_v2 | Regent | val · 2000 | 1948 | 9 | `2b5d9cc0b38c…` | clean | wins,sample | yes |
+| `act2-lead-silent-a0-veteran-keeprelics-val-n2000` | rules_v2 | Silent | val · 2000 | 1985 | 0 | `e3a5c97c39c3…` | clean | sample | yes |
+| `act2-p020-defect-a0-veteran-keeprelics-val-n2000` | rules_v2_late | Defect | val · 2000 | 1926 | 81 | `4539e9e2d73e…` | clean | wins,sample | yes |
+| `act2-p020-ironclad-a0-veteran-keeprelics-val-n2000` | rules_v2_late | Ironclad | val · 2000 | 1923 | 96 | `225ef9a76a80…` | clean | wins,sample | yes |
+| `act2-p020-necrobinder-a0-veteran-keeprelics-val-n2000` | rules_v2_late | Necrobinder | val · 2000 | 1956 | 0 | `3ed03f5cb3a8…` | clean | sample | yes |
+| `act2-p020-regent-a0-veteran-keeprelics-val-n2000` | rules_v2_late | Regent | val · 2000 | 1945 | 11 | `a9dbebc6495d…` | clean | wins,sample | yes |
+| `act2-p020-silent-a0-veteran-keeprelics-val-n2000` | rules_v2_late | Silent | val · 2000 | 1989 | 0 | `167051d3e711…` | clean | sample | yes |
+| `act2-s-defect-a0-veteran-keeprelics-val-n2000` | rules_v2 | Defect | val · 2000 | 1930 | 68 | `a8d8399a64d1…` | clean | wins,sample | yes |
+| `act2-s-ironclad-a0-veteran-keeprelics-val-n2000` | rules_v2 | Ironclad | val · 2000 | 1917 | 78 | `5cc6cc714233…` | clean | wins,sample | yes |
+| `act2-s-necrobinder-a0-veteran-keeprelics-val-n2000` | rules_v2 | Necrobinder | val · 2000 | 1957 | 0 | `1481dedafe6d…` | clean | sample | yes |
+| `act2-s-regent-a0-veteran-keeprelics-val-n2000` | rules_v2 | Regent | val · 2000 | 1945 | 12 | `3090fde6f076…` | clean | wins,sample | yes |
+| `act2-s-silent-a0-veteran-keeprelics-val-n2000` | rules_v2 | Silent | val · 2000 | 1989 | 0 | `f1f64a9d8eca…` | clean | sample | yes |
 | `act2dev-lead-defect-a0-veteran-keeprelics-dev-o1000-n600` | rules_v2 | Defect | dev · 600 | 577 | 23 | `a025df7ddcab…` | clean | wins | yes |
 | `act2dev-lead-ironclad-a0-veteran-keeprelics-dev-o1000-n600` | rules_v2 | Ironclad | dev · 600 | 582 | 47 | `399a6490b675…` | clean | wins | yes |
 | `act2dev-lead-necrobinder-a0-veteran-keeprelics-dev-o1000-n600` | rules_v2 | Necrobinder | dev · 600 | 584 | 1 | `efec17eb3ff4…` | clean | wins | yes |

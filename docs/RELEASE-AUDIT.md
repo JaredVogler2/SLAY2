@@ -64,17 +64,17 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 21 | 42,000 | 41,506 | 433 | 494 | 0 |
+| Defect | held-out (val) | 24 | 48,000 | 47,302 | 674 | 698 | 0 |
 | Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
-| Ironclad | held-out (val) | 24 | 46,300 | 45,617 | 601 | 681 | 2 |
+| Ironclad | held-out (val) | 27 | 52,300 | 51,389 | 912 | 909 | 2 |
 | Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
-| Necrobinder | held-out (val) | 21 | 42,000 | 41,614 | 7 | 378 | 8 |
+| Necrobinder | held-out (val) | 24 | 48,000 | 47,486 | 7 | 505 | 9 |
 | Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
-| Regent | held-out (val) | 21 | 42,000 | 41,467 | 43 | 249 | 284 |
+| Regent | held-out (val) | 24 | 48,000 | 47,305 | 75 | 354 | 341 |
 | Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
-| Silent | held-out (val) | 21 | 42,000 | 41,904 | 0 | 96 | 0 |
+| Silent | held-out (val) | 24 | 48,000 | 47,867 | 0 | 133 | 0 |
 | Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
-| **All classes** | **held-out (val)** | **108** | **214,300** | **212,108** | **1,084** | **1,898** | **294** |
+| **All classes** | **held-out (val)** | **123** | **244,300** | **241,349** | **1,668** | **2,599** | **352** |
 | **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 
@@ -126,6 +126,7 @@ The **40-fixture bar** is met in count and not in shape: 73 request-level attack
 ## Next actions, in order
 
 00. **The three registered replications with the relics kept are done** (ADR-052 found the gap; ADR-053 card values: the values measured again beat the earlier ones, so four classes adopt them; ADR-054 synergy test: the term still helps, +7.1 points against +7.0; ADR-055 opening relics: the rule still helps, +4.7 points against +6.8). Open: the tuned thresholds (H9, tuned where elite relics were dropped, so possibly wrong for a game that keeps them) and the search policy were not played again; a report to the simulator's maintainers is the owner's call.
+03. **The Act-2 study was registered, played and published as it came out (ADR-060, 2026-10-31 to 2026-11-01)**: a pilot that takes only cards worth 0.2 or more in every act got past the second boss in 11.40 % of 9,643 paired held-out games against 10.49 % (+0.90 points, exact p = 0.0052, passed) and past the first boss in 61.08 % against 66.90 %; being pickier in Act 2 alone shows nothing (+0.34 points, p = 0.17); the refitted values did not qualify in the development screen and were not played. Held: registration pushed before the first held-out game (and merged into `main` while it ran), all 584 wins re-derived, 15 of 15 sample audits, an independent recomputation. Open: which acts' picks carry the effect and whether it reaches winning (the win counts, 231 against 155, are descriptive); the advisor is unchanged and whether to offer a pickier mode is the owner's decision.
 02. **The Insights page was built from existing results (ADR-059, 2026-10-31)**: levers on one axis, where runs end, an exploratory reading of the second boss, card surprises, the synergy atlas, the Ascension ladder, a table of what the site holds of the game and the questions not yet answered, every figure read from committed files and labelled by the kind of evidence it is. What it does not do: no new held-out game was played; the second-boss reading is exploratory and associational (60 % of the card picks were random, the pilot's other choices were rules, and runs that reach the second boss have already survived two acts); the earlier lead that thinner decks do better later was not reproduced and is not refuted; a headline that said bosses end most runs was wrong (47 % of the deaths at Ascension 0, 37 % at 9, from the floors the games record) and was replaced before it shipped. The studies it points at (values and a picky pilot at the Act-2 boss, elites with the relics kept, relic values, events and enchantments, shops) are open registrations.
 01. **The three results were tested at Ascension 9 and all passed (ADR-058, 2026-10-28)**, each by fewer points than at Ascension 0; the pages say so, and what they say follows the exported numbers. Open: the question the numbers raise without answering, whether the pilot that follows the measured card values (24.6 % past the Act-1 boss at Ascension 9) against the one that picks by the advisor's index with the synergy term (10.1 %) means the measured values should be the advisor's headline recommendation: a registered paired test of those two pilots, and a product decision for the owner, with the simulator still unverified against the live game.
 0. **The synergy study (the user's feedback) is finished** as registered in ADR-050 and played again in ADR-054: the model, the exploratory reading (B1), the development stage (addendum D) and the held-out tests, published as they came out, with the page's weights and wording set by them. Open, each a new registration: a second pilot, the levels 1 to 8 and values fitted at Ascension 9 (the term itself passed at Ascension 9: ADR-058), the tags re-read with the table unfrozen, and whether the strengths hold for the beta build.

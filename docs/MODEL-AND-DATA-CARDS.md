@@ -30,6 +30,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D12 | Relic synergy tags | judgement (facts of mechanics) | yes: `/advisor` | a judgement read twice by blind readers and reconciled by a written rule; **not yet tested in simulation** |
 | D13 | Ascension 9 study (ADR-058): precondition, read-back of each Ascension's changes, four pooled comparisons, twenty per-class comparisons, 40 batches | measurements | yes: `/methods#ascension`, a line on three advisor panels for a run above Ascension 0 | registered before its first game; three tests passed; all 294 wins re-derived; every pooled file recomputed from the episodes by code of its own |
 | D14 | Insights data (ADR-059): the paired comparisons the lever ladder reads, how the shown-values pilot's games ended, an exploratory fit of the Act-1 and Act-2 boss fights (24,708 games), a counts-only inventory of the game | descriptions, measurements, one exploratory fit | yes: `/insights` | each input is checked against its own counts; the exploratory file is rebuilt by a test (counts and ids exactly, fitted numbers to 1e-9); no held-out result is new |
+| D15 | Act-2 study (ADR-060): the Act-2 fit (ten files), the development screen (45 batches, its selection) and the held-out run (15 batches, two pooled files, ten per-class files, identity, determinism and observed-endpoint records) | measurements | yes: `/insights` ("After the first boss"), `/methods#act2` | registered before any game; two tests played (one passed, one not shown), one not played by its screen; all 584 held-out and 476 development wins re-derived; both pooled files recomputed from the episodes by code of their own |
 | M1 | Exact calculators | mathematics | yes | 739 golden cases, published tables, brute force, properties |
 | M2 | Draft advisor v1 (the deck index) | heuristic | yes | **uncalibrated**, never a probability; its synergy term is M8 |
 | M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class; and once at Ascension 9 (ADR-058) |
@@ -93,17 +94,17 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val) | 21 | 42,000 | 41,506 | 433 | 494 | 0 |
+| Defect | held-out (val) | 24 | 48,000 | 47,302 | 674 | 698 | 0 |
 | Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
-| Ironclad | held-out (val) | 24 | 46,300 | 45,617 | 601 | 681 | 2 |
+| Ironclad | held-out (val) | 27 | 52,300 | 51,389 | 912 | 909 | 2 |
 | Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
-| Necrobinder | held-out (val) | 21 | 42,000 | 41,614 | 7 | 378 | 8 |
+| Necrobinder | held-out (val) | 24 | 48,000 | 47,486 | 7 | 505 | 9 |
 | Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
-| Regent | held-out (val) | 21 | 42,000 | 41,467 | 43 | 249 | 284 |
+| Regent | held-out (val) | 24 | 48,000 | 47,305 | 75 | 354 | 341 |
 | Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
-| Silent | held-out (val) | 21 | 42,000 | 41,904 | 0 | 96 | 0 |
+| Silent | held-out (val) | 24 | 48,000 | 47,867 | 0 | 133 | 0 |
 | Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
-| **All classes** | **held-out (val)** | **108** | **214,300** | **212,108** | **1,084** | **1,898** | **294** |
+| **All classes** | **held-out (val)** | **123** | **244,300** | **241,349** | **1,668** | **2,599** | **352** |
 | **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 
@@ -276,6 +277,14 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Checks:** the reader refuses a comparison whose arms, partition, Ascension or role are not the ones its lever names, whose paired table does not add up, whose p-value is not the exact McNemar p-value of its counts, whose shares or pooled difference are not what its table gives, or whose interval does not contain the difference; a batch whose manifest is not the game the page says, or whose episodes are not what its manifest counts; a late-drivers file fitted from another batch than the one on disk; boss floors that are not three increasing whole numbers. `sim/tests/test_latedrivers.py` rebuilds the committed file from the committed batches and requires it equal in every count, id and hash and to a relative 1e-9 in every fitted number (the last digits of a float fit depend on the machine's BLAS), and recounts its endpoints and floors without the module's own code; `apps/web/test/insights-export.test.ts` recounts the boss deaths from the episode files.
 * **Limits:** associations, not causes (60 % of the card picks were random; the pilot's other choices were its rules); runs that reach the second boss are survivors of two acts; one rules pilot; Overgrowth only; the simulator is unverified against the live game; the pilots win next to nothing; gold, killers and endings describe a simulated pilot, not a player.
 
+## D15. The Act-2 study data (ADR-060)
+
+* **What:** (a) ten value files, `experiments/cardvalue/<class>-a0-act2-v1.json`, the shown card values refitted for the Act-2 boss from the five relics-kept exploration batches (Ironclad and Defect kept a fit, the other three kept the shown values; the first, numerically broken run is kept in `experiments/act2/fit-run1/`); (b) 45 development batches `experiments/batches/act2dev-<arm>-<class>-a0-veteran-keeprelics-dev-o1000-n600` and the selection `experiments/act2/dev-selection.json` (S, V, L and six Act-2 thresholds on `dev[1000:1600)`, 27,000 games; the rule chose the threshold 0.2 and not V); (c) 15 held-out batches `experiments/batches/act2-<arm>-<class>-a0-veteran-keeprelics-val-n2000` (S replayed, L, P at 0.2; 30,000 games), their win and sample audits, two pooled files `experiments/act2/pooled-act2-L.json` and `pooled-act2-P.json`, ten per-class comparisons, the identity record of P, the determinism record of the replayed S against ADR-058's batches (10,000 of 10,000 games identical) and `experiments/act2/robustness-errors.json`.
+* **Design:** registered in ADR-060 (part 1, addenda A and B, part 2) before any game; the endpoint is "got past the Act-2 boss" (a win or a last act index of 2 or more), pairs in which either game did not complete are excluded and counted, each test is one exact McNemar over five classes read at 0.05 / 3 with a whole-seed interval, and a result counts as passed only if an analysis that scores errors after the Act-2 boss as passes agrees.
+* **Result:** see ADR-060. L (threshold 0.2 in every act) 11.40 % against 10.49 % past the Act-2 boss (+0.90 points, interval +0.16 to +1.65, exact p = 0.0052: passed) and 61.08 % against 66.90 % past the Act-1 boss (-5.82 points); P (Act 2 only) 10.82 % against 10.48 % (+0.34 points, interval -0.22 to +0.90, p = 0.17: not shown); V not played. Wins (not a registered endpoint): L 231 against 155, P 185 against 155.
+* **Checks:** every held-out win re-derived by `audit wins`, a 40-game sample of every batch, `scripts/verify-pooled.py --bootstrap` on both pooled files (98 checks each), an exporter that refuses any file that does not belong with the others (`scripts/lib/act2.mjs`, 19 tests on a synthetic repository) and a preflight that refused to start the run unless the record, the code and the data were those the record names (36 tests on throwaway repositories).
+* **Limits:** simulated rules pilots in an unverified simulator; one pilot family; Ascension 0, relics kept; the winner of a screen of six is a biased estimate and was tested on other seeds; wins are rare (1.6 to 2.4 % of games) and were not a registered endpoint; the study cannot say which acts' picks carry L's effect.
+
 ---
 
 # Model cards
@@ -348,27 +357,37 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | rules_v1 | Silent | A0, relics kept | 2000 | 1993 | 0 | 0.00 to 0.19 % | 14.40 | 7 · 0 |
 | rules_v1 | Silent | A9, relics kept | 2000 | 1997 | 0 | 0.00 to 0.19 % | 9.65 | 3 · 0 |
 | rules_v2 | Defect | A0, relics dropped | 2000 | 1996 | 7 | 0.17 to 0.72 % | 21.30 | 4 · 0 |
+| rules_v2 | Defect | A0, relics kept | 2000 | 1930 | 68 | 2.79 to 4.44 % | 25.36 | 70 · 0 |
 | rules_v2 | Defect | A0, relics kept | 2000 | 1934 | 62 | 2.51 to 4.09 % | 25.01 | 66 · 0 |
+| rules_v2 | Defect | A0, relics kept | 2000 | 1940 | 92 | 3.88 to 5.78 % | 25.27 | 60 · 0 |
 | rules_v2 | Defect | A9, relics kept | 2000 | 1986 | 15 | 0.46 to 1.24 % | 15.25 | 14 · 0 |
 | rules_v2 [the card values shown on the site] | Defect | A0, relics kept | 2000 | 1930 | 68 | 2.79 to 4.44 % | 25.36 | 70 · 0 |
 | rules_v2 [the card values shown on the site] | Defect | A9, relics kept | 2000 | 1987 | 18 | 0.57 to 1.43 % | 15.21 | 13 · 0 |
 | rules_v2 | Ironclad | A0, relics dropped | 2000 | 1994 | 6 | 0.14 to 0.65 % | 21.07 | 6 · 0 |
+| rules_v2 | Ironclad | A0, relics kept | 2000 | 1917 | 78 | 3.27 to 5.05 % | 27.33 | 83 · 0 |
+| rules_v2 | Ironclad | A0, relics kept | 2000 | 1932 | 137 | 6.03 to 8.32 % | 25.20 | 68 · 0 |
 | rules_v2 | Ironclad | A0, relics kept | 2000 | 1936 | 91 | 3.84 to 5.74 % | 26.65 | 64 · 0 |
 | rules_v2 | Ironclad | A9, relics kept | 2000 | 1985 | 12 | 0.35 to 1.05 % | 17.02 | 15 · 0 |
 | rules_v2 [the card values shown on the site] | Ironclad | A0, relics kept | 2000 | 1917 | 78 | 3.27 to 5.05 % | 27.33 | 83 · 0 |
 | rules_v2 [the card values shown on the site] | Ironclad | A9, relics kept | 2000 | 1980 | 17 | 0.54 to 1.37 % | 17.81 | 20 · 0 |
 | rules_v2 | Necrobinder | A0, relics dropped | 2000 | 1999 | 0 | 0.00 to 0.19 % | 19.63 | 1 · 0 |
+| rules_v2 | Necrobinder | A0, relics kept | 2000 | 1957 | 0 | 0.00 to 0.20 % | 23.46 | 43 · 0 |
+| rules_v2 | Necrobinder | A0, relics kept | 2000 | 1959 | 0 | 0.00 to 0.20 % | 22.50 | 41 · 0 |
 | rules_v2 | Necrobinder | A0, relics kept | 2000 | 1961 | 2 | 0.03 to 0.37 % | 22.60 | 37 · 2 |
 | rules_v2 | Necrobinder | A9, relics kept | 2000 | 1992 | 0 | 0.00 to 0.19 % | 13.85 | 8 · 0 |
 | rules_v2 [the card values shown on the site] | Necrobinder | A0, relics kept | 2000 | 1957 | 0 | 0.00 to 0.20 % | 23.46 | 43 · 0 |
 | rules_v2 [the card values shown on the site] | Necrobinder | A9, relics kept | 2000 | 1988 | 1 | 0.01 to 0.28 % | 14.53 | 12 · 0 |
 | rules_v2 | Regent | A0, relics dropped | 2000 | 1987 | 1 | 0.01 to 0.28 % | 17.84 | 2 · 11 |
+| rules_v2 | Regent | A0, relics kept | 2000 | 1945 | 12 | 0.35 to 1.08 % | 21.14 | 35 · 20 |
+| rules_v2 | Regent | A0, relics kept | 2000 | 1948 | 9 | 0.24 to 0.88 % | 20.80 | 35 · 17 |
 | rules_v2 | Regent | A0, relics kept | 2000 | 1956 | 6 | 0.14 to 0.67 % | 20.37 | 33 · 11 |
 | rules_v2 | Regent | A9, relics kept | 2000 | 1981 | 1 | 0.01 to 0.29 % | 13.59 | 3 · 16 |
 | rules_v2 [the card values shown on the site] | Regent | A0, relics kept | 2000 | 1945 | 12 | 0.35 to 1.08 % | 21.14 | 35 · 20 |
 | rules_v2 [the card values shown on the site] | Regent | A9, relics kept | 2000 | 1979 | 2 | 0.03 to 0.37 % | 14.25 | 8 · 13 |
 | rules_v2 | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 14.34 | 0 · 0 |
+| rules_v2 | Silent | A0, relics kept | 2000 | 1985 | 0 | 0.00 to 0.19 % | 15.27 | 15 · 0 |
 | rules_v2 | Silent | A0, relics kept | 2000 | 1987 | 0 | 0.00 to 0.19 % | 15.84 | 13 · 0 |
+| rules_v2 | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
 | rules_v2 | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.36 | 0 · 0 |
 | rules_v2 [the card values shown on the site] | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
 | rules_v2 [the card values shown on the site] | Silent | A9, relics kept | 2000 | 2000 | 0 | 0.00 to 0.19 % | 10.21 | 0 · 0 |
@@ -415,30 +434,35 @@ Policies in `sim/slay2_sim/policies/`. Each sees only the **fair observation** (
 | advisor_v1 [synergy term on, A*] | Defect | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 16.18 | 0 · 0 |
 | advisor_v1 [synergy term on, A*] | Defect | A0, relics kept | 2000 | 1983 | 0 | 0.00 to 0.19 % | 17.94 | 17 · 0 |
 | advisor_v1 [synergy term on, A*] | Defect | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 11.46 | 1 · 0 |
+| rules_v2_late | Defect | A0, relics kept | 2000 | 1926 | 81 | 3.40 to 5.20 % | 25.30 | 74 · 0 |
 | advisor_v1 [synergy term off, d0*] | Ironclad | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 17.18 | 2 · 0 |
 | advisor_v1 [synergy term off, d0*] | Ironclad | A0, relics kept | 2000 | 1969 | 12 | 0.35 to 1.06 % | 19.70 | 31 · 0 |
 | advisor_v1 [synergy term off, d0*] | Ironclad | A9, relics kept | 2000 | 1994 | 2 | 0.03 to 0.36 % | 13.73 | 5 · 1 |
 | advisor_v1 [synergy term on, A*] | Ironclad | A0, relics dropped | 2000 | 1997 | 2 | 0.03 to 0.36 % | 18.66 | 3 · 0 |
 | advisor_v1 [synergy term on, A*] | Ironclad | A0, relics kept | 2000 | 1959 | 13 | 0.39 to 1.13 % | 21.70 | 41 · 0 |
 | advisor_v1 [synergy term on, A*] | Ironclad | A9, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 14.97 | 11 · 0 |
+| rules_v2_late | Ironclad | A0, relics kept | 2000 | 1923 | 96 | 4.11 to 6.06 % | 27.28 | 77 · 0 |
 | advisor_v1 [synergy term off, d0*] | Necrobinder | A0, relics dropped | 2000 | 1998 | 0 | 0.00 to 0.19 % | 15.88 | 2 · 0 |
 | advisor_v1 [synergy term off, d0*] | Necrobinder | A0, relics kept | 2000 | 1983 | 1 | 0.01 to 0.29 % | 17.30 | 17 · 0 |
 | advisor_v1 [synergy term off, d0*] | Necrobinder | A9, relics kept | 2000 | 1997 | 0 | 0.00 to 0.19 % | 11.45 | 3 · 0 |
 | advisor_v1 [synergy term on, A*] | Necrobinder | A0, relics dropped | 2000 | 1997 | 0 | 0.00 to 0.19 % | 16.44 | 3 · 0 |
 | advisor_v1 [synergy term on, A*] | Necrobinder | A0, relics kept | 2000 | 1978 | 0 | 0.00 to 0.19 % | 18.09 | 22 · 0 |
 | advisor_v1 [synergy term on, A*] | Necrobinder | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 11.76 | 1 · 0 |
+| rules_v2_late | Necrobinder | A0, relics kept | 2000 | 1956 | 0 | 0.00 to 0.20 % | 23.48 | 43 · 1 |
 | advisor_v1 [synergy term off, d0*] | Regent | A0, relics dropped | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.04 | 1 · 11 |
 | advisor_v1 [synergy term off, d0*] | Regent | A0, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 13.74 | 6 · 6 |
 | advisor_v1 [synergy term off, d0*] | Regent | A9, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 9.84 | 0 · 11 |
 | advisor_v1 [synergy term on, A*] | Regent | A0, relics dropped | 2000 | 1990 | 0 | 0.00 to 0.19 % | 14.31 | 1 · 9 |
 | advisor_v1 [synergy term on, A*] | Regent | A0, relics kept | 2000 | 1982 | 0 | 0.00 to 0.19 % | 15.24 | 7 · 11 |
 | advisor_v1 [synergy term on, A*] | Regent | A9, relics kept | 2000 | 1988 | 0 | 0.00 to 0.19 % | 10.90 | 0 · 12 |
+| rules_v2_late | Regent | A0, relics kept | 2000 | 1945 | 11 | 0.32 to 1.01 % | 21.23 | 35 · 20 |
 | advisor_v1 [synergy term off, d0*] | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.31 | 0 · 0 |
 | advisor_v1 [synergy term off, d0*] | Silent | A0, relics kept | 2000 | 1995 | 0 | 0.00 to 0.19 % | 12.88 | 5 · 0 |
 | advisor_v1 [synergy term off, d0*] | Silent | A9, relics kept | 2000 | 1999 | 0 | 0.00 to 0.19 % | 9.24 | 1 · 0 |
 | advisor_v1 [synergy term on, A*] | Silent | A0, relics dropped | 2000 | 2000 | 0 | 0.00 to 0.19 % | 12.61 | 0 · 0 |
 | advisor_v1 [synergy term on, A*] | Silent | A0, relics kept | 2000 | 1994 | 0 | 0.00 to 0.19 % | 13.41 | 6 · 0 |
 | advisor_v1 [synergy term on, A*] | Silent | A9, relics kept | 2000 | 1998 | 0 | 0.00 to 0.19 % | 9.35 | 2 · 0 |
+| rules_v2_late | Silent | A0, relics kept | 2000 | 1989 | 0 | 0.00 to 0.19 % | 15.71 | 11 · 0 |
 <!-- table:policies:end -->
 
 **Every comparison that was made** (the held-out ones registered as shown, the development ones labelled; exact McNemar on the shared seeds, mean-floor differences with a seed bootstrap):

@@ -247,6 +247,24 @@ export function testSentence(t: Act2Test): string {
   }
 }
 
+/** Whether a test changes who gets past the first boss (the lead does; a rule that differs from the baseline in Act 2 only cannot). */
+export function hasPrice(t: Act2Test): boolean {
+  return t.actOne.armOnly + t.actOne.baselineOnly > 0;
+}
+
+/**
+ * What a rule that differs from the baseline before the second act costs, or gains, at the first boss and in floors reached. ADR-060 item 4
+ * asks every page that shows such a rule's result at the second boss to show this beside it: a rule that gets more runs past the second
+ * boss by losing more at the first is a different thing from one that does not.
+ */
+export function priceSentence(t: Act2Test): string {
+  const a = t.actOne;
+  const d = a.shares.arm - a.shares.baseline;
+  const f = t.floorDifference.meanAMinusB;
+  const pairs = (x: number): string => x.toLocaleString("en-US");
+  return `${d < 0 ? "What it costs" : "What it changes"} at the first boss: ${pctShare(a.shares.arm)} of the paired games got past it against ${pctShare(a.shares.baseline)} (${pts(d)}; ${pairs(a.armOnly)} pairs in which only the rule did, ${pairs(a.baselineOnly)} in which only the baseline did), and the runs reached ${Math.abs(f).toFixed(2)} floors ${f < 0 ? "fewer" : "more"} on average.`;
+}
+
 /** The second analysis of a test: the same comparison on every pair whose two endpoints are known (errors after the Act-2 boss are passes). */
 export function robustSentence(t: Act2Test): string {
   const r = t.robust;

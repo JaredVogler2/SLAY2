@@ -1,0 +1,203 @@
+{
+  "kind": "act2-robustness",
+  "label": "a condition of the reading rule (ADR-060 addendum B): every pair whose two endpoints are known, errors after the Act-2 boss counted as passes",
+  "level": 0.05,
+  "maxExcludedFraction": 0.1,
+  "schema": 2,
+  "tests": {
+    "L": {
+      "arm": "lead",
+      "perClass": {
+        "Defect": {
+          "arm": 375,
+          "armOnly": 144,
+          "baseline": 350,
+          "baselineOnly": 119,
+          "droppedUnknown": 61,
+          "erroredAfterTheBoss": {
+            "arm": 17,
+            "baseline": 17
+          },
+          "p": 0.1387502435545098,
+          "pairs": 1939,
+          "primaryPairs": 1912,
+          "shared": 2000
+        },
+        "Ironclad": {
+          "arm": 488,
+          "armOnly": 215,
+          "baseline": 459,
+          "baselineOnly": 186,
+          "droppedUnknown": 75,
+          "erroredAfterTheBoss": {
+            "arm": 24,
+            "baseline": 25
+          },
+          "p": 0.16195384008157573,
+          "pairs": 1925,
+          "primaryPairs": 1887,
+          "shared": 2000
+        },
+        "Necrobinder": {
+          "arm": 142,
+          "armOnly": 80,
+          "baseline": 141,
+          "baselineOnly": 79,
+          "droppedUnknown": 52,
+          "erroredAfterTheBoss": {
+            "arm": 4,
+            "baseline": 5
+          },
+          "p": 1.0,
+          "pairs": 1948,
+          "primaryPairs": 1941,
+          "shared": 2000
+        },
+        "Regent": {
+          "arm": 156,
+          "armOnly": 97,
+          "baseline": 123,
+          "baselineOnly": 64,
+          "droppedUnknown": 67,
+          "erroredAfterTheBoss": {
+            "arm": 9,
+            "baseline": 8
+          },
+          "p": 0.011437303269725647,
+          "pairs": 1933,
+          "primaryPairs": 1921,
+          "shared": 2000
+        },
+        "Silent": {
+          "arm": 3,
+          "armOnly": 3,
+          "baseline": 2,
+          "baselineOnly": 2,
+          "droppedUnknown": 18,
+          "erroredAfterTheBoss": {
+            "arm": 0,
+            "baseline": 0
+          },
+          "p": 1.0,
+          "pairs": 1982,
+          "primaryPairs": 1982,
+          "shared": 2000
+        }
+      },
+      "pooled": {
+        "arm": 1164,
+        "armOnly": 539,
+        "baseline": 1075,
+        "baselineOnly": 450,
+        "difference": 0.00914978924642747,
+        "droppedUnknown": 273,
+        "erroredAfterTheBoss": {
+          "arm": 54,
+          "baseline": 55
+        },
+        "p": 0.005112602677693695,
+        "pairs": 9727,
+        "primaryExcludedFraction": 0.035699999999999954,
+        "primaryPairs": 9643,
+        "shared": 10000
+      }
+    },
+    "P": {
+      "arm": "p020",
+      "perClass": {
+        "Defect": {
+          "arm": 373,
+          "armOnly": 76,
+          "baseline": 350,
+          "baselineOnly": 53,
+          "droppedUnknown": 56,
+          "erroredAfterTheBoss": {
+            "arm": 23,
+            "baseline": 17
+          },
+          "p": 0.05232353322391845,
+          "pairs": 1944,
+          "primaryPairs": 1916,
+          "shared": 2000
+        },
+        "Ironclad": {
+          "arm": 458,
+          "armOnly": 125,
+          "baseline": 461,
+          "baselineOnly": 128,
+          "droppedUnknown": 65,
+          "erroredAfterTheBoss": {
+            "arm": 20,
+            "baseline": 25
+          },
+          "p": 0.8999710420105735,
+          "pairs": 1935,
+          "primaryPairs": 1902,
+          "shared": 2000
+        },
+        "Necrobinder": {
+          "arm": 147,
+          "armOnly": 49,
+          "baseline": 140,
+          "baselineOnly": 42,
+          "droppedUnknown": 42,
+          "erroredAfterTheBoss": {
+            "arm": 3,
+            "baseline": 5
+          },
+          "p": 0.5296020954762451,
+          "pairs": 1958,
+          "primaryPairs": 1953,
+          "shared": 2000
+        },
+        "Regent": {
+          "arm": 134,
+          "armOnly": 47,
+          "baseline": 127,
+          "baselineOnly": 40,
+          "droppedUnknown": 50,
+          "erroredAfterTheBoss": {
+            "arm": 8,
+            "baseline": 8
+          },
+          "p": 0.5202915935750737,
+          "pairs": 1950,
+          "primaryPairs": 1938,
+          "shared": 2000
+        },
+        "Silent": {
+          "arm": 2,
+          "armOnly": 1,
+          "baseline": 2,
+          "baselineOnly": 1,
+          "droppedUnknown": 11,
+          "erroredAfterTheBoss": {
+            "arm": 0,
+            "baseline": 0
+          },
+          "p": 1.0,
+          "pairs": 1989,
+          "primaryPairs": 1989,
+          "shared": 2000
+        }
+      },
+      "pooled": {
+        "arm": 1114,
+        "armOnly": 298,
+        "baseline": 1080,
+        "baselineOnly": 264,
+        "difference": 0.0034779050736497546,
+        "droppedUnknown": 224,
+        "erroredAfterTheBoss": {
+          "arm": 54,
+          "baseline": 55
+        },
+        "p": 0.16385750104909888,
+        "pairs": 9776,
+        "primaryExcludedFraction": 0.030200000000000005,
+        "primaryPairs": 9698,
+        "shared": 10000
+      }
+    }
+  }
+}

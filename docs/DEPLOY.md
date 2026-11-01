@@ -120,6 +120,16 @@ Against the Web Vitals thresholds: layout shift is 0 everywhere and largest cont
 
 What these numbers are not: field data (nobody visited); a Lighthouse score (Lighthouse was not run); Interaction to Next Paint, which needs a person. The hosted payload is the same 451 to 527 KB per first load as the local build, in 36 to 39 requests.
 
+**Measured again on 2026-11-01 at about 01:46 UTC** against the same site, which served `main` at `5ae9012` (the merge of pull request #22), with the same script and profiles, for the heaviest pages and the landing page only (`PATHS=/methods,/insights,/`, three cold loads, medians, load average 1.3 on 4 cores, nothing else running):
+
+| Page | Phone FCP = LCP (ms) | Phone TBT-like (ms) | Desktop FCP = LCP (ms) | Desktop TBT-like (ms) | Layout shift | Phone transfer (KB) |
+|---|---|---|---|---|---|---|
+| `/` | 1,732 | 508 | 560 | 0 | 0 | 328 |
+| `/insights` (new since the first measurement) | 1,804 | 264 | 996 | 0 | 0 | 707 |
+| `/methods` | 2,640 | 301 | 976 | 0 | 0 | 417 |
+
+Layout shift is still 0. **`/methods` is now above the 2.5 s of a good largest contentful paint on the throttled phone (2.64 s; it was 2.20 s), and the blocking time of all three pages is in the "needs improvement" band (200 to 600 ms), the landing page's the highest (508 ms, against 309 ms before).** The documents, read from the hosted site (`curl`, compressed and raw): `/methods` 139 KB and **1.38 MB** (818 KB of it is the inline payload that Next.js embeds for the server-rendered tree; the batch ledger, 220 rows, is a 249 KB table that the payload repeats), `/insights` 83 KB and 613 KB, `/` 39 KB and 152 KB, every other page 7 to 15 KB and 36 to 178 KB. The ledger grew with the 45 batches of the Act-2 study's development stage (ADR-060); the 15 held-out batches of its result add about 4 KB compressed. Not done, and the first things to try: the ledger on a page of its own or paged (it is the single largest block of the heaviest page), and a profile of what the landing page's 508 ms is spent on. Lab numbers, not field data; Lighthouse and Interaction to Next Paint are still not measured.
+
 ## What the browser is sent as script (bytes, not timings)
 
 `pnpm --filter @slay2/web build && pnpm --filter @slay2/web bytes` (`apps/web/scripts/script-bytes.mjs`) reads the script files named in each prerendered page of the build and prints their size and their size gzipped at level 6; no server, browser or third-party package is involved, and it counts neither the router's prefetch of other pages nor fonts and styles. `bytes:check` does the same and exits 1 when a page is over its budget (the size ADR-056 recorded plus about 8 %); CI runs it after the build, because no source scan sees through the workspace packages. ADR-056 (2026-10-27) records what it found: the header's "Resume" chip and the error boundary imported the run store, which imports the card catalog, the synergy table and the schema library, so every page carried them, and the workspace packages did not declare `"sideEffects": false`, so a page that used one constant of a package received everything the package re-exports. After the change (KB of script, gzipped in brackets):
