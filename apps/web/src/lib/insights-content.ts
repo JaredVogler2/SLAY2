@@ -154,7 +154,7 @@ function actsStudy(): { readonly why: string; readonly first: string } | null {
   return {
     why: ` A second registered study (ADR-061) then asked it of winning, on seeds no earlier study used: ${line}. These are statements about simulated rules pilots that win very few games.`,
     first: anyPassed
-      ? "Test other thresholds in the act or acts that carry it, and put to the owner whether the advisor should offer a pickier mode."
+      ? "Test other thresholds in the act or acts that carry it (the next registered study, ADR-062, repeats the Act-2 test on new seeds and screens thresholds), and revisit the advisor's pickier mode, which is not offered yet, once its replication has been read."
       : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).",
   };
 }
