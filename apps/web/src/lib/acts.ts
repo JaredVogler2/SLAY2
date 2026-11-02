@@ -120,7 +120,7 @@ export const TEST_INFO: Record<
   L: {
     title: "The old lead",
     short: "every act",
-    arm: "takes only cards worth 0.2 or more, in every act",
+    arm: "plays as the baseline except that, in every act, it takes a card only if it is worth more than 0.2",
     asks: "Does the pilot that is pickier from the first card reward on win more games?",
   },
   A1: {
@@ -167,6 +167,8 @@ export function pctShare(x: number, digits = 2): string {
 export { formatP };
 
 const n = (x: number): string => x.toLocaleString("en-US");
+/** A signed number with two decimals (floors, not points of a share). */
+const signed = (x: number): string => `${x >= 0 ? "+" : "−"}${Math.abs(x).toFixed(2)}`;
 
 /** The level of the interval a test is read at, 1 - 0.05 / 4 (ADR-061 item 3), as a percentage. */
 const LEVEL_TEXT = `${((1 - 0.05 / 4) * 100).toFixed(2)} %`;
@@ -202,7 +204,11 @@ export function bossSentence(t: ActsTest): string {
   const d1 = a1.shares.arm - a1.shares.baseline;
   const d2 = a2.shares.arm - a2.shares.baseline;
   const f = t.floorDifference.meanAMinusB;
-  const floors = `the runs reached ${Math.abs(f).toFixed(2)} floors ${f < 0 ? "fewer" : "more"} on average`;
+  const range = `95 % interval ${signed(t.floorDifference.ci95[0] ?? 0)} to ${signed(t.floorDifference.ci95[1] ?? 0)}`;
+  const floors =
+    Math.abs(f) < 0.005
+      ? `the runs reached the same number of floors on average, to two decimals (${range})`
+      : `the runs reached ${Math.abs(f).toFixed(2)} floors ${f < 0 ? "fewer" : "more"} on average (${range})`;
   if (first >= 2)
     return `Along the way: this rule plays the baseline's game until the third act, so the games that got past the first and the second boss are the same by construction (${pctShare(a2.shares.baseline, 1)} of the baseline's paired games got past the second boss, which is all the third act's picks can change); ${floors}.`;
   const firstBoss =
@@ -215,12 +221,12 @@ export function bossSentence(t: ActsTest): string {
 /** The second analysis of a test: the same comparison on every pair, a game that did not end in a win counting as not won. */
 export function robustSentence(t: ActsTest): string {
   const r = t.robust;
-  return `Checked again on all ${n(r.pairs)} pairs of seeds, a game that did not end in a win counting as not won (${n(r.notCompleted.arm)} of the rule's games and ${n(r.notCompleted.baseline)} of the baseline's ended in an error or a step limit): ${pctShare(r.shares.arm)} against ${pctShare(r.shares.baseline)} (${pts(r.difference)}, ${n(r.armOnly)} against ${n(r.baselineOnly)} pairs, exact ${formatP(r.p)}). An errored game cannot have been won; neither analysis says it would have been lost.`;
+  return `Checked again on all ${n(r.pairs)} pairs of games, a game that did not end in a win counting as not won (${n(r.notCompleted.arm)} of the rule's games and ${n(r.notCompleted.baseline)} of the baseline's ended in an error, a limit or a timeout): ${pctShare(r.shares.arm)} against ${pctShare(r.shares.baseline)} (${pts(r.difference)}, ${n(r.armOnly)} against ${n(r.baselineOnly)} pairs, exact ${formatP(r.p)}). An errored game cannot have been won; neither analysis says it would have been lost.`;
 }
 
 /** How many pairs a test left out, said where the figures are, because "excluded and counted" is a rule of the design (ADR-061 item 3). */
 export function excludedSentence(t: ActsTest): string {
-  return `${n(t.excluded)} of ${n(t.pairedSeeds)} pairs were left out of the first analysis because a game did not finish (a simulator error or a step limit), never read as a loss.`;
+  return `${n(t.excluded)} of ${n(t.pairedSeeds)} pairs were left out of the first analysis because a game did not finish (a simulator error, a step or turn limit or a timeout), never read as a loss.`;
 }
 
 /** Why a result the primary test would have called ahead or behind is read as not shown, naming every condition (empty when nothing was withheld). */
@@ -263,7 +269,7 @@ export function meaningOf(results: Record<ActsTestKey, ActsTest>): readonly stri
     );
     out.push(
       singles.length > 0
-        ? `Being pickier in ${list(singles.map(ACT_NAME))} alone also won more games, so that act's picks alone are shown to matter; the effects of the three acts need not add up to the lead's, and 0.2 may not be the best threshold in any act.`
+        ? `Being pickier in ${list(singles.map(ACT_NAME))} alone is also shown to win more games; the effects of the three acts need not add up to the lead's, and 0.2 may not be the best threshold in any act.`
         : "No single act is shown to carry it. The single-act pilots have less power, so the effect may be shared between the acts, may need a thinner deck from the first act and the later picks together, or may be one act's, too small to see.",
     );
   } else if (l === "reversed") {
@@ -288,7 +294,100 @@ export function meaningOf(results: Record<ActsTestKey, ActsTest>): readonly stri
   return out;
 }
 
+const lowerFirst = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
+const upperFirst = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+const NUMBER_WORD = ["No", "One", "Two", "Three", "Four"] as const;
+
+/** One sentence that says how the four tests came out, from the verdicts and differences the exporter read (the cards carry every figure and caveat). */
+export function resultLine(results: Record<ActsTestKey, ActsTest>): string {
+  const by = (v: ActsVerdict) => ACTS_KEYS.filter((k) => results[k].verdict === v);
+  const part = (ks: readonly ActsTestKey[]): string =>
+    list(ks.map((k) => `${lowerFirst(TEST_INFO[k].title)} (${pts(results[k].difference)})`));
+  const passed = by("passed");
+  const reversed = by("reversed");
+  const none = by("not-shown");
+  const out: string[] = [];
+  if (passed.length > 0)
+    out.push(
+      `${NUMBER_WORD[passed.length] ?? ""} of the four ${passed.length === 1 ? "was" : "were"} read as winning more games: ${part(passed)}`,
+    );
+  if (reversed.length > 0)
+    out.push(
+      `${NUMBER_WORD[reversed.length] ?? ""} of the four ${reversed.length === 1 ? "was" : "were"} read as winning fewer games: ${part(reversed)}`,
+    );
+  if (none.length === ACTS_KEYS.length)
+    out.push(`None of the four was shown to differ from the baseline (${part(none)})`);
+  else if (none.length > 0)
+    out.push(`${upperFirst(part(none))} ${none.length === 1 ? "was" : "were"} not shown to differ`);
+  return `${out.join(". ")}.`;
+}
+
+/** A pass whose interval's lower end is under a quarter of the difference: the page's own rule, not the registration's. */
+export function isNarrow(t: ActsTest): boolean {
+  return t.verdict === "passed" && (t.ci[0] ?? 0) < 0.25 * t.difference;
+}
+
+/** The sentence a narrow pass carries on its own card. */
+export function narrowSentence(t: ActsTest): string {
+  const lo = t.ci[0] ?? 0;
+  return `A narrow pass: the lower end of the interval is only ${pts(lo)} (about ${n(Math.round(lo * t.pairs))} games in ${n(t.pairs)} pairs), under a quarter of the difference, so it shows a direction and not a size.`;
+}
+
+/**
+ * Says so when a pass is narrow: the lower end of its interval is under a quarter of the difference, so the evidence is of a direction and not of a
+ * size (empty when no pass is). The rule is the page's, not the registration's; the registration only asks every page to give the interval.
+ */
+export function marginNote(results: Record<ActsTestKey, ActsTest>): string {
+  const narrow = ACTS_KEYS.filter((k) => isNarrow(results[k]));
+  if (narrow.length === 0) return "";
+  const parts = narrow.map((k) => {
+    const t = results[k];
+    const lo = t.ci[0] ?? 0;
+    return `${pts(lo)} (about ${n(Math.round(lo * t.pairs))} games in ${n(t.pairs)} pairs) for ${lowerFirst(TEST_INFO[k].title)}`;
+  });
+  const count = NUMBER_WORD[narrow.length] ?? "";
+  return `${count} ${narrow.length === 1 ? "pass is" : "passes are"} narrow: the lower end of the interval is only ${list(parts)}, under a quarter of the difference, so ${narrow.length === 1 ? "it shows" : "they show"} a direction and not a size.`;
+}
+
+/**
+ * What follows for the advisor, as ADR-061 item 7 (iii) wrote it before any game of the study was played: nothing changes because of the study. A
+ * pickier rule that won more where it has no price at a boss before its act (Act 2 or Act 3: it plays the baseline's game until then) is put to the
+ * owner as an optional, labelled simulated second opinion with these figures beside it; one that won more at a price at the first boss (the old lead,
+ * Act 1) is put as the trade-off it is. A rule that was not shown to win more, or won fewer, withdraws nothing and offers nothing. The decision is
+ * the owner's in every case and is not made here.
+ */
+export function advisorNote(results: Record<ActsTestKey, ActsTest>): readonly string[] {
+  const passed = ACTS_KEYS.filter((k) => results[k].verdict === "passed");
+  const free = passed.filter((k) => !hasPrice(results[k]));
+  const priced = passed.filter((k) => hasPrice(results[k]));
+  const out: string[] = ["The advisor does not change because of this study."];
+  if (free.length > 0)
+    out.push(
+      `Being pickier in ${list(free.map(ACT_NAME))} alone won more games (${list(free.map((k) => pts(results[k].difference)))}) and, because it plays the baseline's game until its act, has no price at any boss before that act. The question for the owner is whether the advisor should offer ${list(free.map((k) => `“pickier in ${ACT_NAME(k)}”`))} as an optional, labelled simulated second opinion, with these figures beside it. That is not decided here.`,
+    );
+  if (priced.length > 0)
+    out.push(
+      `${priced
+        .map((k) => {
+          const t = results[k];
+          return `${lowerFirst(TEST_INFO[k].title)} won more games (${pts(t.difference)}) at a price at the first boss (${pctShare(t.actOne.shares.arm, 1)} of the paired games got past it, against ${pctShare(t.actOne.shares.baseline, 1)})`;
+        })
+        .join(
+          "; ",
+        )}. More wins and a lower share past the first boss are a trade-off, not a free gain, and whether the advisor should show it is the owner's decision too.`.replace(
+        /^./,
+        (c) => c.toUpperCase(),
+      ),
+    );
+  if (passed.length === 0)
+    out.push(
+      "No pickier rule was shown to win more games, so there is nothing to offer, and nothing that was already offered is withdrawn.",
+    );
+  return out;
+}
+
 /** The limit the registration put beside the third-act test: it can differ from the baseline only in the runs that reach the third act. */
 export function actThreeNote(t: ActsTest): string {
-  return `The third-act test can differ from the baseline only in the runs that get that far (${pctShare(t.actTwo.shares.baseline, 1)} of the baseline's paired games got past the second boss), so a result of not shown there was the likely one unless the effect is large.`;
+  const d = t.armOnly + t.baselineOnly;
+  return `The third-act test can differ from the baseline only in the runs that get that far (${pctShare(t.actTwo.shares.baseline, 1)} of the baseline's paired games got past the second boss), so the registration expected a result of not shown there. ${n(d)} pairs differed in whether the game was won (the registration guessed 30 to 60), and not shown is not no effect.`;
 }

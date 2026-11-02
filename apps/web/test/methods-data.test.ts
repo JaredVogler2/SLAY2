@@ -267,7 +267,8 @@ describe("comparison wording is derived from the data", () => {
       // the variant has development batches (ADR-052) and the held-out batches of the tests registered with it (ADR-053 to ADR-055)
       const held = v.role === "held-out";
       expect(held || v.role.includes("development"), v.id).toBe(true);
-      expect(held, v.id).toBe(v.partition === "val");
+      // held-out means the `val` seeds, or the `val2` seeds the acts study (ADR-061) played
+      expect(held, v.id).toBe(v.partition === "val" || v.partition === "val2");
       // a policy that exists only with the relics kept (the Act-2 study's rules_v2_late) has no headline report at all, which is as good
       expect(largestReport(v.policy, v.character)?.keepRelics ?? false).toBe(false);
     }

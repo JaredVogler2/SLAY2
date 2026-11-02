@@ -6641,6 +6641,3950 @@
       "role": "development (dev partition): not a held-out result"
     },
     {
+      "id": "acts-a1-defect-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          0
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2782,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 102,
+        "timeout": 1,
+        "win": 115
+      },
+      "completed": 2897,
+      "winRate": 0.03969623748705557,
+      "winRateWilson95": [
+        0.0331746814335053,
+        0.04743691425010019
+      ],
+      "meanFloor": 25.35,
+      "medianFloor": 22,
+      "deathsByAct": {
+        "0": 555,
+        "1": 1768,
+        "2": 574
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 331
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 155
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 147
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 134
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 117
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.15,
+      "winsAudit": {
+        "audited": 115,
+        "verified": 115,
+        "seeds": [
+          6855118,
+          23661797,
+          36320624,
+          46412863,
+          52747119,
+          73742844,
+          96153253,
+          104966550,
+          110411532,
+          169218644,
+          174948105,
+          201446781,
+          202558617,
+          203471010,
+          210346071,
+          211266545,
+          307102020,
+          351818675,
+          356121148,
+          368988668,
+          388727897,
+          399579225,
+          405123936,
+          408447888,
+          411033450,
+          441793072,
+          468425455,
+          508047525,
+          529869747,
+          553199758,
+          558391533,
+          595758560,
+          694119256,
+          699443364,
+          738061511,
+          762498852,
+          775510307,
+          785364046,
+          841981666,
+          855660124,
+          880892723,
+          886088402,
+          891682542,
+          944367405,
+          964282374,
+          971873794,
+          989444103,
+          993200210,
+          995908744,
+          1050788655,
+          1052167208,
+          1090205977,
+          1095872342,
+          1096335985,
+          1150344315,
+          1151873620,
+          1193829448,
+          1222416116,
+          1242393931,
+          1271028242,
+          1281788203,
+          1294096213,
+          1310052947,
+          1321588008,
+          1337239147,
+          1348532125,
+          1362296317,
+          1377451408,
+          1389144601,
+          1391450543,
+          1393897861,
+          1396767835,
+          1463122398,
+          1470784756,
+          1493867214,
+          1495821315,
+          1499767661,
+          1507328405,
+          1515485826,
+          1571128397,
+          1577222686,
+          1582445521,
+          1615377316,
+          1622904177,
+          1623646565,
+          1627877952,
+          1645983225,
+          1678995245,
+          1686911079,
+          1708538733,
+          1809162136,
+          1829868346,
+          1857297274,
+          1868444602,
+          1898584070,
+          1904700500,
+          1923298831,
+          1931712052,
+          1939602118,
+          1985647991,
+          1989783415,
+          1989965006,
+          2004758101,
+          2027909364,
+          2027964896,
+          2030197322,
+          2050882400,
+          2059991535,
+          2067438745,
+          2070709288,
+          2093392853,
+          2103307378,
+          2106058613,
+          2119370169,
+          2137180909
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2897,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "d5e314a688a88139434cdb29cba7b333eb159793b64d9e859e9782e405d8733d",
+      "episodesGzSha256": "94b15473959d911d6acdc25a3041e743aa3e1553c73562e488775db90d7b81ef",
+      "finished": "2026-11-02T00:51:40+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a1-ironclad-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          0
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/ironclad-a0-v2.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2728,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 100,
+        "timeout": 0,
+        "win": 172
+      },
+      "completed": 2900,
+      "winRate": 0.05931034482758621,
+      "winRateWilson95": [
+        0.05128244539192948,
+        0.06850421092296427
+      ],
+      "meanFloor": 25.24,
+      "medianFloor": 26,
+      "deathsByAct": {
+        "0": 965,
+        "1": 1242,
+        "2": 693
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 263
+        },
+        {
+          "id": "VANTOM",
+          "n": 181
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 151
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 142
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 142
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.98,
+      "winsAudit": {
+        "audited": 172,
+        "verified": 172,
+        "seeds": [
+          1964439,
+          8265935,
+          10665526,
+          15307061,
+          29080440,
+          34491413,
+          69421267,
+          74274024,
+          82747590,
+          105892476,
+          128749761,
+          132323162,
+          144269490,
+          152700534,
+          155413933,
+          159145110,
+          169218644,
+          199704090,
+          203471010,
+          209435859,
+          211500823,
+          254385460,
+          256160155,
+          277240552,
+          287575047,
+          307102020,
+          309268958,
+          316541081,
+          331323486,
+          343426980,
+          345694447,
+          351791063,
+          363430079,
+          385230548,
+          394601192,
+          405276051,
+          414251060,
+          435383582,
+          467481931,
+          468425455,
+          479910069,
+          480673935,
+          486663486,
+          491034687,
+          493928070,
+          497611865,
+          501827788,
+          508080143,
+          508542011,
+          511870565,
+          522974588,
+          538826525,
+          538936442,
+          584499895,
+          604118799,
+          624348824,
+          630629137,
+          632647129,
+          634149517,
+          653099707,
+          654524408,
+          678965011,
+          680850419,
+          715223267,
+          723568954,
+          734550892,
+          740135495,
+          750285611,
+          776607934,
+          791313329,
+          795738970,
+          795777671,
+          803660683,
+          805143234,
+          809191898,
+          841981666,
+          848191573,
+          870385302,
+          879706922,
+          898714862,
+          913513700,
+          914621545,
+          918286370,
+          920877073,
+          960461645,
+          978315428,
+          981121721,
+          997349302,
+          1002292845,
+          1010187196,
+          1027247784,
+          1033427473,
+          1070242076,
+          1080610271,
+          1090442283,
+          1096335985,
+          1104018028,
+          1106655773,
+          1127677806,
+          1172680497,
+          1174932119,
+          1194936965,
+          1221949917,
+          1263828956,
+          1282152588,
+          1292007009,
+          1294096213,
+          1301704826,
+          1309843816,
+          1319332021,
+          1381677192,
+          1385012526,
+          1393897861,
+          1396767835,
+          1405104467,
+          1408318189,
+          1423368105,
+          1457816608,
+          1488386815,
+          1497456198,
+          1508662897,
+          1533166937,
+          1540863319,
+          1545851762,
+          1591459151,
+          1595693993,
+          1596240162,
+          1599388803,
+          1609328067,
+          1611081694,
+          1615377316,
+          1621111048,
+          1621814579,
+          1661343738,
+          1663410201,
+          1668893752,
+          1678995245,
+          1701348742,
+          1706369391,
+          1735138035,
+          1757373353,
+          1768947145,
+          1774244690,
+          1795183545,
+          1803077028,
+          1813768012,
+          1814511606,
+          1824282337,
+          1864539085,
+          1865072352,
+          1873083712,
+          1892240810,
+          1898584070,
+          1931712052,
+          1940198517,
+          1960476862,
+          1971191992,
+          1976292683,
+          1991009923,
+          2007625687,
+          2008401727,
+          2019853030,
+          2020026758,
+          2027147616,
+          2034921742,
+          2055647058,
+          2059687724,
+          2089365346,
+          2105329223,
+          2119370169,
+          2123251350,
+          2131306427
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2900,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "a892d5b1805f8bb26e2e2b1f0a550742b94f76ad83ea94a33708a8c638f25aed",
+      "episodesGzSha256": "9e5418ea411545f70a37e5cba1b7289221a51c6116a20de1e66c3e31a5f12f98",
+      "finished": "2026-11-01T23:55:27+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a1-necrobinder-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          0
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2934,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 61,
+        "timeout": 4,
+        "win": 1
+      },
+      "completed": 2935,
+      "winRate": 0.00034071550255536625,
+      "winRateWilson95": [
+        0.00006014718454808697,
+        0.0019275268368461117
+      ],
+      "meanFloor": 22.57,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 850,
+        "1": 1896,
+        "2": 189
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 344
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 274
+        },
+        {
+          "id": "VANTOM",
+          "n": 217
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 175
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 172
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.27,
+      "winsAudit": {
+        "audited": 1,
+        "verified": 1,
+        "seeds": [
+          841981666
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2935,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "746242d231bb2aa84759d2a5a0ed410573033222bcc1ebcd2362ad497fb878bc",
+      "episodesGzSha256": "836026659250a089b41ba2faf32884954ff6f9a0481eed4792140381e6239354",
+      "finished": "2026-11-02T00:37:18+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a1-regent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          0
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2886,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 66,
+        "timeout": 34,
+        "win": 14
+      },
+      "completed": 2900,
+      "winRate": 0.004827586206896552,
+      "winRateWilson95": [
+        0.0028779121032727196,
+        0.008087376212992851
+      ],
+      "meanFloor": 20.49,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 1203,
+        "1": 1505,
+        "2": 192
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 305
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 208
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 195
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 191
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 169
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.07,
+      "winsAudit": {
+        "audited": 14,
+        "verified": 14,
+        "seeds": [
+          212378344,
+          383460385,
+          414251060,
+          538826525,
+          616265580,
+          660613052,
+          775724325,
+          830094624,
+          989444103,
+          1292845090,
+          1336861949,
+          1389303894,
+          1463091994,
+          1875952113
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2900,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "445a163bf4c20bf600ebbad3fbb5ab03fa5a67e3eb3fd2a21905215d0c888db2",
+      "episodesGzSha256": "811d4fd0db80de4f0f7f9ee9e4d86d3fd37647282c46c847646e920161bb3618",
+      "finished": "2026-11-02T00:19:23+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a1-silent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          0
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2983,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 17,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2983,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0012861274606154895
+      ],
+      "meanFloor": 15.23,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 2098,
+        "1": 877,
+        "2": 8
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 390
+        },
+        {
+          "id": "VANTOM",
+          "n": 315
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 280
+        },
+        {
+          "id": "FOGMOG",
+          "n": 162
+        },
+        {
+          "id": "TUNNELER",
+          "n": 113
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.83,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2983,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "51d6c080705970875bfcd458f97b65fea070d57e57c4762d61f0e720524e43f0",
+      "episodesGzSha256": "012e6b6fbd00799098c2879245c93e328d44a034707ac4c4a5962533ddcdc5b8",
+      "finished": "2026-11-02T00:05:50+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a2-defect-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          1
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2803,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 90,
+        "timeout": 0,
+        "win": 107
+      },
+      "completed": 2910,
+      "winRate": 0.03676975945017182,
+      "winRateWilson95": [
+        0.030520000178714184,
+        0.04424091660392373
+      ],
+      "meanFloor": 25.53,
+      "medianFloor": 23,
+      "deathsByAct": {
+        "0": 489,
+        "1": 1879,
+        "2": 542
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 357
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 168
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 148
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 121
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 118
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.14,
+      "winsAudit": {
+        "audited": 107,
+        "verified": 107,
+        "seeds": [
+          6855118,
+          52747119,
+          62447935,
+          73742844,
+          96153253,
+          104966550,
+          110411532,
+          169218644,
+          179971254,
+          191615710,
+          203471010,
+          210346071,
+          211266545,
+          236251182,
+          252129421,
+          307102020,
+          351818675,
+          356121148,
+          403694702,
+          405123936,
+          408447888,
+          411033450,
+          428693949,
+          429074492,
+          468425455,
+          486810064,
+          498964422,
+          502502888,
+          508047525,
+          544239305,
+          553199758,
+          556733886,
+          595758560,
+          699443364,
+          762498852,
+          841981666,
+          855660124,
+          868087822,
+          886088402,
+          891320516,
+          891682542,
+          944367405,
+          952533257,
+          989444103,
+          1025191158,
+          1050788655,
+          1052167208,
+          1096335985,
+          1138870427,
+          1151873620,
+          1192460537,
+          1193829448,
+          1213088916,
+          1242393931,
+          1259891631,
+          1292287427,
+          1294096213,
+          1337239147,
+          1341156272,
+          1348319823,
+          1348532125,
+          1362296317,
+          1363021112,
+          1377451408,
+          1381677192,
+          1391450543,
+          1393897861,
+          1412577569,
+          1457816608,
+          1468523446,
+          1477457638,
+          1493867214,
+          1499767661,
+          1514368312,
+          1520510740,
+          1545851762,
+          1571128397,
+          1624009689,
+          1627877952,
+          1678995245,
+          1706369391,
+          1708538733,
+          1709374502,
+          1724251639,
+          1809162136,
+          1813438595,
+          1817091872,
+          1818340864,
+          1819045258,
+          1829868346,
+          1850000766,
+          1865847434,
+          1911724974,
+          1939602118,
+          1985647991,
+          1989783415,
+          1989965006,
+          1995313437,
+          2004758101,
+          2027909364,
+          2030197322,
+          2050882400,
+          2059991535,
+          2070709288,
+          2093392853,
+          2099672202,
+          2103307378
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2910,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "42ef9b1be4fae480182d10e5c2601e2e5979c4695e54e9835178afa5a2acaf98",
+      "episodesGzSha256": "b4d48c532b7a01d564c3aea0785e2b2886222e46a523f4903a8f81e78e81b91f",
+      "finished": "2026-11-02T01:59:13+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a2-ironclad-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          1
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/ironclad-a0-v2.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2697,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 132,
+        "timeout": 0,
+        "win": 171
+      },
+      "completed": 2868,
+      "winRate": 0.0596234309623431,
+      "winRateWilson95": [
+        0.051532294400806616,
+        0.06889268858648964
+      ],
+      "meanFloor": 27.7,
+      "medianFloor": 31,
+      "deathsByAct": {
+        "0": 557,
+        "1": 1633,
+        "2": 678
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 321
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 214
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 182
+        },
+        {
+          "id": "VANTOM",
+          "n": 178
+        },
+        {
+          "id": "ROCKET",
+          "n": 123
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.05,
+      "winsAudit": {
+        "audited": 171,
+        "verified": 171,
+        "seeds": [
+          1964439,
+          34491413,
+          82747590,
+          100875960,
+          128749761,
+          132323162,
+          159145110,
+          169562030,
+          174948105,
+          199704090,
+          211500823,
+          212378344,
+          212722148,
+          217119430,
+          219155430,
+          236251182,
+          236398120,
+          252129421,
+          256160155,
+          277240552,
+          287575047,
+          290539658,
+          309268958,
+          316541081,
+          322345374,
+          328700878,
+          331323486,
+          351791063,
+          359556750,
+          371255411,
+          385230548,
+          394601192,
+          395299419,
+          399579225,
+          401790396,
+          405276051,
+          407547546,
+          430621145,
+          448934802,
+          471579142,
+          473243662,
+          479910069,
+          482743533,
+          491034687,
+          497611865,
+          501827788,
+          522974588,
+          523021729,
+          523562157,
+          538826525,
+          558684026,
+          560626079,
+          591556664,
+          595758560,
+          604118799,
+          630629137,
+          634149517,
+          634177383,
+          654524408,
+          697330144,
+          699443364,
+          715223267,
+          747800668,
+          776607934,
+          791313329,
+          795738970,
+          805143234,
+          809191898,
+          814066678,
+          816106549,
+          821479245,
+          841981666,
+          842889693,
+          848191573,
+          854117961,
+          898714862,
+          920877073,
+          928178721,
+          942391285,
+          992854400,
+          1004708556,
+          1027247784,
+          1036531203,
+          1039603832,
+          1070242076,
+          1106655773,
+          1111556912,
+          1150344315,
+          1194936965,
+          1216431074,
+          1221949917,
+          1276748542,
+          1282152588,
+          1283726442,
+          1292007009,
+          1294096213,
+          1309843816,
+          1316770827,
+          1318879365,
+          1319332021,
+          1337551978,
+          1339060782,
+          1363021112,
+          1391450543,
+          1394419663,
+          1395412887,
+          1405104467,
+          1423368105,
+          1430622806,
+          1457275470,
+          1474094482,
+          1488386815,
+          1518522767,
+          1521610900,
+          1533166937,
+          1539293854,
+          1540863319,
+          1556938269,
+          1571772489,
+          1572764842,
+          1591459151,
+          1595693993,
+          1609328067,
+          1610516883,
+          1612854454,
+          1655709561,
+          1668893752,
+          1675207786,
+          1678995245,
+          1684276473,
+          1708538733,
+          1713593218,
+          1724251639,
+          1728053514,
+          1741814499,
+          1757373353,
+          1759196571,
+          1761294017,
+          1764705148,
+          1774244690,
+          1790732801,
+          1791130883,
+          1795183545,
+          1813768012,
+          1824282337,
+          1863322225,
+          1865072352,
+          1868234010,
+          1878172468,
+          1892240810,
+          1934261523,
+          1937173592,
+          1940198517,
+          1960476862,
+          1967585987,
+          1976292683,
+          1985647991,
+          2007625687,
+          2008401727,
+          2020026758,
+          2027147616,
+          2027909364,
+          2030197322,
+          2034921742,
+          2059687724,
+          2067337458,
+          2089365346,
+          2094733332,
+          2103307378,
+          2122168527,
+          2146566510
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2868,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "e8c9ca322570720e61d895f250f402d5397612125dd53592b78d7dfb484f433b",
+      "episodesGzSha256": "976da2c835c989198bfea26dc617cffe647211c9cab187da648a529af5231092",
+      "finished": "2026-11-02T01:04:48+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a2-necrobinder-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          1
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2932,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 67,
+        "timeout": 0,
+        "win": 1
+      },
+      "completed": 2933,
+      "winRate": 0.00034094783498124785,
+      "winRateWilson95": [
+        0.000060188200380744306,
+        0.0019288394344442543
+      ],
+      "meanFloor": 23.33,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 732,
+        "1": 1993,
+        "2": 208
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 332
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 289
+        },
+        {
+          "id": "VANTOM",
+          "n": 212
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 177
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 172
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.17,
+      "winsAudit": {
+        "audited": 1,
+        "verified": 1,
+        "seeds": [
+          388727897
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2933,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "ba80c55dd909a4a973a5815f6afd5ddfc68ecdb75d2d01b8337f2452fb3da909",
+      "episodesGzSha256": "5c45ad3e87498259059cb2026f97c2df33ffa413f92a7012b7f7171c7f880a18",
+      "finished": "2026-11-02T01:44:56+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a2-regent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          1
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2885,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 64,
+        "timeout": 38,
+        "win": 13
+      },
+      "completed": 2898,
+      "winRate": 0.004485852311939268,
+      "winRateWilson95": [
+        0.0026234773302574008,
+        0.00766015092585748
+      ],
+      "meanFloor": 20.87,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 1087,
+        "1": 1647,
+        "2": 164
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 292
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 218
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 197
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 186
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 175
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.16,
+      "winsAudit": {
+        "audited": 13,
+        "verified": 13,
+        "seeds": [
+          154626248,
+          158174623,
+          223112519,
+          538826525,
+          589724166,
+          655736312,
+          775724325,
+          830094624,
+          1039603832,
+          1463091994,
+          1571772489,
+          1998305991,
+          2119370169
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2898,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "87779d0a4c979babbc6bedf48d88359e030f8871b8d31ed3e6c8e85b5b99bf2a",
+      "episodesGzSha256": "72ddf1d280124b6315f7af5764e532c41e39280f6aba6bb6bb976951f49b84c3",
+      "finished": "2026-11-02T01:30:18+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a2-silent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          1
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2979,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 21,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2979,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0012878521616810621
+      ],
+      "meanFloor": 15.58,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 2084,
+        "1": 889,
+        "2": 6
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 430
+        },
+        {
+          "id": "VANTOM",
+          "n": 331
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 279
+        },
+        {
+          "id": "FOGMOG",
+          "n": 140
+        },
+        {
+          "id": "TUNNELER",
+          "n": 125
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.87,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2979,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "10bcec7640cd5360a85a60b6e48954f1ee50d9e781f7261265d2ccb700be9004",
+      "episodesGzSha256": "2cbb4920703d8bdf906a3f61e370cdc0e873253974cb93f97d902219cae2ce53",
+      "finished": "2026-11-02T01:15:41+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a3-defect-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          2
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2800,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 92,
+        "timeout": 0,
+        "win": 108
+      },
+      "completed": 2908,
+      "winRate": 0.037138927097661624,
+      "winRateWilson95": [
+        0.030853986999908573,
+        0.04464512994368035
+      ],
+      "meanFloor": 25.57,
+      "medianFloor": 23,
+      "deathsByAct": {
+        "0": 489,
+        "1": 1858,
+        "2": 561
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 349
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 164
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 154
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 139
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 118
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.11,
+      "winsAudit": {
+        "audited": 108,
+        "verified": 108,
+        "seeds": [
+          23661797,
+          36320624,
+          52747119,
+          54253163,
+          62447935,
+          73742844,
+          96153253,
+          110411532,
+          148164677,
+          169218644,
+          191615710,
+          203471010,
+          210346071,
+          211266545,
+          236251182,
+          252129421,
+          290539658,
+          307102020,
+          307468486,
+          351818675,
+          356121148,
+          363430079,
+          388727897,
+          394317786,
+          403694702,
+          408447888,
+          411033450,
+          428693949,
+          429074492,
+          441793072,
+          468425455,
+          502502888,
+          544239305,
+          553199758,
+          558391533,
+          595758560,
+          653591969,
+          671973544,
+          682058889,
+          748819598,
+          762498852,
+          782283049,
+          824603115,
+          841123161,
+          841981666,
+          855660124,
+          868087822,
+          870385302,
+          880892723,
+          886088402,
+          891320516,
+          891682542,
+          903108094,
+          944367405,
+          952533257,
+          971873794,
+          1025191158,
+          1052167208,
+          1096335985,
+          1150344315,
+          1151873620,
+          1193829448,
+          1242393931,
+          1271028242,
+          1294096213,
+          1316770827,
+          1337239147,
+          1348319823,
+          1348532125,
+          1362296317,
+          1363021112,
+          1377451408,
+          1381677192,
+          1387974881,
+          1412577569,
+          1416074318,
+          1457816608,
+          1469068685,
+          1493867214,
+          1499767661,
+          1514368312,
+          1571128397,
+          1616794270,
+          1624009689,
+          1686911079,
+          1706369391,
+          1708538733,
+          1724251639,
+          1744487288,
+          1809162136,
+          1818340864,
+          1829868346,
+          1833000459,
+          1911724974,
+          1923298831,
+          1939602118,
+          1985647991,
+          1989783415,
+          1989965006,
+          2004758101,
+          2013571698,
+          2027909364,
+          2030197322,
+          2059991535,
+          2070709288,
+          2076673918,
+          2103307378,
+          2119370169
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2908,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "ac2d7e9620ea6eeb5a401a376e8e95a526f2b2058ee74fe02547311d73e115cb",
+      "episodesGzSha256": "93635905621de64265e4f525aba29ec4c3e98baa6f595ab9164b0337130e3458",
+      "finished": "2026-11-02T03:06:19+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a3-ironclad-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          2
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/ironclad-a0-v2.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2741,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 126,
+        "timeout": 0,
+        "win": 133
+      },
+      "completed": 2874,
+      "winRate": 0.04627696590118302,
+      "winRateWilson95": [
+        0.039183228535883345,
+        0.05458199886871177
+      ],
+      "meanFloor": 27.51,
+      "medianFloor": 31,
+      "deathsByAct": {
+        "0": 557,
+        "1": 1661,
+        "2": 656
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 340
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 214
+        },
+        {
+          "id": "VANTOM",
+          "n": 178
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 175
+        },
+        {
+          "id": "ROCKET",
+          "n": 138
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.17,
+      "winsAudit": {
+        "audited": 133,
+        "verified": 133,
+        "seeds": [
+          8265935,
+          20398569,
+          29080440,
+          74274024,
+          82747590,
+          132323162,
+          152700534,
+          169562030,
+          199704090,
+          204429138,
+          211500823,
+          212378344,
+          217119430,
+          236251182,
+          279772470,
+          287575047,
+          316541081,
+          344340903,
+          345694447,
+          385230548,
+          395299419,
+          399579225,
+          401790396,
+          405276051,
+          414251060,
+          430621145,
+          448601648,
+          448934802,
+          471579142,
+          473243662,
+          479910069,
+          480673935,
+          482743533,
+          496709104,
+          497611865,
+          532990212,
+          538826525,
+          558684026,
+          584499895,
+          589724166,
+          604118799,
+          634149517,
+          634177383,
+          647507138,
+          654524408,
+          663438739,
+          697330144,
+          747800668,
+          750285611,
+          776607934,
+          781121722,
+          784195284,
+          791313329,
+          795738970,
+          805143234,
+          841341602,
+          841981666,
+          861153757,
+          879706922,
+          898714862,
+          914621545,
+          942391285,
+          971873794,
+          992854400,
+          995908744,
+          1002292845,
+          1004708556,
+          1027247784,
+          1031812863,
+          1036531203,
+          1070242076,
+          1106655773,
+          1110408613,
+          1111556912,
+          1127677806,
+          1221949917,
+          1235898256,
+          1259891631,
+          1282152588,
+          1283726442,
+          1292007009,
+          1294096213,
+          1310935323,
+          1319332021,
+          1335290682,
+          1339060782,
+          1391450543,
+          1394377320,
+          1395412887,
+          1408490789,
+          1457275470,
+          1474094482,
+          1488376645,
+          1508662897,
+          1533166937,
+          1540863319,
+          1571772489,
+          1572764842,
+          1591459151,
+          1595693993,
+          1611081694,
+          1655709561,
+          1663410201,
+          1667780663,
+          1675207786,
+          1684276473,
+          1708538733,
+          1713593218,
+          1724251639,
+          1728053514,
+          1735138035,
+          1757373353,
+          1764705148,
+          1803077028,
+          1863322225,
+          1865072352,
+          1868736391,
+          1892240810,
+          1898584070,
+          1934261523,
+          1940198517,
+          1960476862,
+          1990316040,
+          1991009923,
+          2008401727,
+          2020026758,
+          2027147616,
+          2042148508,
+          2055647058,
+          2064543203,
+          2089365346,
+          2099147328,
+          2103307378
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2874,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "3412a50b9f7d674a85a4e684b8a50be9da0a330c6deb5b1b821fc742dc028ede",
+      "episodesGzSha256": "d9a4f7146516acc3dc2d49466170ef8f27c9e84088d5c6bfb4483633cda68c77",
+      "finished": "2026-11-02T02:13:50+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a3-necrobinder-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          2
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2931,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 66,
+        "timeout": 0,
+        "win": 3
+      },
+      "completed": 2934,
+      "winRate": 0.0010224948875255625,
+      "winRateWilson95": [
+        0.0003478001034575074,
+        0.003002094354306961
+      ],
+      "meanFloor": 23.24,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 732,
+        "1": 2002,
+        "2": 200
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 336
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 271
+        },
+        {
+          "id": "VANTOM",
+          "n": 212
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 179
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 177
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.02,
+      "winsAudit": {
+        "audited": 3,
+        "verified": 3,
+        "seeds": [
+          254385460,
+          538826525,
+          1100790327
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2934,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "cac6aa74d68039180a9c38e12664d4d827adc401b8c6c25e32459ee2543e0c40",
+      "episodesGzSha256": "9050d4299efc8262df68990675ee26f6cd9338ed0eeeb05ee4d1705c947da1e0",
+      "finished": "2026-11-02T02:52:25+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a3-regent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          2
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2883,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 67,
+        "timeout": 39,
+        "win": 11
+      },
+      "completed": 2894,
+      "winRate": 0.0038009675190048375,
+      "winRateWilson95": [
+        0.0021237514498930517,
+        0.006793733922550536
+      ],
+      "meanFloor": 20.84,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 1087,
+        "1": 1641,
+        "2": 166
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 292
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 224
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 197
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 186
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 180
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.12,
+      "winsAudit": {
+        "audited": 11,
+        "verified": 11,
+        "seeds": [
+          154626248,
+          223112519,
+          351791063,
+          538826525,
+          589724166,
+          655736312,
+          671973544,
+          775724325,
+          795738970,
+          1998305991,
+          2070197189
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2894,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "30cdf87fd921bdaa43fc50faa434287bccfea9d24e291d07bbbca972e712cc24",
+      "episodesGzSha256": "a37bd5903891a7983f9464697fa42d80b9a52116d0cf5511c2df157f79892cc4",
+      "finished": "2026-11-02T02:39:41+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-a3-silent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2_late",
+      "policyParams": {
+        "late_acts": [
+          2
+        ],
+        "late_threshold": 0.2,
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2977,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 23,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2977,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0012887162479999572
+      ],
+      "meanFloor": 15.59,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 2084,
+        "1": 887,
+        "2": 6
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 430
+        },
+        {
+          "id": "VANTOM",
+          "n": 331
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 279
+        },
+        {
+          "id": "FOGMOG",
+          "n": 140
+        },
+        {
+          "id": "TUNNELER",
+          "n": 126
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.93,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2977,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "620020e9ff11760bfa960cd9f59be51d6d6b5e96abdbfc360a718aed7221b193",
+      "episodesGzSha256": "ec10482d87a27fd3fb97cad4568750cc0b8a7b614456419e8284cea9338cb266",
+      "finished": "2026-11-02T02:25:29+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-lead-defect-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0.2,
+        "values": "experiments/cardvalue/defect-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2785,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 97,
+        "timeout": 1,
+        "win": 117
+      },
+      "completed": 2902,
+      "winRate": 0.04031702274293591,
+      "winRateWilson95": [
+        0.03374706185024059,
+        0.04810236530922311
+      ],
+      "meanFloor": 25.35,
+      "medianFloor": 22,
+      "deathsByAct": {
+        "0": 555,
+        "1": 1783,
+        "2": 564
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 332
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 152
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 143
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 135
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 117
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.99,
+      "winsAudit": {
+        "audited": 117,
+        "verified": 117,
+        "seeds": [
+          23661797,
+          36320624,
+          37495440,
+          50410434,
+          52747119,
+          62447935,
+          73742844,
+          95985815,
+          96153253,
+          104966550,
+          110411532,
+          169218644,
+          174948105,
+          191615710,
+          202558617,
+          203471010,
+          210346071,
+          211266545,
+          213626024,
+          307102020,
+          356121148,
+          363430079,
+          368988668,
+          388727897,
+          405123936,
+          408447888,
+          411033450,
+          429074492,
+          468425455,
+          498964422,
+          508047525,
+          544239305,
+          553199758,
+          595758560,
+          610641878,
+          682058889,
+          694119256,
+          738061511,
+          748819598,
+          762498852,
+          775510307,
+          795738970,
+          841981666,
+          855660124,
+          868087822,
+          870385302,
+          880892723,
+          885446835,
+          886088402,
+          891682542,
+          942391285,
+          944367405,
+          964282374,
+          989444103,
+          995908744,
+          1052167208,
+          1096335985,
+          1106986881,
+          1150344315,
+          1151873620,
+          1181271707,
+          1193829448,
+          1194186846,
+          1214141424,
+          1222416116,
+          1242393931,
+          1271028242,
+          1281788203,
+          1294096213,
+          1310052947,
+          1321588008,
+          1337239147,
+          1348532125,
+          1362296317,
+          1387974881,
+          1391450543,
+          1393897861,
+          1412577569,
+          1463122398,
+          1469068685,
+          1470784756,
+          1495821315,
+          1499767661,
+          1507328405,
+          1571128397,
+          1622904177,
+          1623646565,
+          1627877952,
+          1645983225,
+          1678995245,
+          1686911079,
+          1708538733,
+          1709374502,
+          1715875144,
+          1800110380,
+          1809162136,
+          1817091872,
+          1829868346,
+          1857297274,
+          1868444602,
+          1877697321,
+          1898584070,
+          1911724974,
+          1931712052,
+          1939602118,
+          1989783415,
+          1989965006,
+          1995313437,
+          2008401727,
+          2015097684,
+          2027964896,
+          2030197322,
+          2059991535,
+          2067438745,
+          2070709288,
+          2093392853,
+          2103307378
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2902,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "0abb3490093207f0b94bd1d2b3c434fd23b912a33ab7f4607679bd9eb808edb8",
+      "episodesGzSha256": "ae033284498dec8de99235c1d417cf85e0b08dfbaaf31775bdf3c6cb528a1f80",
+      "finished": "2026-11-01T23:43:07+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-lead-ironclad-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0.2,
+        "values": "experiments/cardvalue/ironclad-a0-v2.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2673,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 97,
+        "timeout": 0,
+        "win": 230
+      },
+      "completed": 2903,
+      "winRate": 0.0792283844299001,
+      "winRateWilson95": [
+        0.06995001573229377,
+        0.08961887214536664
+      ],
+      "meanFloor": 25.46,
+      "medianFloor": 25,
+      "deathsByAct": {
+        "0": 965,
+        "1": 1220,
+        "2": 718
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 260
+        },
+        {
+          "id": "VANTOM",
+          "n": 181
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 154
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 142
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 142
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.97,
+      "winsAudit": {
+        "audited": 230,
+        "verified": 230,
+        "seeds": [
+          8265935,
+          10665526,
+          15307061,
+          29080440,
+          47507199,
+          69421267,
+          82747590,
+          93360098,
+          97061676,
+          105892476,
+          128749761,
+          145674598,
+          156425871,
+          159145110,
+          169218644,
+          169562030,
+          199704090,
+          203471010,
+          217119430,
+          230845029,
+          262905754,
+          277240552,
+          287575047,
+          309268958,
+          316541081,
+          324373031,
+          331323486,
+          345694447,
+          351791063,
+          359556750,
+          372468324,
+          379215151,
+          381835787,
+          385230548,
+          388727897,
+          396947268,
+          399131565,
+          399579225,
+          400298557,
+          407547546,
+          435383582,
+          448601648,
+          467481931,
+          468425455,
+          473243662,
+          479910069,
+          480673935,
+          482743533,
+          486663486,
+          491034687,
+          493928070,
+          496709104,
+          497611865,
+          501827788,
+          508542011,
+          511870565,
+          522974588,
+          523021729,
+          523562157,
+          538826525,
+          542763830,
+          584499895,
+          604118799,
+          605829496,
+          609500141,
+          611988108,
+          624348824,
+          630629137,
+          632647129,
+          634149517,
+          646847891,
+          653099707,
+          654524408,
+          678965011,
+          680850419,
+          681575683,
+          723568954,
+          726589999,
+          740135495,
+          750285611,
+          771440930,
+          776607934,
+          791313329,
+          795738970,
+          795777671,
+          796692457,
+          805143234,
+          809191898,
+          841981666,
+          842889693,
+          870385302,
+          879138747,
+          879706922,
+          898714862,
+          913689557,
+          914621545,
+          920877073,
+          928178721,
+          955880884,
+          957618148,
+          960461645,
+          978315428,
+          987661491,
+          995908744,
+          997349302,
+          1002292845,
+          1004708556,
+          1010187196,
+          1027247784,
+          1033427473,
+          1036531203,
+          1039603832,
+          1096335985,
+          1104018028,
+          1106655773,
+          1111556912,
+          1115277707,
+          1127677806,
+          1172680497,
+          1194936965,
+          1216431074,
+          1221949917,
+          1224267960,
+          1226318364,
+          1235898256,
+          1263828956,
+          1282152588,
+          1292007009,
+          1294096213,
+          1294427306,
+          1301704826,
+          1309843816,
+          1310052947,
+          1310935323,
+          1316707662,
+          1316770827,
+          1317726687,
+          1318879365,
+          1319332021,
+          1322433829,
+          1331752413,
+          1337496093,
+          1339060782,
+          1345878368,
+          1354030916,
+          1391450543,
+          1393897861,
+          1394377320,
+          1396767835,
+          1408318189,
+          1408490789,
+          1423368105,
+          1457816608,
+          1463091994,
+          1465909231,
+          1468523446,
+          1469984112,
+          1488386815,
+          1497456198,
+          1504452024,
+          1511609749,
+          1531024323,
+          1533166937,
+          1549052907,
+          1556938269,
+          1562695889,
+          1572764842,
+          1591459151,
+          1596014399,
+          1598860191,
+          1599388803,
+          1609328067,
+          1610516883,
+          1621814579,
+          1627717825,
+          1661343738,
+          1668893752,
+          1678995245,
+          1684276473,
+          1701348742,
+          1715879351,
+          1717993342,
+          1730258203,
+          1735138035,
+          1757373353,
+          1759196571,
+          1764705148,
+          1768947145,
+          1772368443,
+          1794737919,
+          1795183545,
+          1803077028,
+          1813768012,
+          1814511606,
+          1824282337,
+          1829868346,
+          1865072352,
+          1875952113,
+          1878172468,
+          1892240810,
+          1898584070,
+          1903766410,
+          1910242342,
+          1931712052,
+          1937173592,
+          1940198517,
+          1960476862,
+          1963661528,
+          1967585987,
+          1971191992,
+          1972445920,
+          1976292683,
+          1981243682,
+          1985647991,
+          2007625687,
+          2008401727,
+          2027033696,
+          2027147616,
+          2027909364,
+          2034921742,
+          2047190966,
+          2055647058,
+          2059687724,
+          2067337458,
+          2089365346,
+          2103307378,
+          2119370169,
+          2123251350,
+          2131306427,
+          2146566510
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2903,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "71a5a839343fae5d3213683c61e5eb34f4c5b64afae4f9d60e44ea569c310a2e",
+      "episodesGzSha256": "ef0e4cabbe06d85bd2f8c4281f84ec2cdb0948f3ce45bcbbad3ab82d8a83eecd",
+      "finished": "2026-11-01T22:51:14+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-lead-necrobinder-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0.2,
+        "values": "experiments/cardvalue/necrobinder-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2933,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 62,
+        "timeout": 5,
+        "win": 0
+      },
+      "completed": 2933,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0013080239006965952
+      ],
+      "meanFloor": 22.61,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 850,
+        "1": 1887,
+        "2": 196
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 349
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 267
+        },
+        {
+          "id": "VANTOM",
+          "n": 217
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 175
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 161
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.31,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2933,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "7fcda966a731e61c3399d6a7173809e6eb61d40ecb58088b8daebde84d8e4a40",
+      "episodesGzSha256": "9e30eeb79964164a24ab078ae3f676f766758b04afe3b81e69e776e729bd72dd",
+      "finished": "2026-11-01T23:30:43+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-lead-regent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0.2,
+        "values": "experiments/cardvalue/regent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2880,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 62,
+        "timeout": 35,
+        "win": 23
+      },
+      "completed": 2903,
+      "winRate": 0.00792283844299001,
+      "winRateWilson95": [
+        0.00528525200330675,
+        0.01186100778649094
+      ],
+      "meanFloor": 20.66,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 1203,
+        "1": 1477,
+        "2": 223
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 305
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 209
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 195
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 191
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 158
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.99,
+      "winsAudit": {
+        "audited": 23,
+        "verified": 23,
+        "seeds": [
+          122303917,
+          212378344,
+          223112519,
+          351791063,
+          414251060,
+          449139929,
+          522974588,
+          538826525,
+          591556664,
+          660613052,
+          775724325,
+          1034459618,
+          1106986881,
+          1213545918,
+          1258432868,
+          1299106195,
+          1495821315,
+          1499153387,
+          1596785482,
+          1663410201,
+          1754032675,
+          1791130883,
+          1955581030
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2903,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "c1be9a8c0d8a72352313920fe343c6812fa57ca430c8ddb75196c03d5cf67614",
+      "episodesGzSha256": "99c43410787eb8c66ec8b5db950e7f1049f25717ae209d114b82c3d732debbfa",
+      "finished": "2026-11-01T23:12:59+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-lead-silent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0.2,
+        "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2983,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 17,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2983,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0012861274606154895
+      ],
+      "meanFloor": 15.25,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 2098,
+        "1": 877,
+        "2": 8
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 390
+        },
+        {
+          "id": "VANTOM",
+          "n": 315
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 280
+        },
+        {
+          "id": "FOGMOG",
+          "n": 162
+        },
+        {
+          "id": "TUNNELER",
+          "n": 116
+        }
+      ],
+      "meanWallSecondsPerEpisode": 0.73,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2983,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "b18bae38eb4a43f45b673e9a9bd5563308bde0102d548efea787d03f96df4542",
+      "episodesGzSha256": "84b0ee1c366f54e94ab33cc7b53a038a9b9207b327506cac2c66e2b127405104",
+      "finished": "2026-11-01T23:00:27+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-s-defect-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/defect-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Defect",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2811,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 92,
+        "timeout": 0,
+        "win": 97
+      },
+      "completed": 2908,
+      "winRate": 0.033356258596973866,
+      "winRateWilson95": [
+        0.02742081039667947,
+        0.04052295014748855
+      ],
+      "meanFloor": 25.57,
+      "medianFloor": 23,
+      "deathsByAct": {
+        "0": 489,
+        "1": 1858,
+        "2": 561
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 349
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 164
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 154
+        },
+        {
+          "id": "SPINY_TOAD",
+          "n": 139
+        },
+        {
+          "id": "THIEVING_HOPPER",
+          "n": 118
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1,
+      "winsAudit": {
+        "audited": 97,
+        "verified": 97,
+        "seeds": [
+          36320624,
+          52747119,
+          62447935,
+          73742844,
+          96153253,
+          110411532,
+          169218644,
+          203471010,
+          210346071,
+          236251182,
+          252129421,
+          307102020,
+          307468486,
+          351818675,
+          356121148,
+          388727897,
+          394317786,
+          403694702,
+          408447888,
+          411033450,
+          428693949,
+          429074492,
+          441793072,
+          468425455,
+          479910069,
+          502502888,
+          521424100,
+          544239305,
+          553199758,
+          556733886,
+          558391533,
+          595758560,
+          613637220,
+          653591969,
+          671973544,
+          682058889,
+          748819598,
+          762498852,
+          782283049,
+          824603115,
+          841981666,
+          855660124,
+          868087822,
+          886088402,
+          891320516,
+          891682542,
+          903108094,
+          952533257,
+          971873794,
+          1025191158,
+          1036531203,
+          1052167208,
+          1096335985,
+          1150344315,
+          1151873620,
+          1193829448,
+          1294096213,
+          1316770827,
+          1337239147,
+          1341156272,
+          1348319823,
+          1348532125,
+          1362296317,
+          1363021112,
+          1381677192,
+          1393897861,
+          1396767835,
+          1412577569,
+          1416074318,
+          1469068685,
+          1477457638,
+          1493867214,
+          1499767661,
+          1514368312,
+          1571128397,
+          1616794270,
+          1624009689,
+          1686911079,
+          1706369391,
+          1724251639,
+          1744487288,
+          1809162136,
+          1818340864,
+          1829868346,
+          1911724974,
+          1939602118,
+          1985647991,
+          1989783415,
+          1989965006,
+          2004758101,
+          2027909364,
+          2030197322,
+          2059991535,
+          2070709288,
+          2076673918,
+          2103307378,
+          2119370169
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2908,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "1527952fda5ee8c3780222f1a0ed0cfbb04705d1d754dfd9b26a969fb6f8b18f",
+      "episodesGzSha256": "35a1e41d421e8bea704a3a8cd8b5eb654c9fa57b9637f504d20cf6fcc8178ddf",
+      "finished": "2026-11-01T22:39:04+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-s-ironclad-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/ironclad-a0-v2.json"
+      },
+      "preIsolation": false,
+      "character": "Ironclad",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2741,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 125,
+        "timeout": 0,
+        "win": 134
+      },
+      "completed": 2875,
+      "winRate": 0.04660869565217391,
+      "winRateWilson95": [
+        0.03948964916504859,
+        0.05493773167865125
+      ],
+      "meanFloor": 27.5,
+      "medianFloor": 31,
+      "deathsByAct": {
+        "0": 557,
+        "1": 1661,
+        "2": 657
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 340
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 214
+        },
+        {
+          "id": "VANTOM",
+          "n": 178
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 175
+        },
+        {
+          "id": "ROCKET",
+          "n": 138
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.45,
+      "winsAudit": {
+        "audited": 134,
+        "verified": 134,
+        "seeds": [
+          29080440,
+          74274024,
+          82747590,
+          132323162,
+          152700534,
+          159145110,
+          169562030,
+          174948105,
+          199704090,
+          204429138,
+          211500823,
+          212378344,
+          236251182,
+          279772470,
+          287575047,
+          316541081,
+          344340903,
+          359556750,
+          385230548,
+          395299419,
+          399579225,
+          401790396,
+          405276051,
+          414251060,
+          430621145,
+          448601648,
+          448934802,
+          468425455,
+          471579142,
+          473243662,
+          479910069,
+          480673935,
+          482743533,
+          491034687,
+          497611865,
+          501827788,
+          523021729,
+          523562157,
+          532990212,
+          538826525,
+          562952878,
+          584499895,
+          595758560,
+          604118799,
+          634149517,
+          647507138,
+          653099707,
+          654524408,
+          697330144,
+          747800668,
+          750285611,
+          776607934,
+          781121722,
+          783347544,
+          791313329,
+          795738970,
+          795777671,
+          816106549,
+          836664771,
+          841341602,
+          841981666,
+          842889693,
+          848191573,
+          879706922,
+          898714862,
+          914621545,
+          920877073,
+          942391285,
+          987962212,
+          992854400,
+          995908744,
+          1002292845,
+          1027247784,
+          1070242076,
+          1104018028,
+          1106655773,
+          1111556912,
+          1127677806,
+          1235898256,
+          1283726442,
+          1283950809,
+          1292007009,
+          1294096213,
+          1310052947,
+          1310935323,
+          1319332021,
+          1335290682,
+          1339060782,
+          1394377320,
+          1395412887,
+          1457275470,
+          1474094482,
+          1488376645,
+          1508662897,
+          1533166937,
+          1540863319,
+          1547126086,
+          1571772489,
+          1572764842,
+          1591459151,
+          1595693993,
+          1620568117,
+          1655709561,
+          1675207786,
+          1684276473,
+          1724251639,
+          1728053514,
+          1735237284,
+          1757373353,
+          1764705148,
+          1772368443,
+          1829868346,
+          1863322225,
+          1865072352,
+          1868234010,
+          1868736391,
+          1874605448,
+          1881317913,
+          1892240810,
+          1898584070,
+          1934261523,
+          1940198517,
+          1960476862,
+          1963661528,
+          1967585987,
+          1990316040,
+          1991009923,
+          2020026758,
+          2042148508,
+          2055647058,
+          2089365346,
+          2093885906,
+          2099147328,
+          2103307378
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2875,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "89a4101ba7f57d877d9d1a46b8b66ca93618c41385ff26efb2554b149ec4c289",
+      "episodesGzSha256": "772d6bc54d3f30517b153caa9e1f779e7ee3cc09c9a242b96b1b84709521d535",
+      "finished": "2026-11-01T21:47:37+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-s-necrobinder-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/necrobinder-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Necrobinder",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2930,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 67,
+        "timeout": 0,
+        "win": 3
+      },
+      "completed": 2933,
+      "winRate": 0.0010228435049437436,
+      "winRateWilson95": [
+        0.00034791870547402274,
+        0.0030031163976077828
+      ],
+      "meanFloor": 23.23,
+      "medianFloor": 21,
+      "deathsByAct": {
+        "0": 732,
+        "1": 2002,
+        "2": 199
+      },
+      "topKillers": [
+        {
+          "id": "THE_INSATIABLE",
+          "n": 336
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 271
+        },
+        {
+          "id": "VANTOM",
+          "n": 212
+        },
+        {
+          "id": "CRUSHER,ROCKET",
+          "n": 179
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 177
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1,
+      "winsAudit": {
+        "audited": 3,
+        "verified": 3,
+        "seeds": [
+          254385460,
+          538826525,
+          1100790327
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2933,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G13-necrobinder-start-hp",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "a22a3d6f36c3cd97c8522b95323b2aa74580c333f1759e5d99dd553505fc8ef0",
+      "episodesGzSha256": "d86d8130abddf326ef1b6dd3b40615e20632118a43b1b4050e21e0fc19c0fa2c",
+      "finished": "2026-11-01T22:26:30+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-s-regent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/regent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Regent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2882,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 67,
+        "timeout": 39,
+        "win": 12
+      },
+      "completed": 2894,
+      "winRate": 0.00414651002073255,
+      "winRateWilson95": [
+        0.0023736003979261183,
+        0.0072340538565700855
+      ],
+      "meanFloor": 20.85,
+      "medianFloor": 19,
+      "deathsByAct": {
+        "0": 1087,
+        "1": 1641,
+        "2": 166
+      },
+      "topKillers": [
+        {
+          "id": "VANTOM",
+          "n": 292
+        },
+        {
+          "id": "THE_INSATIABLE",
+          "n": 224
+        },
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 197
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 186
+        },
+        {
+          "id": "KNOWLEDGE_DEMON",
+          "n": 180
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.06,
+      "winsAudit": {
+        "audited": 12,
+        "verified": 12,
+        "seeds": [
+          154626248,
+          223112519,
+          538826525,
+          775724325,
+          795738970,
+          830094624,
+          1336861949,
+          1391450543,
+          1463091994,
+          1495821315,
+          1998305991,
+          2067739907
+        ],
+        "criteria": "re-run agrees with the stored record; trace replays hash for hash; run over + player_won; ended in act index 2; one boss fight entered per act"
+      },
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2894,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "528d15e61587f9bd6403c8ab043910bedfb8813c6c08547cedd0587c810b443d",
+      "episodesGzSha256": "d90c53fad74ef9aca40002b2a8fc2bd8c4416a4f18a7f553d8b90a70c36b7849",
+      "finished": "2026-11-01T22:13:58+00:00",
+      "role": "held-out"
+    },
+    {
+      "id": "acts-s-silent-a0-veteran-keeprelics-val2-n3000",
+      "policy": "rules_v2",
+      "policyParams": {
+        "threshold": 0,
+        "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+      },
+      "preIsolation": false,
+      "character": "Silent",
+      "ascension": 0,
+      "profile": "veteran",
+      "ancientHeal": false,
+      "gameHp": false,
+      "keepRelics": true,
+      "partition": "val2",
+      "sealedPartitionUsed": false,
+      "seeds": 3000,
+      "counts": {
+        "aborted": 0,
+        "death": 2977,
+        "harness_error": 0,
+        "invalid_action": 0,
+        "policy_error": 0,
+        "simulator_error": 23,
+        "timeout": 0,
+        "win": 0
+      },
+      "completed": 2977,
+      "winRate": 0,
+      "winRateWilson95": [
+        0,
+        0.0012887162479999572
+      ],
+      "meanFloor": 15.58,
+      "medianFloor": 16,
+      "deathsByAct": {
+        "0": 2084,
+        "1": 887,
+        "2": 6
+      },
+      "topKillers": [
+        {
+          "id": "CEREMONIAL_BEAST",
+          "n": 430
+        },
+        {
+          "id": "VANTOM",
+          "n": 331
+        },
+        {
+          "id": "KIN_PRIEST",
+          "n": 279
+        },
+        {
+          "id": "FOGMOG",
+          "n": 140
+        },
+        {
+          "id": "TUNNELER",
+          "n": 126
+        }
+      ],
+      "meanWallSecondsPerEpisode": 1.03,
+      "winsAudit": null,
+      "rederivationAudit": null,
+      "canonicalProcessState": true,
+      "classStartVerified": true,
+      "sampleAudit": {
+        "drawn": 40,
+        "verified": 40,
+        "completedInBatch": 2977,
+        "rngSeed": 0,
+        "ledgerOk": true,
+        "criteria": "ledger complete and consistent; re-run agrees with the stored record; trace replays hash for hash; run over, win with HP above 0 or death at 0 HP without a win"
+      },
+      "simulator": {
+        "id": "sts2-rl-agent",
+        "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7",
+        "parityWithLiveGame": "UNVERIFIED"
+      },
+      "gapsRecordedInManifest": true,
+      "knownGaps": [
+        "G4-rng-family",
+        "G5-no-live-parity",
+        "G11-no-act-start-ancient-heal",
+        "G14-relics-lost-after-first-fight"
+      ],
+      "contentSha256": "25f9c00190a478bd7ff6e8b4e2c9c19cff060b4d67fc99f7f6c150e82d821131",
+      "episodesGzSha256": "c6c3e8ccf24ff5c85b8b60f69c93a2ff265912d4bc18808eefde279d655aa16e",
+      "finished": "2026-11-01T22:00:33+00:00",
+      "role": "held-out"
+    },
+    {
       "id": "advisor_v1-astar-defect-a0-veteran-keeprelics-val-n2000",
       "policy": "advisor_v1",
       "policyParams": {

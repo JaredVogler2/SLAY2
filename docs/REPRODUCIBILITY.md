@@ -145,7 +145,7 @@ What a third party can check without the simulator: the committed batches' manif
 
 ### The acts study, command by command
 
-Registered in ADR-061 (one registration, no development stage). Every step below is a script of `scripts/studies/acts/` (frozen from the commit that registers the held-out run) and refuses to run twice or from the wrong commit. The held-out run is about five hours on four workers (75,000 games); the audits and the pooling under an hour.
+Registered in ADR-061 (one registration, no development stage) and played once: 75,000 games in 5 hours 37 minutes on four workers (3.7 games a second), the audits 32 minutes, the pooling 2 minutes. Every step below is a script of `scripts/studies/acts/` (frozen from the commit that registers the held-out run, `a0c0156`) and refuses to run twice or from the wrong commit.
 
 ```bash
 export PY=python3 SLAY2_EXTERNAL_ROOT=/path/to/external/checkouts OMP_NUM_THREADS=1
@@ -154,6 +154,7 @@ bash scripts/studies/acts/audit.sh val2          # every win re-derived, a 40-ga
 bash scripts/studies/acts/pool.sh                # the four pooled tests once (--endpoint win), the identity and boss-agreement checks, the all-pairs analysis
 python3 scripts/verify-pooled.py experiments/acts/pooled-acts-*.json --bootstrap    # an independent recomputation from the episodes
 node scripts/export-site-data.mjs                # the page's data (scripts/lib/acts.mjs reads the files strictly)
+python3 scripts/acts-result-numbers.py           # the result section's figures from the exporter's file (--arms: the batch counts from the manifests and audit records)
 ```
 
 The seed file `experiments/seeds/ironclad-a0-v3.json` is made by `python3 -m slay2_sim seeds --name ironclad-a0-v3 --master 20261025 --sizes train=5000,val=2000,test=4000,dev=10000,val2=3000` (the first four partitions are those of v2, byte for byte; `val2` is appended after `dev` in the same stream). What a third party can check without the simulator is as for the Act-2 study: the committed batches' manifests and compressed episodes, the hashes quoted in ADR-061, and that the registration commit is an ancestor of the commit that holds the result.
@@ -242,6 +243,31 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `act2dev-v-necrobinder-a0-veteran-keeprelics-dev-o1000-n600` | rules_v2_late | Necrobinder | dev · 600 | 589 | 0 | `08e972c80cf8…` | clean | – | yes |
 | `act2dev-v-regent-a0-veteran-keeprelics-dev-o1000-n600` | rules_v2_late | Regent | dev · 600 | 578 | 1 | `c2d33d0feaaf…` | clean | wins | yes |
 | `act2dev-v-silent-a0-veteran-keeprelics-dev-o1000-n600` | rules_v2_late | Silent | dev · 600 | 597 | 0 | `d557c64a2b51…` | clean | – | yes |
+| `acts-a1-defect-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Defect | val2 · 3000 | 2897 | 115 | `d5e314a688a8…` | clean | wins,sample | yes |
+| `acts-a1-ironclad-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Ironclad | val2 · 3000 | 2900 | 172 | `a892d5b1805f…` | clean | wins,sample | yes |
+| `acts-a1-necrobinder-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Necrobinder | val2 · 3000 | 2935 | 1 | `746242d231bb…` | clean | wins,sample | yes |
+| `acts-a1-regent-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Regent | val2 · 3000 | 2900 | 14 | `445a163bf4c2…` | clean | wins,sample | yes |
+| `acts-a1-silent-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Silent | val2 · 3000 | 2983 | 0 | `51d6c0807059…` | clean | sample | yes |
+| `acts-a2-defect-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Defect | val2 · 3000 | 2910 | 107 | `42ef9b1be4fa…` | clean | wins,sample | yes |
+| `acts-a2-ironclad-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Ironclad | val2 · 3000 | 2868 | 171 | `e8c9ca322570…` | clean | wins,sample | yes |
+| `acts-a2-necrobinder-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Necrobinder | val2 · 3000 | 2933 | 1 | `ba80c55dd909…` | clean | wins,sample | yes |
+| `acts-a2-regent-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Regent | val2 · 3000 | 2898 | 13 | `87779d0a4c97…` | clean | wins,sample | yes |
+| `acts-a2-silent-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Silent | val2 · 3000 | 2979 | 0 | `10bcec7640cd…` | clean | sample | yes |
+| `acts-a3-defect-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Defect | val2 · 3000 | 2908 | 108 | `ac2d7e9620ea…` | clean | wins,sample | yes |
+| `acts-a3-ironclad-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Ironclad | val2 · 3000 | 2874 | 133 | `3412a50b9f7d…` | clean | wins,sample | yes |
+| `acts-a3-necrobinder-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Necrobinder | val2 · 3000 | 2934 | 3 | `cac6aa74d680…` | clean | wins,sample | yes |
+| `acts-a3-regent-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Regent | val2 · 3000 | 2894 | 11 | `30cdf87fd921…` | clean | wins,sample | yes |
+| `acts-a3-silent-a0-veteran-keeprelics-val2-n3000` | rules_v2_late | Silent | val2 · 3000 | 2977 | 0 | `620020e9ff11…` | clean | sample | yes |
+| `acts-lead-defect-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Defect | val2 · 3000 | 2902 | 117 | `0abb34900932…` | clean | wins,sample | yes |
+| `acts-lead-ironclad-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Ironclad | val2 · 3000 | 2903 | 230 | `71a5a839343f…` | clean | wins,sample | yes |
+| `acts-lead-necrobinder-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Necrobinder | val2 · 3000 | 2933 | 0 | `7fcda966a731…` | clean | sample | yes |
+| `acts-lead-regent-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Regent | val2 · 3000 | 2903 | 23 | `c1be9a8c0d8a…` | clean | wins,sample | yes |
+| `acts-lead-silent-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Silent | val2 · 3000 | 2983 | 0 | `b18bae38eb4a…` | clean | sample | yes |
+| `acts-s-defect-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Defect | val2 · 3000 | 2908 | 97 | `1527952fda5e…` | clean | wins,sample | yes |
+| `acts-s-ironclad-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Ironclad | val2 · 3000 | 2875 | 134 | `89a4101ba7f5…` | clean | wins,sample | yes |
+| `acts-s-necrobinder-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Necrobinder | val2 · 3000 | 2933 | 3 | `a22a3d6f36c3…` | clean | wins,sample | yes |
+| `acts-s-regent-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Regent | val2 · 3000 | 2894 | 12 | `528d15e61587…` | clean | wins,sample | yes |
+| `acts-s-silent-a0-veteran-keeprelics-val2-n3000` | rules_v2 | Silent | val2 · 3000 | 2977 | 0 | `25f9c00190a4…` | clean | sample | yes |
 | `advisor_v1-astar-defect-a0-veteran-keeprelics-val-n2000` | advisor_v1 | Defect | val · 2000 | 1983 | 0 | `308707bef7f7…` | clean | sample | yes |
 | `advisor_v1-astar-defect-a0-veteran-val-n2000` | advisor_v1 | Defect | val · 2000 | 2000 | 0 | `7145541305bc…` | clean | sample,rederivation | yes |
 | `advisor_v1-astar-defect-a9-veteran-keeprelics-val-n2000` | advisor_v1 | Defect | val · 2000 | 1999 | 0 | `9dc88b4c0562…` | clean | sample | yes |
