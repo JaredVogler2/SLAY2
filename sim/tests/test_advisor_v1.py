@@ -180,3 +180,13 @@ def test_the_price_never_moves_a_game_that_stays_under_it(sim):
     offered = ["INFLAME", "POMMEL_STRIKE", "SHRUG_IT_OFF"]
     obs, actions = reward(offered)
     assert pilot()._card_reward(obs, actions) == pilot(size=1.0, size_from=20)._card_reward(obs, actions)
+
+
+def test_a_pilot_that_names_the_price_counts_its_card_rewards_by_act_and_one_that_does_not_says_nothing_new(sim):
+    obs, actions = reward(["ANGER", "ARMAMENTS", "BLOOD_WALL"], DECK_OF_24, act=1)
+    named = pilot(size=1.0, size_from=20)
+    named._card_reward(obs, actions)
+    assert named.episode_stats()["advisor"]["by_act"] == {"0": {"offers": 0, "skipped": 0}, "1": {"offers": 1, "skipped": 1}, "2": {"offers": 0, "skipped": 0}}
+    plain = pilot()
+    plain._card_reward(obs, actions)
+    assert plain.episode_stats()["advisor"] == {"offers": 1, "taken": 1, "skipped": 0, "unscored": 0}  # the record of every earlier batch is what it was

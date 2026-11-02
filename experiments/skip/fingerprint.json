@@ -1,0 +1,583 @@
+{
+  "about": "how often the index ranks skipping first on the card-reward states simulated games reach (behaviour only: no outcome is read)",
+  "kind": "advisor-skip-fingerprint",
+  "schema": 1,
+  "sets": {
+    "advisor": {
+      "bestCardGainUnderVersion1": {
+        "16-20": {
+          "meanCoverage": 0.684,
+          "meanQuality": 0.947,
+          "meanSynergy": 0.175,
+          "median": 1.678,
+          "n": 964
+        },
+        "21-25": {
+          "meanCoverage": 0.668,
+          "meanQuality": 0.504,
+          "meanSynergy": 0.286,
+          "median": 1.355,
+          "n": 363
+        },
+        "26-30": {
+          "meanCoverage": 0.503,
+          "meanQuality": 0.284,
+          "meanSynergy": 0.37,
+          "median": 1.051,
+          "n": 100
+        },
+        "<=15": {
+          "meanCoverage": 1.018,
+          "meanQuality": 1.71,
+          "meanSynergy": 0.03,
+          "median": 2.626,
+          "n": 1537
+        },
+        ">30": {
+          "meanCoverage": 0.411,
+          "meanQuality": 0.218,
+          "meanSynergy": 0.483,
+          "median": 0.604,
+          "n": 36
+        }
+      },
+      "byAct": {
+        "1": 2521,
+        "2": 457,
+        "3": 22
+      },
+      "byDeckSize": {
+        "16-20": 964,
+        "21-25": 363,
+        "26-30": 100,
+        "<=15": 1537,
+        ">30": 36
+      },
+      "candidates": [
+        {
+          "byAct": {
+            "act1": 0.0,
+            "act2": 0.0197,
+            "act3": 0.1364
+          },
+          "byDeckSize": {
+            "16-20": 0.0,
+            "21-25": 0.011,
+            "26-30": 0.03,
+            "<=15": 0.0,
+            ">30": 0.1389
+          },
+          "label": "version 1",
+          "price": 0.6,
+          "sizeFrom": 30,
+          "skipShare": 0.004
+        },
+        {
+          "byAct": {
+            "act1": 0.0139,
+            "act2": 0.302,
+            "act3": 0.4091
+          },
+          "byDeckSize": {
+            "16-20": 0.0218,
+            "21-25": 0.2837,
+            "26-30": 0.45,
+            "<=15": 0.0,
+            ">30": 0.3611
+          },
+          "label": "page: 1.0 from the 21st card",
+          "price": 1.0,
+          "sizeFrom": 20,
+          "skipShare": 0.0607
+        },
+        {
+          "byAct": {
+            "act1": 0.0008,
+            "act2": 0.0306,
+            "act3": 0.0455
+          },
+          "byDeckSize": {
+            "16-20": 0.0021,
+            "21-25": 0.022,
+            "26-30": 0.06,
+            "<=15": 0.0,
+            ">30": 0.0278
+          },
+          "label": "0.3 from the 16th card",
+          "price": 0.3,
+          "sizeFrom": 15,
+          "skipShare": 0.0057
+        },
+        {
+          "byAct": {
+            "act1": 0.0075,
+            "act2": 0.1138,
+            "act3": 0.1364
+          },
+          "byDeckSize": {
+            "16-20": 0.0176,
+            "21-25": 0.0937,
+            "26-30": 0.17,
+            "<=15": 0.0007,
+            ">30": 0.1389
+          },
+          "label": "0.6 from the 16th card",
+          "price": 0.6,
+          "sizeFrom": 15,
+          "skipShare": 0.0247
+        },
+        {
+          "byAct": {
+            "act1": 0.048,
+            "act2": 0.3063,
+            "act3": 0.4091
+          },
+          "byDeckSize": {
+            "16-20": 0.0996,
+            "21-25": 0.2837,
+            "26-30": 0.45,
+            "<=15": 0.0085,
+            ">30": 0.3611
+          },
+          "label": "1.0 from the 16th card",
+          "price": 1.0,
+          "sizeFrom": 15,
+          "skipShare": 0.09
+        },
+        {
+          "byAct": {
+            "act1": 0.169,
+            "act2": 0.6193,
+            "act3": 0.9545
+          },
+          "byDeckSize": {
+            "16-20": 0.3672,
+            "21-25": 0.595,
+            "26-30": 0.76,
+            "<=15": 0.0345,
+            ">30": 0.8611
+          },
+          "label": "1.5 from the 16th card",
+          "price": 1.5,
+          "sizeFrom": 15,
+          "skipShare": 0.2433
+        },
+        {
+          "byAct": {
+            "act1": 0.0004,
+            "act2": 0.0306,
+            "act3": 0.0455
+          },
+          "byDeckSize": {
+            "16-20": 0.001,
+            "21-25": 0.022,
+            "26-30": 0.06,
+            "<=15": 0.0,
+            ">30": 0.0278
+          },
+          "label": "0.3 from the 21th card",
+          "price": 0.3,
+          "sizeFrom": 20,
+          "skipShare": 0.0053
+        },
+        {
+          "byAct": {
+            "act1": 0.0024,
+            "act2": 0.1138,
+            "act3": 0.1364
+          },
+          "byDeckSize": {
+            "16-20": 0.0052,
+            "21-25": 0.0937,
+            "26-30": 0.17,
+            "<=15": 0.0,
+            ">30": 0.1389
+          },
+          "label": "0.6 from the 21th card",
+          "price": 0.6,
+          "sizeFrom": 20,
+          "skipShare": 0.0203
+        },
+        {
+          "byAct": {
+            "act1": 0.0389,
+            "act2": 0.5821,
+            "act3": 0.9545
+          },
+          "byDeckSize": {
+            "16-20": 0.0643,
+            "21-25": 0.595,
+            "26-30": 0.76,
+            "<=15": 0.0,
+            ">30": 0.8611
+          },
+          "label": "1.5 from the 21th card",
+          "price": 1.5,
+          "sizeFrom": 20,
+          "skipShare": 0.1283
+        },
+        {
+          "byAct": {
+            "act1": 0.0,
+            "act2": 0.0241,
+            "act3": 0.0455
+          },
+          "byDeckSize": {
+            "16-20": 0.0,
+            "21-25": 0.0138,
+            "26-30": 0.06,
+            "<=15": 0.0,
+            ">30": 0.0278
+          },
+          "label": "0.3 from the 26th card",
+          "price": 0.3,
+          "sizeFrom": 25,
+          "skipShare": 0.004
+        },
+        {
+          "byAct": {
+            "act1": 0.0004,
+            "act2": 0.0656,
+            "act3": 0.1364
+          },
+          "byDeckSize": {
+            "16-20": 0.0,
+            "21-25": 0.0331,
+            "26-30": 0.17,
+            "<=15": 0.0,
+            ">30": 0.1389
+          },
+          "label": "0.6 from the 26th card",
+          "price": 0.6,
+          "sizeFrom": 25,
+          "skipShare": 0.0113
+        },
+        {
+          "byAct": {
+            "act1": 0.0008,
+            "act2": 0.1444,
+            "act3": 0.4091
+          },
+          "byDeckSize": {
+            "16-20": 0.0,
+            "21-25": 0.0523,
+            "26-30": 0.45,
+            "<=15": 0.0,
+            ">30": 0.3611
+          },
+          "label": "1.0 from the 26th card",
+          "price": 1.0,
+          "sizeFrom": 25,
+          "skipShare": 0.0257
+        },
+        {
+          "byAct": {
+            "act1": 0.0012,
+            "act2": 0.2582,
+            "act3": 0.9545
+          },
+          "byDeckSize": {
+            "16-20": 0.0,
+            "21-25": 0.0964,
+            "26-30": 0.76,
+            "<=15": 0.0,
+            ">30": 0.8611
+          },
+          "label": "1.5 from the 26th card",
+          "price": 1.5,
+          "sizeFrom": 25,
+          "skipShare": 0.0473
+        }
+      ],
+      "states": 3000
+    },
+    "values": {
+      "bestCardGainUnderVersion1": {
+        "16-20": {
+          "meanCoverage": 0.938,
+          "meanQuality": 0.943,
+          "meanSynergy": 0.198,
+          "median": 1.91,
+          "n": 2490
+        },
+        "21-25": {
+          "meanCoverage": 1.052,
+          "meanQuality": 0.467,
+          "meanSynergy": 0.325,
+          "median": 1.555,
+          "n": 1242
+        },
+        "26-30": {
+          "meanCoverage": 0.915,
+          "meanQuality": 0.303,
+          "meanSynergy": 0.563,
+          "median": 1.263,
+          "n": 411
+        },
+        "<=15": {
+          "meanCoverage": 1.096,
+          "meanQuality": 1.733,
+          "meanSynergy": 0.031,
+          "median": 2.769,
+          "n": 3520
+        },
+        ">30": {
+          "meanCoverage": 0.791,
+          "meanQuality": 0.177,
+          "meanSynergy": 0.595,
+          "median": 0.516,
+          "n": 122
+        }
+      },
+      "byAct": {
+        "1": 5575,
+        "2": 1918,
+        "3": 292
+      },
+      "byDeckSize": {
+        "16-20": 2490,
+        "21-25": 1242,
+        "26-30": 411,
+        "<=15": 3520,
+        ">30": 122
+      },
+      "candidates": [
+        {
+          "byAct": {
+            "act1": 0.0011,
+            "act2": 0.0057,
+            "act3": 0.1267
+          },
+          "byDeckSize": {
+            "16-20": 0.002,
+            "21-25": 0.0064,
+            "26-30": 0.0292,
+            "<=15": 0.0003,
+            ">30": 0.2295
+          },
+          "label": "version 1",
+          "price": 0.6,
+          "sizeFrom": 30,
+          "skipShare": 0.0069
+        },
+        {
+          "byAct": {
+            "act1": 0.0063,
+            "act2": 0.2252,
+            "act3": 0.4041
+          },
+          "byDeckSize": {
+            "16-20": 0.0233,
+            "21-25": 0.2601,
+            "26-30": 0.3577,
+            "<=15": 0.0003,
+            ">30": 0.459
+          },
+          "label": "page: 1.0 from the 21st card",
+          "price": 1.0,
+          "sizeFrom": 20,
+          "skipShare": 0.0751
+        },
+        {
+          "byAct": {
+            "act1": 0.002,
+            "act2": 0.0261,
+            "act3": 0.0822
+          },
+          "byDeckSize": {
+            "16-20": 0.0052,
+            "21-25": 0.0266,
+            "26-30": 0.056,
+            "<=15": 0.0009,
+            ">30": 0.1066
+          },
+          "label": "0.3 from the 16th card",
+          "price": 0.3,
+          "sizeFrom": 15,
+          "skipShare": 0.0109
+        },
+        {
+          "byAct": {
+            "act1": 0.0066,
+            "act2": 0.0923,
+            "act3": 0.1986
+          },
+          "byDeckSize": {
+            "16-20": 0.0197,
+            "21-25": 0.0998,
+            "26-30": 0.1557,
+            "<=15": 0.002,
+            ">30": 0.2295
+          },
+          "label": "0.6 from the 16th card",
+          "price": 0.6,
+          "sizeFrom": 15,
+          "skipShare": 0.0349
+        },
+        {
+          "byAct": {
+            "act1": 0.0332,
+            "act2": 0.2503,
+            "act3": 0.4041
+          },
+          "byDeckSize": {
+            "16-20": 0.096,
+            "21-25": 0.2601,
+            "26-30": 0.3577,
+            "<=15": 0.0051,
+            ">30": 0.459
+          },
+          "label": "1.0 from the 16th card",
+          "price": 1.0,
+          "sizeFrom": 15,
+          "skipShare": 0.1006
+        },
+        {
+          "byAct": {
+            "act1": 0.1209,
+            "act2": 0.4552,
+            "act3": 0.5959
+          },
+          "byDeckSize": {
+            "16-20": 0.288,
+            "21-25": 0.4758,
+            "26-30": 0.5742,
+            "<=15": 0.0276,
+            ">30": 0.6557
+          },
+          "label": "1.5 from the 16th card",
+          "price": 1.5,
+          "sizeFrom": 15,
+          "skipShare": 0.2211
+        },
+        {
+          "byAct": {
+            "act1": 0.0011,
+            "act2": 0.0245,
+            "act3": 0.0822
+          },
+          "byDeckSize": {
+            "16-20": 0.0028,
+            "21-25": 0.0266,
+            "26-30": 0.056,
+            "<=15": 0.0003,
+            ">30": 0.1066
+          },
+          "label": "0.3 from the 21th card",
+          "price": 0.3,
+          "sizeFrom": 20,
+          "skipShare": 0.0099
+        },
+        {
+          "byAct": {
+            "act1": 0.002,
+            "act2": 0.0881,
+            "act3": 0.1986
+          },
+          "byDeckSize": {
+            "16-20": 0.0084,
+            "21-25": 0.0998,
+            "26-30": 0.1557,
+            "<=15": 0.0003,
+            ">30": 0.2295
+          },
+          "label": "0.6 from the 21th card",
+          "price": 0.6,
+          "sizeFrom": 20,
+          "skipShare": 0.0306
+        },
+        {
+          "byAct": {
+            "act1": 0.0201,
+            "act2": 0.4041,
+            "act3": 0.5959
+          },
+          "byDeckSize": {
+            "16-20": 0.0614,
+            "21-25": 0.4758,
+            "26-30": 0.5742,
+            "<=15": 0.0003,
+            ">30": 0.6557
+          },
+          "label": "1.5 from the 21th card",
+          "price": 1.5,
+          "sizeFrom": 20,
+          "skipShare": 0.1363
+        },
+        {
+          "byAct": {
+            "act1": 0.0011,
+            "act2": 0.0125,
+            "act3": 0.0822
+          },
+          "byDeckSize": {
+            "16-20": 0.002,
+            "21-25": 0.0097,
+            "26-30": 0.056,
+            "<=15": 0.0003,
+            ">30": 0.1066
+          },
+          "label": "0.3 from the 26th card",
+          "price": 0.3,
+          "sizeFrom": 25,
+          "skipShare": 0.0069
+        },
+        {
+          "byAct": {
+            "act1": 0.0011,
+            "act2": 0.0323,
+            "act3": 0.1952
+          },
+          "byDeckSize": {
+            "16-20": 0.002,
+            "21-25": 0.0217,
+            "26-30": 0.1557,
+            "<=15": 0.0003,
+            ">30": 0.2295
+          },
+          "label": "0.6 from the 26th card",
+          "price": 0.6,
+          "sizeFrom": 25,
+          "skipShare": 0.0161
+        },
+        {
+          "byAct": {
+            "act1": 0.0011,
+            "act2": 0.0746,
+            "act3": 0.3904
+          },
+          "byDeckSize": {
+            "16-20": 0.002,
+            "21-25": 0.0435,
+            "26-30": 0.3577,
+            "<=15": 0.0003,
+            ">30": 0.459
+          },
+          "label": "1.0 from the 26th card",
+          "price": 1.0,
+          "sizeFrom": 25,
+          "skipShare": 0.0338
+        },
+        {
+          "byAct": {
+            "act1": 0.0011,
+            "act2": 0.1251,
+            "act3": 0.5822
+          },
+          "byDeckSize": {
+            "16-20": 0.002,
+            "21-25": 0.0757,
+            "26-30": 0.5742,
+            "<=15": 0.0003,
+            ">30": 0.6557
+          },
+          "label": "1.5 from the 26th card",
+          "price": 1.5,
+          "sizeFrom": 25,
+          "skipShare": 0.0534
+        }
+      ],
+      "states": 7785
+    }
+  }
+}

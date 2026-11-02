@@ -68,10 +68,12 @@ class AdvisorCards:
         self.relics = bool(relics)
         self.size_price = named.get("size", advisor.LEGACY_SIZE_PRICE)
         self.size_from = named.get("size_from", advisor.LEGACY_SIZE_FROM)
+        self._counts_by_act = bool(named)  # only a pilot that names the price says, per act, how many card rewards it met and skipped (earlier batches' records are unchanged)
 
     def reset(self, rng_seed: int) -> None:
         super().reset(rng_seed)
         self.offers = self.taken = self.skipped = self.unscored = 0
+        self.by_act = {0: [0, 0], 1: [0, 0], 2: [0, 0]}  # act index -> [card rewards met, skipped]
 
     def _card_reward(self, obs, actions) -> int:
         picks = _by(actions, "pick_card")
@@ -93,15 +95,20 @@ class AdvisorCards:
         setting = advisor.Setting(character, tuple(str(r) for r in run.get("relics") or ())) if self.relics else character
         best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model, setting)[0]
         self.offers += 1
+        self.by_act[act][0] += 1
         skip = _first(actions, "skip")
         if best == advisor.SKIP or gain < self.margin or sum(deck.values()) >= self.tune["max_deck"]:
             self.skipped += 1
+            self.by_act[act][1] += 1
             return skip if skip is not None else super()._card_reward(obs, actions)
         self.taken += 1
         return by_card[best]
 
     def episode_stats(self) -> dict:
-        return {**super().episode_stats(), "advisor": {"offers": self.offers, "taken": self.taken, "skipped": self.skipped, "unscored": self.unscored}}
+        stats = {"offers": self.offers, "taken": self.taken, "skipped": self.skipped, "unscored": self.unscored}
+        if self._counts_by_act:
+            stats["by_act"] = {str(a): {"offers": o, "skipped": k} for a, (o, k) in self.by_act.items()}
+        return {**super().episode_stats(), "advisor": stats}
 
 
 @register
