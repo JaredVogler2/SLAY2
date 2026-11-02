@@ -31,6 +31,7 @@ import json
 import sys
 from pathlib import Path
 
+from .actsstudy import _rows
 from .actsstudy import identity as _identity
 from .compare import build_pooled_comparison
 
@@ -83,6 +84,21 @@ def summarise(pooled: dict) -> dict:
     }
 
 
+def mean_deck(root: Path, arm: str, base: str, ident) -> dict:
+    """The mean final deck size of the arm's games and of S's over the pairs both games completed: descriptive, the selection rule does not read it (a game that
+    ended earlier has had fewer rewards, so it is a picture of how much each arm takes, not a measure of it). ``None`` where no record carries a deck size."""
+    pairs = []
+    for c in CLASSES:
+        a = {int(r["seed"]): r for r in _rows(root / ident(arm, c))}
+        b = {int(r["seed"]): r for r in _rows(root / ident(base, c))}
+        for seed in sorted(set(a) & set(b)):
+            if a[seed]["outcome"] in ("win", "death") and b[seed]["outcome"] in ("win", "death") and a[seed].get("deck_size") is not None and b[seed].get("deck_size") is not None:
+                pairs.append((a[seed]["deck_size"], b[seed]["deck_size"]))
+    if not pairs:
+        return {"arm": None, "baseline": None, "pairs": 0}
+    return {"arm": sum(x for x, _ in pairs) / len(pairs), "baseline": sum(y for _, y in pairs) / len(pairs), "pairs": len(pairs)}
+
+
 def identity_for(root: Path, arm: str, ident) -> dict:
     """The identity counts of one arm against S in the study's classes (an arm is S until the first card reward of Act 2)."""
     per = {c: _identity(root / ident(arm, c), root / ident("s", c), FIRST_ACT) for c in CLASSES}
@@ -129,6 +145,7 @@ def select(root: Path, *, iters: int = 2000) -> dict:
         raise StudyStop("the design's own check failed (ADR-062 item 5): " + "; ".join(bad))
     for tag, rec in ids.items():
         rows[tag]["identity"] = {k: rec[k] for k in ("beforePairs", "beforeDifferent", "bossPairs", "bossDifferent")}
+        rows[tag]["meanDeckSize"] = mean_deck(root, tag, "s", dev_id)
     best = max(GRID, key=lambda t: (rows[t]["net"], -GRID[t]))   # the largest net wins; a tie goes to the smaller threshold
     head = None
     if rows[best]["net"] > 0 and best != REPLICATION_TAG:

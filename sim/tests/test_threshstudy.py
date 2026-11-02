@@ -181,3 +181,37 @@ def test_a_selection_that_advances_0_2_itself_or_an_arm_the_grid_does_not_have_i
     # not advanced: the arm named (None, as the screen writes it) is not read
     assert ts.tests_of({"choice": {"advance": False, "arm": None}}) == [{"key": "T1", "arm": "t020", "baseline": "s"}]
     assert ts.val_arms({"choice": {"advance": False, "arm": None}}) == ["s", "t020"]
+
+
+def test_the_mean_final_deck_is_descriptive_and_read_over_the_pairs_both_games_completed(tmp_path):
+    root = build(tmp_path, t030={"gain": 1})
+    kept = {"arm": [], "baseline": []}
+    for arm in ("s", *ts.GRID):
+        for cls in ts.CLASSES:
+            f = root / ts.dev_id(arm, cls) / "episodes.jsonl"
+            lines = [json.loads(line) for line in f.read_text(encoding="utf-8").splitlines()]
+            for r in lines:
+                size = 24 + (2 if r["seed"] % 2 else 0)                    # odd seeds have two cards more
+                r["deck_size"] = size - 4 if arm == "t030" and s_act(r["seed"]) >= 1 else size   # t030 takes four cards fewer once a game has passed Act 1
+            if arm == "t030" and cls == "Defect":
+                lines[0]["outcome"] = "simulator_error"                      # one pair is left out
+            f.write_text("".join(json.dumps(r) + "\n" for r in lines), encoding="utf-8")
+    for cls in ts.CLASSES:
+        for i in range(N):
+            if cls == "Defect" and i == 0:
+                continue
+            base = 24 + (2 if i % 2 else 0)
+            kept["baseline"].append(base)
+            kept["arm"].append(base - 4 if s_act(i) >= 1 else base)
+    sel = ts.select(root, iters=200)
+    deck = sel["arms"]["t030"]["meanDeckSize"]
+    assert deck["pairs"] == 2 * N - 1 == len(kept["arm"])
+    assert deck["arm"] == pytest.approx(sum(kept["arm"]) / len(kept["arm"])) and deck["baseline"] == pytest.approx(sum(kept["baseline"]) / len(kept["baseline"]))
+    assert deck["baseline"] - deck["arm"] == pytest.approx(4 * (3 * N / 4 * 2 - 1) / (2 * N - 1))      # three seeds in four pass Act 1 (seed 0, left out, is one)
+    t010 = sel["arms"]["t010"]["meanDeckSize"]                               # an arm that plays S's game: the same deck size in every pair
+    assert t010["arm"] == pytest.approx(t010["baseline"]) and t010["pairs"] == 2 * N
+
+
+def test_a_batch_without_a_deck_size_has_no_mean_deck(tmp_path):
+    root = build(tmp_path)
+    assert ts.select(root, iters=200)["arms"]["t030"]["meanDeckSize"] == {"arm": None, "baseline": None, "pairs": 0}

@@ -8,6 +8,7 @@ The study has two stages and two registrations. The arms are S (`rules_v2` with 
 a threshold on the card reward of **Act 2 only** (`rules_v2_late`, `late_acts` [1]): a card is taken only if the best one offered is worth more than
 the threshold, otherwise the reward is skipped. Two classes (Ironclad, Defect), Ascension 0, the relics kept, `veteran`.
 
+0. `python3 scripts/studies/thresh/power.py` : the power tables of the record, computed from the committed result of ADR-061 (nothing typed by hand).
 1. `dev.sh 4` : the development stage (part 1 of the record must be pushed and registered first; `preflight-dev.sh` refuses otherwise). S and the six
    thresholds `t010 t020 t030 t045 t060 tnone` (0.1, 0.2, 0.3, 0.45, 0.6 and never take a card in Act 2) on the 3,000 `dev2` seeds of each class
    (6,000 games an arm, 42,000 in all). `PREFLIGHT_ONLY=1` stops after the checks; `RESUME=1` finishes an interrupted stage from the same commit.

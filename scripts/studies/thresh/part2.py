@@ -29,6 +29,11 @@ def pct(x: float, d: int = 2) -> str:
     return f"{100 * x:.{d}f} %"
 
 
+def deck(m: dict) -> str:
+    """The mean final deck size of the arm and of S over the pairs both completed (descriptive; the rule does not read it)."""
+    return "not recorded" if m["pairs"] == 0 else f"{m['arm']:.2f} against {m['baseline']:.2f} cards"
+
+
 def main() -> int:
     sets = json.loads((CARD / "site-sets.json").read_text())["sets"]
     shown = {c: next(CARD / e["file"] for e in sets if e["file"].startswith(f"{c}-a0-")) for c in CLASSES}
@@ -40,7 +45,7 @@ def main() -> int:
             f"- {tag} (threshold {r['threshold']}): {r['pairs']} pairs ({r['excluded']} excluded), wins {r['wins']['arm']} against {r['wins']['baseline']} "
             f"({pct(r['shares']['arm'])} against {pct(r['shares']['baseline'])}), {r['armOnly']} / {r['baselineOnly']} discordant, net {r['net']:+d}, exact p {r['p']:.4g}, "
             f"past the Act-1 boss {pct(r['pastAct1Boss']['arm'])} against {pct(r['pastAct1Boss']['baseline'])}, past the Act-2 boss {pct(r['pastAct2Boss']['arm'])} against {pct(r['pastAct2Boss']['baseline'])}, "
-            f"identity {r['identity']}"
+            f"mean final deck {deck(r['meanDeckSize'])}, identity {r['identity']}"
         )
     print(f"\nbest: {json.dumps(sel['best'])}")
     if sel["headToHead"]:

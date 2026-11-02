@@ -21,7 +21,8 @@ shown_values() { # <ExactClass> -> the value file the site shows for the class
   if [ "$1" = Ironclad ]; then echo "experiments/cardvalue/ironclad-a0-v2.json"; else echo "experiments/cardvalue/${l}-a0-keep-v1.json"; fi
 }
 # The thresholds of the card reward of Act 2 (tag -> threshold of late_threshold; every other act is S): +100 never takes a card in Act 2. The values are the
-# shown values, so the thresholds are on that scale: 0.2 skips about two rewards in five, 0.45 about three in four.
+# shown values, so the thresholds are on that scale (a reward is skipped when its best card is not worth more than the threshold; how many are skipped is
+# not stated here: the development stage reports each arm's mean final deck size).
 GRID_TAGS="t010 t020 t030 t045 t060 tnone"
 tag_threshold() { case "$1" in t010) echo 0.1 ;; t020) echo 0.2 ;; t030) echo 0.3 ;; t045) echo 0.45 ;; t060) echo 0.6 ;; tnone) echo 100.0 ;; *) return 1 ;; esac; }
 REPLICATION_TAG=t020                # the threshold ADR-061 tested; T1 replicates it
