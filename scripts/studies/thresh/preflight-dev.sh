@@ -14,7 +14,7 @@ ADR=$(adr_section)
 
 # the registration is complete: part 1 (the text below is a heading of the record, and nothing before the registration contains it) is in the record AT HEAD, and
 # the code and data the arms read are those of the first commit that carries it. REG from the environment is refused unless ALLOW_REG_OVERRIDE=1.
-MARKER='Registration of ADR-062 (part 1, frozen choices)'
+MARKER=$MARKER_ONE
 # (the marker occurs once: a second mention would make the first commit that has the text not the registration)
 marks=$(grep -oF "$MARKER" <<< "$ADR" | wc -l)
 [ "$marks" != 0 ] || fail "the ADR-062 record at HEAD does not carry its registration (the text '$MARKER')"
@@ -23,7 +23,7 @@ if [ -n "${REG:-}" ]; then
   [ "${ALLOW_REG_OVERRIDE:-}" = 1 ] || fail "REG is set in the environment; refused (it would make the check that nothing changed since the registration empty). ALLOW_REG_OVERRIDE=1 allows it, for a test"
   echo "preflight-dev: NOTICE: the registration commit was named from the environment (ALLOW_REG_OVERRIDE=1), not found from the record: ${REG:0:12}" >&2
 fi
-REG=${REG:-$(git log -S"$MARKER" --format=%H -- docs/DECISIONS.md | tail -1)}
+REG=${REG:-$(first_commit_with "$MARKER")}
 [ -n "$REG" ] || fail "cannot find the commit that carries the registration of ADR-062 (the text '$MARKER')"
 git merge-base --is-ancestor "$REG" HEAD || fail "the registration commit $REG is not an ancestor of HEAD"
 bad=$(pinned_problem "$REG") || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $bad"
@@ -56,8 +56,12 @@ done
 
 # no game of the dev2 or val3 seeds has been played, under any batch id (the seed of a batch's first episode is looked up: a run that died before its manifest was
 # written is found too), unless an interrupted stage is being finished (a finished batch is checked and never touched)
-played=$("$PY" "$ROOT/scripts/studies/thresh/seeds_played.py" --batches experiments/batches --seeds "$SEEDS" --partitions "$DEV_PARTITION" "$VAL_PARTITION" | head -3 | tr '\n' ' ') || fail "cannot look for batches on the fresh seeds"
+# (the status of the command is taken before anything is piped: a crash of the detector must not read as "none found")
+found=$("$PY" "$ROOT/scripts/studies/thresh/seeds_played.py" --batches experiments/batches --seeds "$SEEDS" --partitions "$DEV_PARTITION" "$VAL_PARTITION") || fail "cannot look for batches on the fresh seeds"
+played=$(printf '%s' "$found" | head -3 | tr '\n' ' ')
 if [ -n "$played" ] || ls experiments/batches 2>/dev/null | grep -Eq -- '^thresh-'; then
   [ "${RESUME:-}" = 1 ] || fail "batches on the $DEV_PARTITION or $VAL_PARTITION seeds already exist (${played:-thresh-*}); if a stage was interrupted, finish it with RESUME=1 (a finished batch is checked and never touched)"
+  # a stage is resumed only if this script started it: it records the commit it started from before its first game (a batch played by hand leaves no such record)
+  [ -f "$OUT/dev-head.txt" ] || fail "RESUME=1, but $OUT/dev-head.txt does not exist: no stage was started here, so the batches that exist were not played by dev.sh (${played:-thresh-*})"
 fi
 echo "preflight-dev: ok (commit $(git rev-parse --short=12 HEAD), registration ${REG:0:12}, arms: s $GRID_TAGS)"

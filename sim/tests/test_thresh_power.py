@@ -72,7 +72,9 @@ def test_the_scale_of_the_thresholds_is_read_from_the_value_files_the_site_shows
     iron = sc["Ironclad"]
     assert [round(iron["quantiles"][q], 2) for q in (0.05, 0.5, 0.95)] == [-0.53, 0.07, 0.82]
     assert round(iron["shareAbove"]["t020"], 3) == 0.274 and round(iron["crudeSkip"]["t020"], 2) == 0.38 and iron["shareAbove"]["tnone"] == 0 and iron["crudeSkip"]["tnone"] == 1
-    assert all(sc[c]["shareAbove"][a] >= sc[c]["shareAbove"][b] for c in sc for a, b in zip(pw.GRID, list(pw.GRID)[1:], strict=False))   # a higher threshold keeps fewer cards
+    assert all(sc[c]["shareAbove"][a] >= sc[c]["shareAbove"][b] for c in sc for a, b in zip(pw.THRESHOLDS, list(pw.THRESHOLDS)[1:], strict=False))   # a higher threshold keeps fewer cards
+    assert round(iron["shareAbove"]["s"], 3) == 0.558 and round(iron["crudeSkip"]["s"], 3) == 0.086          # S skips a reward whose best card is worth 0 or less: about one in eleven
+    assert round(sc["Defect"]["shareAbove"]["s"], 3) == 0.495 and round(sc["Defect"]["crudeSkip"]["s"], 3) == 0.129
     assert round(sc["Defect"]["crudeSkip"]["t020"], 2) == 0.43 and round(sc["Defect"]["crudeSkip"]["t045"], 2) == 0.77
     # the shown files are the ones the arms read (common.sh) and the grid is the study's
     from slay2_sim import threshstudy as ts

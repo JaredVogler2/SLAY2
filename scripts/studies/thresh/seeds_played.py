@@ -12,13 +12,19 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import zlib
 from pathlib import Path
 
 DEFAULT_SEEDS = "experiments/seeds/ironclad-a0-v4.json"
 DEFAULT_PARTITIONS = ["dev2", "val3"]
 
 
+class Unreadable(Exception):
+    """A batch has an episodes file whose first record cannot be read: it may hold games of the fresh seeds, so it is reported, never looked past."""
+
+
 def first_seed(batch: Path) -> int | None:
+    """The seed of the batch's first episode; None if it has no episodes file or the file has no record yet; Unreadable if the file cannot be read."""
     gz, plain = batch / "episodes.jsonl.gz", batch / "episodes.jsonl"
     for opener, path in ((gzip.open, gz), (open, plain)):
         if not path.exists():
@@ -28,8 +34,8 @@ def first_seed(batch: Path) -> int | None:
                 for line in fh:
                     if line.strip():
                         return int(json.loads(line)["seed"])
-        except (OSError, ValueError, KeyError, EOFError):
-            continue
+        except (OSError, ValueError, KeyError, TypeError, EOFError, zlib.error) as e:
+            raise Unreadable(f"{path}: {type(e).__name__}") from e
     return None
 
 
@@ -38,7 +44,11 @@ def played(batches: Path, seeds_file: Path, partitions: list[str]) -> list[str]:
     fresh = {s for p in partitions for s in body[p]}
     found = []
     for d in sorted(p for p in batches.iterdir() if p.is_dir()) if batches.is_dir() else []:
-        seed = first_seed(d)
+        try:
+            seed = first_seed(d)
+        except Unreadable:
+            found.append(f"{d.name} (unreadable)")
+            continue
         if seed is not None and seed in fresh:
             found.append(d.name)
     return found

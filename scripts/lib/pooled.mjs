@@ -11,6 +11,14 @@ export const EXACT = {
   defect: "Defect",
 };
 
+// The partitions whose games are development: a batch on one of them is never a held-out result (slay2_sim.manifest.DEVELOPMENT_PARTITIONS; a test keeps the two
+// lists equal). Every other partition that a batch can be played on is held out (the sealed test partition is never played).
+export const DEVELOPMENT_PARTITIONS = ["train", "dev", "dev2"];
+export const roleOf = (partition) =>
+  DEVELOPMENT_PARTITIONS.includes(partition)
+    ? `development (${partition} partition): not a held-out result`
+    : "held-out";
+
 // The exact two-sided McNemar p-value of the discordant counts, as slay2_sim.stats.mcnemar_exact computes it (2 x the lower binomial tail at
 // 1/2, capped at 1), in exact integers: the exporter does not take a p-value from a file without checking it against the counts.
 export function mcnemarExact(aOnly, bOnly) {
@@ -54,7 +62,7 @@ export function commonBatchProblem(
 }
 
 // Reads a pooled paired comparison written by `slay2_sim pool` and refuses it unless everything it rests on belongs together: it is a
-// held-out comparison of the five classes once each, every batch it names is the batch on disk (same content hash) and passes `check`
+// held-out comparison of the classes the registration names (by default the five) once each, every batch it names is the batch on disk (same content hash) and passes `check`
 // (the registration's own conditions) and carries a passing sample audit, the pooled counts are the sums of the classes', every table adds
 // up to the pairs both arms completed, and every p-value is the exact McNemar p-value of its own counts.
 export function readPooledHeldOut({
@@ -66,6 +74,7 @@ export function readPooledHeldOut({
   check,
   ascension = 0,
   partition = "val",
+  classes = CLASSES,
 }) {
   const t = JSON.parse(readFileSync(path, "utf8"));
   if (t.kind !== "pooled-paired-comparison" || t.schema !== 1)
@@ -77,9 +86,11 @@ export function readPooledHeldOut({
   const classesIn = (t.members ?? []).map((m) => String(m.character).toLowerCase());
   const classesNamed = (t.cohort.characters ?? []).map((c) => String(c).toLowerCase());
   const everyClassOnce = (list) =>
-    list.length === CLASSES.length && [...list].sort().join() === [...CLASSES].sort().join();
+    list.length === classes.length && [...list].sort().join() === [...classes].sort().join();
   if (!everyClassOnce(classesIn) || !everyClassOnce(classesNamed))
-    throw new Error(`${where}: it must pool all five classes, once each`);
+    throw new Error(
+      `${where}: it must pool ${classes.length === CLASSES.length ? "all five classes" : classes.join(" and ")}, once each`,
+    );
   const sums = {
     a_only: 0,
     b_only: 0,

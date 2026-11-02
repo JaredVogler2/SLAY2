@@ -87,6 +87,7 @@ def rates(root: Path = ROOT) -> dict:
 
 
 GRID = {"t010": 0.1, "t020": 0.2, "t030": 0.3, "t045": 0.45, "t060": 0.6, "tnone": 100.0}
+THRESHOLDS = {"s": 0.0, **GRID}      # S takes the best card offered if its value is above 0, and skips the reward otherwise
 SHOWN = {"Ironclad": "experiments/cardvalue/ironclad-a0-v2.json", "Defect": "experiments/cardvalue/defect-a0-keep-v1.json"}
 
 
@@ -105,7 +106,7 @@ def scale(root: Path = ROOT) -> dict:
             hi = min(lo + 1, n - 1)
             return betas[lo] + (betas[hi] - betas[lo]) * (i - lo)
 
-        above = {tag: sum(1 for b in betas if b > t) / n for tag, t in GRID.items()}
+        above = {tag: sum(1 for b in betas if b > t) / n for tag, t in THRESHOLDS.items()}
         out[cls] = {
             "cards": n, "quantiles": {q: quantile(q) for q in (0.05, 0.25, 0.5, 0.75, 0.95)},
             "shareAbove": above, "crudeSkip": {tag: (1 - s) ** 3 for tag, s in above.items()},
@@ -163,11 +164,11 @@ def main() -> int:
           f"{n1b} ({100 * n1b / held:.2f} points; {100 * n1b / (r['netPerPair'] * held):.0f} % of ADR-061's) at α = 0.05.\n")
     sc = scale()
     print("### The scale of the thresholds (the shown values; the crude chance that a reward of three cards drawn uniformly from the cards that have a value has none above the threshold; not measured in games)\n")
-    print("| class | cards | values at 5 / 25 / 50 / 75 / 95 % | " + " | ".join(f"above {t:g}" if t < 100 else "never" for t in GRID.values()) + " |")
-    print("|---|---|---|" + "---|" * len(GRID))
+    print("| class | cards | values at 5 / 25 / 50 / 75 / 95 % | " + " | ".join("above 0 (S)" if t == 0 else f"above {t:g}" if t < 100 else "never" for t in THRESHOLDS.values()) + " |")
+    print("|---|---|---|" + "---|" * len(THRESHOLDS))
     for cls, v in sc.items():
         qs = " / ".join(f"{v['quantiles'][q]:.2f}" for q in (0.05, 0.25, 0.5, 0.75, 0.95))
-        print(f"| {cls} | {v['cards']} | {qs} | " + " | ".join(f"{100 * v['shareAbove'][tag]:.0f} % (skip {100 * v['crudeSkip'][tag]:.0f} %)" for tag in GRID) + " |")
+        print(f"| {cls} | {v['cards']} | {qs} | " + " | ".join(f"{100 * v['shareAbove'][tag]:.0f} % (skip {100 * v['crudeSkip'][tag]:.0f} %)" for tag in THRESHOLDS) + " |")
     print()
     d = round(r["dPerPair"] * dev)
     sd = math.sqrt(d)

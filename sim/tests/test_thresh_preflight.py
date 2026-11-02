@@ -14,12 +14,14 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from slay2_sim import external
 from slay2_sim.manifest import make_seed_manifest, save_json
+from test_threshstudy import build as build_batches
 
 REPO = external.REPO_ROOT
 MARKER1 = "Registration of ADR-062 (part 1, frozen choices)"
@@ -282,6 +284,8 @@ def test_thresh_batches_that_exist_stop_the_dev_stage_unless_an_interrupted_stag
     d.mkdir(parents=True)
     (d / "manifest.json").write_text("{}")
     assert "RESUME=1" in preflight_dev(work).stderr
+    (work / "artifacts" / "thresh").mkdir(parents=True, exist_ok=True)                               # dev.sh records the commit it starts from before its first game
+    (work / "artifacts" / "thresh" / "dev-head.txt").write_text(head(work) + "\n")
     assert preflight_dev(work, RESUME="1").returncode == 0
 
 
@@ -294,6 +298,8 @@ def test_a_batch_on_the_fresh_seeds_under_any_other_name_stops_it_too(tmp_path):
     (d / "episodes.jsonl").write_text(json.dumps({"seed": parts["val3"][7], "outcome": "death"}) + "\n")          # no manifest: it died
     r = preflight_dev(work)
     assert r.returncode != 0 and "already exist" in r.stderr and "my-own-trial" in r.stderr
+    (work / "artifacts" / "thresh").mkdir(parents=True, exist_ok=True)
+    (work / "artifacts" / "thresh" / "dev-head.txt").write_text(head(work) + "\n")
     assert preflight_dev(work, RESUME="1").returncode == 0                                                         # an interrupted stage is being finished
     zipped = work / "experiments" / "batches" / "another"
     zipped.mkdir()
@@ -327,56 +333,94 @@ def test_the_detector_of_fresh_seed_games_reads_only_the_first_episode_and_survi
         (batches / name / "episodes.jsonl").write_text(content + "\n")
     (batches / "f").mkdir()                       # no episodes at all
     (batches / "g.txt").write_text("a file, not a batch")
-    assert mod.played(batches, seeds, ["dev2", "val3"]) == ["a", "e"]
-    assert mod.played(batches, seeds, ["val3"]) == ["a"]
+    # a record that cannot be read may be a game of the fresh seeds: it is reported, not looked past; an empty file or none at all holds no game
+    assert mod.played(batches, seeds, ["dev2", "val3"]) == ["a", "d (unreadable)", "e"]
+    assert mod.played(batches, seeds, ["val3"]) == ["a", "d (unreadable)"]
     assert mod.played(tmp_path / "nowhere", seeds, ["dev2", "val3"]) == []
+    import gzip as gz_
+
+    (batches / "z").mkdir()
+    with gz_.open(batches / "z" / "episodes.jsonl.gz", "wt", encoding="utf-8") as fh:
+        fh.write(json.dumps({"seed": parts["dev2"][1]}) + "\n")
+    assert "z" in mod.played(batches, seeds, ["dev2"])
+    (batches / "y").mkdir()
+    (batches / "y" / "episodes.jsonl.gz").write_bytes(b"not gzip at all")
+    assert "y (unreadable)" in mod.played(batches, seeds, ["dev2"])
+    (batches / "x").mkdir()
+    (batches / "x" / "episodes.jsonl").write_text("[1, 2]\n")                  # valid JSON, not a record
+    assert "x (unreadable)" in mod.played(batches, seeds, ["dev2"])
 
 
 # ----------------------------------------------------------------------------------------------------------------------- the held-out (part 2) preflight
 
 
-def build_val_world(tmp: Path, advance: str | None = None, marker: str = MARKER2, screened_change: bool = False, dev_head: str | None = "auto", between: str | None = None) -> Path:
+def build_val_world(
+    tmp: Path, advance: str | None = None, marker: str = MARKER2, screened_change: bool = False, dev_head: str | None = "auto", between: str | None = None,
+    quote_diff: bool = False, design_edit: bool = False, selection_edit=None,
+) -> Path:
     """A work tree whose HEAD is a part-2 commit on the remote, with the selection, the development batches and the value files the record quotes.
 
-    Commit A carries the code and the value files (the commit the development stage was played from); commit B is part 2 of the record."""
+    Commit A carries the code, the value files and part 1 of the record (the registration, and the commit the development stage was played from); the development
+    batches are synthetic games with a known answer (``test_threshstudy``) under manifests as the harness writes them, and the selection is what ``threshstudy dev``
+    writes for them; commit B is part 2 of the record. ``advance="t030"`` has 0.3 ahead of 0.2 in the development games; ``selection_edit`` changes the selection's
+    JSON before its hash is quoted (a selection that is no longer what the rule gives); ``between`` changes something after commit A; ``quote_diff`` has part 2 quote
+    the SHA-256 of what changed in the frozen paths; ``design_edit`` changes the design text of the record after the registration."""
     work = new_repo(tmp)
     files = common(work, "shown_files")
     save_json(work / SEEDS, make_seed_manifest("ironclad-a0-v4", 20261025, {**SIZES, "dev2": 5, "val3": 5}))
     (work / "docs").mkdir()
-    (work / "docs" / "DECISIONS.md").write_text("## 2026-11-02 — ADR-062: the study\n\nPart 1 text.\n")
+    design = "## 2026-11-02 — ADR-062: the study\n\nPart 1 text.\n\n"
+    part1 = f"**{MARKER1}.**\nThe registration paragraph of part 1.\n"
+    (work / "docs" / "DECISIONS.md").write_text(design + part1)
     sh("git add -A && git commit -q -m dev-commit && git push -q origin main", work)
     dev_commit = head(work)
     if screened_change:
         (work / "sim" / "slay2_sim" / "stub.txt").write_text("the code the arms execute changed after the development stage\n")
-    # what may change between the development commit and part 2, and what may not
+    # what changes between the development commit and part 2
     if between == "analysis":        # the analysis tool plays no game
         (work / "sim" / "slay2_sim" / "threshstudy.py").write_text("the analysis tool changed\n")
-    if between == "script":          # the scripts around the arms (here the verification of a batch)
+    if between == "script":          # the scripts around the arms (here a comment in the verification of a batch)
         c = work / "scripts" / "studies" / "thresh" / "common.sh"
         c.write_text(c.read_text().replace("# The working tree is the commit", "# (a comment added after the development stage)\n# The working tree is the commit", 1))
     if between == "arm":             # the definition of an arm
         c = work / "scripts" / "studies" / "thresh" / "common.sh"
         c.write_text(c.read_text().replace("STUDY_ALPHA=0.05 ", "STUDY_ALPHA=0.10 ", 1))
-    sel = work / "experiments" / "thresh" / "dev-selection.json"
-    sel.parent.mkdir(parents=True)
-    sel.write_text(json.dumps({"designChecksPassed": True, "arms": dict.fromkeys(TAGS, {}), "choice": {"advance": advance is not None, "arm": advance}}))
+    # the development batches and the selection the rule gives for them
+    build_batches(work / "experiments", **({"t020": {"gain": 2}, "t030": {"gain": 4}} if advance == "t030" else {}))
+    seeds_sha = sha_of(work / SEEDS)
     table = [ln.split("|") for ln in common(work, "arm_table")][:-1]          # arm | class | policy | params | dev id | val id | shown file
     for arm, c, policy, params, dev_batch, *_ in table:
         if arm == "s" or arm in TAGS:
             d = work / "experiments" / "batches" / dev_batch
-            d.mkdir(parents=True)
-            (d / "manifest.json").write_text(json.dumps({
+            m = json.loads((d / "manifest.json").read_text())                  # content_sha256 stays
+            m.update({
                 "policy": {"name": policy, "params": json.loads(params)},
-                "config": {"ascension": 0, "keep_relics": True, "character": c},
-                "seeds": {"partition": "dev2", "n": 3000, "offset": 0},
+                "config": {"ascension": 0, "keep_relics": True, "character": c, "profile": "veteran", "max_steps": 20000, "wall_seconds": 900.0,
+                           "max_turns_per_combat": 80, "stall_limit": 200, "start_with_neow": True},
+                "seeds": {"file": SEEDS, "file_sha256": seeds_sha, "partition": "dev2", "n": 3000, "offset": 0, "sealed_partition_used": False},
                 "summary": {"episodes": 3000, "completed": 2900, "counts": {"aborted": 0, "harness_error": 0, "policy_error": 0, "invalid_action": 0}},
                 "class_start_verified": True, "canonical_process_state": True, "environment": {"slay2": {"head": dev_commit, "dirty": False}},
-            }))
+            })
+            (d / "manifest.json").write_text(json.dumps(m))
+    sel = work / "experiments" / "thresh" / "dev-selection.json"
+    sel.parent.mkdir(parents=True)
+    subprocess.run([sys.executable, "-m", "slay2_sim.threshstudy", "dev", "--batches", str(work / "experiments" / "batches"), "--out", str(sel)], cwd=work,
+                   env={**os.environ, "PYTHONPATH": str(REPO / "sim")}, capture_output=True, text=True, check=True)
+    body = json.loads(sel.read_text())
+    assert body["choice"]["advance"] is (advance == "t030"), body["choice"]       # the rule gives what the world is built for
+    if selection_edit is not None:
+        selection_edit(body)
+        sel.write_text(json.dumps(body))
+    pinned = ""
+    if quote_diff:
+        out = sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x")}).stdout
+        pinned = next(ln for ln in out.splitlines() if ln.startswith("PINNED_DIFF="))
     quoted = "\n".join(f"- {f}: `{sha_of(work / f)}`" for f in [*files, SEEDS, "experiments/thresh/dev-selection.json"])
     arm_lines = f"ARM_{advance}" if advance and advance != "t020" else ""
     dev_line = f"DEV_HEAD={dev_commit if dev_head == 'auto' else dev_head}" if dev_head else ""
+    first = design.replace("Part 1 text.", "Part 1 text, edited.") if design_edit else design
     (work / "docs" / "DECISIONS.md").write_text(
-        f"## 2026-11-02 — ADR-062: the study\n\nPart 1 text.\n\n**{marker}.**\n{dev_line}\n{quoted}\n{arm_lines}\n\n## 2026-11-03 — ADR-063: another record\n\nhash `{'f' * 64}`\n"
+        f"{first}{part1}\n**{marker}.**\n{dev_line}\n{pinned}\n{quoted}\n{arm_lines}\n\n## 2026-11-03 — ADR-063: another record\n\nhash `{'f' * 64}`\n"
     )
     sh("git add -A && git commit -q -m part2 && git push -q origin main", work)
     return work
@@ -397,9 +441,11 @@ def test_the_arms_come_from_the_selection(tmp_path):
     assert r.returncode == 0 and "arms: s t020" in r.stdout and "t030" not in r.stdout
     r = preflight_val(build_val_world(tmp_path / "adv", advance="t030"))
     assert r.returncode == 0 and "arms: s t020 t030" in r.stdout, r.stderr
-    r = preflight_val(build_val_world(tmp_path / "same", advance="t020"))      # a selection that advances 0.2 itself is not one the screen can write
+    same = lambda b: b.update(choice={"arm": "t020", "threshold": 0.2, "advance": True, "reason": "by hand"})   # noqa: E731
+    r = preflight_val(build_val_world(tmp_path / "same", selection_edit=same))      # a selection that advances 0.2 itself is not one the screen can write
     assert r.returncode != 0 and "cannot read the development selection" in r.stderr
-    r = preflight_val(build_val_world(tmp_path / "off", advance="t099"))       # nor is one that advances an arm the grid does not have
+    off = lambda b: b.update(choice={"arm": "t099", "threshold": 9.9, "advance": True, "reason": "by hand"})   # noqa: E731
+    r = preflight_val(build_val_world(tmp_path / "off", selection_edit=off))        # nor is one that advances an arm the grid does not have
     assert r.returncode != 0 and "cannot read the development selection" in r.stderr
 
 
@@ -488,7 +534,9 @@ def test_a_val_file_whose_hash_the_record_does_not_quote_stops_it(tmp_path):
     f = common(work, "shown_files")[0]
     push_change(work, f, (work / f).read_text() + " ")                    # the file changes; the development commit is moved onto the change,
     p = work / "docs" / "DECISIONS.md"                                    # so that the check which stops it is the one on the quoted hash
-    p.write_text(p.read_text().replace(next(ln for ln in p.read_text().splitlines() if ln.startswith("DEV_HEAD=")), f"DEV_HEAD={head(work)}"))
+    pinned = next(ln for ln in sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x")}).stdout.splitlines() if ln.startswith("PINNED_DIFF="))
+    text = p.read_text().replace(next(ln for ln in p.read_text().splitlines() if ln.startswith("DEV_HEAD=")), f"DEV_HEAD={head(work)}")
+    p.write_text(text.replace("\n\n## 2026-11-03", f"\n{pinned}\n\n## 2026-11-03", 1))   # (part 2 quotes the change of the frozen file, as it has to)
     sh("git add -A && git commit -q -m amend && git push -q origin main", work)
     r = preflight_val(work, REG=head(work), ALLOW_REG_OVERRIDE="1")
     assert r.returncode != 0 and "does not quote the SHA-256" in r.stderr and f in r.stderr
@@ -509,16 +557,19 @@ def test_a_val_hash_quoted_only_in_a_later_record_does_not_count(tmp_path):
 def test_the_development_commit_must_be_quoted_known_and_the_code_it_screened_unchanged(tmp_path):
     assert "does not quote the commit the development stage was played from" in preflight_val(build_val_world(tmp_path / "a", dev_head=None)).stderr
     assert "is not in this repository" in preflight_val(build_val_world(tmp_path / "b", dev_head="0" * 40)).stderr
-    r = preflight_val(build_val_world(tmp_path / "c", screened_change=True))
+    r = preflight_val(build_val_world(tmp_path / "c", screened_change=True, quote_diff=True))     # (part 2 quotes the change, as it has to; the arms' code may not change anyway)
     assert r.returncode != 0 and "changed between the development commit" in r.stderr and "sim/slay2_sim/stub.txt" in r.stderr
 
 
 def test_what_may_change_between_the_development_commit_and_part_two_and_what_may_not(tmp_path):
-    assert preflight_val(build_val_world(tmp_path / "analysis", between="analysis")).returncode == 0       # the analysis tool plays no game
-    r = preflight_val(build_val_world(tmp_path / "script", between="script"))
-    assert r.returncode == 0, r.stderr                                                                       # a comment in the scripts around the arms
-    r = preflight_val(build_val_world(tmp_path / "arm", between="arm"))
-    assert r.returncode != 0 and "the arms are not defined alike" in r.stderr                                # the definition of an arm
+    # the frozen paths (the analysis tool, the scripts) may change before part 2 only if part 2 quotes the SHA-256 of the change; the arms the screen played may not
+    for what in ("analysis", "script"):
+        r = preflight_val(build_val_world(tmp_path / what, between=what))
+        assert r.returncode != 0 and "what the registration froze changed" in r.stderr and "PINNED_DIFF=" in r.stderr, (what, r.stderr)
+        r = preflight_val(build_val_world(tmp_path / f"{what}-quoted", between=what, quote_diff=True))
+        assert r.returncode == 0, (what, r.stderr)
+    r = preflight_val(build_val_world(tmp_path / "arm", between="arm", quote_diff=True))
+    assert r.returncode != 0 and "the arms are not defined alike" in r.stderr                                # the definition of an arm, even quoted
 
 
 def test_a_development_batch_that_is_not_what_the_record_says_stops_it(tmp_path):
@@ -631,6 +682,8 @@ def test_val_batches_that_exist_stop_the_held_out_run_unless_an_interrupted_run_
     d.mkdir(parents=True)
     (d / "manifest.json").write_text("{}")
     assert "RESUME=1" in preflight_val(work).stderr
+    (work / "artifacts" / "thresh").mkdir(parents=True, exist_ok=True)
+    (work / "artifacts" / "thresh" / "run-head.txt").write_text(head(work) + "\n")
     assert preflight_val(work, RESUME="1").returncode == 0
 
 
@@ -642,4 +695,93 @@ def test_a_batch_on_the_val3_seeds_under_any_other_name_stops_the_held_out_run_t
     (d / "episodes.jsonl").write_text(json.dumps({"seed": val3[2], "outcome": "death"}) + "\n")
     r = preflight_val(work)
     assert r.returncode != 0 and "already exist" in r.stderr and "my-own-trial" in r.stderr
+    (work / "artifacts" / "thresh").mkdir(parents=True, exist_ok=True)
+    (work / "artifacts" / "thresh" / "run-head.txt").write_text(head(work) + "\n")
     assert preflight_val(work, RESUME="1").returncode == 0
+
+
+def test_a_quote_of_the_change_has_to_be_the_hash_of_that_change(tmp_path):
+    work = build_val_world(tmp_path / "wrong", between="script", quote_diff=True)
+    p = work / "docs" / "DECISIONS.md"
+    p.write_text(__import__("re").sub(r"PINNED_DIFF=[0-9a-f]{64}", "PINNED_DIFF=" + "0" * 64, p.read_text()))
+    sh("git add -A && git commit -q -m wrong-quote && git push -q origin main", work)
+    r = preflight_val(work)
+    assert r.returncode != 0 and "what the registration froze changed" in r.stderr
+    # and a quote where nothing changed is not needed (and is not looked at)
+    quiet = build_val_world(tmp_path / "quiet")
+    assert preflight_val(quiet).returncode == 0
+    out = sh("bash scripts/studies/thresh/pinned-diff.sh", quiet, env={"OUT": str(quiet / "artifacts" / "x")}).stdout
+    assert out.strip() == "no change"
+
+
+def test_pinned_diff_names_the_files_and_the_line_to_quote_and_refuses_files_it_cannot_see(tmp_path):
+    work = build_val_world(tmp_path)
+    c = work / "scripts" / "studies" / "thresh" / "common.sh"
+    c.write_text(c.read_text() + "\n# a later line\n")
+    out = sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x")}).stdout.splitlines()
+    assert out[0] == "scripts/studies/thresh/common.sh" and out[1].startswith("PINNED_DIFF=") and len(out[1]) == len("PINNED_DIFF=") + 64
+    expect = hashlib.sha256(sh("git diff --binary $(git log -S'" + MARKER1 + "' --format=%H -- docs/DECISIONS.md | tail -1) -- scripts/studies/thresh/common.sh", work).stdout.encode()).hexdigest()
+    assert out[1] == "PINNED_DIFF=" + expect
+    (work / "scripts" / "studies" / "thresh" / "brand-new.sh").write_text("echo hi\n")           # untracked in a frozen path: the hash would not cover it
+    r = sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x")}, check=False)
+    assert r.returncode != 0 and "not tracked yet" in r.stderr and "brand-new.sh" in r.stderr
+
+
+def test_the_design_text_of_the_record_is_the_registration_s_and_later_notes_belong_below_it(tmp_path):
+    r = preflight_val(build_val_world(tmp_path / "edited", design_edit=True))
+    assert r.returncode != 0 and "the design text of ADR-062" in r.stderr and "addenda" in r.stderr
+    ok = build_val_world(tmp_path / "addendum")                                                          # a note added below part 1 changes nothing above it
+    p = ok / "docs" / "DECISIONS.md"
+    p.write_text(p.read_text().replace("\n## 2026-11-03", "\nAddendum A: a note.\n\n## 2026-11-03", 1))
+    sh("git add -A && git commit -q -m addendum && git push -q origin main", ok)
+    assert preflight_val(ok, REG=head(ok), ALLOW_REG_OVERRIDE="1").returncode == 0
+
+
+def test_a_selection_that_is_not_what_the_rule_gives_on_the_development_batches_stops_it(tmp_path):
+    edit = lambda b: b["arms"]["t045"].update(armOnly=b["arms"]["t045"]["armOnly"] + 5)   # noqa: E731   (a count changed by hand; the hash of the edited file is quoted)
+    r = preflight_val(build_val_world(tmp_path / "edited", selection_edit=edit))
+    assert r.returncode != 0 and "arms.t045 differs" in r.stderr and "the development selection is not what the registered rule gives" in r.stderr
+    ok = preflight_val(build_val_world(tmp_path / "unedited"))
+    assert ok.returncode == 0, ok.stderr
+    # a development batch that was changed after the selection was written
+    work = build_val_world(tmp_path / "batch")
+    f = work / "experiments" / "batches" / "thresh-dev-t030-ironclad-a0-veteran-keeprelics-dev2-n3000" / "episodes.jsonl"
+    lines = [json.loads(line) for line in f.read_text().splitlines()]
+    lines[0]["outcome"] = "death" if lines[0]["outcome"] == "win" else "win"
+    f.write_text("".join(json.dumps(r) + "\n" for r in lines))
+    sh("git add -A -f && git commit -q -m tampered && git push -q origin main", work)
+    r = preflight_val(work, REG=head(work), ALLOW_REG_OVERRIDE="1")
+    assert r.returncode != 0 and "differs" in r.stderr
+
+
+def test_a_resumed_run_needs_the_record_of_a_run_that_was_started_here(tmp_path):
+    work = build_val_world(tmp_path / "val")
+    d = work / "experiments" / "batches" / "thresh-val-s-ironclad-a0-veteran-keeprelics-val3-n15000"
+    d.mkdir(parents=True)
+    (d / "manifest.json").write_text("{}")
+    r = preflight_val(work, RESUME="1")                       # a batch is there, and no run left its record of the commit it started from
+    assert r.returncode != 0 and "run-head.txt does not exist" in r.stderr
+    (work / "artifacts" / "thresh").mkdir(parents=True, exist_ok=True)
+    (work / "artifacts" / "thresh" / "run-head.txt").write_text(head(work) + "\n")
+    assert preflight_val(work, RESUME="1").returncode == 0
+    dev = build_dev_world(tmp_path / "dev")
+    d = dev / "experiments" / "batches" / "thresh-dev-s-ironclad-a0-veteran-keeprelics-dev2-n3000"
+    d.mkdir(parents=True)
+    (d / "manifest.json").write_text("{}")
+    r = preflight_dev(dev, RESUME="1")
+    assert r.returncode != 0 and "dev-head.txt does not exist" in r.stderr
+    (dev / "artifacts" / "thresh").mkdir(parents=True, exist_ok=True)
+    (dev / "artifacts" / "thresh" / "dev-head.txt").write_text(head(dev) + "\n")
+    assert preflight_dev(dev, RESUME="1").returncode == 0
+
+
+def test_a_crash_of_the_detector_of_fresh_seed_games_stops_both_preflights_and_is_not_read_as_none_found(tmp_path):
+    wrapper = tmp_path / "pycrash.sh"
+    wrapper.write_text('#!/usr/bin/env bash\ncase "$1" in *seeds_played.py) echo "stand-in: the detector crashes" >&2; exit 1 ;; esac\nexec ' + sys.executable + ' "$@"\n')
+    wrapper.chmod(0o755)
+    dev = preflight_dev(build_dev_world(tmp_path / "dev"), PY=str(wrapper))
+    assert dev.returncode != 0 and "cannot look for batches on the fresh seeds" in dev.stderr
+    val = preflight_val(build_val_world(tmp_path / "val"), PY=str(wrapper))
+    assert val.returncode != 0 and ("cannot look for batches on the val3 seeds" in val.stderr or "cannot read the development selection" in val.stderr or "not what the registered rule" in val.stderr)
+    # with the real interpreter nothing is wrong
+    assert preflight_dev(build_dev_world(tmp_path / "dev2"), PY=sys.executable).returncode == 0

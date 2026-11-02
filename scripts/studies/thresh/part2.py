@@ -10,7 +10,10 @@ preflight will ask part 2 to name (`ARM_<tag>`).
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
+import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -19,6 +22,25 @@ EXACT = {c: c.capitalize() for c in CLASSES}
 ROOT = Path(__file__).resolve().parents[3]
 CARD = ROOT / "experiments" / "cardvalue"
 REPLICATION_TAG = "t020"
+
+
+def power_module():
+    spec = importlib.util.spec_from_file_location("thresh_power", Path(__file__).resolve().parent / "power.py")
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def dev_head() -> str:
+    """The commit the development stage was played from, as dev.sh recorded it before its first game; it has to be a commit of this repository."""
+    p = ROOT / "artifacts" / "thresh" / "dev-head.txt"
+    text = p.read_text(encoding="utf-8").strip() if p.exists() else ""
+    if not re.fullmatch(r"[0-9a-f]{40}", text):
+        raise SystemExit("part2: artifacts/thresh/dev-head.txt does not hold the commit the development stage was played from (run this in the worktree that played it)")
+    if subprocess.run(["git", "cat-file", "-e", f"{text}^{{commit}}"], cwd=ROOT, capture_output=True).returncode != 0:
+        raise SystemExit(f"part2: the development commit {text} is not in this repository")
+    return text
 
 
 def sha(p: Path) -> str:
@@ -52,6 +74,24 @@ def main() -> int:
         h = sel["headToHead"]
         print(f"head-to-head of the best against 0.2: {h['armOnly']} / {h['baselineOnly']} discordant, net {h['net']:+d}, exact p {h['p']:.4g}")
     print(f"choice: {json.dumps(sel['choice'])}\nDesign checks passed: {sel['designChecksPassed']}")
+    print("\n### The commit the development stage was played from (the preflight of the held-out run reads it)")
+    print(f"DEV_HEAD={dev_head()}")
+    pw = power_module()
+    held, dev = pw.SEEDS_PER_CLASS_HELD_OUT, pw.SEEDS_PER_CLASS_DEV
+    if sel["choice"]["advance"]:
+        r = pw.rates()
+        pairs = round(2 * held * (1 - r["lost"]))
+        alpha = 0.05 / 3
+        h = sel["headToHead"]
+        d3 = round((h["armOnly"] + h["baselineOnly"]) * held / dev)
+        c = sel["arms"][sel["choice"]["arm"]]
+        d2 = round((c["armOnly"] + c["baselineOnly"]) * held / dev)
+        print("\n### What the held-out tests can see of the choice (the discordant pairs of the development stage scaled to the held-out seeds; power at α = 0.05 / 3)")
+        print(f"- T3, the choice against 0.2: {h['armOnly'] + h['baselineOnly']} discordant pairs in development, about {d3} held-out; exact test / interval at θ = 0.55, 0.60, 0.65, 0.70: "
+              + ", ".join(f"{pw.power_exact(d3, t, alpha):.2f} / {pw.power_interval(d3, t, pairs, alpha):.2f}" for t in (0.55, 0.60, 0.65, 0.70))
+              + f"; net wins for 80 %: {pw.net_needed(d3, alpha, pairs)}")
+        print(f"- T2, the choice against S: {c['armOnly'] + c['baselineOnly']} discordant pairs in development, about {d2} held-out; exact test / interval at the effect of half of ADR-061's: "
+              f"{pw.power_exact(d2, (d2 + 0.5 * r['netPerPair'] * pairs) / (2 * d2), alpha):.2f} / {pw.power_interval(d2, (d2 + 0.5 * r['netPerPair'] * pairs) / (2 * d2), pairs, alpha):.2f}")
     print("\n### What the development batches counted (completed / wins / simulator errors / timeouts)")
     for tag in sel["arms"]:
         for arm in (tag,):

@@ -25,7 +25,7 @@ import {
   parseLevers,
   parseRunsEnd,
 } from "./lib/insights.mjs";
-import { CLASSES, EXACT, commonBatchProblem, readPooledHeldOut } from "./lib/pooled.mjs";
+import { CLASSES, EXACT, commonBatchProblem, readPooledHeldOut, roleOf } from "./lib/pooled.mjs";
 
 // SLAY2_ROOT lets the tests point the exporter at a tampered copy of the inputs; production always uses the repository.
 const root = process.env.SLAY2_ROOT
@@ -229,9 +229,7 @@ function parseEvidence() {
       contentSha256: m.content_sha256,
       episodesGzSha256: m.episodes_gz.sha256,
       finished: m.finished,
-      role: ["train", "dev"].includes(m.seeds.partition)
-        ? `development (${m.seeds.partition} partition): not a held-out result`
-        : "held-out",
+      role: roleOf(m.seeds.partition),
     });
   }
   return reports;

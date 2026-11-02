@@ -34,22 +34,23 @@ if [ "$1" = -m ] && [ "$2" = slay2_sim ] && [ "$3" = run ]; then
   while [ $# -gt 0 ]; do
     case "$1" in
       --batch-id) id=$2; shift 2 ;; --policy) policy=$2; shift 2 ;; --policy-params) params=$2; shift 2 ;; --character) cls=$2; shift 2 ;;
-      --partition) part=$2; shift 2 ;; --n) n=$2; shift 2 ;; --offset) off=$2; shift 2 ;; *) shift ;;
+      --partition) part=$2; shift 2 ;; --n) n=$2; shift 2 ;; --offset) off=$2; shift 2 ;; --seeds) seeds=$2; shift 2 ;; *) shift ;;
     esac
   done
   echo "run $id" >> "$FAKE_LOG"
   [ "${FAKE_FAIL:-}" != "$id" ] || exit 1
   mkdir -p "experiments/batches/$id"
   head=$(git rev-parse HEAD)
-  exec python3 - "$id" "$policy" "$params" "$cls" "$part" "$n" "$off" "$head" "${FAKE_COMPLETED:-}" <<'PY'
-import json, sys
-id_, policy, params, cls, part, n, off, head, completed = sys.argv[1:10]
+  exec python3 - "$id" "$policy" "$params" "$cls" "$part" "$n" "$off" "$head" "${FAKE_COMPLETED:-}" "$seeds" <<'PY'
+import hashlib, json, sys
+id_, policy, params, cls, part, n, off, head, completed, seeds = sys.argv[1:11]
 n, off = int(n), int(off)
 done = int(completed) if completed else n - 40
 json.dump({
     "batch_id": id_, "policy": {"name": policy, "params": json.loads(params)},
-    "config": {"ascension": 0, "keep_relics": True, "character": cls},
-    "seeds": {"partition": part, "n": n, **({"offset": off} if off else {})},
+    "config": {"ascension": 0, "keep_relics": True, "character": cls, "profile": "veteran", "max_steps": 20000, "wall_seconds": 900.0, "max_turns_per_combat": 80,
+               "stall_limit": 200, "start_with_neow": True},
+    "seeds": {"file": seeds, "file_sha256": hashlib.sha256(open(seeds, "rb").read()).hexdigest(), "sealed_partition_used": False, "partition": part, "n": n, **({"offset": off} if off else {})},
     "summary": {"episodes": n, "completed": done, "counts": {"aborted": 0, "harness_error": 0, "policy_error": 0, "invalid_action": 0, "simulator_error": n - done, "win": 3}},
     "class_start_verified": True, "canonical_process_state": True, "environment": {"slay2": {"head": head, "dirty": False}},
 }, open(f"experiments/batches/{id_}/manifest.json", "w"))
@@ -113,7 +114,7 @@ def test_the_development_stage_plays_s_first_then_the_thresholds_in_order_and_ch
     assert (work / "artifacts" / "thresh" / "dev-head.txt").read_text().strip() == head(work)
     s = manifest(work, DEV_IDS[0])
     assert s["policy"]["name"] == "rules_v2" and s["policy"]["params"] == {"threshold": 0.0, "values": "experiments/cardvalue/ironclad-a0-v2.json"}
-    assert s["seeds"] == {"partition": "dev2", "n": 3000}
+    assert (s["seeds"]["partition"], s["seeds"]["n"], s["seeds"]["file"], s["seeds"]["sealed_partition_used"]) == ("dev2", 3000, "experiments/seeds/ironclad-a0-v4.json", False)
     d = manifest(work, "thresh-dev-s-defect-a0-veteran-keeprelics-dev2-n3000")
     assert d["policy"]["params"]["values"] == "experiments/cardvalue/defect-a0-keep-v1.json" and d["config"]["character"] == "Defect"
     for tag, threshold in {"t010": 0.1, "t020": 0.2, "t030": 0.3, "t045": 0.45, "t060": 0.6, "tnone": 100.0}.items():
@@ -206,7 +207,7 @@ def test_the_held_out_run_plays_the_arms_in_the_registered_order_and_checks_each
     assert [ln for ln in done if ln.startswith("VAL_")] == ["VAL_s_DONE", "VAL_t020_DONE", "VAL_t030_DONE", "VAL_DONE"]
     assert (work / "artifacts" / "thresh" / "run-head.txt").read_text().strip() == head(work)
     s = manifest(work, ids[0])
-    assert s["policy"]["name"] == "rules_v2" and s["policy"]["params"]["threshold"] == 0.0 and s["seeds"] == {"partition": "val3", "n": 15000}
+    assert s["policy"]["name"] == "rules_v2" and s["policy"]["params"]["threshold"] == 0.0 and (s["seeds"]["partition"], s["seeds"]["n"]) == ("val3", 15000)
     t = manifest(work, "thresh-val-t030-defect-a0-veteran-keeprelics-val3-n15000")
     assert t["policy"]["name"] == "rules_v2_late" and t["policy"]["params"]["late_acts"] == [1] and t["policy"]["params"]["late_threshold"] == 0.3
     assert t["policy"]["params"]["values"] == "experiments/cardvalue/defect-a0-keep-v1.json"
@@ -337,3 +338,42 @@ def test_the_held_out_audit_cannot_start_without_the_development_selection(tmp_p
     sh("git rm -q experiments/thresh/dev-selection.json", work)
     r = run(work, "audit.sh", env, "val")
     assert r.returncode != 0 and "cannot read the development selection" in r.stderr and calls(log) == []
+
+
+def test_one_stage_and_one_run_at_a_time_a_lock_held_elsewhere_stops_the_script_before_its_first_game(tmp_path):
+    import fcntl
+
+    dev, dlog, denv = dev_world(tmp_path / "dev")
+    out = dev / "artifacts" / "thresh"
+    out.mkdir(parents=True, exist_ok=True)
+    with open(out / "dev.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        r = run(dev, "dev.sh", denv, "2")
+        assert r.returncode != 0 and "another stage holds" in r.stderr and calls(dlog) == [] and not (out / "dev-head.txt").exists()
+    assert run(dev, "dev.sh", denv, "2").returncode == 0                       # the lock is released with the holder
+    val, vlog, venv = val_world(tmp_path / "val")
+    out = val / "artifacts" / "thresh"
+    out.mkdir(parents=True, exist_ok=True)
+    with open(out / "run.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        r = run(val, "run-val.sh", venv, "2")
+        assert r.returncode != 0 and "another run holds" in r.stderr and calls(vlog) == [] and not (out / "run-head.txt").exists()
+
+
+def test_a_batch_played_with_other_limits_or_a_harness_variant_is_not_accepted_on_a_resume(tmp_path):
+    work, log, env = dev_world(tmp_path)
+    assert run(work, "dev.sh", env, "2", FAKE_FAIL=DEV_IDS[5]).returncode != 0
+    for what, change in (("profile", lambda c: c.update(profile="first_run")), ("max_steps", lambda c: c.update(max_steps=500)), ("ancient_heal", lambda c: c.update(ancient_heal=True))):
+        m = work / "experiments" / "batches" / DEV_IDS[1] / "manifest.json"
+        original = m.read_text()
+        body = json.loads(original)
+        change(body["config"])
+        m.write_text(json.dumps(body))
+        r = run(work, "dev.sh", env, "2", RESUME="1")
+        assert r.returncode != 0 and DEV_IDS[1] in r.stderr, (what, r.stderr)
+        m.write_text(original)
+    body = json.loads((work / "experiments" / "batches" / DEV_IDS[2] / "manifest.json").read_text())
+    body["seeds"]["file_sha256"] = "0" * 64                                            # played with another seed file
+    (work / "experiments" / "batches" / DEV_IDS[2] / "manifest.json").write_text(json.dumps(body))
+    r = run(work, "dev.sh", env, "2", RESUME="1")
+    assert r.returncode != 0 and DEV_IDS[2] in r.stderr and "the seed file is not" in r.stderr

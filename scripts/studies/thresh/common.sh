@@ -41,9 +41,9 @@ val_id() { echo "thresh-val-$1-$(lower "$2")-a0-veteran-keeprelics-${VAL_PARTITI
 # Every value file an arm reads: the shown sets of the study's classes (their SHA-256 is quoted in ADR-062).
 shown_files() { local c; for c in $CLASSES; do shown_values "$c"; done; }
 # Everything the arms read or run, and the tools that decide how they are read: the code and data that must be those of the registration commit when the
-# first development game is played, and (part 2) when the first held-out game is played and again when the tests are pooled. The tests of the harness and
-# the README of this folder run nothing.
-PINNED_PATHS=(sim scripts/studies/thresh scripts/verify-pooled.py packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json ':(exclude)sim/tests' ':(exclude)scripts/studies/thresh/README.md')
+# first development game is played, and (part 2) when the first held-out game is played and again when the tests are pooled. The tests of the harness, the README
+# of this folder and part2.py (which prints the numbers of the second part of the record from files and decides nothing) run nothing.
+PINNED_PATHS=(sim scripts/studies/thresh scripts/verify-pooled.py packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json ':(exclude)sim/tests' ':(exclude)scripts/studies/thresh/README.md' ':(exclude)scripts/studies/thresh/part2.py')
 # What the arms execute: the code and data that must be the same in the commit the development stage was played from (DEV_HEAD, quoted in part 2 of the
 # record) and in the commit that registers the held-out run, so that the arms chosen are the arms that were screened. The analysis tool of the study
 # (threshstudy.py) plays no game and is left out; the definitions of the arms in this file are compared as a table of what each arm runs (arm_table, below).
@@ -74,15 +74,40 @@ arm_table() { # every arm's policy and parameters, batch ids and value file for 
   echo "$SEEDS|$DEV_PARTITION|$DEV_N|$VAL_PARTITION|$VAL_N|$GRID_TAGS|$REPLICATION_TAG|$STUDY_ALPHA"
 }
 
+# The two headings of the record that the scripts look for (each occurs once in it: the first commit that adds its text is the commit that registers that part).
+MARKER_ONE='Registration of ADR-062 (part 1, frozen choices)'
+MARKER_TWO='Frozen choices of ADR-062 (part 2)'
 # The text of ADR-062 itself (its heading to the next one, or the end of the log): what the preflights read the quoted hashes from.
-adr_section() { awk '/^## .*ADR-062:/ { p = 1; print; next } /^## / { if (p) exit } p' docs/DECISIONS.md; }
+adr_text() { awk '/^## .*ADR-062:/ { p = 1; print; next } /^## / { if (p) exit } p'; }   # stdin: the decision log
+adr_section() { adr_text < docs/DECISIONS.md; }
+first_commit_with() { git log -S"$1" --format=%H -- docs/DECISIONS.md | tail -1; }          # the first commit whose decision log adds the text
+# The design text of the record: the section up to the line that carries the heading of the registration (the context, what I had seen, the items of the design, the
+# limits, the power, the cost, the rollback and the review). The registration fixes it; what is learned afterwards is added below it, as addenda and as part 2.
+design_text_of() { git show "$1:docs/DECISIONS.md" 2>/dev/null | adr_text | awk -v m="$MARKER_ONE" 'index($0, m) { exit } { print }'; }
+design_text_now() { adr_section | awk -v m="$MARKER_ONE" 'index($0, m) { exit } { print }'; }
+design_problem() { # <registration commit>: the design text at HEAD is the one the registration commit carries
+  local a b
+  a=$(design_text_of "$1" | sha256sum | cut -d' ' -f1); b=$(design_text_now | sha256sum | cut -d' ' -f1)
+  [ -n "$(design_text_of "$1")" ] && [ "$a" = "$b" ] && return 0
+  echo "the design text of ADR-062 (everything before the registration paragraph) is not the one the registration commit ${1:0:12} carries: later notes belong in addenda, below part 2"
+  return 1
+}
+part_diff_problem() { # <part-1 commit> <part-2 commit> <ADR text>: what the registration froze is unchanged at part 2, or part 2 quotes the SHA-256 of the change
+  local r1=$1 r2=$2 adr=$3 sha quoted
+  git diff --quiet "$r1" "$r2" -- "${PINNED_PATHS[@]}" && return 0
+  sha=$(git diff --binary "$r1" "$r2" -- "${PINNED_PATHS[@]}" | sha256sum | cut -d' ' -f1)
+  quoted=$(grep -oE 'PINNED_DIFF=[0-9a-f]{64}' <<< "$adr" | head -1 | cut -d= -f2)
+  [ "$quoted" = "$sha" ] && return 0
+  echo "what the registration froze changed between the registration commit ${r1:0:12} and part 2 ($(git diff --name-only "$r1" "$r2" -- "${PINNED_PATHS[@]}" | head -5 | tr '\n' ' ')); part 2 has to quote the SHA-256 of that change as PINNED_DIFF=$sha, and an addendum has to say why"
+  return 1
+}
 
 # What a finished batch has to be (read from its own manifest): the policy and the parameters, the class, the seeds and the Ascension it was
 # asked to play, the relics kept, the class start verified, played from a clean working tree of the commit the stage started from ($STUDY_HEAD,
 # when set), no game ended in an abort or an error of ours (simulator errors, step limits and timeouts are excluded and counted, as ADR-062
 # item 3 says) and at least 90 % of the games completed.
 verify_batch() { # <batch dir> <policy> <params json> <ExactClass> <partition> <n> <offset>   (scripts/studies/thresh/verify_batch.py)
-  STUDY_HEAD_EXPECTED="${STUDY_HEAD:-}" "$PY" "$ROOT/scripts/studies/thresh/verify_batch.py" "$@"
+  STUDY_HEAD_EXPECTED="${STUDY_HEAD:-}" SEEDS_FILE_EXPECTED="$SEEDS" "$PY" "$ROOT/scripts/studies/thresh/verify_batch.py" "$@"
 }
 
 # The working tree is the commit the stage started from, with no tracked file changed (a stage takes hours).

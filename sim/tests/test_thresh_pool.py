@@ -20,12 +20,18 @@ import pytest
 
 from slay2_sim import external
 from test_compare import make_batch
+from test_threshstudy import build as build_batches
 
 REPO = external.REPO_ROOT
 CLASSES = ["ironclad", "defect"]
 EXACT = {c: c.capitalize() for c in CLASSES}
 N = 400
 SEEDS_INFO = {"file_sha256": "s" * 64, "partition": "val3"}
+MARK1 = "Registration of ADR-062 (part 1, frozen choices)"
+MARK2 = "Frozen choices of ADR-062 (part 2)"
+DESIGN = "## 2026-11-02 — ADR-062: the study\n\nThe design text.\n\n"
+PART1 = f"**{MARK1}.**\nThe registration paragraph.\n"
+PART2 = f"\n**{MARK2}.**\nThe frozen choices.\n"
 
 
 def val_id(arm: str, cls: str) -> str:
@@ -60,11 +66,13 @@ def record(i: int, arm: str) -> tuple:
     return base
 
 
-def selection(advance: str | None) -> dict:
-    return {"designChecksPassed": True, "arms": {}, "choice": {"advance": advance is not None, "arm": advance}}
-
-
-def build(tmp: Path, advance: str | None = "t030", audited: bool = True) -> Path:
+def build(
+    tmp: Path, advance: str | None = "t030", audited: bool = True, two_parts: bool = False, selection_edit=None, pinned_change: bool = False, quote_change: bool = False,
+    design_change: bool = False,
+) -> Path:
+    """A repository whose HEAD carries part 2 of the record (one commit with both parts, or ``two_parts``: the registration first, part 2 after it, with a change of a
+    frozen file in between if ``pinned_change``, quoted in part 2 if ``quote_change``), the real tools' selection of synthetic development batches, and the held-out
+    batches (new, untracked files, as in the worktree that plays them), finished and audited."""
     work = tmp / "work"
     (work / "sim").mkdir(parents=True)
     for rel in ("scripts/lib/thresh.mjs", "scripts/lib/pooled.mjs", "packages/game-data/data/stub.txt", "experiments/cardvalue/stub.txt", "experiments/seeds/stub.txt", "external/pins.json"):
@@ -73,14 +81,34 @@ def build(tmp: Path, advance: str | None = "t030", audited: bool = True) -> Path
     shutil.copy(REPO / "scripts" / "verify-pooled.py", work / "scripts" / "verify-pooled.py")    # the real independent verifier: pool.sh runs it
     (work / ".gitignore").write_text("__pycache__/\n*.pyc\n")             # as the repository's own: the interpreter's caches are not untracked files
     (work / "docs").mkdir()
-    (work / "docs" / "DECISIONS.md").write_text("## 2026-11-02 — ADR-062: the study\n\nThe frozen choices are headed 'Frozen choices of ADR-062 (part 2)'.\n")
-    (work / "experiments" / "thresh").mkdir(parents=True)
-    (work / "experiments" / "thresh" / "dev-selection.json").write_text(json.dumps(selection(advance)))
     shutil.copytree(REPO / "sim" / "slay2_sim", work / "sim" / "slay2_sim", ignore=shutil.ignore_patterns("__pycache__", "tests"))
     shutil.copytree(REPO / "scripts" / "studies" / "thresh", work / "scripts" / "studies" / "thresh", ignore=shutil.ignore_patterns("__pycache__"))
-    git(work, "git init -q -b main && git add -A && git commit -q -m registration")   # HEAD carries the marker: the code, the selection and the reader are the registration's
-    batches = work / "experiments" / "batches"                                         # the batches are new, untracked files, as they are in the worktree that plays them
-    batches.mkdir(parents=True)
+    # the development batches (synthetic games with a known answer) and the selection the rule gives for them
+    build_batches(work / "experiments", **({"t020": {"gain": 2}, "t030": {"gain": 4}} if advance else {}))
+    sel = work / "experiments" / "thresh" / "dev-selection.json"
+    sel.parent.mkdir(parents=True)
+    subprocess.run([sys.executable, "-m", "slay2_sim.threshstudy", "dev", "--batches", str(work / "experiments" / "batches"), "--out", str(sel)], cwd=work,
+                   env={**os.environ, "PYTHONPATH": str(work / "sim")}, capture_output=True, text=True, check=True)
+    body = json.loads(sel.read_text())
+    assert body["choice"]["advance"] is bool(advance), body["choice"]
+    if selection_edit is not None:
+        selection_edit(body)
+        sel.write_text(json.dumps(body))
+    (work / "docs" / "DECISIONS.md").write_text(DESIGN + PART1 + ("" if two_parts else PART2))
+    git(work, "git init -q -b main && git add -A && git commit -q -m registration")   # HEAD carries the markers: the code, the selection and the reader are the registration's
+    if two_parts:
+        pinned = ""
+        if pinned_change:
+            r = work / "scripts" / "studies" / "thresh" / "robustness.py"
+            r.write_text(r.read_text() + "\n# a line added after the registration\n")
+        if quote_change:
+            out = subprocess.run(["bash", "scripts/studies/thresh/pinned-diff.sh"], cwd=work, env={**os.environ, "OUT": str(work / "artifacts" / "x")}, capture_output=True, text=True, check=True).stdout
+            pinned = next(ln for ln in out.splitlines() if ln.startswith("PINNED_DIFF=")) + "\n"
+        design = DESIGN.replace("The design text.", "The design text, edited.") if design_change else DESIGN
+        (work / "docs" / "DECISIONS.md").write_text(design + PART1 + PART2 + pinned)
+        git(work, "git add -A && git commit -q -m part2")
+    batches = work / "experiments" / "batches"                                         # the held-out batches are new, untracked files, as they are in the worktree that plays them
+    batches.mkdir(parents=True, exist_ok=True)
     arms = ["s", "t020", *([advance] if advance else [])]
     for c in CLASSES:
         for arm in arms:
@@ -215,7 +243,8 @@ def test_the_reading_code_must_be_the_registration_s(tmp_path):
 
 def test_the_selection_must_be_the_one_the_registration_carries(tmp_path):
     work = build(tmp_path)
-    (work / "experiments" / "thresh" / "dev-selection.json").write_text(json.dumps(selection(None)))
+    sel = work / "experiments" / "thresh" / "dev-selection.json"
+    sel.write_text(json.dumps({**json.loads(sel.read_text()), "choice": {"arm": None, "threshold": None, "advance": False, "reason": "by hand"}}))
     git(work, "git add -A && git commit -q -m 'another selection'")
     r = run(work)
     assert r.returncode != 0 and "the development selection is not the one the registration commit" in r.stderr
@@ -375,3 +404,52 @@ def test_the_recomputation_disagreeing_about_a_count_stops_the_pooling(tmp_path)
         os.chdir(cwd)
     rec = json.loads((tmp_path / "ver2.json").read_text())["files"]["pooled-thresh-T3.json"]
     assert rec["exactProblems"] == [] and rec["bootstrapDisagreements"]
+
+
+def test_what_the_registration_froze_may_change_before_part_two_only_if_part_two_quotes_the_change(tmp_path):
+    ok = build(tmp_path / "none", two_parts=True)
+    assert run(ok).returncode == 0                                                      # nothing changed: nothing to quote
+    changed = build(tmp_path / "unquoted", two_parts=True, pinned_change=True)
+    r = run(changed)
+    assert r.returncode != 0 and "what the registration froze changed" in r.stderr and "PINNED_DIFF=" in r.stderr and "robustness.py" in r.stderr
+    assert not (changed / "experiments" / "thresh" / "pooled-thresh-T1.json").exists()
+    quoted = build(tmp_path / "quoted", two_parts=True, pinned_change=True, quote_change=True)
+    r = run(quoted)
+    assert r.returncode == 0, r.stderr + r.stdout
+
+
+def test_the_design_text_of_the_record_has_to_be_the_registration_s(tmp_path):
+    work = build(tmp_path, two_parts=True, design_change=True)
+    r = run(work)
+    assert r.returncode != 0 and "the design text of ADR-062" in r.stderr and "addenda" in r.stderr
+
+
+def test_the_development_selection_has_to_be_what_the_rule_gives_on_the_development_batches(tmp_path):
+    edit = lambda b: b["arms"]["t060"].update(baselineOnly=b["arms"]["t060"]["baselineOnly"] + 3)   # noqa: E731   (a count changed by hand before the registration)
+    work = build(tmp_path, selection_edit=edit)
+    r = run(work)
+    assert r.returncode != 0 and "arms.t060 differs" in r.stderr and "the development selection is not what the registered rule gives" in r.stderr
+    assert not (work / "experiments" / "thresh" / "pooled-thresh-T1.json").exists()
+
+
+def test_two_poolings_cannot_run_at_once(tmp_path):
+    import fcntl
+
+    work = build(tmp_path)
+    out = work / "artifacts" / "thresh"
+    out.mkdir(parents=True, exist_ok=True)
+    with open(out / "pooling.lock", "w") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        r = run(work)
+        assert r.returncode != 0 and "another pooling holds" in r.stderr
+        assert not (work / "experiments" / "thresh" / "pooled-thresh-T1.json").exists()
+
+
+def test_a_copy_that_fails_half_way_leaves_nothing_that_counts_as_a_first_look(tmp_path):
+    work = build(tmp_path)
+    (work / "experiments" / "thresh" / "identity").write_text("a file where the design-check records go")        # cp cannot put a directory there
+    r = run(work)
+    assert r.returncode != 0 and "cannot move the results from" in r.stderr and "what was copied is removed" in r.stderr
+    assert sorted(p.name for p in (work / "experiments" / "thresh").iterdir()) == ["dev-selection.json"]          # no pooled file, no per-class output, nothing
+    kept = list((work / "artifacts" / "thresh").glob("pool.*"))                                                     # the results are still in the scratch directory
+    assert len(kept) == 1 and (kept[0] / "pooled-thresh-T1.json").exists()

@@ -17,11 +17,13 @@ fixed before any of those games was played:
 * T1, the replication of 0.2 against S, is always tested.
 
 It also checks what the design relies on: every threshold plays S's game until the first card reward of Act 2, so a game that S ended in Act 1 has
-to be the arm's own record, and no pair may differ about the Act-1 boss (``slay2_sim.actsstudy.identity``). A single difference stops the study.
+to be the arm's own record, and no pair may differ about the Act-1 boss (the same check as ``slay2_sim.actsstudy.identity``, except that a pair in which either game was
+stopped by the wall clock, which depends on the load of the machine and not on the game, is not compared and is counted). A single difference stops the study.
 
     python -m slay2_sim.threshstudy dev --batches experiments/batches --out experiments/thresh/dev-selection.json
     python -m slay2_sim.threshstudy identity t020 --stage val --batches experiments/batches --out experiments/thresh/identity/t020.json
     python -m slay2_sim.threshstudy tests --selection experiments/thresh/dev-selection.json
+    python -m slay2_sim.threshstudy verify --batches experiments/batches --selection experiments/thresh/dev-selection.json
 """
 
 from __future__ import annotations
@@ -31,8 +33,7 @@ import json
 import sys
 from pathlib import Path
 
-from .actsstudy import _rows
-from .actsstudy import identity as _identity
+from .actsstudy import IGNORED_FIELDS, _rows, boss_flags
 from .compare import build_pooled_comparison
 
 SCHEMA = 1
@@ -99,6 +100,45 @@ def mean_deck(root: Path, arm: str, base: str, ident) -> dict:
     return {"arm": sum(x for x, _ in pairs) / len(pairs), "baseline": sum(y for _, y in pairs) / len(pairs), "pairs": len(pairs)}
 
 
+def wall_clock_stop(rec: dict) -> bool:
+    """A game stopped by the wall clock: the one way a game can end that depends on the load of the machine and not on the game (a turn limit and a step limit are
+    the game's own and the arm reproduces them)."""
+    return rec.get("outcome") == "timeout" and str(rec.get("error") or "").startswith("episode exceeded")
+
+
+def _identity(arm: Path, baseline: Path, first_act: int) -> dict:
+    """How the games of an arm that is S until act ``first_act`` compare with S's, record by record, and whether it agrees with S about the Act-1 boss in every pair.
+
+    A game S ended before that act never met the rule that differs, so the arm's record of it has to be S's (every field but the wall clock, the batch id and the
+    policy's name); a pair in which either game was stopped by the wall clock is not compared (it says nothing about the play) and is counted."""
+    a = {int(r["seed"]): r for r in _rows(arm)}
+    b = {int(r["seed"]): r for r in _rows(baseline)}
+    shared = sorted(set(a) & set(b))
+    timed = {s for s in shared if wall_clock_stop(a[s]) or wall_clock_stop(b[s])}
+    kept = [s for s in shared if s not in timed]
+
+    def same(x: dict, y: dict) -> bool:
+        return all(x.get(k) == y.get(k) for k in (set(x) | set(y)) - IGNORED_FIELDS)
+
+    before = [s for s in kept if int(b[s].get("act", 0)) < first_act]
+    return {
+        "shared": len(shared),
+        "wallClockPairs": len(timed),
+        "beforePairs": len(before),
+        "beforeDifferent": sum(1 for s in before if not same(a[s], b[s])),
+        "bossPairs": len(kept),
+        "bossDifferent": sum(1 for s in kept if boss_flags(a[s])[0] != boss_flags(b[s])[0]),
+    }
+
+
+def content_sha(batch: Path) -> str | None:
+    """The content hash the batch's manifest records (a record made from the batch carries it, and the reader ties the record to the batch by it)."""
+    try:
+        return json.loads((batch / "manifest.json").read_text(encoding="utf-8")).get("content_sha256")
+    except (OSError, ValueError):
+        return None
+
+
 def identity_for(root: Path, arm: str, ident) -> dict:
     """The identity counts of one arm against S in the study's classes (an arm is S until the first card reward of Act 2)."""
     per = {c: _identity(root / ident(arm, c), root / ident("s", c), FIRST_ACT) for c in CLASSES}
@@ -110,7 +150,9 @@ def identity_for(root: Path, arm: str, ident) -> dict:
         "beforeDifferent": sum(v["beforeDifferent"] for v in per.values()),
         "bossPairs": sum(v["bossPairs"] for v in per.values()),
         "bossDifferent": sum(v["bossDifferent"] for v in per.values()),
+        "wallClockPairs": sum(v["wallClockPairs"] for v in per.values()),
         "batches": ids,
+        "contentSha256": {i: content_sha(root / i) for i in ids},
         "perClass": per,
     }
 
@@ -144,7 +186,7 @@ def select(root: Path, *, iters: int = 2000) -> dict:
     if bad:
         raise StudyStop("the design's own check failed (ADR-062 item 5): " + "; ".join(bad))
     for tag, rec in ids.items():
-        rows[tag]["identity"] = {k: rec[k] for k in ("beforePairs", "beforeDifferent", "bossPairs", "bossDifferent")}
+        rows[tag]["identity"] = {k: rec[k] for k in ("beforePairs", "beforeDifferent", "bossPairs", "bossDifferent", "wallClockPairs")}
         rows[tag]["meanDeckSize"] = mean_deck(root, tag, "s", dev_id)
     best = max(GRID, key=lambda t: (rows[t]["net"], -GRID[t]))   # the largest net wins; a tie goes to the smaller threshold
     head = None
@@ -163,6 +205,7 @@ def select(root: Path, *, iters: int = 2000) -> dict:
             "T1": "always tested: 0.2 against S on the held-out seeds",
         },
         "baseline": "s",
+        "contentSha256": {dev_id(a, c): content_sha(root / dev_id(a, c)) for a in ("s", *GRID) for c in CLASSES},
         "arms": {tag: {**row, "threshold": GRID[tag], "pooledSha256": pooled_hash[tag]} for tag, row in rows.items()},
         "best": {"arm": best, "threshold": GRID[best], "net": rows[best]["net"]},
         "headToHead": head,
@@ -202,6 +245,26 @@ def val_arms(selection: dict) -> list[str]:
     return arms
 
 
+def verify_selection(root: Path, selection: Path, *, iters: int = 2000) -> list[str]:
+    """The development selection recomputed from the batches by the rule of item 3: what differs from the file, a line each (empty if the file is what the rule gives)."""
+    try:
+        want = json.loads(json.dumps(select(root, iters=iters), sort_keys=True))
+    except StudyStop as e:
+        return [f"STOP: {e}"]
+    have = json.loads(selection.read_text(encoding="utf-8"))
+    if want == have:
+        return []
+    out = []
+    for key in sorted(set(want) | set(have)):
+        if want.get(key) == have.get(key):
+            continue
+        if key == "arms" and isinstance(have.get("arms"), dict):
+            out += [f"arms.{tag} differs" for tag in sorted(set(want["arms"]) | set(have["arms"])) if want["arms"].get(tag) != have["arms"].get(tag)]
+        else:
+            out.append(f"{key} differs")
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -213,6 +276,9 @@ def main(argv: list[str] | None = None) -> int:
     i.add_argument("--stage", choices=["dev", "val"], default="val")
     i.add_argument("--batches", type=Path, default=Path("experiments/batches"))
     i.add_argument("--out", type=Path, required=True)
+    v = sub.add_parser("verify", help="recompute the development selection from the batches and require it to be the file")
+    v.add_argument("--batches", type=Path, default=Path("experiments/batches"))
+    v.add_argument("--selection", type=Path, default=Path("experiments/thresh/dev-selection.json"))
     t = sub.add_parser("tests", help="the held-out tests and the level they are read at, from the selection file")
     t.add_argument("--selection", type=Path, default=Path("experiments/thresh/dev-selection.json"))
     args = ap.parse_args(argv)
@@ -220,11 +286,18 @@ def main(argv: list[str] | None = None) -> int:
         sel = json.loads(args.selection.read_text(encoding="utf-8"))
         print(json.dumps({"tests": tests_of(sel), "arms": val_arms(sel), "level": level_of(sel)}, sort_keys=True))
         return 0
+    if args.cmd == "verify":
+        problems = verify_selection(args.batches, args.selection)
+        for line in problems:
+            print(f"verify: {line}", file=sys.stderr)
+        if not problems:
+            print(f"{args.selection} is what the rule of ADR-062 item 3 gives on the batches in {args.batches}")
+        return 1 if problems else 0
     if args.cmd == "identity":
         rec = identity_for(args.batches, args.arm, dev_id if args.stage == "dev" else val_id)
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps({"kind": "thresh-identity", "schema": SCHEMA, "stage": args.stage, **rec}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(f"{args.arm}: {rec['beforeDifferent']} of {rec['beforePairs']} games that S ended in Act 1 differ; {rec['bossDifferent']} of {rec['bossPairs']} pairs differ about the Act-1 boss")
+        print(f"{args.arm}: {rec['beforeDifferent']} of {rec['beforePairs']} games that S ended in Act 1 differ; {rec['bossDifferent']} of {rec['bossPairs']} pairs differ about the Act-1 boss ({rec['wallClockPairs']} pairs stopped by the wall clock are not compared)")
         return 1 if broken(rec) else 0
     try:
         body = select(args.batches)

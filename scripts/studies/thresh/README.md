@@ -8,13 +8,13 @@ The study has two stages and two registrations. The arms are S (`rules_v2` with 
 a threshold on the card reward of **Act 2 only** (`rules_v2_late`, `late_acts` [1]): a card is taken only if the best one offered is worth more than
 the threshold, otherwise the reward is skipped. Two classes (Ironclad, Defect), Ascension 0, the relics kept, `veteran`.
 
-0. `python3 scripts/studies/thresh/power.py` : the power tables of the record, computed from the committed result of ADR-061 (nothing typed by hand).
+0. `python3 scripts/studies/thresh/power.py` : the power tables of the record, computed from the committed result of ADR-061 (nothing typed by hand); `PYTHONPATH=sim python3 scripts/studies/thresh/screen_sim.py` : what the development screen does in stylized worlds (how often it advances a threshold).
 1. `dev.sh 4` : the development stage (part 1 of the record must be pushed and registered first; `preflight-dev.sh` refuses otherwise). S and the six
    thresholds `t010 t020 t030 t045 t060 tnone` (0.1, 0.2, 0.3, 0.45, 0.6 and never take a card in Act 2) on the 3,000 `dev2` seeds of each class
    (6,000 games an arm, 42,000 in all). `PREFLIGHT_ONLY=1` stops after the checks; `RESUME=1` finishes an interrupted stage from the same commit.
 2. `audit.sh dev` : every win re-derived, a 40-game sample of every batch (`AUDIT_JOBS=4` four at a time); `select-dev.sh` refuses to run until it ended as `AUDIT_DONE`.
-3. `select-dev.sh` : the selection rule of ADR-062 item 3, applied once: writes `experiments/thresh/dev-selection.json` (and refuses to run twice).
-4. `python3 scripts/studies/thresh/part2.py` : the numbers of part 2 of the record (the frozen choices), which names the arms that go forward
+3. `select-dev.sh` : the selection rule of ADR-062 item 3, applied once: writes `experiments/thresh/dev-selection.json` (and refuses to run twice, and to run unless each development batch's own audit files pass: `audits_ok.py`). `python -m slay2_sim.threshstudy verify` recomputes the selection from the batches; the preflight of the held-out run and `pool.sh` require the committed file to be what it gives.
+4. `python3 scripts/studies/thresh/part2.py` and `scripts/studies/thresh/pinned-diff.sh` : the numbers of part 2 of the record (the frozen choices) and, if anything the registration froze has changed since, the line `PINNED_DIFF=<sha>` that part 2 has to quote (the preflight and `pool.sh` refuse otherwise; the design text of the record must also be the registration's byte for byte). Part 2 names the arms that go forward
    (`ARM_<tag>`), quotes the hash of the selection and the commit the development stage was played from (`DEV_HEAD=<sha>`) and is pushed before the first
    held-out game.
 5. `run-val.sh 4` : the held-out arms S, `t020` and, if the screen advanced one, its threshold, on the 15,000 `val3` seeds of each class (30,000 games an

@@ -14,16 +14,22 @@ ADR=$(adr_section)
 
 # the registration is complete: part 2 (the frozen choices; the text below is its heading, and nothing before it contains it) is in the record AT HEAD, and the code
 # and data the arms read are those of the first commit that carries it. REG from the environment is refused unless ALLOW_REG_OVERRIDE=1.
-MARKER='Frozen choices of ADR-062 (part 2)'
+MARKER=$MARKER_TWO
 marks=$(grep -oF "$MARKER" <<< "$ADR" | wc -l)
 [ "$marks" != 0 ] || fail "the ADR-062 record at HEAD does not carry part 2 (the text '$MARKER')"
 [ "$marks" = 1 ] || fail "the ADR-062 record at HEAD must carry part 2 (the text '$MARKER') exactly once, it carries it $marks times"
 if [ -n "${REG:-}" ] && [ "${ALLOW_REG_OVERRIDE:-}" != 1 ]; then fail "REG is set in the environment; refused (it would make the check that nothing changed since the registration empty). ALLOW_REG_OVERRIDE=1 allows it, for a test"; fi
-REG=${REG:-$(git log -S"$MARKER" --format=%H -- docs/DECISIONS.md | tail -1)}
+REG=${REG:-$(first_commit_with "$MARKER")}
 [ -n "$REG" ] || fail "cannot find the commit that carries ADR-062 part 2 (the text '$MARKER')"
 git merge-base --is-ancestor "$REG" HEAD || fail "the registration commit $REG is not an ancestor of HEAD"
 bad=$(pinned_problem "$REG" with-reading) || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $bad"
 git diff --quiet "$REG" HEAD -- experiments/thresh/dev-selection.json || fail "the development selection changed after the registration commit ${REG:0:12}"
+# what part 1 of the record froze is what part 2 carries (or part 2 quotes the change), and the design text of the record is the registration's
+REG1=$(first_commit_with "$MARKER_ONE")
+[ -n "$REG1" ] || fail "cannot find the commit that carries the registration (part 1) of ADR-062"
+git merge-base --is-ancestor "$REG1" "$REG" || fail "the registration commit (part 1) is not an ancestor of the commit that carries part 2"
+bad=$(part_diff_problem "$REG1" "$REG" "$ADR") || fail "$bad"
+bad=$(design_problem "$REG1") || fail "$bad"
 
 # the arms that go forward are the arms that were screened: part 2 quotes the commit the development stage was played from (DEV_HEAD=<sha>), the code and data
 # the arms execute are the same there and at the registration commit, and every development batch was played from it with the parameters common.sh gives each arm
@@ -65,7 +71,9 @@ for C in $CLASSES; do
     lines="$lines$d\t$(arm_policy "$arm")\t$(arm_params "$arm" "$C")\t$C\t$DEV_PARTITION\t$DEV_N\t0\n"
   done
 done
-printf "%b" "$lines" | STUDY_HEAD_EXPECTED=$DEV_HEAD "$PY" "$ROOT/scripts/studies/thresh/verify_batch.py" --many || fail "a development batch is not what ADR-062 says (see above)"
+printf "%b" "$lines" | STUDY_HEAD_EXPECTED=$DEV_HEAD SEEDS_FILE_EXPECTED="$SEEDS" "$PY" "$ROOT/scripts/studies/thresh/verify_batch.py" --many || fail "a development batch is not what ADR-062 says (see above)"
+# the selection is what the registered rule gives on those batches (it is not only a file whose hash part 2 quotes)
+"$PY" -m slay2_sim.threshstudy verify --batches experiments/batches --selection experiments/thresh/dev-selection.json || fail "the development selection is not what the registered rule gives on the development batches (see above)"
 
 # each test is run once: no pooled result, per-class output, identity record or interval file of the held-out stage exists, and none is in the history
 for p in pooled-thresh-T1 pooled-thresh-T2 pooled-thresh-T3 robustness-all-pairs verification; do
@@ -79,8 +87,10 @@ done
 
 # no game of the val3 seeds has been played, under any batch id (the seed of a batch's first episode is looked up: a run that died before its manifest was written is
 # found too), unless an interrupted run is being finished (a finished batch is checked and never touched)
-played=$("$PY" "$ROOT/scripts/studies/thresh/seeds_played.py" --batches experiments/batches --seeds "$SEEDS" --partitions "$VAL_PARTITION" | head -3 | tr '\n' ' ') || fail "cannot look for batches on the $VAL_PARTITION seeds"
+found=$("$PY" "$ROOT/scripts/studies/thresh/seeds_played.py" --batches experiments/batches --seeds "$SEEDS" --partitions "$VAL_PARTITION") || fail "cannot look for batches on the $VAL_PARTITION seeds"
+played=$(printf '%s' "$found" | head -3 | tr '\n' ' ')
 if [ -n "$played" ] || ls experiments/batches 2>/dev/null | grep -Eq -- "^thresh-val-"; then
   [ "${RESUME:-}" = 1 ] || fail "batches on the $VAL_PARTITION seeds already exist (${played:-thresh-val-*}); if a run was interrupted, finish it with RESUME=1 (a finished batch is checked and never touched)"
+  [ -f "$OUT/run-head.txt" ] || fail "RESUME=1, but $OUT/run-head.txt does not exist: no run was started here, so the batches that exist were not played by run-val.sh (${played:-thresh-val-*})"
 fi
 echo "preflight-val: ok (commit $(git rev-parse --short=12 HEAD), registration ${REG:0:12}, development ${DEV_HEAD:0:12}, arms: $ARMS)"

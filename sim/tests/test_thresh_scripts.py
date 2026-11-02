@@ -8,6 +8,7 @@ says. The test builds each arm from the shell's own definition and checks it aga
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 import os
@@ -148,8 +149,11 @@ PARAMS = {"threshold": 0.0, "values": "experiments/cardvalue/ironclad-a0-v2.json
 HEAD = "a" * 40
 GOOD = {
     "policy": {"name": "rules_v2_late", "params": PARAMS},
-    "config": {"ascension": 0, "keep_relics": True, "character": "Ironclad"},
-    "seeds": {"partition": "dev2", "n": 3000},
+    "config": {
+        "ascension": 0, "keep_relics": True, "character": "Ironclad", "profile": "veteran", "max_steps": 20000, "wall_seconds": 900.0,
+        "max_turns_per_combat": 80, "stall_limit": 200, "start_with_neow": True,
+    },
+    "seeds": {"partition": "dev2", "n": 3000, "sealed_partition_used": False},
     "summary": {"episodes": 3000, "completed": 2950, "counts": {"aborted": 0, "harness_error": 0, "policy_error": 0, "invalid_action": 0, "simulator_error": 40, "timeout": 10}},
     "class_start_verified": True, "canonical_process_state": True, "environment": {"slay2": {"head": HEAD, "dirty": False}},
 }
@@ -163,8 +167,8 @@ def write(tmp: Path, body: dict) -> str:
 
 
 def check(d: str, **over) -> list[str]:
-    a = {"policy": "rules_v2_late", "params": json.dumps(PARAMS), "cls": "Ironclad", "part": "dev2", "n": 3000, "off": 0, "head": HEAD, **over}
-    return vb.problems(d, a["policy"], a["params"], a["cls"], a["part"], a["n"], a["off"], a["head"])
+    a = {"policy": "rules_v2_late", "params": json.dumps(PARAMS), "cls": "Ironclad", "part": "dev2", "n": 3000, "off": 0, "head": HEAD, "seeds_file": "", **over}
+    return vb.problems(d, a["policy"], a["params"], a["cls"], a["part"], a["n"], a["off"], a["head"], a["seeds_file"])
 
 
 def mutated(path: list[str], value) -> dict:
@@ -193,6 +197,17 @@ def test_a_batch_that_is_what_was_asked_for_passes(tmp_path):
     (["config", "ascension"], 9, "Ascension 9"),
     (["config", "keep_relics"], False, "relics not kept"),
     (["config", "keep_relics"], KeyError, "relics not kept"),
+    (["config", "profile"], "first_run", "profile first_run"),
+    (["config", "profile"], KeyError, "profile None"),
+    (["config", "ancient_heal"], True, "a harness variant"),
+    (["config", "game_hp"], True, "a harness variant"),
+    (["config", "max_steps"], 5000, "max_steps 5000 is not 20000"),
+    (["config", "wall_seconds"], 60.0, "wall_seconds 60.0 is not 900.0"),
+    (["config", "max_turns_per_combat"], 40, "max_turns_per_combat 40 is not 80"),
+    (["config", "stall_limit"], KeyError, "stall_limit None is not 200"),
+    (["config", "start_with_neow"], False, "the opening Ancient was not played"),
+    (["seeds", "sealed_partition_used"], True, "the sealed partition was used"),
+    (["seeds", "sealed_partition_used"], KeyError, "the sealed partition was used or the manifest does not say"),
     (["seeds", "partition"], "val3", "seeds"),
     (["seeds", "n"], 1000, "seeds"),
     (["seeds", "offset"], 1000, "seeds"),
@@ -208,6 +223,20 @@ def test_a_batch_that_is_what_was_asked_for_passes(tmp_path):
 def test_each_way_a_batch_can_be_something_else_is_found(tmp_path, path, value, message):
     found = check(write(tmp_path, mutated(path, value)))
     assert found and message in found[0], found
+
+
+def test_the_seed_file_has_to_be_the_one_named_by_its_path_and_its_hash(tmp_path, monkeypatch):
+    seeds = tmp_path / "seeds.json"
+    seeds.write_text('{"a": 1}')
+    sha = hashlib.sha256(seeds.read_bytes()).hexdigest()
+    good = mutated(["seeds"], {**GOOD["seeds"], "file": str(seeds), "file_sha256": sha})
+    assert check(write(tmp_path, good), seeds_file=str(seeds)) == []
+    for body in (mutated(["seeds"], {**GOOD["seeds"], "file": "elsewhere.json", "file_sha256": sha}), mutated(["seeds"], {**GOOD["seeds"], "file": str(seeds), "file_sha256": "0" * 64}),
+                 mutated(["seeds"], {**GOOD["seeds"]})):
+        found = check(write(tmp_path, body), seeds_file=str(seeds))
+        assert found and "the seed file is not" in found[0]
+    assert "the seed file is not" in check(write(tmp_path, good), seeds_file=str(tmp_path / "missing.json"))[0]
+    assert check(write(tmp_path, GOOD)) == []                                         # not asked for: not checked
 
 
 def test_ninety_percent_completed_is_enough_and_a_missing_or_unreadable_manifest_is_a_problem(tmp_path):

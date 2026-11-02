@@ -74,7 +74,7 @@ def test_the_choice_is_the_largest_net_win_and_a_tie_goes_to_the_smaller_thresho
     assert sel["choice"] == {"arm": "t030", "threshold": 0.3, "advance": True, "reason": sel["choice"]["reason"]}
     assert "ahead of 0.2 in the head-to-head" in sel["choice"]["reason"]
     assert sel["designChecksPassed"] is True and sel["role"] == "development: not a held-out result"
-    assert arms["t030"]["identity"] == {"beforePairs": 2 * (N // 4), "beforeDifferent": 0, "bossPairs": 2 * N, "bossDifferent": 0}
+    assert arms["t030"]["identity"] == {"beforePairs": 2 * (N // 4), "beforeDifferent": 0, "bossPairs": 2 * N, "bossDifferent": 0, "wallClockPairs": 0}
     # S wins 8 games a class and 16 in all; shares are of the pairs both games completed
     assert arms["t030"]["wins"] == {"arm": 24, "baseline": 16} and arms["t030"]["shares"]["baseline"] == pytest.approx(16 / (2 * N))
 
@@ -215,3 +215,75 @@ def test_the_mean_final_deck_is_descriptive_and_read_over_the_pairs_both_games_c
 def test_a_batch_without_a_deck_size_has_no_mean_deck(tmp_path):
     root = build(tmp_path)
     assert ts.select(root, iters=200)["arms"]["t030"]["meanDeckSize"] == {"arm": None, "baseline": None, "pairs": 0}
+
+
+def rewrite(root: Path, ident: str, arm: str, cls: str, change) -> None:
+    """Edit the episode records of one batch: ``change(record)`` for each."""
+    f = root / ident / "episodes.jsonl"
+    lines = [json.loads(line) for line in f.read_text(encoding="utf-8").splitlines()]
+    for r in lines:
+        change(r)
+    f.write_text("".join(json.dumps(r) + "\n" for r in lines), encoding="utf-8")
+
+
+def test_a_pair_stopped_by_the_wall_clock_is_not_compared_and_is_counted_but_any_other_stop_is_the_games_own(tmp_path):
+    root = build(tmp_path, ident=ts.val_id)
+    # seed 3 is a game S ended in Act 1; in the arm's batch the wall clock stopped it (the load of the machine, not the play): not compared
+    rewrite(root, ts.val_id("t020", "Ironclad"), "t020", "Ironclad", lambda r: r.update(outcome="timeout", error="episode exceeded 900s wall clock") if r["seed"] == 3 else None)
+    rec = ts.identity_for(root, "t020", ts.val_id)
+    assert rec["wallClockPairs"] == 1 and rec["beforeDifferent"] == 0 and rec["bossDifferent"] == 0 and not ts.broken(rec)
+    assert rec["beforePairs"] == 2 * (N // 4) - 1 and rec["bossPairs"] == 2 * N - 1
+    # the same stop in S's batch counts the same way
+    root2 = build(tmp_path / "s-side", ident=ts.val_id)
+    rewrite(root2, ts.val_id("s", "Defect"), "s", "Defect", lambda r: r.update(outcome="timeout", error="episode exceeded 900s wall clock") if r["seed"] == 7 else None)
+    assert ts.identity_for(root2, "t030", ts.val_id)["wallClockPairs"] == 1
+    # a turn limit is the game's own: the arm reproduces it, so a difference is a difference
+    root3 = build(tmp_path / "turns", ident=ts.val_id)
+    rewrite(root3, ts.val_id("t020", "Ironclad"), "t020", "Ironclad", lambda r: r.update(outcome="timeout", error="combat exceeded 80 turns") if r["seed"] == 3 else None)
+    rec3 = ts.identity_for(root3, "t020", ts.val_id)
+    assert rec3["wallClockPairs"] == 0 and rec3["beforeDifferent"] == 1 and ts.broken(rec3)
+
+
+def test_the_identity_record_and_the_selection_carry_the_content_hash_of_every_batch_they_were_made_from(tmp_path):
+    root = build(tmp_path, ident=ts.val_id)
+    rec = ts.identity_for(root, "t030", ts.val_id)
+    assert set(rec["contentSha256"]) == set(rec["batches"]) and all(v == "c" * 64 for v in rec["contentSha256"].values())   # make_batch writes one hash for all
+    (root / ts.val_id("t030", "Defect") / "manifest.json").unlink()
+    assert ts.identity_for(root, "t030", ts.val_id)["contentSha256"][ts.val_id("t030", "Defect")] is None
+    dev = build(tmp_path / "dev")
+    sel = ts.select(dev, iters=200)
+    assert set(sel["contentSha256"]) == {ts.dev_id(a, c) for a in ("s", *ts.GRID) for c in ts.CLASSES} and all(v == "c" * 64 for v in sel["contentSha256"].values())
+
+
+def test_the_design_check_of_the_screen_also_stops_on_a_pair_that_differs_about_the_act_1_boss(tmp_path):
+    root = build(tmp_path)
+    rewrite(root, ts.dev_id("t045", "Defect"), "t045", "Defect", lambda r: r.update(act=0) if r["seed"] == 5 else None)   # S took seed 5 past the first boss
+    with pytest.raises(ts.StudyStop, match=r"t045: 0 of 32 games that S ended in Act 1 differ, 1 of 128 pairs differ about the Act-1 boss"):
+        ts.select(root, iters=200)
+
+
+def test_the_selection_can_be_recomputed_from_the_batches_and_a_hand_edit_or_a_changed_batch_is_found(tmp_path, capsys):
+    root = build(tmp_path, t020={"gain": 2}, t030={"gain": 4})
+    out = tmp_path / "sel.json"
+    assert ts.main(["dev", "--batches", str(root), "--out", str(out)]) == 0
+    capsys.readouterr()
+    assert ts.main(["verify", "--batches", str(root), "--selection", str(out)]) == 0
+    assert "is what the rule of ADR-062 item 3 gives" in capsys.readouterr().out
+    body = json.loads(out.read_text(encoding="utf-8"))
+    body["arms"]["t045"]["net"] += 1
+    body["choice"]["arm"] = "t045"
+    out.write_text(json.dumps(body), encoding="utf-8")
+    assert ts.main(["verify", "--batches", str(root), "--selection", str(out)]) == 1
+    err = capsys.readouterr().err
+    assert "arms.t045 differs" in err and "choice differs" in err
+    # the file is right but a batch it was made from has been changed
+    out.write_text(json.dumps(json.loads(json.dumps(ts.select(root, iters=200), sort_keys=True))), encoding="utf-8")
+    rewrite(root, ts.dev_id("t030", "Ironclad"), "t030", "Ironclad", lambda r: r.update(outcome="death") if r["seed"] == 0 else None)
+    assert ts.main(["verify", "--batches", str(root), "--selection", str(out)]) == 1
+    assert "differs" in capsys.readouterr().err
+    # batches whose own design check fails are not recomputed into a selection
+    root2 = build(tmp_path / "stop", t030={"gain": 2, "break_act0": True})
+    good = tmp_path / "good.json"
+    good.write_text("{}", encoding="utf-8")
+    assert ts.main(["verify", "--batches", str(root2), "--selection", str(good)]) == 1
+    assert "STOP: the design's own check failed" in capsys.readouterr().err
