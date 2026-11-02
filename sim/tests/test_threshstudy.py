@@ -287,3 +287,41 @@ def test_the_selection_can_be_recomputed_from_the_batches_and_a_hand_edit_or_a_c
     good.write_text("{}", encoding="utf-8")
     assert ts.main(["verify", "--batches", str(root2), "--selection", str(good)]) == 1
     assert "STOP: the design's own check failed" in capsys.readouterr().err
+
+
+def test_the_fingerprints_of_the_pooled_computations_are_written_but_not_compared_while_every_number_the_rule_reads_and_every_batch_hash_is(tmp_path, capsys):
+    """`pooledSha256` hashes bootstrap intervals, which depend on the random stream of the installed numpy and not on the games: a rebuilt environment must not
+    refuse a correct selection (item 5 of the record: the content hash of every batch is what binds the inputs)."""
+    root = build(tmp_path, t020={"gain": 2}, t030={"gain": 4})
+    sel = tmp_path / "sel.json"
+    assert ts.main(["dev", "--batches", str(root), "--out", str(sel)]) == 0
+    capsys.readouterr()
+    body = json.loads(sel.read_text(encoding="utf-8"))
+    assert body["choice"]["advance"] is True and body["headToHead"] is not None
+    assert all(len(row["pooledSha256"]) == 64 for row in body["arms"].values()) and len(body["headToHead"]["pooledSha256"]) == 64      # (they are still written)
+    different = json.loads(json.dumps(body))
+    for row in different["arms"].values():
+        row["pooledSha256"] = "0" * 64
+    different["headToHead"]["pooledSha256"] = "f" * 64
+    sel.write_text(json.dumps(different), encoding="utf-8")
+    assert ts.main(["verify", "--batches", str(root), "--selection", str(sel)]) == 0                  # another fingerprint of the same selection is accepted ...
+    first_batch = next(iter(body["contentSha256"]))
+    edits = {
+        "a net the rule reads": lambda b: b["arms"]["t030"].update(net=b["arms"]["t030"]["net"] + 1),
+        "a p value of the head-to-head": lambda b: b["headToHead"].update(p=0.5),
+        "the content hash of a batch": lambda b: b["contentSha256"].update({first_batch: "0" * 64}),
+        "the choice": lambda b: b["choice"].update(advance=not b["choice"]["advance"]),
+    }
+    for what, edit in edits.items():                                                                  # ... and nothing else is
+        edited = json.loads(json.dumps(different))
+        edit(edited)
+        sel.write_text(json.dumps(edited), encoding="utf-8")
+        assert ts.main(["verify", "--batches", str(root), "--selection", str(sel)]) == 1, what
+        capsys.readouterr()
+    # a selection without the fingerprint fields at all is the same selection
+    stripped = json.loads(json.dumps(body))
+    for row in stripped["arms"].values():
+        del row["pooledSha256"]
+    del stripped["headToHead"]["pooledSha256"]
+    sel.write_text(json.dumps(stripped), encoding="utf-8")
+    assert ts.main(["verify", "--batches", str(root), "--selection", str(sel)]) == 0

@@ -21,7 +21,7 @@ REG=$(first_commit_with "$MARKER_TWO")
 [ -n "$REG" ] || fail "cannot find the commit that carries part 2 of the registration of ADR-062"
 REG1=$(first_commit_with "$MARKER_ONE")
 [ -n "$REG1" ] || fail "cannot find the commit that carries the registration (part 1) of ADR-062"
-bad=$(pinned_problem "$REG" with-reading) || fail "code or data the study pins is not that of the registration commit ${REG:0:12}: $bad"
+bad=$(pinned_problem "$REG" "$REG1") || fail "code or data the study pins (or the reading code) is not that of the registration commit ${REG:0:12}: $bad"
 bad=$(part_diff_problem "$REG1" "$REG" "$(adr_section)") || fail "$bad"
 bad=$(design_problem "$REG1") || fail "$bad"
 git diff --quiet "$REG" -- experiments/thresh/dev-selection.json || fail "the development selection is not the one the registration commit ${REG:0:12} carries"

@@ -40,18 +40,23 @@ WORLDS: dict[str, tuple[int, ...]] = {
 }
 
 
-def simulate(world: tuple[int, ...], head_pairs: int, draws: int = DRAWS, seed: int = SEED, d: int = D_VS_S, model: str = "shared") -> dict:
+def draw_nets(world: tuple[int, ...], head_pairs: int, draws: int = DRAWS, seed: int = SEED, d: int = D_VS_S, model: str = "shared") -> np.ndarray:
+    """The development nets (arm-only minus S-only wins) of the six arms in ``draws`` repetitions of the stage, a row each, in the order of the grid."""
     tags = list(ts.GRID)
     assert len(world) == len(tags) and model in ("shared", "independent")
     rng = np.random.default_rng(seed)
     mean = np.asarray(world, dtype=float)
     if model == "independent":
-        net = 2 * rng.binomial(d, 0.5 + mean / (2 * d), size=(draws, len(tags))) - d
-    else:
-        rho = max(0.0, 1.0 - head_pairs / (2.0 * d))
-        shared = rng.standard_normal((draws, 1))
-        own = rng.standard_normal((draws, len(tags)))
-        net = np.rint(mean + np.sqrt(d) * (np.sqrt(rho) * shared + np.sqrt(1.0 - rho) * own)).astype(int)
+        return 2 * rng.binomial(d, 0.5 + mean / (2 * d), size=(draws, len(tags))) - d
+    rho = max(0.0, 1.0 - head_pairs / (2.0 * d))
+    shared = rng.standard_normal((draws, 1))
+    own = rng.standard_normal((draws, len(tags)))
+    return np.rint(mean + np.sqrt(d) * (np.sqrt(rho) * shared + np.sqrt(1.0 - rho) * own)).astype(int)
+
+
+def simulate(world: tuple[int, ...], head_pairs: int, draws: int = DRAWS, seed: int = SEED, d: int = D_VS_S, model: str = "shared") -> dict:
+    tags = list(ts.GRID)
+    net = draw_nets(world, head_pairs, draws, seed, d, model)
     advanced = 0
     chose = dict.fromkeys(tags, 0)
     reference = tags.index(ts.REPLICATION_TAG)

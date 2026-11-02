@@ -101,6 +101,7 @@ def build(
         if pinned_change:
             r = work / "scripts" / "studies" / "thresh" / "robustness.py"
             r.write_text(r.read_text() + "\n# a line added after the registration\n")
+            git(work, "git add -A && git commit -q -m the-change-of-a-frozen-file")      # (the quote is the hash of commits: pinned-diff.sh refuses a change that is not committed)
         if quote_change:
             out = subprocess.run(["bash", "scripts/studies/thresh/pinned-diff.sh"], cwd=work, env={**os.environ, "OUT": str(work / "artifacts" / "x")}, capture_output=True, text=True, check=True).stdout
             pinned = next(ln for ln in out.splitlines() if ln.startswith("PINNED_DIFF=")) + "\n"

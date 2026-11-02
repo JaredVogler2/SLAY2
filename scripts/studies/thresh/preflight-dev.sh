@@ -26,7 +26,7 @@ fi
 REG=${REG:-$(first_commit_with "$MARKER")}
 [ -n "$REG" ] || fail "cannot find the commit that carries the registration of ADR-062 (the text '$MARKER')"
 git merge-base --is-ancestor "$REG" HEAD || fail "the registration commit $REG is not an ancestor of HEAD"
-bad=$(pinned_problem "$REG") || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $bad"
+bad=$(pinned_problem "$REG" "$REG") || fail "code or data the arms read (or the reading code) changed after the registration commit ${REG:0:12}: $bad"
 
 # every file an arm reads is the file the registration names: its SHA-256 is quoted in ADR-062 itself (not elsewhere in the log), and it is committed.
 # The seed file is one of them: it holds the dev2 and val3 seeds (and the partitions the earlier studies were played on, which are the same as in the earlier files).

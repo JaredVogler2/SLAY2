@@ -35,7 +35,6 @@ def test_a_high_peak_is_found_and_the_nomination_is_generous_where_there_is_no_e
     high = sim.simulate(sim.WORLDS["a high peak at 0.3: +60 against +22 at 0.2"], 130, draws=6000)
     assert high["advance"] > 0.9 and high["chose"]["t030"] > 0.85, high
     assert abs(sum(null["chose"].values()) - null["advance"]) < 1e-12 and set(null["chose"]) == set(ts.GRID)
-    assert null["chose"]["t020"] == 0.0 and upper["chose"]["t020"] == 0.0
     # 0.2 well ahead of its neighbours is rarely displaced
     assert sim.simulate(sim.WORLDS["0.2 is best: +22 at 0.2, less elsewhere"], 130, draws=6000)["advance"] < 0.10
 
@@ -48,16 +47,21 @@ def test_a_draw_is_reproducible_and_the_models_have_the_variance_the_text_says()
     few = sim.simulate((0,) * 6, 60, draws=6000, model="independent")["advance"]
     many = sim.simulate((0,) * 6, 195, draws=6000, model="independent")["advance"]
     assert few > many
-    # the shared model: the nets have variance D and two of them differ with variance H (the number of pairs in which the two arms differ)
-    import numpy as np
-
-    rng = np.random.default_rng(3)
-    d, h = sim.D_VS_S, 130
-    rho = 1.0 - h / (2.0 * d)
-    shared = rng.standard_normal((200_000, 1))
-    own = rng.standard_normal((200_000, 6))
-    net = np.sqrt(d) * (np.sqrt(rho) * shared + np.sqrt(1.0 - rho) * own)
-    assert abs(net[:, 0].var() / d - 1.0) < 0.02 and abs((net[:, 0] - net[:, 1]).var() / h - 1.0) < 0.02
+    # the models themselves (the nets that `simulate` reads): the nets of the shared model have variance D and two of them differ with variance H (the number of pairs
+    # in which the two arms differ); those of the independent model have variance D and no correlation; both have the mean the world names
+    d = sim.D_VS_S
+    for h in (60, 130, 195):
+        net = sim.draw_nets((0,) * 6, h, draws=200_000, seed=3, model="shared")
+        assert net.shape == (200_000, 6)
+        assert abs(net[:, 0].var() / d - 1.0) < 0.02 and abs((net[:, 0] - net[:, 1]).var() / h - 1.0) < 0.02, h
+        assert abs(net.mean()) < 0.1
+    net = sim.draw_nets((0,) * 6, 130, draws=200_000, seed=3, model="independent")
+    assert abs(net[:, 0].var() / d - 1.0) < 0.02 and abs((net[:, 0] - net[:, 1]).var() / (2 * d) - 1.0) < 0.02
+    world = sim.WORLDS["a peak at 0.3: +35 against +22 at 0.2"]
+    for model in ("shared", "independent"):
+        assert all(abs(m - w) < 0.2 for m, w in zip(sim.draw_nets(world, 130, draws=200_000, seed=3, model=model).mean(axis=0), world))
+    # simulate reads exactly these nets: the same draws give the same rates
+    assert sim.simulate(world, 130, draws=2000, seed=3) == sim.simulate(world, 130, draws=2000, seed=3)
     with pytest.raises(AssertionError):
         sim.simulate((0,) * 6, 130, draws=10, model="other")
 

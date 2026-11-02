@@ -245,13 +245,28 @@ def val_arms(selection: dict) -> list[str]:
     return arms
 
 
+def _without_fingerprints(selection: dict) -> dict:
+    """The selection without the fingerprints of the pooled computations (``pooledSha256``). They hash the bootstrap intervals, which depend on the random stream of
+    the installed numpy and not on the games, so a rebuilt environment would give another fingerprint of the same selection; they are written for the record and not
+    compared. What is compared is every number the rule reads (the counts, the nets, the p values, the head-to-head, the choice) and the content hash of every
+    development batch, which binds the inputs."""
+    out = json.loads(json.dumps(selection))
+    for row in (out.get("arms") or {}).values():
+        if isinstance(row, dict):
+            row.pop("pooledSha256", None)
+    if isinstance(out.get("headToHead"), dict):
+        out["headToHead"].pop("pooledSha256", None)
+    return out
+
+
 def verify_selection(root: Path, selection: Path, *, iters: int = 2000) -> list[str]:
-    """The development selection recomputed from the batches by the rule of item 3: what differs from the file, a line each (empty if the file is what the rule gives)."""
+    """The development selection recomputed from the batches by the rule of item 3: what differs from the file, a line each (empty if the file is what the rule gives).
+    The fingerprints of the pooled computations are not compared (``_without_fingerprints``)."""
     try:
-        want = json.loads(json.dumps(select(root, iters=iters), sort_keys=True))
+        want = _without_fingerprints(json.loads(json.dumps(select(root, iters=iters), sort_keys=True)))
     except StudyStop as e:
         return [f"STOP: {e}"]
-    have = json.loads(selection.read_text(encoding="utf-8"))
+    have = _without_fingerprints(json.loads(selection.read_text(encoding="utf-8")))
     if want == have:
         return []
     out = []

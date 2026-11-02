@@ -153,21 +153,29 @@ def test_v4_manifest_keeps_every_v3_seed_where_it_was_and_adds_disjoint_developm
     assert "dev2" in mf.DEVELOPMENT_PARTITIONS and "val3" not in mf.DEVELOPMENT_PARTITIONS
 
 
-def test_no_batch_has_played_a_dev2_or_val3_seed_before_the_threshold_study():
-    """The fresh partitions are fresh: no committed batch's first episode is a seed of dev2 or val3 (the studies that follow check it again)."""
+def test_only_the_threshold_study_s_own_batches_have_played_a_dev2_or_val3_seed_and_each_only_its_own_partition():
+    """The fresh partitions are fresh: no committed batch but the threshold study's own (ADR-062) has played a seed of dev2 or val3; its development batches
+    (thresh-dev-*) play seeds of dev2 only and its held-out batches (thresh-val-*) seeds of val3 only. Before the study has been played this is the same as saying
+    that no committed batch has played either; when its batches are committed (part 2 commits the development ones, the result the held-out ones) the test needs no
+    change and still fails for a batch of any other name that plays one of them, or for a batch of the study that plays the other's partition."""
     import gzip
     import json
 
     repo = mf.Path(__file__).resolve().parents[2]
     v4 = mf.load_seed_manifest(repo / "experiments" / "seeds" / "ironclad-a0-v4.json")
-    fresh = set(v4["partitions"]["dev2"]) | set(v4["partitions"]["val3"])
-    played = set()
+    dev2, val3 = set(v4["partitions"]["dev2"]), set(v4["partitions"]["val3"])
     for batch in (repo / "experiments" / "batches").iterdir():
         gz = batch / "episodes.jsonl.gz"
-        if gz.exists():
-            with gzip.open(gz, "rt", encoding="utf-8") as fh:
-                played.update(int(json.loads(line)["seed"]) for line in fh if line.strip())
-    assert not (played & fresh)
+        if not gz.exists():
+            continue
+        with gzip.open(gz, "rt", encoding="utf-8") as fh:
+            played = {int(json.loads(line)["seed"]) for line in fh if line.strip()}
+        if batch.name.startswith("thresh-dev-"):
+            assert played <= dev2, batch.name
+        elif batch.name.startswith("thresh-val-"):
+            assert played <= val3, batch.name
+        else:
+            assert not (played & (dev2 | val3)), batch.name
 
 
 def test_seed_manifest_tamper_detected(tmp_path):

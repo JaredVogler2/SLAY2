@@ -113,6 +113,17 @@ def test_the_power_tables_of_the_record_are_the_ones_power_py_computes():
     rows = [ln for ln in out.getvalue().splitlines() if ln.startswith(("| Ironclad |", "| Defect |"))]
     assert len(rows) == 2 and all(row in adr for row in rows)             # the scale of the thresholds, row for row
 
+    def half(per_class: int) -> tuple[float, float]:                       # T1 at half of ADR-061's effect, at the split level, for a held-out run of this size
+        n = round(2 * per_class * (1 - r["lost"]))
+        dd2 = round(r["dPerPair"] * n)
+        th = (dd2 + 0.5 * r["netPerPair"] * n) / (2 * dd2)
+        return pw.power_exact(dd2, th, alpha), pw.power_interval(dd2, th, n, alpha)
+
+    (e10, i10), (e15, i15) = half(10_000), half(pw.SEEDS_PER_CLASS_HELD_OUT)
+    # (the registration paragraph says what the larger held-out run bought, for the exact test and for the interval that has to clear zero as well)
+    if MARK1 in adr:
+        assert f"from {e10:.2f} to {e15:.2f} for the exact test and from {i10:.2f} to {i15:.2f} for the exact test together with the interval" in adr
+
 
 def test_the_rates_of_the_screen_in_item_3_are_the_ones_screen_sim_gives():
     adr = record()
@@ -142,3 +153,30 @@ def test_the_rates_of_the_screen_in_item_3_are_the_ones_screen_sim_gives():
     assert close(stated(r"\(0\.3 in (\d+) % to (\d+) %\)"), span("shared", worlds[4], "t030"))
     assert close(stated(r"the first two figures are (\d+) % to (\d+) % and"), span("independent", worlds[0]))
     assert close(stated(r"the first two figures are \d+ % to \d+ % and (\d+) % to (\d+) %"), span("independent", worlds[1]))
+
+    def games(model: str) -> tuple[str, str]:                              # 60,000 plus 30,000 times the share of draws that advance, where no threshold does anything
+        runs = [sim.simulate(sim.WORLDS[worlds[0]], h, draws=20_000, model=model)["advance"] for h in sim.HEAD_PAIRS]
+        lo, hi = (round((60_000 + 30_000 * f(runs)) / 1000) * 1000 for f in (min, max))
+        return f"{lo:,}", f"{hi:,}"
+
+    (lo, hi), (ilo, ihi) = games("shared"), games("independent")
+    assert f"about {lo} to {hi} games on average where no threshold does anything ({ilo} to {ihi} with independent arms)" in item
+    assert f"about {lo} to {hi} on average where no threshold does anything, {ilo} to {ihi} with independent arms" in adr      # the Cost paragraph says the same
+
+
+def test_the_frozen_paths_the_registration_names_are_the_ones_the_scripts_read(tmp_path):
+    adr = record()
+    r = subprocess.run(["bash", "-c", 'source scripts/studies/thresh/common.sh; printf "%s\\n" "${PINNED_PATHS[@]}" "${READING_PATHS[@]}"'], cwd=REPO, env={**os.environ, "OUT": str(tmp_path)},
+                       capture_output=True, text=True, check=True)
+    paths = [p for p in r.stdout.split() if not p.startswith(":(")]
+    assert "scripts/lib/thresh.mjs" in paths and "scripts/lib/pooled.mjs" in paths and "sim" in paths      # the reading code is frozen from the registration
+    registration = adr[adr.index(MARK1):] if MARK1 in adr else ""
+    item10 = next(line for line in adr.split("\n") if line.startswith("10. *The runs are checked"))
+    for p in paths:
+        name = p + "/" if (REPO / p).is_dir() else p
+        assert f"`{name}`" in item10, p                                       # item 10 lists what the preflights pin
+        if registration:
+            assert f"`{name}`" in registration, p                            # and so does the registration paragraph
+    if registration:
+        assert "its tests excepted" in registration and "its README and `part2.py`" in registration
+        assert "part 2 adds the reading code" not in registration

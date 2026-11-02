@@ -22,12 +22,13 @@ if [ -n "${REG:-}" ] && [ "${ALLOW_REG_OVERRIDE:-}" != 1 ]; then fail "REG is se
 REG=${REG:-$(first_commit_with "$MARKER")}
 [ -n "$REG" ] || fail "cannot find the commit that carries ADR-062 part 2 (the text '$MARKER')"
 git merge-base --is-ancestor "$REG" HEAD || fail "the registration commit $REG is not an ancestor of HEAD"
-bad=$(pinned_problem "$REG" with-reading) || fail "code or data the arms read changed after the registration commit ${REG:0:12}: $bad"
-git diff --quiet "$REG" HEAD -- experiments/thresh/dev-selection.json || fail "the development selection changed after the registration commit ${REG:0:12}"
-# what part 1 of the record froze is what part 2 carries (or part 2 quotes the change), and the design text of the record is the registration's
+# what part 1 of the record froze (the paths ITS common.sh lists, the reading code among them) is what the working tree has, and what part 2 carries or part 2
+# quotes the change; the design text of the record is the registration's
 REG1=$(first_commit_with "$MARKER_ONE")
 [ -n "$REG1" ] || fail "cannot find the commit that carries the registration (part 1) of ADR-062"
 git merge-base --is-ancestor "$REG1" "$REG" || fail "the registration commit (part 1) is not an ancestor of the commit that carries part 2"
+bad=$(pinned_problem "$REG" "$REG1") || fail "code or data the arms read (or the reading code) changed after the registration commit ${REG:0:12}: $bad"
+git diff --quiet "$REG" HEAD -- experiments/thresh/dev-selection.json || fail "the development selection changed after the registration commit ${REG:0:12}"
 bad=$(part_diff_problem "$REG1" "$REG" "$ADR") || fail "$bad"
 bad=$(design_problem "$REG1") || fail "$bad"
 
@@ -36,6 +37,7 @@ bad=$(design_problem "$REG1") || fail "$bad"
 DEV_HEAD=$(grep -oE 'DEV_HEAD=[0-9a-f]{40}' <<< "$ADR" | head -1 | cut -d= -f2)
 [ -n "$DEV_HEAD" ] || fail "ADR-062 part 2 does not quote the commit the development stage was played from (DEV_HEAD=<40 hex>)"
 git cat-file -e "$DEV_HEAD^{commit}" 2>/dev/null || fail "the development commit $DEV_HEAD is not in this repository"
+git merge-base --is-ancestor "$REG1" "$DEV_HEAD" || fail "the development commit ${DEV_HEAD:0:12} does not descend from the registration commit (part 1) ${REG1:0:12}: the development stage cannot have been played from a commit that came before the registration"
 git merge-base --is-ancestor "$DEV_HEAD" "$REG" || fail "the development commit is not an ancestor of the registration commit"
 git diff --quiet "$DEV_HEAD" "$REG" -- "${SCREENED_PATHS[@]}" || fail "code or data the arms execute changed between the development commit ${DEV_HEAD:0:12} and the registration commit: $(git diff --name-only "$DEV_HEAD" "$REG" -- "${SCREENED_PATHS[@]}" | head -5 | tr '\n' ' ')"
 # ... and so did what each arm is: the table of arms, as the development commit's common.sh defines it and as this one does

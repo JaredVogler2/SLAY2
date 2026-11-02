@@ -251,7 +251,13 @@ async function buildWorld(options: Options = {}): Promise<World> {
         pastAct2Boss: { arm: 0.3, baseline: 0.29 },
         meanFloorDifference: 0.1,
         meanDeckSize: { arm: 22, baseline: 24.3, pairs },
-        identity: { beforePairs: 900, beforeDifferent: 0, bossPairs: 6000, bossDifferent: 0 },
+        identity: {
+          beforePairs: 900,
+          beforeDifferent: 0,
+          bossPairs: 6000,
+          bossDifferent: 0,
+          wallClockPairs: 1,
+        },
       };
     }
     write(path("experiments", "thresh", "dev-selection.json"), {
@@ -454,6 +460,7 @@ async function buildWorld(options: Options = {}): Promise<World> {
         beforeDifferent: 0,
         bossPairs: 30000,
         bossDifferent: 0,
+        wallClockPairs: 2,
         batches: ids,
         contentSha256: Object.fromEntries(ids.map((i) => [i, hex(i)])),
       });
@@ -1210,5 +1217,236 @@ describe("the partitions that are development", () => {
     expect(lib.roleOf("dev2")).toBe("development (dev2 partition): not a held-out result");
     expect(lib.roleOf("train")).toMatch(/^development/);
     for (const held of ["val", "val2", "val3"]) expect(lib.roleOf(held)).toBe("held-out");
+  });
+});
+
+// ---- the reading code, condition by condition ----------------------------------------------------------------------------------------------------------
+// The world-level tests above build whole repositories; these call the exported rule itself, so that each element of item 5 of the record (a strict comparison,
+// a divisor, a direction, a level) has a test that fails when it is changed.
+interface Head {
+  armOnly: number;
+  baselineOnly: number;
+  p: number;
+}
+interface Primary extends Head {
+  ci: [number, number];
+  level: number;
+}
+interface Reading {
+  verdict: string;
+  primary: string;
+  downgrade: string | null;
+  downgrades: string[];
+}
+interface Lib {
+  parseThresh: (a: { root: string; reports: Json[]; sizes?: { dev: number; val: number } }) => Json;
+  parseThreshWith: (
+    a: { root: string; reports: Json[] },
+    sizes: { dev: number; val: number },
+  ) => Json;
+  verdictOf: (a: Primary) => string;
+  readingOf: (a: Primary & { robust: Head; excludedFraction: number }) => Reading;
+  isNarrow: (a: { verdict: string; difference: number; ci: [number, number] }) => boolean;
+  advanceOf: (best: string, net: number, head: Head | null) => boolean;
+  bestOf: (nets: Record<string, number>) => string;
+  testsOf: (choice: {
+    advance: boolean;
+    arm: string | null;
+  }) => { key: string; arm: string; baseline: string }[];
+}
+async function loadLib(): Promise<Lib> {
+  const url = pathToFileURL(join(repo, "scripts", "lib", "thresh.mjs")).href;
+  return (await import(/* @vite-ignore */ url)) as Lib;
+}
+const ci = (lo: number, hi: number): [number, number] => [lo, hi];
+const UP: Primary = { armOnly: 300, baselineOnly: 200, p: 1e-6, ci: ci(0.001, 0.02), level: 0.05 };
+const DOWN: Primary = {
+  armOnly: 200,
+  baselineOnly: 300,
+  p: 1e-6,
+  ci: ci(-0.02, -0.001),
+  level: 0.05,
+};
+
+describe("the reading rule of item 5, condition by condition", () => {
+  it("passes only an arm that is ahead at a p below the level with an interval that excludes zero, and reverses only the mirror image", async () => {
+    const L = await loadLib();
+    expect(L.verdictOf(UP)).toBe("passed");
+    expect(L.verdictOf({ ...UP, ci: ci(0, 0.02) })).toBe("not-shown");
+    expect(L.verdictOf({ ...UP, p: 0.05 })).toBe("not-shown");
+    expect(L.verdictOf({ ...UP, p: 0.049999 })).toBe("passed");
+    expect(L.verdictOf({ ...UP, armOnly: 250, baselineOnly: 250 })).toBe("not-shown");
+    expect(L.verdictOf({ ...UP, armOnly: 200, baselineOnly: 300 })).toBe("not-shown");
+    expect(L.verdictOf(DOWN)).toBe("reversed");
+    expect(L.verdictOf({ ...DOWN, ci: ci(-0.02, 0) })).toBe("not-shown");
+    expect(L.verdictOf({ ...DOWN, ci: ci(-0.02, 0.001) })).toBe("not-shown");
+    expect(L.verdictOf({ ...DOWN, p: 0.05 })).toBe("not-shown");
+    expect(L.verdictOf({ ...DOWN, armOnly: 300, baselineOnly: 200 })).toBe("not-shown");
+  });
+
+  it("needs the all-pairs analysis to agree at an exact p below 0.05 and at most a tenth of the pairs dropped, and names every condition that withheld a reading", async () => {
+    const L = await loadLib();
+    const agree: Head = { armOnly: 262, baselineOnly: 238, p: 0.01 };
+    const behind: Head = { armOnly: 238, baselineOnly: 262, p: 0.01 };
+    const read = (primary: Primary, robust: Head, excludedFraction = 0.02) =>
+      L.readingOf({ ...primary, robust, excludedFraction });
+    expect(read(UP, agree)).toEqual({
+      verdict: "passed",
+      primary: "passed",
+      downgrade: null,
+      downgrades: [],
+    });
+    expect(read(UP, { ...agree, p: 0.049999 }).verdict).toBe("passed");
+    for (const p of [0.05, 0.2, 0.6])
+      expect(read(UP, { ...agree, p })).toMatchObject({
+        verdict: "not-shown",
+        primary: "passed",
+        downgrade: "robustness",
+      });
+    expect(read(UP, behind)).toMatchObject({ verdict: "not-shown", downgrade: "robustness" });
+    expect(read(UP, agree, 0.1).verdict).toBe("passed");
+    expect(read(UP, agree, 0.1001)).toMatchObject({
+      verdict: "not-shown",
+      downgrade: "excluded",
+      downgrades: ["excluded"],
+    });
+    expect(read(UP, { ...agree, p: 0.2 }, 0.3)).toMatchObject({
+      downgrade: "excluded",
+      downgrades: ["excluded", "robustness"],
+    });
+    // the mirror image: a reversal needs the all-pairs analysis to have the baseline ahead
+    expect(read(DOWN, behind)).toEqual({
+      verdict: "reversed",
+      primary: "reversed",
+      downgrade: null,
+      downgrades: [],
+    });
+    expect(read(DOWN, agree)).toMatchObject({
+      verdict: "not-shown",
+      primary: "reversed",
+      downgrade: "robustness",
+    });
+    expect(read(DOWN, { ...behind, p: 0.2 })).toMatchObject({
+      verdict: "not-shown",
+      downgrade: "robustness",
+    });
+    // a primary test that shows nothing names no condition
+    expect(read({ ...UP, p: 0.5 }, agree)).toEqual({
+      verdict: "not-shown",
+      primary: "not-shown",
+      downgrade: null,
+      downgrades: [],
+    });
+  });
+
+  it("calls a pass narrow when the lower end of its interval is under a quarter of the difference, and nothing else narrow", async () => {
+    const L = await loadLib();
+    expect(L.isNarrow({ verdict: "passed", difference: 0.01, ci: ci(0.0024, 0.02) })).toBe(true);
+    expect(L.isNarrow({ verdict: "passed", difference: 0.01, ci: ci(0.0026, 0.02) })).toBe(false);
+    expect(L.isNarrow({ verdict: "not-shown", difference: 0.01, ci: ci(0.0001, 0.02) })).toBe(
+      false,
+    );
+    expect(L.isNarrow({ verdict: "reversed", difference: -0.01, ci: ci(-0.02, -0.0001) })).toBe(
+      false,
+    );
+  });
+
+  it("advances the screen's choice only if its net is above zero, it is not 0.2 and it is ahead of 0.2 at an exact p below 0.20", async () => {
+    const L = await loadLib();
+    const head = (armOnly: number, baselineOnly: number, p: number): Head => ({
+      armOnly,
+      baselineOnly,
+      p,
+    });
+    expect(L.advanceOf("t030", 10, head(60, 40, 0.05))).toBe(true);
+    expect(L.advanceOf("t030", 10, head(60, 40, 0.19999))).toBe(true);
+    expect(L.advanceOf("t030", 10, head(40, 60, 0.05))).toBe(false);
+    expect(L.advanceOf("t030", 10, head(60, 40, 0.2))).toBe(false);
+    expect(L.advanceOf("t030", 10, head(50, 50, 0.01))).toBe(false);
+    expect(L.advanceOf("t030", 0, head(60, 40, 0.01))).toBe(false);
+    expect(L.advanceOf("t030", -3, head(60, 40, 0.01))).toBe(false);
+    expect(L.advanceOf("t020", 10, head(60, 40, 0.01))).toBe(false);
+    expect(() => L.advanceOf("t030", 10, null)).toThrow(/head-to-head/);
+  });
+
+  it("hands a tie of the screen to the smaller threshold and leaves the tests T1 alone, or T1, T2 and T3 with T3 against 0.2", async () => {
+    const L = await loadLib();
+    const flat = { t010: 5, t020: 5, t030: 5, t045: 5, t060: 5, tnone: 5 };
+    expect(L.bestOf(flat)).toBe("t010");
+    expect(L.bestOf({ ...flat, tnone: 6 })).toBe("tnone");
+    expect(L.bestOf({ ...flat, t045: 9, t060: 9 })).toBe("t045");
+    expect(L.testsOf({ advance: false, arm: null })).toEqual([
+      { key: "T1", arm: "t020", baseline: "s" },
+    ]);
+    expect(L.testsOf({ advance: true, arm: "t030" })).toEqual([
+      { key: "T1", arm: "t020", baseline: "s" },
+      { key: "T2", arm: "t030", baseline: "s" },
+      { key: "T3", arm: "t030", baseline: "t020" },
+    ]);
+  });
+});
+
+describe("what the reader refuses or carries that the world-level tests above leave open", () => {
+  it.each(["a_only", "b_only", "both", "neither"] as const)(
+    "refuses a class whose %s does not add up to the pooled table, its other counts and its p being right",
+    async (field) => {
+      const w = await buildWorld({ tests: { T1: every(300, 200) } });
+      w.amend("experiments/thresh/per-class/T1-defect.json", (j) => {
+        const tab = j.pairedWinTable as {
+          a_only: number;
+          b_only: number;
+          both: number;
+          neither: number;
+          mcnemar_p: number;
+        };
+        tab[field] += 1;
+        tab.mcnemar_p = mcnemarP(tab.a_only, tab.b_only);
+      });
+      expect(() => read(w)).toThrow(
+        new RegExp(`the classes' ${field} \\(\\d+\\) do not add up to the pooled one`),
+      );
+    },
+  );
+
+  it("carries the number of pairs the wall clock stopped, in the screen and in each design check, and refuses a record that lacks it", async () => {
+    const w = await buildWorld({ nets: NETS_PEAK });
+    const out = read(w) as unknown as {
+      screen: { rows: Record<string, { wallClockPairs: number }> };
+      identity: Record<string, { wallClockPairs: number }>;
+    };
+    expect(Object.values(out.screen.rows).map((r) => r.wallClockPairs)).toEqual([1, 1, 1, 1, 1, 1]);
+    expect(
+      Object.fromEntries(Object.entries(out.identity).map(([k, v]) => [k, v.wallClockPairs])),
+    ).toEqual({
+      t020: 2,
+      t030: 2,
+    });
+    for (const bad of [undefined, -1, 1.5, "2"]) {
+      const broken = await buildWorld({ nets: NETS_PEAK });
+      broken.amend("experiments/thresh/identity/t030.json", (j) => {
+        if (bad === undefined) delete j.wallClockPairs;
+        else j.wallClockPairs = bad;
+      });
+      expect(() => read(broken)).toThrow(/not a passing design check of t030/);
+    }
+    for (const bad of [undefined, -1]) {
+      const dev = await buildWorld({ stage: "screened", nets: NETS_PEAK });
+      dev.amend("experiments/thresh/dev-selection.json", (j) => {
+        const identity = ((j.arms as Record<string, Json>).t030 as { identity: Json }).identity;
+        if (bad === undefined) delete identity.wallClockPairs;
+        else identity.wallClockPairs = bad;
+      });
+      expect(() => read(dev)).toThrow(/not a passing design check against S/);
+    }
+  });
+
+  it("takes the registered sizes only: a `sizes` property of the argument is not looked at, and the entry point of the tests is another function", async () => {
+    const w = await buildWorld({ nets: NETS_PEAK });
+    const L = await loadLib();
+    const args = { root: w.root, reports: w.reports };
+    const registered = L.parseThresh(args);
+    expect(L.parseThresh({ ...args, sizes: { dev: 64, val: 400 } })).toEqual(registered);
+    expect(() => L.parseThreshWith(args, { dev: 64, val: 400 })).toThrow();
+    expect(L.parseThreshWith(args, { dev: 3000, val: 15000 })).toEqual(registered);
   });
 });

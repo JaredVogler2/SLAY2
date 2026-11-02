@@ -90,8 +90,13 @@ def main() -> int:
         print(f"- T3, the choice against 0.2: {h['armOnly'] + h['baselineOnly']} discordant pairs in development, about {d3} held-out; exact test / interval at θ = 0.55, 0.60, 0.65, 0.70: "
               + ", ".join(f"{pw.power_exact(d3, t, alpha):.2f} / {pw.power_interval(d3, t, pairs, alpha):.2f}" for t in (0.55, 0.60, 0.65, 0.70))
               + f"; net wins for 80 %: {pw.net_needed(d3, alpha, pairs)}")
+        # (the share of the discordant pairs the arm would win is capped at 1: a choice that is discordant with S in fewer pairs than half of ADR-061's net is not a case
+        # the formula describes, and a power computed at a share above 1 would mean nothing)
+        theta2 = (d2 + 0.5 * r["netPerPair"] * pairs) / (2 * d2) if d2 > 0 else 1.0
+        note = "" if theta2 <= 1.0 else f" (θ capped at 1: half of ADR-061's net, {0.5 * r['netPerPair'] * pairs:.0f} wins, is more than the {d2} discordant pairs the choice has)"
+        theta2 = min(theta2, 1.0)
         print(f"- T2, the choice against S: {c['armOnly'] + c['baselineOnly']} discordant pairs in development, about {d2} held-out; exact test / interval at the effect of half of ADR-061's: "
-              f"{pw.power_exact(d2, (d2 + 0.5 * r['netPerPair'] * pairs) / (2 * d2), alpha):.2f} / {pw.power_interval(d2, (d2 + 0.5 * r['netPerPair'] * pairs) / (2 * d2), pairs, alpha):.2f}")
+              f"{pw.power_exact(d2, theta2, alpha):.2f} / {pw.power_interval(d2, theta2, pairs, alpha):.2f}{note}")
     print("\n### What the development batches counted (completed / wins / simulator errors / timeouts)")
     for tag in sel["arms"]:
         for arm in (tag,):

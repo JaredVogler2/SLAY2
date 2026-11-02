@@ -151,6 +151,8 @@ def test_part_2_numbers_are_printed_from_the_files(tmp_path):
     for tag in ts.GRID:
         assert f"- {tag} (threshold {ts.GRID[tag]})" in text
     assert "head-to-head of the best against 0.2: 4 / 0 discordant" in text
+    t2 = next(line for line in text.splitlines() if line.startswith("- T2, the choice against S:"))
+    assert "θ capped at 1" in t2 and "nan" not in t2 and "inf" not in t2.lower()                # (few discordant pairs: half of ADR-061's net is more than they hold)
     assert "Ironclad 64/8/0/0; Defect 64/8/0/0" in text
     sha = hashlib.sha256((work / "experiments" / "cardvalue" / "ironclad-a0-v2.json").read_bytes()).hexdigest()
     assert f"`experiments/cardvalue/ironclad-a0-v2.json`: `{sha}`" in text

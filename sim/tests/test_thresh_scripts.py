@@ -131,7 +131,7 @@ def test_the_other_scripts_name_the_batches_and_the_tests_as_the_analysis_does()
     assert played.DEFAULT_SEEDS == ts.SEEDS_FILE and played.DEFAULT_PARTITIONS == [ts.DEV_PARTITION, ts.VAL_PARTITION]
 
 
-def test_every_path_the_registration_pins_exists_in_the_repository_except_the_reader_not_yet_written(tmp_path):
+def test_every_path_the_registration_pins_exists_in_the_repository_and_the_reader_is_one_of_them(tmp_path):
     pinned = shell(tmp_path, 'printf "%s\\n" "${PINNED_PATHS[@]}"')
     assert "sim" in pinned and "scripts/studies/thresh" in pinned and "scripts/verify-pooled.py" in pinned and ":(exclude)sim/tests" in pinned
     for p in pinned:
@@ -140,7 +140,11 @@ def test_every_path_the_registration_pins_exists_in_the_repository_except_the_re
     screened = shell(tmp_path, 'printf "%s\\n" "${SCREENED_PATHS[@]}"')
     assert ":(exclude)sim/slay2_sim/threshstudy.py" in screened and "sim/slay2_sim" in screened and not any(p.startswith("scripts/") for p in screened)
     reading = shell(tmp_path, 'printf "%s\\n" "${READING_PATHS[@]}"')
-    assert reading == ["scripts/lib/thresh.mjs", "scripts/lib/pooled.mjs"] and (REPO / "scripts/lib/pooled.mjs").exists()
+    assert reading == ["scripts/lib/thresh.mjs", "scripts/lib/pooled.mjs"] and all((REPO / p).exists() for p in reading)
+    # what the registration froze is read from the common.sh of its commit and is both lists, in this order (the reading code is frozen from the registration)
+    registered = shell(tmp_path, 'registered_paths "$(git rev-parse HEAD)"')
+    assert registered == [*pinned, *reading]
+    assert shell(tmp_path, 'registered_paths 0000000000000000000000000000000000000000; echo "rc=$?"') == ["rc=1"]       # a commit that has no such file lists nothing
 
 
 # ---- verify_batch.py -----------------------------------------------------------------------------------------------------------------------------

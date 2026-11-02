@@ -11,8 +11,9 @@ import { EXACT, closeP, commonBatchProblem, mcnemarExact, readPooledHeldOut } fr
 // and T3 (the choice against 0.2), each a pooled paired test of two classes on the 15,000 val3 seeds of each class, read at 0.05 divided by the number of
 // tests played, run once. Until the files exist the output carries the stage the study is at: registered; screened (development numbers only); tested.
 //
-// This file and pooled.mjs are the reading code that part 2 of the record freezes before the first held-out game. The reading rule below is item 5 of the
-// record, written again here on purpose (it is not imported from the reader of the earlier study).
+// This file and pooled.mjs are the reading code, frozen from the registration (part 1) of the record like the code that plays the games: a change of either after it
+// is admitted only if part 2 quotes the SHA-256 of the change. The reading rule below is item 5 of the record, written again here on purpose (it is not imported
+// from the reader of the earlier study).
 export const TH = {
   adr: "ADR-062",
   headline: "does the Act-2 pickiness result hold on seeds nobody has played",
@@ -111,13 +112,20 @@ const sameSet = (a, b) => canonical([...a].sort()) === canonical([...b].sort());
 const levelLabel = (n) => `0.05 / ${String(n)}`;
 
 /**
- * Reads the study from the repository at `root` and the exporter's batch `reports`. `sizes` ({dev, val}: the games in a batch of each stage) is for the tests,
- * which play no game and build batches of a few hundred records; the exporter never passes it and the registered sizes are those of `TH`. The names of the
- * batches carry the registered sizes whatever `sizes` says.
+ * Reads the study from the repository at `root` and the exporter's batch `reports`, at the registered sizes (`TH`): a property called `sizes` in the argument is
+ * not looked at.
  */
-export function parseThresh({ root, reports, sizes }) {
-  const nDev = sizes?.dev ?? TH.devSeeds;
-  const nVal = sizes?.val ?? TH.seeds;
+export function parseThresh({ root, reports }) {
+  return parseThreshWith({ root, reports }, { dev: TH.devSeeds, val: TH.seeds });
+}
+
+/**
+ * For the tests only: `parseThresh` at other sizes (`sizes`: the games in a batch of each stage), because the tests play no game and build batches of a few hundred
+ * records. The names of the batches carry the registered sizes whatever `sizes` says. The exporter calls `parseThresh`, which has no way to take sizes.
+ */
+export function parseThreshWith({ root, reports }, sizes) {
+  const nDev = sizes.dev;
+  const nVal = sizes.val;
   const decisionLog = join(root, "docs", "DECISIONS.md");
   const decisions = existsSync(decisionLog) ? readFileSync(decisionLog, "utf8") : "";
   const at = decisions.indexOf(`${TH.adr}: ${TH.headline}`);
@@ -338,7 +346,9 @@ export function parseThresh({ root, reports, sizes }) {
     if (
       r.identity?.beforeDifferent !== 0 ||
       r.identity.bossDifferent !== 0 ||
-      !(r.identity.beforePairs > 0)
+      !(r.identity.beforePairs > 0) ||
+      !Number.isInteger(r.identity.wallClockPairs) ||
+      r.identity.wallClockPairs < 0
     )
       throw new Error(`${ctx}: not a passing design check against S (${TH.adr} item 6 stops the study)`);
     nets[tag] = r.net;
@@ -358,6 +368,7 @@ export function parseThresh({ root, reports, sizes }) {
       pastAct2Boss: r.pastAct2Boss,
       meanFloorDifference: r.meanFloorDifference,
       meanDeckSize: r.meanDeckSize ?? null,
+      wallClockPairs: r.identity.wallClockPairs,
     };
   }
   const best = bestOf(nets);
@@ -483,7 +494,9 @@ export function parseThresh({ root, reports, sizes }) {
       idn.beforeDifferent !== 0 ||
       idn.bossDifferent !== 0 ||
       !(idn.beforePairs > 0) ||
-      !(idn.bossPairs > 0)
+      !(idn.bossPairs > 0) ||
+      !Number.isInteger(idn.wallClockPairs) ||
+      idn.wallClockPairs < 0
     )
       throw new Error(
         `experiments/thresh/identity/${arm}.json: not a passing design check of ${arm} against S (${TH.adr} item 6 stops the study)`,
@@ -496,7 +509,8 @@ export function parseThresh({ root, reports, sizes }) {
         throw new Error(
           `experiments/thresh/identity/${arm}.json: it was not made from the content of ${id}`,
         );
-    return { beforePairs: idn.beforePairs, bossPairs: idn.bossPairs };
+    // the pairs in which either game was stopped by the wall clock are not compared (they say nothing about the play) and are counted: the number is carried, not hidden
+    return { beforePairs: idn.beforePairs, bossPairs: idn.bossPairs, wallClockPairs: idn.wallClockPairs };
   };
   const arms = [...new Set(tests.flatMap((t) => [t.arm, t.baseline]))];
   const identity = {};

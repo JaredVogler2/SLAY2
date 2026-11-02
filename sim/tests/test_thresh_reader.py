@@ -27,7 +27,7 @@ SIZES = {"dev": 64, "val": 400}      # games in a batch of the synthetic world (
 
 READ = """
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { parseThresh } from "%(reader)s";
+import { parseThreshWith } from "%(reader)s";
 const root = process.argv[2];
 const dir = `${root}/experiments/batches`;
 const reports = readdirSync(dir).filter((n) => existsSync(`${dir}/${n}/manifest.json`)).map((n) => {
@@ -40,7 +40,7 @@ const reports = readdirSync(dir).filter((n) => existsSync(`${dir}/${n}/manifest.
     sampleAudit: sa ? { drawn: sa.sample.drawn, verified: sa.verified, ledgerOk: sa.ledger.ok } : null,
   };
 });
-console.log(JSON.stringify(parseThresh({ root, reports, sizes: { dev: %(dev)d, val: %(val)d } })));
+console.log(JSON.stringify(parseThreshWith({ root, reports }, { dev: %(dev)d, val: %(val)d })));
 """
 
 

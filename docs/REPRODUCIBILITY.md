@@ -161,7 +161,7 @@ The seed file `experiments/seeds/ironclad-a0-v3.json` is made by `python3 -m sla
 
 ### The threshold study, command by command
 
-Registered in ADR-062 (two parts: the design before any game, the frozen choices after the development screen and before any held-out game). Every step below is a script of `scripts/studies/thresh/` (frozen from the commit that registers the first part) and refuses to run twice or from the wrong commit.
+Registered in ADR-062 (two parts: the design before any game, the frozen choices after the development screen and before any held-out game). The steps that play or pool games (`dev.sh`, `run-val.sh`, `select-dev.sh`, `pool.sh`) are scripts of `scripts/studies/thresh/` (frozen from the commit that registers the first part, with the reading code `scripts/lib/thresh.mjs` and `scripts/lib/pooled.mjs`) and refuse to run twice or from the wrong commit; `power.py`, `screen_sim.py`, `part2.py`, `pinned-diff.sh` and `audit.sh` only print or audit and can be run again.
 
 ```bash
 export PY=python3 SLAY2_EXTERNAL_ROOT=/path/to/external/checkouts OMP_NUM_THREADS=1
@@ -171,8 +171,9 @@ bash scripts/studies/thresh/dev.sh 4            # S and six thresholds on the 3,
 bash scripts/studies/thresh/audit.sh dev        # every win re-derived, a 40-game sample of every batch (AUDIT_JOBS=4 four at a time)
 bash scripts/studies/thresh/select-dev.sh       # the registered rule, once: experiments/thresh/dev-selection.json
 python3 scripts/studies/thresh/part2.py         # the numbers of part 2 of the record (the frozen choices)
-bash scripts/studies/thresh/pinned-diff.sh      # what the registration froze and has changed since ("no change", or the PINNED_DIFF line part 2 has to quote)
+bash scripts/studies/thresh/pinned-diff.sh      # what the registration froze and has changed since (commit any such change first; "no change", or the PINNED_DIFF line part 2 has to quote)
 python3 -m slay2_sim.threshstudy verify --batches experiments/batches --selection experiments/thresh/dev-selection.json   # the selection is what the registered rule gives on the development batches
+# part 2 of the record is committed with the 14 development batches and the selection, and pushed, before the next line
 bash scripts/studies/thresh/run-val.sh 4        # S, 0.2 and the screen's choice on the 15,000 val3 seeds of each class, from the commit that carries part 2
 bash scripts/studies/thresh/audit.sh val
 bash scripts/studies/thresh/pool.sh             # T1 (and T2, T3 if the screen advanced a threshold) once, the design checks, the all-pairs analysis, the independent recomputation

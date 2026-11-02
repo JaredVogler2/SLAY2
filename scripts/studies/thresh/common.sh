@@ -48,14 +48,30 @@ PINNED_PATHS=(sim scripts/studies/thresh scripts/verify-pooled.py packages/game-
 # record) and in the commit that registers the held-out run, so that the arms chosen are the arms that were screened. The analysis tool of the study
 # (threshstudy.py) plays no game and is left out; the definitions of the arms in this file are compared as a table of what each arm runs (arm_table, below).
 SCREENED_PATHS=(sim/slay2_sim ':(exclude)sim/slay2_sim/threshstudy.py' packages/game-data/data experiments/cardvalue experiments/seeds external/pins.json)
-# The reading code: written during the development stage and frozen by part 2 of the record (before the first held-out game), checked again when the tests are
-# pooled. The development stage does not read it.
+# The reading code, which turns the pooled files into "passed", "not shown" or "reversed" (item 5 of the record): written, tested and committed before the registration and
+# frozen from it like the rest. The development stage does not read it; the held-out tests are read by it.
 READING_PATHS=(scripts/lib/thresh.mjs scripts/lib/pooled.mjs)
-# What differs between a commit and the working tree (tracked files, so uncommitted edits count) in the pinned paths (and, from part 2 on, the reading paths).
-# Prints it and fails if anything does, or if a path the registration pins does not exist (a pathspec that matches nothing would make `git diff --quiet` succeed).
-pinned_problem() { # <commit> [with-reading]
-  local ref=$1 p paths=("${PINNED_PATHS[@]}")
-  [ "${2:-}" = with-reading ] && paths+=("${READING_PATHS[@]}")
+# What the registration (part 1) froze is what the common.sh OF THAT COMMIT lists in PINNED_PATHS and READING_PATHS, read from the commit (one pathspec a line), so that an
+# edit of this file after the registration cannot loosen what is compared. Fails if the commit has no such lists.
+registered_paths() { # <registration commit (part 1)>
+  local defs
+  defs=$(git show "$1:scripts/studies/thresh/common.sh" 2>/dev/null | grep -E '^(PINNED_PATHS|READING_PATHS)=\(') || return 1
+  [ "$(printf '%s\n' "$defs" | wc -l)" = 2 ] || return 1
+  ( eval "$defs" && printf '%s\n' "${PINNED_PATHS[@]}" "${READING_PATHS[@]}" )
+}
+# The change of the frozen paths between two commits as git's raw diff, which gives the mode and the full object id of each side of each changed file and which no
+# setting of git alters (the textual diff abbreviates the ids to core.abbrev, which grows with the repository); the SHA-256 of these lines is what part 2 quotes
+# as PINNED_DIFF=.
+frozen_change() { # <commit 1> <commit 2> <pathspec>...
+  local r1=$1 r2=$2; shift 2
+  git diff --raw --no-abbrev --no-renames "$r1" "$r2" -- "$@"
+}
+# What differs between a commit and the working tree (tracked files, so uncommitted edits count) in the paths the registration (part 1) froze. Prints it and fails if
+# anything does, or if a path the registration pins does not exist (a pathspec that matches nothing would make `git diff --quiet` succeed).
+pinned_problem() { # <commit> <registration commit (part 1)>
+  local ref=$1 p paths=()
+  while IFS= read -r p; do paths+=("$p"); done < <(registered_paths "$2")
+  [ "${#paths[@]}" -gt 0 ] || { echo "cannot read from the registration commit ${2:0:12} which paths it froze"; return 1; }
   for p in "${paths[@]}"; do
     case "$p" in ':('*) continue ;; esac
     [ -e "$p" ] || { echo "$p does not exist"; return 1; }
@@ -92,13 +108,15 @@ design_problem() { # <registration commit>: the design text at HEAD is the one t
   echo "the design text of ADR-062 (everything before the registration paragraph) is not the one the registration commit ${1:0:12} carries: later notes belong in addenda, below part 2"
   return 1
 }
-part_diff_problem() { # <part-1 commit> <part-2 commit> <ADR text>: what the registration froze is unchanged at part 2, or part 2 quotes the SHA-256 of the change
-  local r1=$1 r2=$2 adr=$3 sha quoted
-  git diff --quiet "$r1" "$r2" -- "${PINNED_PATHS[@]}" && return 0
-  sha=$(git diff --binary "$r1" "$r2" -- "${PINNED_PATHS[@]}" | sha256sum | cut -d' ' -f1)
+part_diff_problem() { # <part-1 commit> <part-2 commit> <ADR text>: what the registration froze (the paths its common.sh lists) is unchanged at part 2, or part 2 quotes the SHA-256 of the change
+  local r1=$1 r2=$2 adr=$3 sha quoted p paths=()
+  while IFS= read -r p; do paths+=("$p"); done < <(registered_paths "$r1")
+  [ "${#paths[@]}" -gt 0 ] || { echo "cannot read from the registration commit ${r1:0:12} which paths it froze"; return 1; }
+  [ -z "$(frozen_change "$r1" "$r2" "${paths[@]}")" ] && return 0
+  sha=$(frozen_change "$r1" "$r2" "${paths[@]}" | sha256sum | cut -d' ' -f1)
   quoted=$(grep -oE 'PINNED_DIFF=[0-9a-f]{64}' <<< "$adr" | head -1 | cut -d= -f2)
   [ "$quoted" = "$sha" ] && return 0
-  echo "what the registration froze changed between the registration commit ${r1:0:12} and part 2 ($(git diff --name-only "$r1" "$r2" -- "${PINNED_PATHS[@]}" | head -5 | tr '\n' ' ')); part 2 has to quote the SHA-256 of that change as PINNED_DIFF=$sha, and an addendum has to say why"
+  echo "what the registration froze changed between the registration commit ${r1:0:12} and part 2 ($(git diff --name-only --no-renames "$r1" "$r2" -- "${paths[@]}" | head -5 | tr '\n' ' ')); part 2 has to quote the SHA-256 of that change as PINNED_DIFF=$sha, and an addendum has to say why"
   return 1
 }
 

@@ -139,6 +139,7 @@ def test_a_dev_shallow_clone_is_refused(tmp_path):
     "scripts/studies/thresh/robustness.py", "scripts/studies/thresh/verify_all.py", "scripts/studies/thresh/seeds_played.py", "scripts/studies/thresh/audit.sh",
     "scripts/studies/thresh/verify_batch.py", "scripts/studies/thresh/dev.sh", "scripts/studies/thresh/preflight-val.sh", "experiments/seeds/ironclad-a0-v4.json",
     "external/pins.json", "scripts/verify-pooled.py", "experiments/cardvalue/ironclad-a0-v2.json",
+    "scripts/lib/thresh.mjs", "scripts/lib/pooled.mjs",   # the reading code is frozen from the registration, like the rest
 ])
 def test_code_or_data_that_changed_after_the_registration_commit_stops_the_dev_stage(tmp_path, path):
     work = build_dev_world(tmp_path)
@@ -148,11 +149,10 @@ def test_code_or_data_that_changed_after_the_registration_commit_stops_the_dev_s
 
 
 @pytest.mark.parametrize("path", [
-    "sim/tests/stub.txt", "sim/tests/test_anything.py", "scripts/studies/thresh/README.md", "docs/STATUS.md",
-    "scripts/lib/thresh.mjs", "scripts/lib/pooled.mjs",   # the reading code is written during the development stage and pinned by part 2, not by part 1
+    "sim/tests/stub.txt", "sim/tests/test_anything.py", "scripts/studies/thresh/README.md", "docs/STATUS.md", "scripts/export-site-data.mjs", "apps/web/test/anything.test.ts",
 ])
 def test_what_runs_nothing_in_the_dev_stage_may_change_after_the_registration_commit(tmp_path, path):
-    """The tests of the harness, the README of the folder, the documents and the reader (pinned from part 2) are not pinned by part 1."""
+    """The tests of the harness, the README of the folder, the documents and the site's own code (the exporter, the pages) are not pinned by part 1."""
     work = build_dev_world(tmp_path)
     (work / path).parent.mkdir(parents=True, exist_ok=True)
     push_change(work, path, ((work / path).read_text() if (work / path).exists() else "") + "\n# changed\n")
@@ -356,7 +356,7 @@ def test_the_detector_of_fresh_seed_games_reads_only_the_first_episode_and_survi
 
 def build_val_world(
     tmp: Path, advance: str | None = None, marker: str = MARKER2, screened_change: bool = False, dev_head: str | None = "auto", between: str | None = None,
-    quote_diff: bool = False, design_edit: bool = False, selection_edit=None,
+    quote_diff: bool = False, design_edit: bool = False, selection_edit=None, dev_before_registration: bool = False,
 ) -> Path:
     """A work tree whose HEAD is a part-2 commit on the remote, with the selection, the development batches and the value files the record quotes.
 
@@ -364,16 +364,21 @@ def build_val_world(
     batches are synthetic games with a known answer (``test_threshstudy``) under manifests as the harness writes them, and the selection is what ``threshstudy dev``
     writes for them; commit B is part 2 of the record. ``advance="t030"`` has 0.3 ahead of 0.2 in the development games; ``selection_edit`` changes the selection's
     JSON before its hash is quoted (a selection that is no longer what the rule gives); ``between`` changes something after commit A; ``quote_diff`` has part 2 quote
-    the SHA-256 of what changed in the frozen paths; ``design_edit`` changes the design text of the record after the registration."""
+    the SHA-256 of what changed in the frozen paths (committed first: it is the hash of commits); ``design_edit`` changes the design text of the record after the
+    registration; ``dev_before_registration`` has the development stage played from a commit that came before the registration."""
     work = new_repo(tmp)
     files = common(work, "shown_files")
     save_json(work / SEEDS, make_seed_manifest("ironclad-a0-v4", 20261025, {**SIZES, "dev2": 5, "val3": 5}))
     (work / "docs").mkdir()
     design = "## 2026-11-02 — ADR-062: the study\n\nPart 1 text.\n\n"
     part1 = f"**{MARKER1}.**\nThe registration paragraph of part 1.\n"
+    if dev_before_registration:
+        (work / "docs" / "DECISIONS.md").write_text("## 2026-11-01 — ADR-061: an earlier record\n\nNothing about the threshold study yet.\n")
+        sh("git add -A && git commit -q -m before-the-registration && git push -q origin main", work)
+    pre_commit = head(work) if dev_before_registration else None
     (work / "docs" / "DECISIONS.md").write_text(design + part1)
     sh("git add -A && git commit -q -m dev-commit && git push -q origin main", work)
-    dev_commit = head(work)
+    dev_commit = pre_commit or head(work)
     if screened_change:
         (work / "sim" / "slay2_sim" / "stub.txt").write_text("the code the arms execute changed after the development stage\n")
     # what changes between the development commit and part 2
@@ -385,6 +390,19 @@ def build_val_world(
     if between == "arm":             # the definition of an arm
         c = work / "scripts" / "studies" / "thresh" / "common.sh"
         c.write_text(c.read_text().replace("STUDY_ALPHA=0.05 ", "STUDY_ALPHA=0.10 ", 1))
+    if between == "reader":          # the reading code, which is frozen from the registration like the rest
+        r = work / "scripts" / "lib" / "thresh.mjs"
+        r.write_text(r.read_text() + "// the code that reads the verdict changed after the development stage\n")
+    if between == "loosened":        # the list of what is frozen is shortened in common.sh and a frozen script changes: what is compared is the registration's own list
+        c = work / "scripts" / "studies" / "thresh" / "common.sh"
+        before = c.read_text()
+        c.write_text(before.replace("PINNED_PATHS=(sim scripts/studies/thresh ", "PINNED_PATHS=(sim ", 1))
+        assert c.read_text() != before
+        p = work / "scripts" / "studies" / "thresh" / "pool.sh"
+        p.write_text(p.read_text() + "\n# the pooling changed after the development stage\n")
+    if quote_diff and (between or screened_change):
+        # (the quote is the hash of commits: the change of the frozen paths is committed first, as `pinned-diff.sh` requires)
+        sh("git add -A -- sim scripts packages external experiments/cardvalue experiments/seeds && git commit -q -m the-change-of-the-frozen-paths && git push -q origin main", work)
     # the development batches and the selection the rule gives for them
     build_batches(work / "experiments", **({"t020": {"gain": 2}, "t030": {"gain": 4}} if advance == "t030" else {}))
     seeds_sha = sha_of(work / SEEDS)
@@ -562,12 +580,17 @@ def test_the_development_commit_must_be_quoted_known_and_the_code_it_screened_un
 
 
 def test_what_may_change_between_the_development_commit_and_part_two_and_what_may_not(tmp_path):
-    # the frozen paths (the analysis tool, the scripts) may change before part 2 only if part 2 quotes the SHA-256 of the change; the arms the screen played may not
-    for what in ("analysis", "script"):
+    # the frozen paths (the analysis tool, the scripts, the reading code, and the list of what is frozen itself) may change before part 2 only if part 2 quotes the
+    # SHA-256 of the change; the arms the screen played may not
+    for what in ("analysis", "script", "reader", "loosened"):
         r = preflight_val(build_val_world(tmp_path / what, between=what))
         assert r.returncode != 0 and "what the registration froze changed" in r.stderr and "PINNED_DIFF=" in r.stderr, (what, r.stderr)
         r = preflight_val(build_val_world(tmp_path / f"{what}-quoted", between=what, quote_diff=True))
         assert r.returncode == 0, (what, r.stderr)
+    r = preflight_val(build_val_world(tmp_path / "reader-named", between="reader"))
+    assert "scripts/lib/thresh.mjs" in r.stderr                                                              # the refusal names the reader
+    r = preflight_val(build_val_world(tmp_path / "loosened-named", between="loosened"))
+    assert "pool.sh" in r.stderr and "common.sh" in r.stderr                                                 # a shortened list does not hide the files it no longer lists
     r = preflight_val(build_val_world(tmp_path / "arm", between="arm", quote_diff=True))
     assert r.returncode != 0 and "the arms are not defined alike" in r.stderr                                # the definition of an arm, even quoted
 
@@ -714,17 +737,62 @@ def test_a_quote_of_the_change_has_to_be_the_hash_of_that_change(tmp_path):
     assert out.strip() == "no change"
 
 
+def pinned_diff(work: Path, check: bool = True, **env: str) -> subprocess.CompletedProcess:
+    return sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x"), **env}, check=check)
+
+
 def test_pinned_diff_names_the_files_and_the_line_to_quote_and_refuses_files_it_cannot_see(tmp_path):
     work = build_val_world(tmp_path)
     c = work / "scripts" / "studies" / "thresh" / "common.sh"
     c.write_text(c.read_text() + "\n# a later line\n")
-    out = sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x")}).stdout.splitlines()
+    r = pinned_diff(work, check=False)                                                                     # the hash is of commits: an uncommitted change is refused
+    assert r.returncode != 0 and "not committed" in r.stderr and "common.sh" in r.stderr
+    sh("git add -A && git commit -q -m later-line && git push -q origin main", work)
+    out = pinned_diff(work).stdout.splitlines()
     assert out[0] == "scripts/studies/thresh/common.sh" and out[1].startswith("PINNED_DIFF=") and len(out[1]) == len("PINNED_DIFF=") + 64
-    expect = hashlib.sha256(sh("git diff --binary $(git log -S'" + MARKER1 + "' --format=%H -- docs/DECISIONS.md | tail -1) -- scripts/studies/thresh/common.sh", work).stdout.encode()).hexdigest()
-    assert out[1] == "PINNED_DIFF=" + expect
-    (work / "scripts" / "studies" / "thresh" / "brand-new.sh").write_text("echo hi\n")           # untracked in a frozen path: the hash would not cover it
-    r = sh("bash scripts/studies/thresh/pinned-diff.sh", work, env={"OUT": str(work / "artifacts" / "x")}, check=False)
+    reg1 = sh("git log -S'" + MARKER1 + "' --format=%H -- docs/DECISIONS.md | tail -1", work).stdout.strip()
+    raw = sh(f"git diff --raw --no-abbrev --no-renames {reg1} HEAD -- scripts/studies/thresh/common.sh", work).stdout
+    assert raw.startswith(":100644 100644 ") and raw.rstrip().endswith("M\tscripts/studies/thresh/common.sh")        # full object ids, mode of each side
+    assert out[1] == "PINNED_DIFF=" + hashlib.sha256(raw.encode()).hexdigest()
+    (work / "scripts" / "studies" / "thresh" / "brand-new.sh").write_text("echo hi\n")                      # untracked in a frozen path: the hash would not cover it
+    r = pinned_diff(work, check=False)
     assert r.returncode != 0 and "not tracked yet" in r.stderr and "brand-new.sh" in r.stderr
+
+
+def test_the_quoted_hash_does_not_depend_on_a_setting_of_git_nor_on_the_size_of_the_repository(tmp_path):
+    """`git diff --binary` abbreviates the object ids to core.abbrev (which grows with the repository, so a hash quoted today could be refused after a `git gc`) and
+    its text depends on diff.noprefix, diff.context and the like: the hash is of the raw diff with full ids, which none of them changes."""
+    work = build_val_world(tmp_path)
+    c = work / "scripts" / "studies" / "thresh" / "common.sh"
+    c.write_text(c.read_text().replace("# The working tree is the commit", "# (a comment)\n# The working tree is the commit", 1))
+    (work / "scripts" / "lib" / "thresh.mjs").write_text("stub changed\n")
+    sh("git add -A && git commit -q -m changes && git push -q origin main", work)
+    base = pinned_diff(work).stdout
+    assert "PINNED_DIFF=" in base and "scripts/lib/thresh.mjs" in base
+    for key, value in (("core.abbrev", "12"), ("core.abbrev", "no"), ("diff.noprefix", "true"), ("diff.context", "0"), ("diff.renames", "copies"), ("diff.algorithm", "patience"),
+                       ("core.quotepath", "false"), ("diff.mnemonicprefix", "true")):
+        again = pinned_diff(work, GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0=key, GIT_CONFIG_VALUE_0=value).stdout
+        assert again == base, (key, value)
+    sh("git gc -q --aggressive --prune=now", work)                                                          # the objects are packed: a short id may need another digit
+    assert pinned_diff(work).stdout == base
+    twin = build_val_world(tmp_path / "twin", between="script", quote_diff=True)                            # and the preflight accepts a quote made under another setting
+    assert preflight_val(twin, GIT_CONFIG_COUNT="1", GIT_CONFIG_KEY_0="core.abbrev", GIT_CONFIG_VALUE_0="12").returncode == 0
+
+
+def test_a_list_of_frozen_paths_that_part_two_shortens_does_not_shorten_what_is_compared_afterwards(tmp_path):
+    work = build_val_world(tmp_path, between="loosened", quote_diff=True)                                   # (part 2 quotes the change, as it has to, and is accepted ...)
+    assert preflight_val(work).returncode == 0
+    push_change(work, "scripts/studies/thresh/pool.sh")                                                     # ... but its shortened list would not cover this later edit
+    r = preflight_val(work)
+    assert r.returncode != 0 and "changed after the registration commit" in r.stderr and "pool.sh" in r.stderr
+
+
+def test_the_development_stage_has_to_have_been_played_from_a_commit_that_descends_from_the_registration(tmp_path):
+    ok = build_val_world(tmp_path / "ok")
+    assert preflight_val(ok).returncode == 0
+    early = build_val_world(tmp_path / "early", dev_before_registration=True)
+    r = preflight_val(early)
+    assert r.returncode != 0 and "does not descend from the registration commit (part 1)" in r.stderr
 
 
 def test_the_design_text_of_the_record_is_the_registration_s_and_later_notes_belong_below_it(tmp_path):
@@ -782,6 +850,6 @@ def test_a_crash_of_the_detector_of_fresh_seed_games_stops_both_preflights_and_i
     dev = preflight_dev(build_dev_world(tmp_path / "dev"), PY=str(wrapper))
     assert dev.returncode != 0 and "cannot look for batches on the fresh seeds" in dev.stderr
     val = preflight_val(build_val_world(tmp_path / "val"), PY=str(wrapper))
-    assert val.returncode != 0 and ("cannot look for batches on the val3 seeds" in val.stderr or "cannot read the development selection" in val.stderr or "not what the registered rule" in val.stderr)
+    assert val.returncode != 0 and "cannot look for batches on the val3 seeds" in val.stderr          # (this message, and not another check that happens to fail first)
     # with the real interpreter nothing is wrong
     assert preflight_dev(build_dev_world(tmp_path / "dev2"), PY=sys.executable).returncode == 0
