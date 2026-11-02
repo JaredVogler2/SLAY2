@@ -279,6 +279,21 @@ export function levelText(level: number): string {
   return `${((1 - level) * 100).toFixed(2)} %`;
 }
 
+/** The level a test is read at, as the reader labels it ("0.05 / 3"); one test is read at the whole level, shown as "0.05". */
+export function levelLabelText(label: string): string {
+  return label.replace(/ \/ 1$/, "");
+}
+
+/** A floors figure with its sign (two decimals). */
+const signedFloors = (x: number): string => `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(2)}`;
+
+/** The tags of the arms as a person reads them, for the reason strings the reader writes ("t045" is 0.45). */
+function plainTags(s: string): string {
+  return s
+    .replace(/\bt(010|020|030|045|060)\b/g, (m) => THRESHOLD_TEXT[m as ThreshTag])
+    .replace(/\btnone\b/g, "taking no card in Act 2");
+}
+
 /** The one-sentence reading of a test, by its verdict and with its figures. */
 export function testSentence(t: ThreshTest, level: number): string {
   const d = pts(t.difference);
@@ -313,6 +328,32 @@ export function downgradeNote(t: ThreshTest): string {
   return `The primary test alone would read the arm as ${was}, but the result is read as not shown because ${reasons.join(", and because ")}.`;
 }
 
+/** Which pairs were left out of the first analysis and why; how many lost both games (the two counts overlap) is derived from the counts the reader exports. */
+export function excludedSentence(t: ThreshTest): string {
+  const both = t.robust.notCompleted.arm + t.robust.notCompleted.baseline - t.excluded;
+  return `${n(t.excluded)} of ${n(t.pairedSeeds)} pairs were left out of the first analysis because a game did not finish (a simulator error, a step or turn limit or a timeout), never read as a loss${both > 0 ? `; ${n(both)} of them lost both games` : ""}.`;
+}
+
+/**
+ * The boss shares and the floors beside a test's reading (ADR-062 item 5: every page that says "passed" also gives the shares past the first and the second
+ * boss). An arm plays the baseline's game until its first card reward of Act 2, which comes after the first boss, so that share is the same in every pair.
+ */
+export function bossSentence(t: ThreshTest): string {
+  const a1 = t.actOne;
+  const a2 = t.actTwo;
+  const same = a1.armOnly === 0 && a1.baselineOnly === 0;
+  const firstBoss = same
+    ? `${pctShare(a1.shares.baseline, 1)} of the paired games got past the first boss with either arm, the same in every pair by construction`
+    : `${pctShare(a1.shares.arm, 1)} of the paired games got past the first boss against ${pctShare(a1.shares.baseline, 1)} (${n(a1.armOnly)} pairs in which only the arm did, ${n(a1.baselineOnly)} in which only the baseline did)`;
+  const f = t.floorDifference;
+  const range = `95 % interval ${signedFloors(f.ci95[0] ?? 0)} to ${signedFloors(f.ci95[1] ?? 0)}`;
+  const floors =
+    Math.abs(f.meanAMinusB) < 0.005
+      ? `the runs reached the same number of floors on average, to two decimals (${range})`
+      : `the runs reached ${Math.abs(f.meanAMinusB).toFixed(2)} floors ${f.meanAMinusB < 0 ? "fewer" : "more"} on average (${range})`;
+  return `Along the way: ${firstBoss}; ${pctShare(a2.shares.arm, 1)} got past the second boss against ${pctShare(a2.shares.baseline, 1)} (${n(a2.armOnly)} pairs only the arm, ${n(a2.baselineOnly)} only the baseline, exact ${formatP(a2.p)}; secondary and uncorrected); ${floors}.`;
+}
+
 /** The second analysis of a test: the same comparison on every pair, a game that did not end in a win counting as not won. */
 export function robustSentence(t: ThreshTest): string {
   const r = t.robust;
@@ -339,7 +380,7 @@ export function screenSentence(s: ThreshScreen): string {
     const h = s.headToHead;
     return `${lead} It goes forward: it is ahead of 0.2 in a head-to-head on the same development seeds${h ? ` (${n(h.armOnly)} games only it won against ${n(h.baselineOnly)} only 0.2 won, exact ${formatP(h.p)})` : ""}, so the held-out run tests it against the baseline and against 0.2 as well as repeating the test of 0.2.`;
   }
-  return `${lead} Nothing goes forward beyond 0.2 (${s.choice.reason}), so the held-out run repeats the test of 0.2 against the baseline and nothing else. That is not evidence that the thresholds are alike.`;
+  return `${lead} Nothing goes forward beyond 0.2 (${plainTags(s.choice.reason)}), so the held-out run repeats the test of 0.2 against the baseline and nothing else. That is not evidence that the thresholds are alike.`;
 }
 
 function list(items: readonly string[]): string {
@@ -356,7 +397,7 @@ export function meaningOf(results: Partial<Record<ThreshTestKey, ThreshTest>>): 
   const t1 = results.T1;
   if (t1?.verdict === "passed")
     out.push(
-      "T1 passed: the Act-2 result of ADR-061 is shown again on seeds nobody had played, in Ironclad and Defect. It does not say why, and it does not say that 0.2 is the best threshold.",
+      "T1 passed: the Act-2 result of ADR-061 is shown again on seeds nobody had played, pooled over Ironclad and Defect (each class on its own is in the table). It does not say why, and it does not say that 0.2 is the best threshold.",
     );
   else if (t1?.verdict === "reversed")
     out.push(
@@ -391,11 +432,23 @@ export function meaningOf(results: Partial<Record<ThreshTestKey, ThreshTest>>): 
   return out;
 }
 
+/** A test's name inside a sentence ("the replication of 0.2 in Act 2"). */
+function inSentence(t: Pick<ThreshTest, "key" | "arm">): string {
+  if (t.key === "T1") return "the replication of 0.2 in Act 2";
+  const choice = armShort(t.arm);
+  return `the screen's choice (${choice}) against ${t.key === "T2" ? "the baseline" : "0.2"}`;
+}
+
 /** One sentence that says how the tests that were played came out (the cards carry every figure and caveat). */
 export function resultLine(results: Partial<Record<ThreshTestKey, ThreshTest>>): string {
   const played = THRESH_TEST_KEYS.flatMap((k) => (results[k] ? [results[k]] : []));
   const part = (ts: readonly ThreshTest[]): string =>
-    list(ts.map((t) => `${testInfo(t).title.toLowerCase()} (${pts(t.difference)})`));
+    list(
+      ts.map(
+        (t) =>
+          `${inSentence(t)} (${pctShare(t.shares.arm)} against ${pctShare(t.shares.baseline)} of the paired games won, ${pts(t.difference)})`,
+      ),
+    );
   const by = (v: ThreshVerdict) => played.filter((t) => t.verdict === v);
   const out: string[] = [];
   if (by("passed").length > 0) out.push(`Read as winning more games: ${part(by("passed"))}`);
@@ -429,4 +482,24 @@ export function advisorNote(
       `${list(passed.map((t) => armShort(t.arm)))} passed its own test against the baseline. The project decided in advance (ADR-061, addendum B; ADR-062 item 8) that a simulated second opinion for such a threshold may be added as an opt-in, labelled as a simulated pilot's result with these figures beside it, for Ironclad and Defect only and in a separate change with its own review; this page does not add it.`,
     );
   return out;
+}
+
+/**
+ * The first step after the held-out tests, for the open question "what wins a run": what the replication (T1) leaves undecided, in the order the project means to close it. Written for each
+ * way T1 can come out before any held-out game was played; a pass of T2 is named beside it. Nothing already published is withdrawn by a reading that is not a pass (ADR-062 item 8).
+ */
+export function nextStep(results: Partial<Record<ThreshTestKey, ThreshTest>>): string {
+  const t1 = results.T1;
+  const t2 = results.T2;
+  const choice =
+    t2?.verdict === "passed"
+      ? ` The development screen's choice, ${armName(t2.arm)}, also won more games than the baseline on seeds nobody had played (T2).`
+      : "";
+  const elsewhere =
+    "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).";
+  if (t1?.verdict === "passed")
+    return `The Act-2 result of ADR-061 was shown again on seeds nobody had played (ADR-062).${choice} The advisor is unchanged: an opt-in, labelled simulated second opinion for 0.2 in Ironclad and Defect is a separate change with its own review, and other thresholds are still untested on held-out seeds; nothing about the live game has been compared.`;
+  if (t1?.verdict === "reversed")
+    return `ADR-062 contradicted the Act-2 result of ADR-061 on seeds nobody had played: the baseline won more. Nothing already published is withdrawn; that result was one narrow pass of four tests and has now been contradicted.${choice} ${elsewhere}`;
+  return `ADR-062 did not show the Act-2 result of ADR-061 again on seeds nobody had played; not shown is not evidence of no effect, and the earlier result stands as one narrow pass of four tests, not replicated.${choice} ${elsewhere}`;
 }

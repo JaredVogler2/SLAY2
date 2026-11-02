@@ -31,3 +31,5 @@ After a reset of the machine: `artifacts/` is not committed, and `RESUME=1` need
 run), which holds the commit the stage started from. Check out that commit (the `environment.slay2.head` of the first finished batch's manifest names it) and write it again:
 `jq -r .environment.slay2.head experiments/batches/<first finished batch>/manifest.json > artifacts/thresh/dev-head.txt`. This is a control against mistakes (a batch played by hand taken for an
 interrupted run), not a lock: a record written by hand defeats it, and the record of the study says that none was played by hand.
+
+The study has been run (2026-11-02): the development stage 09:12 to 12:33 UTC (the screen advanced nothing), the held-out run 13:15 to 18:04 UTC (S and `t020` only), the audits, and one `pool.sh` at 18:44 to 18:46 UTC. Its outputs are committed (`experiments/batches/thresh-*`, `experiments/thresh/`), so the guards of the scripts now refuse a second run; the result is in `docs/DECISIONS.md` (ADR-062, "Result of ADR-062"), and `scripts/thresh-result-numbers.py` prints its figures from the exporter's file.

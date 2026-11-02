@@ -27,6 +27,7 @@ import {
 } from "@/lib/insights";
 import { act2Data, hasPrice, pctShare, pts } from "@/lib/act2";
 import { actsData, pctShare as winShare } from "@/lib/acts";
+import { nextStep, threshData } from "@/lib/thresh";
 import { ASCENSION_LEVELS, ascensionStatus, openQuestions } from "@/lib/insights-content";
 import { allSets } from "@/lib/cardvalues";
 import { allSurprises, atlasData, coverageRows, surprisesFor } from "@/lib/insights-server";
@@ -565,18 +566,24 @@ describe("what is not known yet", () => {
     const actsPassed = Object.values(acts?.tests?.results ?? {}).some(
       (t) => t.verdict === "passed",
     );
-    // once the acts study (ADR-061) is registered it is the next step; its own result then picks the one after
-    expect(q.later?.first).toMatch(
-      acts
-        ? acts.tests
-          ? actsPassed
-            ? /Test other thresholds/
-            : /elite thresholds/
-          : /Wait for the held-out tests of the acts study/
-        : anyPassed
-          ? /which acts' card picks carry the effect/
-          : /elite thresholds/,
-    );
+    // once the acts study (ADR-061) is registered it is the next step; its own result then picks the one after, and once the held-out
+    // tests of the threshold study (ADR-062) exist its result picks the step after that
+    const thresh = threshData();
+    if (thresh?.tests) {
+      expect(q.later?.first).toBe(nextStep(thresh.tests.results));
+    } else {
+      expect(q.later?.first).toMatch(
+        acts
+          ? acts.tests
+            ? actsPassed
+              ? /Test other thresholds/
+              : /elite thresholds/
+            : /Wait for the held-out tests of the acts study/
+          : anyPassed
+            ? /which acts' card picks carry the effect/
+            : /elite thresholds/,
+      );
+    }
     expect(q.later?.why).toContain("none is about winning");
   });
 

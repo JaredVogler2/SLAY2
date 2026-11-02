@@ -8,8 +8,11 @@ import {
   THRESH_TAGS,
   THRESHOLD_TEXT,
   advisorNote,
+  bossSentence,
   downgradeNote,
+  excludedSentence,
   formatP,
+  levelLabelText,
   levelText,
   meaningOf,
   narrowSentence,
@@ -112,12 +115,8 @@ function TestCard({ t, level }: { t: ThreshTest; level: number }) {
       <p className="mt-1 text-sm text-muted">{info.asks}</p>
       <p className="mt-2 text-sm text-parchment">{testSentence(t, level)}</p>
       {t.narrow ? <p className="mt-1 text-sm text-parchment">{narrowSentence(t)}</p> : null}
-      <p className="mt-1 text-xs text-muted">
-        {n(t.excluded)} of {n(t.pairedSeeds)} pairs were left out of the first analysis because a
-        game did not finish (a simulator error, a step or turn limit or a timeout), never read as a
-        loss. The share of the paired games that got past the second boss was{" "}
-        {pctShare(t.actTwo.shares.arm, 1)} against {pctShare(t.actTwo.shares.baseline, 1)}.
-      </p>
+      <p className="mt-1 text-xs text-muted">{bossSentence(t)}</p>
+      <p className="mt-1 text-xs text-muted">{excludedSentence(t)}</p>
       <p className="mt-1 text-xs text-muted">{robustSentence(t)}</p>
       {t.downgrade !== null ? <p className="mt-1 text-xs text-rose">{downgradeNote(t)}</p> : null}
       {disagreement ? <p className="mt-1 text-xs text-muted">{disagreement}</p> : null}
@@ -153,6 +152,9 @@ function TestCard({ t, level }: { t: ThreshTest; level: number }) {
                   Only the arm / only the baseline
                 </th>
                 <th scope="col" className={TH}>
+                  Past the first boss
+                </th>
+                <th scope="col" className={TH}>
                   At 0.01 on its own
                 </th>
               </tr>
@@ -170,6 +172,9 @@ function TestCard({ t, level }: { t: ThreshTest; level: number }) {
                   <td className={`${TD} num text-parchment`}>{pts(c.difference)}</td>
                   <td className={`${TD} num text-muted`}>
                     {c.armOnly} / {c.baselineOnly} · {formatP(c.p)}
+                  </td>
+                  <td className={`${TD} num text-muted`}>
+                    {pctShare(c.actOne.arm, 1)} against {pctShare(c.actOne.baseline, 1)}
                   </td>
                   <td className={`${TD} text-muted`}>{CLASS_VERDICT_TEXT[c.verdict]}</td>
                 </tr>
@@ -235,12 +240,14 @@ export function ThreshStudy({ data }: { data: ThreshData }) {
           <p className="max-w-3xl text-sm text-muted">
             Each arm played the same {n(data.seeds)} held-out seeds in each of the two classes as
             its baseline, with the relics kept, and was compared pair by pair on whether the game
-            was won. Each test is read at {tests.levelLabel} ({levelText(tests.level)} confidence):
-            the arm wins more only if the exact p is below that, the arm is ahead, the whole-seed
-            interval at that level excludes zero, a second analysis on all pairs (a game that did
-            not end in a win counts as not won) shows the same difference at an exact p below 0.05,
-            and no more than a tenth of the pairs were dropped. The tests share games, so they are
-            not independent, and a result of &ldquo;not shown&rdquo; is not &ldquo;no effect&rdquo;.
+            was won. Each test is read at {levelLabelText(tests.levelLabel)} (
+            {levelText(tests.level)} confidence): the arm wins more only if the exact p is below
+            that, the arm is ahead, the whole-seed interval at that level excludes zero, a second
+            analysis on all pairs (a game that did not end in a win counts as not won) shows the
+            same difference at an exact p below 0.05, and no more than a tenth of the pairs were
+            dropped.{" "}
+            {played.length > 1 ? "The tests share games, so they are not independent. " : ""}A
+            result of &ldquo;not shown&rdquo; is not &ldquo;no effect&rdquo;.
           </p>
           <div className="space-y-3">
             {played.map((t) => (
