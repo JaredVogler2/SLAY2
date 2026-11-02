@@ -1,0 +1,167 @@
+{
+  "bothCompleted": 28727,
+  "clusteredDifference": {
+    "ci95": [
+      0.0028205184029193825,
+      0.007078459274429646
+    ],
+    "ciAtLevel": {
+      "ci": [
+        0.0028205184029193825,
+        0.007078459274429646
+      ],
+      "level": 0.95
+    },
+    "definition": "pooled difference (A minus B) in the share that won the run, with a bootstrap interval that resamples whole seeds: the games of one seed in every class share the offer, so they are not independent pairs",
+    "endpoint": "win",
+    "meanAMinusB": 0.004943084902704772,
+    "method": "percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "cohort": {
+    "ascension": 0,
+    "characters": [
+      "Ironclad",
+      "Defect"
+    ],
+    "partition": "val3",
+    "profile": "veteran"
+  },
+  "contentSha256": "9e4c826db63dfb434c0ae36b9fff219c7fff49a5a04178ebb7e8832b682e9d10",
+  "difference": "a minus b",
+  "excludedNotCompleted": 1273,
+  "floorDifference": {
+    "ci95": [
+      -0.02979775124447384,
+      0.07693198036690213
+    ],
+    "meanAMinusB": 0.023392627145194415,
+    "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+  },
+  "kind": "pooled-paired-comparison",
+  "members": [
+    {
+      "a": {
+        "batchId": "thresh-val-t020-ironclad-a0-veteran-keeprelics-val3-n15000",
+        "contentSha256": "1847805a2a74206f20fcccc1caabeccf91bcc01c511ef603b6f505cb6f0e3edb",
+        "wins": 739
+      },
+      "b": {
+        "batchId": "thresh-val-s-ironclad-a0-veteran-keeprelics-val3-n15000",
+        "contentSha256": "bfb51bd49e47bddc51a7935be71ad51030598a41711a186649b2ee463f8e9848",
+        "wins": 636
+      },
+      "bothCompleted": 14248,
+      "character": "Ironclad",
+      "meanFloorDifference": 0.05200729927007299,
+      "pairedSeeds": 15000,
+      "reachedAct2": {
+        "a": 0.8112717574396406,
+        "b": 0.8112717574396406,
+        "pairedTable": {
+          "a_only": 0,
+          "b_only": 0,
+          "both": 11559,
+          "mcnemar_p": 1.0,
+          "neither": 2689
+        }
+      }
+    },
+    {
+      "a": {
+        "batchId": "thresh-val-t020-defect-a0-veteran-keeprelics-val3-n15000",
+        "contentSha256": "c10fd36cda938f4997fc3cd38ab5b2830d9ffb60b6f7f4a5680d8ceb05044b18",
+        "wins": 569
+      },
+      "b": {
+        "batchId": "thresh-val-s-defect-a0-veteran-keeprelics-val3-n15000",
+        "contentSha256": "852850e79c84e42b60705916ee69463f9c68c23d3ea5bad198813703f425fc33",
+        "wins": 530
+      },
+      "bothCompleted": 14479,
+      "character": "Defect",
+      "meanFloorDifference": -0.004765522480834312,
+      "pairedSeeds": 15000,
+      "reachedAct2": {
+        "a": 0.8293390427515712,
+        "b": 0.8293390427515712,
+        "pairedTable": {
+          "a_only": 0,
+          "b_only": 0,
+          "both": 12008,
+          "mcnemar_p": 1.0,
+          "neither": 2471
+        }
+      }
+    }
+  ],
+  "pairedSeeds": 30000,
+  "policies": {
+    "a": "rules_v2_late",
+    "b": "rules_v2"
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 23567,
+      "rate": 0.8203780415636858,
+      "wilson95": [
+        0.8158962491152448,
+        0.824774161682934
+      ]
+    },
+    "b": {
+      "games": 23567,
+      "rate": 0.8203780415636858,
+      "wilson95": [
+        0.8158962491152448,
+        0.824774161682934
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 0,
+      "b_only": 0,
+      "both": 23567,
+      "mcnemar_p": 1.0,
+      "neither": 5160
+    }
+  },
+  "reachedAct3": {
+    "a": {
+      "games": 6023,
+      "rate": 0.20966338288021721,
+      "wilson95": [
+        0.20499507407830037,
+        0.21440933063053758
+      ]
+    },
+    "b": {
+      "games": 5869,
+      "rate": 0.20430257249277683,
+      "wilson95": [
+        0.1996798064453223,
+        0.20900441102356132
+      ]
+    },
+    "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+    "pairedTable": {
+      "a_only": 1531,
+      "b_only": 1377,
+      "both": 4492,
+      "mcnemar_p": 0.004542539428456641,
+      "neither": 21327
+    }
+  },
+  "role": "held-out",
+  "schema": 1,
+  "wins": {
+    "a": 1308,
+    "b": 1166,
+    "pairedTable": {
+      "a_only": 558,
+      "b_only": 416,
+      "both": 750,
+      "mcnemar_p": 6.025507103498109e-06,
+      "neither": 27003
+    }
+  }
+}
