@@ -32,6 +32,7 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 | D14 | Insights data (ADR-059): the paired comparisons the lever ladder reads, how the shown-values pilot's games ended, an exploratory fit of the Act-1 and Act-2 boss fights (24,708 games), a counts-only inventory of the game | descriptions, measurements, one exploratory fit | yes: `/insights` | each input is checked against its own counts; the exploratory file is rebuilt by a test (counts and ids exactly, fitted numbers to 1e-9); no held-out result is new |
 | D15 | Act-2 study (ADR-060): the Act-2 fit (ten files), the development screen (45 batches, its selection) and the held-out run (15 batches, two pooled files, ten per-class files, identity, determinism and observed-endpoint records) | measurements | yes: `/insights` ("After the first boss"), `/methods#act2` | registered before any game (the second analysis before any held-out game); two tests played (one passed, one not shown), one not played by its screen; all 584 held-out and 476 development wins re-derived; both pooled files recomputed from the episodes by code of their own |
 | D16 | Acts study (ADR-061): the seed file `experiments/seeds/ironclad-a0-v3.json` (v2's four partitions and a fifth, `val2`, of 3,000 seeds no study had played) and the held-out run (25 batches, 75,000 games, with their win and sample audits), four pooled files, twenty per-class comparisons, the design checks, the all-pairs analysis and the independent recomputation | measurements | yes: `/insights#acts`, `/methods#acts` | registered before any game on the new seeds, after an independent review of the record and its code; three tests passed and one was not shown; all 1,465 held-out wins re-derived and 25 of 25 sample audits passed; every pooled file recomputed from the episodes by code of its own as a step of `pool.sh` (92 exact checks a file, 0 problems) |
+| D17 | Threshold study (ADR-062): the seed file `experiments/seeds/ironclad-a0-v4.json` (v3's partitions and two more, `dev2` of 3,000 seeds and `val3` of 15,000, that no study has played) and, once played, the development screen (14 batches) and the held-out run (4 or 6 batches) | measurements (none yet) | not yet | registered before any game on the new seeds, after two independent reviews of the record and its code; the screen's selection rule and the held-out tests are fixed in the record |
 | M1 | Exact calculators | mathematics | yes | 739 golden cases, published tables, brute force, properties |
 | M2 | Draft advisor v1 (the deck index) | heuristic | yes | **uncalibrated**, never a probability; its synergy term is M8 |
 | M3 | Card-value second opinion | ridge logistic regression | yes | held-out tests, per class; and once at Ascension 9 (ADR-058) |
@@ -95,18 +96,18 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val, val2) | 29 | 63,000 | 61,827 | 1,218 | 1,171 | 2 |
-| Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
-| Ironclad | held-out (val, val2) | 32 | 67,300 | 65,809 | 1,752 | 1,489 | 2 |
-| Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
-| Necrobinder | held-out (val, val2) | 29 | 63,000 | 62,154 | 15 | 828 | 18 |
-| Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
-| Regent | held-out (val, val2) | 29 | 63,000 | 61,794 | 148 | 680 | 526 |
-| Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
-| Silent | held-out (val, val2) | 29 | 63,000 | 62,766 | 0 | 234 | 0 |
-| Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
-| **All classes** | **held-out (val, val2)** | **148** | **319,300** | **314,350** | **3,133** | **4,402** | **548** |
-| **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
+| Defect | held-out (val, val2, val3) | 29 | 63,000 | 61,827 | 1,218 | 1,171 | 2 |
+| Defect | development (train, dev, dev2) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
+| Ironclad | held-out (val, val2, val3) | 32 | 67,300 | 65,809 | 1,752 | 1,489 | 2 |
+| Ironclad | development (train, dev, dev2) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
+| Necrobinder | held-out (val, val2, val3) | 29 | 63,000 | 62,154 | 15 | 828 | 18 |
+| Necrobinder | development (train, dev, dev2) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
+| Regent | held-out (val, val2, val3) | 29 | 63,000 | 61,794 | 148 | 680 | 526 |
+| Regent | development (train, dev, dev2) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
+| Silent | held-out (val, val2, val3) | 29 | 63,000 | 62,766 | 0 | 234 | 0 |
+| Silent | development (train, dev, dev2) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
+| **All classes** | **held-out (val, val2, val3)** | **148** | **319,300** | **314,350** | **3,133** | **4,402** | **548** |
+| **All classes** | **development (train, dev, dev2)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 
 * **Outcome rule:** a win is an episode that ended won after the third act's boss (`docs/game/MECHANICS-COVERAGE.md` RUN-2); a death ends it lost; a timeout (step, stall, turn or 900-second wall-clock limit), a simulator error and an invalid action are separate outcomes, are shown, and are never counted as losses or silently dropped. A timeout or an error is excluded from the denominator of a rate and the exclusion is reported.
@@ -285,6 +286,12 @@ The tables in this file are written by `python3 scripts/docs-tables.py --write` 
 * **Result:** see ADR-060. L (threshold 0.2 in every act) 11.40 % against 10.49 % past the Act-2 boss (+0.90 points, interval +0.16 to +1.65, exact p = 0.0052: passed) and 61.08 % against 66.90 % past the Act-1 boss (-5.82 points); P (Act 2 only) 10.82 % against 10.48 % (+0.34 points, interval -0.22 to +0.90, p = 0.17: not shown); V not played. Wins (not a registered endpoint): L 231 against 155, P 185 against 155.
 * **Checks:** every held-out win re-derived by `audit wins`, a 40-game sample of every batch, `scripts/verify-pooled.py --bootstrap` on both pooled files (98 checks each), an exporter that refuses any file that does not belong with the others (`scripts/lib/act2.mjs`, 19 tests on a synthetic repository) and a preflight that refused to start the run unless the record, the code and the data were those the record names (36 tests on throwaway repositories).
 * **Limits:** simulated rules pilots in an unverified simulator; one pilot family; Ascension 0, relics kept; the winner of a screen of six is a biased estimate and was tested on other seeds; wins are rare (1.6 to 2.4 % of games) and were not a registered endpoint; the study cannot say which acts' picks carry L's effect.
+
+## D17. The threshold study data (ADR-062)
+
+* **What exists:** the seed file only. `experiments/seeds/ironclad-a0-v4.json` keeps the five partitions of v3 where they were and appends `dev2` (3,000 seeds, the development screen) and `val3` (15,000 seeds, the held-out tests); a test regenerates v3 byte for byte and checks that the two new partitions are disjoint from every other. No game has been played on them. The batches, the selection, the pooled files and the recomputation will be added here when they exist.
+* **Design:** registered in ADR-062 before any game on the new seeds: a development screen of six thresholds of the card reward of Act 2 in Ironclad and Defect (42,000 games) whose registered rule picks one threshold; then T1 (0.2 against the baseline, the replication of ADR-061's Act-2 test) and, if the screen advanced a threshold, T2 (the choice against the baseline) and T3 (the choice against 0.2) on the held-out seeds, each read at 0.05 divided by the number of tests played at the endpoint "the run was won", with a whole-seed interval and an all-pairs analysis that must agree. The record states the power and, from a simulation, how often the screen advances a threshold when none does anything (about a quarter of the draws if the arms share the noise of the games they share, about half if they are independent: an advance is weak evidence).
+* **Use:** nothing from this study reaches the advisor until its result has been read and the rule of item 8 of the record applied.
 
 ## D16. The acts study data (ADR-061)
 

@@ -19,13 +19,14 @@ from pathlib import Path
 SEED_UNIVERSE = 2**31 - 1
 # Stream order is the assignment order: a partition appended at the end never moves an earlier one (the v2 manifest keeps
 # v1's train / val / test seeds and adds "dev", fresh seeds for development once "train" has been used to fit something;
-# the v3 manifest keeps v2's and adds "val2", fresh held-out seeds for a study planned after "val" had been read).
-PARTITIONS = ("train", "val", "test", "dev", "val2")
+# the v3 manifest keeps v2's and adds "val2", fresh held-out seeds for a study planned after "val" had been read; the v4 manifest keeps v3's and
+# adds "dev2" and "val3", fresh development seeds (the "dev" slices had all been used or had fitted the card values) and fresh held-out seeds).
+PARTITIONS = ("train", "val", "test", "dev", "val2", "dev2", "val3")
 # Only present in a manifest that was asked for them, so that an older manifest's body (and with it its checksum) stays what it was.
-OPTIONAL_PARTITIONS = ("dev", "val2")
+OPTIONAL_PARTITIONS = ("dev", "val2", "dev2", "val3")
 DEFAULT_SIZES = {"train": 5000, "val": 2000, "test": 4000}
 # Seeds a result may be read from: every partition but the ones that are for development and the sealed one.
-DEVELOPMENT_PARTITIONS = ("train", "dev")
+DEVELOPMENT_PARTITIONS = ("train", "dev", "dev2")
 
 
 def canonical_json(obj) -> bytes:
@@ -62,7 +63,7 @@ def make_seed_manifest(name: str, master_seed: int, sizes: dict[str, int] | None
     partitions: dict[str, list[int]] = {}
     for part in PARTITIONS:  # fixed order => stable assignment
         if part in OPTIONAL_PARTITIONS and part not in sizes:
-            continue  # a v1-style manifest has no dev partition (a v2-style one no val2): its body (and checksum) must stay what it was
+            continue  # a v1-style manifest has no dev partition (a v2-style one no val2, a v3-style one no dev2 or val3): its body (and checksum) must stay what it was
         out: list[int] = []
         while len(out) < sizes.get(part, 0):
             s = next(stream)

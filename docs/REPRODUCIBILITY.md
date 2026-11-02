@@ -159,6 +159,28 @@ python3 scripts/acts-result-numbers.py           # the result section's figures 
 
 The seed file `experiments/seeds/ironclad-a0-v3.json` is made by `python3 -m slay2_sim seeds --name ironclad-a0-v3 --master 20261025 --sizes train=5000,val=2000,test=4000,dev=10000,val2=3000` (the first four partitions are those of v2, byte for byte; `val2` is appended after `dev` in the same stream). What a third party can check without the simulator is as for the Act-2 study: the committed batches' manifests and compressed episodes, the hashes quoted in ADR-061, and that the registration commit is an ancestor of the commit that holds the result.
 
+### The threshold study, command by command
+
+Registered in ADR-062 (two parts: the design before any game, the frozen choices after the development screen and before any held-out game). The steps that play or pool games (`dev.sh`, `run-val.sh`, `select-dev.sh`, `pool.sh`) are scripts of `scripts/studies/thresh/` (frozen from the commit that registers the first part, with the reading code `scripts/lib/thresh.mjs` and `scripts/lib/pooled.mjs`) and refuse to run twice or from the wrong commit; `power.py`, `screen_sim.py`, `part2.py`, `pinned-diff.sh` and `audit.sh` only print or audit and can be run again.
+
+```bash
+export PY=python3 SLAY2_EXTERNAL_ROOT=/path/to/external/checkouts OMP_NUM_THREADS=1
+python3 scripts/studies/thresh/power.py                      # the power tables of the record, from ADR-061's committed per-class files (nothing typed by hand)
+PYTHONPATH=sim python3 scripts/studies/thresh/screen_sim.py  # what the development screen does in stylized worlds (how often it advances a threshold)
+bash scripts/studies/thresh/dev.sh 4            # S and six thresholds on the 3,000 dev2 seeds of Ironclad and Defect, from a clean worktree of the pushed registration commit (the preflight refuses anything else); RESUME=1 finishes an interrupted stage
+bash scripts/studies/thresh/audit.sh dev        # every win re-derived, a 40-game sample of every batch (AUDIT_JOBS=4 four at a time)
+bash scripts/studies/thresh/select-dev.sh       # the registered rule, once: experiments/thresh/dev-selection.json
+python3 scripts/studies/thresh/part2.py         # the numbers of part 2 of the record (the frozen choices)
+bash scripts/studies/thresh/pinned-diff.sh      # what the registration froze and has changed since (commit any such change first; "no change", or the PINNED_DIFF line part 2 has to quote)
+python3 -m slay2_sim.threshstudy verify --batches experiments/batches --selection experiments/thresh/dev-selection.json   # the selection is what the registered rule gives on the development batches
+# part 2 of the record is committed with the 14 development batches and the selection, and pushed, before the next line
+bash scripts/studies/thresh/run-val.sh 4        # S, 0.2 and the screen's choice on the 15,000 val3 seeds of each class, from the commit that carries part 2
+bash scripts/studies/thresh/audit.sh val
+bash scripts/studies/thresh/pool.sh             # T1 (and T2, T3 if the screen advanced a threshold) once, the design checks, the all-pairs analysis, the independent recomputation
+```
+
+The seed file `experiments/seeds/ironclad-a0-v4.json` is made by `python3 -m slay2_sim seeds --name ironclad-a0-v4 --master 20261025 --sizes train=5000,val=2000,test=4000,dev=10000,val2=3000,dev2=3000,val3=15000` (the first five partitions are those of v3, byte for byte; `dev2` and `val3` are appended after `val2` in the same stream). What a third party can check without the simulator is as for the acts study: the committed batches' manifests and compressed episodes, the hashes quoted in ADR-062, and that the registration commit is an ancestor of the commit that holds the result.
+
 ## The website's data
 
 `apps/web/src/content/*.generated.json` are generated, never edited: `node scripts/export-site-data.mjs` writes them from the

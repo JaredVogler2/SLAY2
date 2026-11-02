@@ -16,6 +16,7 @@ import { gunzipSync } from "node:zlib";
 
 import { parseAct2 } from "./lib/act2.mjs";
 import { parseActs } from "./lib/acts.mjs";
+import { parseThresh } from "./lib/thresh.mjs";
 import { parseAscensionNine } from "./lib/ascension9.mjs";
 import {
   parseAscensionLadder,
@@ -25,7 +26,7 @@ import {
   parseLevers,
   parseRunsEnd,
 } from "./lib/insights.mjs";
-import { CLASSES, EXACT, commonBatchProblem, readPooledHeldOut } from "./lib/pooled.mjs";
+import { CLASSES, EXACT, commonBatchProblem, readPooledHeldOut, roleOf } from "./lib/pooled.mjs";
 
 // SLAY2_ROOT lets the tests point the exporter at a tampered copy of the inputs; production always uses the repository.
 const root = process.env.SLAY2_ROOT
@@ -229,9 +230,7 @@ function parseEvidence() {
       contentSha256: m.content_sha256,
       episodesGzSha256: m.episodes_gz.sha256,
       finished: m.finished,
-      role: ["train", "dev"].includes(m.seeds.partition)
-        ? `development (${m.seeds.partition} partition): not a held-out result`
-        : "held-out",
+      role: roleOf(m.seeds.partition),
     });
   }
   return reports;
@@ -1575,6 +1574,13 @@ const outputs = {
     generatedFrom:
       "docs/DECISIONS.md (ADR-061) + experiments/acts/*.json (the pooled tests, the per-class comparisons, the design checks, the all-pairs analysis, the independent recomputation) + experiments/batches/*/manifest.json",
     ...parseActs({ root, reports }),
+  },
+  // The threshold study (ADR-062): the stage it is at (registered; screened, development numbers only; tested), read strictly by the reading code its registration froze
+  "thresh.generated.json": {
+    schema: 1,
+    generatedFrom:
+      "docs/DECISIONS.md (ADR-062) + experiments/thresh/*.json (the development selection, the pooled tests, the per-class comparisons, the design checks, the all-pairs analysis, the independent recomputation) + experiments/batches/*/manifest.json",
+    ...parseThresh({ root, reports }),
   },
   // The page of insights reads the committed experiment files; a repository without them (the small copies the exporter's tests build) has
   // nothing to say there, and says so instead of failing. A repository that has some of them and not the rest fails, strictly.

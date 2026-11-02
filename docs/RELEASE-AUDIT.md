@@ -64,18 +64,18 @@ The levels are those of `docs/VALIDATION-PLAN.md`, claimed only for the cohort n
 <!-- table:games:begin -->
 | Class | Seeds used for | Batches | Games started | Completed (win or death) | Wins | Simulator errors | Timeouts |
 |---|---|---|---|---|---|---|---|
-| Defect | held-out (val, val2) | 29 | 63,000 | 61,827 | 1,218 | 1,171 | 2 |
-| Defect | development (train, dev) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
-| Ironclad | held-out (val, val2) | 32 | 67,300 | 65,809 | 1,752 | 1,489 | 2 |
-| Ironclad | development (train, dev) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
-| Necrobinder | held-out (val, val2) | 29 | 63,000 | 62,154 | 15 | 828 | 18 |
-| Necrobinder | development (train, dev) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
-| Regent | held-out (val, val2) | 29 | 63,000 | 61,794 | 148 | 680 | 526 |
-| Regent | development (train, dev) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
-| Silent | held-out (val, val2) | 29 | 63,000 | 62,766 | 0 | 234 | 0 |
-| Silent | development (train, dev) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
-| **All classes** | **held-out (val, val2)** | **148** | **319,300** | **314,350** | **3,133** | **4,402** | **548** |
-| **All classes** | **development (train, dev)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
+| Defect | held-out (val, val2, val3) | 29 | 63,000 | 61,827 | 1,218 | 1,171 | 2 |
+| Defect | development (train, dev, dev2) | 24 | 30,400 | 30,031 | 371 | 369 | 0 |
+| Ironclad | held-out (val, val2, val3) | 32 | 67,300 | 65,809 | 1,752 | 1,489 | 2 |
+| Ironclad | development (train, dev, dev2) | 36 | 40,310 | 39,825 | 524 | 474 | 11 |
+| Necrobinder | held-out (val, val2, val3) | 29 | 63,000 | 62,154 | 15 | 828 | 18 |
+| Necrobinder | development (train, dev, dev2) | 26 | 31,400 | 31,134 | 2 | 260 | 6 |
+| Regent | held-out (val, val2, val3) | 29 | 63,000 | 61,794 | 148 | 680 | 526 |
+| Regent | development (train, dev, dev2) | 24 | 30,400 | 29,879 | 32 | 265 | 256 |
+| Silent | held-out (val, val2, val3) | 29 | 63,000 | 62,766 | 0 | 234 | 0 |
+| Silent | development (train, dev, dev2) | 24 | 30,400 | 30,339 | 0 | 61 | 0 |
+| **All classes** | **held-out (val, val2, val3)** | **148** | **319,300** | **314,350** | **3,133** | **4,402** | **548** |
+| **All classes** | **development (train, dev, dev2)** | **134** | **162,910** | **161,208** | **929** | **1,429** | **273** |
 <!-- table:games:end -->
 
 ## The twelve campaigns

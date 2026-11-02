@@ -339,15 +339,15 @@ def manifest_paths() -> list[str]:
     )
 
 
-HELD_OUT = "held-out (val, val2)"
-DEVELOPMENT = "development (train, dev)"
+HELD_OUT = "held-out (val, val2, val3)"
+DEVELOPMENT = "development (train, dev, dev2)"
 
 
 def seed_use(partition: str) -> str:
     """What the seeds of a batch were for. A partition this does not know (the sealed ``test`` one above all) is an error to see, not a row."""
-    if partition in ("val", "val2"):
+    if partition in ("val", "val2", "val3"):
         return HELD_OUT
-    if partition in ("train", "dev"):
+    if partition in ("train", "dev", "dev2"):
         return DEVELOPMENT
     raise ValueError(f"no known use for batches on the {partition!r} partition")
 
