@@ -58,7 +58,7 @@ export function RecommendationPanel({
       title={best.action.kind === "skip" ? "Skip this one" : `Take ${best.label}`}
       aside={
         <>
-          <Badge tone="heuristic">Heuristic v1</Badge>
+          <Badge tone="heuristic">Heuristic v2</Badge>
           <Badge tone="neutral">Not calibrated</Badge>
         </>
       }
@@ -70,7 +70,8 @@ export function RecommendationPanel({
           {bestCard ? <CardTile card={bestCard} /> : null}
           <p className="text-parchment">
             {best.action.kind === "skip"
-              ? "Every offered card lowers the deck index. Skipping keeps the deck thin."
+              ? (result.tradeoffs[0] ??
+                "Every offered card lowers the deck index. Skipping keeps the deck thin.")
               : `${best.label} improves the deck index by `}
             {best.action.kind === "pick" ? (
               <strong className="num text-teal">+{best.indexDelta.toFixed(2)}</strong>

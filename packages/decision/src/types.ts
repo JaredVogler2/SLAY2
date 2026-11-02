@@ -76,7 +76,7 @@ export interface DraftResponse {
   readonly schema: 1;
   readonly gameId: "STS2";
   readonly build: string;
-  readonly policyVersion: "draft-heuristic-v1";
+  readonly policyVersion: "draft-heuristic-v2";
   /** The ranking is a heuristic; nothing here is an estimate of win probability. */
   readonly method: "heuristic";
   readonly calibrated: false;

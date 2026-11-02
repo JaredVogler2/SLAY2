@@ -32,7 +32,7 @@ const PILLARS = [
     href: "/advisor",
     cta: "Get my next decision",
     tone: "heuristic" as const,
-    badge: "Heuristic v1",
+    badge: "Heuristic v2",
   },
   {
     eyebrow: "Insights",
@@ -161,8 +161,8 @@ export default function Home() {
                   ],
                   [
                     "Card advisor",
-                    "Heuristic v1",
-                    "Transparent and uncalibrated. It rates a card by what it needs from your deck and what it supplies to it (Strength, Exhaust, Poison, Shivs, Orbs, Stars, Osty, Doom and so on), judged from how the cards work and not yet measured; it covers the draft, not how to play cards against enemies. Where simulated runs tested a class’s card values, the advisor adds a labelled second opinion beside it.",
+                    "Heuristic v2",
+                    "Transparent and uncalibrated. It rates a card by what it needs from your deck and what it supplies to it (Strength, Exhaust, Poison, Shivs, Orbs, Stars, Osty, Doom and so on), judged from how the cards work and not yet measured, and it charges every card past the twentieth for the slot it takes, so it recommends skipping when nothing earns its place; it covers the draft, not how to play cards against enemies. Where simulated runs tested a class’s card values, the advisor adds a labelled second opinion beside it.",
                   ],
                   [
                     "Simulated card values",
@@ -220,7 +220,7 @@ export default function Home() {
                         tone={
                           status === "Supported"
                             ? "exact"
-                            : status === "Heuristic v1"
+                            : status === "Heuristic v2"
                               ? "heuristic"
                               : status === "Research"
                                 ? "build"

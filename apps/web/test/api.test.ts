@@ -256,7 +256,7 @@ describe("POST /api/v1/recommend", () => {
     expect(body).toMatchObject({
       method: "heuristic",
       calibrated: false,
-      policyVersion: "draft-heuristic-v1",
+      policyVersion: "draft-heuristic-v2",
     });
     expect(body.legalActions).toHaveLength(4);
   });

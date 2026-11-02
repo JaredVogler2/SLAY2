@@ -125,3 +125,58 @@ def test_a_margin_makes_it_skip_a_card_that_adds_less_than_the_margin(sim):
     assert pilot(margin=gain + 0.01)._card_reward(obs, actions) == 1  # skip
     with pytest.raises(ValueError, match="margin"):
         make_policy("advisor_v1", margin=-1.0)
+
+
+# --------------------------------------------------------------------------------------------- the price of a slot (ADR-065)
+# the starter deck and fourteen common and uncommon cards, one of each: 24 cards, a deck that has taken what it was offered
+DECK_OF_24 = [["STRIKE_IRONCLAD", False, 5], ["DEFEND_IRONCLAD", False, 4], ["BASH", False, 1]] + [
+    [c, False, 1]
+    for c in (
+        "ANGER", "ARMAMENTS", "BLOODLETTING", "BLOOD_WALL", "BODY_SLAM", "BREAKTHROUGH", "CINDER", "HAVOC", "HEADBUTT", "IRON_WAVE",
+        "MOLTEN_FIST", "PERFECTED_STRIKE", "POMMEL_STRIKE", "SHRUG_IT_OFF",
+    )
+]
+
+
+def test_the_page_charges_for_a_slot_and_the_numbers_of_version_1_are_still_there():
+    assert (advisor.SIZE_FROM, advisor.SIZE_PRICE) == (20, 1.0)  # the page's price (ADR-065), the default of ``base_weights``
+    assert (advisor.LEGACY_SIZE_FROM, advisor.LEGACY_SIZE_PRICE) == (30, 0.6)  # version 1, which every earlier batch played with
+    w = advisor.base_weights(1, "balanced")
+    assert (w.sizeFrom, w.size) == (20, 1.0)
+    old = advisor.base_weights(1, "balanced", 1.0, advisor.LEGACY_SIZE_PRICE, advisor.LEGACY_SIZE_FROM)
+    assert (old.sizeFrom, old.size) == (30, 0.6)
+
+
+def test_the_pilot_keeps_the_price_of_version_1_unless_a_study_names_the_page_s(sim):
+    p = pilot()
+    assert (p.size_from, p.size_price) == (advisor.LEGACY_SIZE_FROM, advisor.LEGACY_SIZE_PRICE)
+    params = p.describe()["params"]
+    assert "size" not in params and "size_from" not in params  # the parameters (and so the fingerprint) of every earlier batch are unchanged
+    named = pilot(size=1.0, size_from=20)
+    assert (named.size_from, named.size_price) == (20.0, 1.0)
+    assert named.describe()["params"]["size"] == 1.0 and named.describe()["params"]["size_from"] == 20.0  # a manifest says which price was played
+    again = make_policy("advisor_v1", **named.describe()["params"])
+    assert (again.size_from, again.size_price) == (20.0, 1.0)  # and rebuilds the pilot that played
+    with pytest.raises(ValueError, match="not negative"):
+        pilot(size=-1.0)
+
+
+def test_with_the_page_s_price_a_deck_of_24_cards_skips_what_version_1_took(sim):
+    assert sum(n for _, _, n in DECK_OF_24) == 24
+    offered = ["ANGER", "ARMAMENTS", "BLOOD_WALL"]
+    obs, actions = reward(offered, DECK_OF_24, act=1)
+    skip = len(offered)
+    # version 1: the best of the three adds 0.65 index points and is taken
+    assert pilot()._card_reward(obs, actions) == offered.index("BLOOD_WALL")
+    # the page's price: the same card adds 0.65 - 1.0 = -0.35, below skipping
+    assert pilot(size=1.0, size_from=20)._card_reward(obs, actions) == skip
+    deck = advisor.deck_from_ids(c for c, _, n in DECK_OF_24 for _ in range(n))
+    page = advisor.rank_options(deck, offered, 1, "balanced")  # the page's weights are the defaults
+    assert page[0][0] == advisor.SKIP and page[1][0] == "BLOOD_WALL" and page[1][1] == pytest.approx(0.65 - 1.0, abs=0.01)
+
+
+def test_the_price_never_moves_a_game_that_stays_under_it(sim):
+    # a starter deck: the 11th card is free under both prices, so both pilots make the same choice
+    offered = ["INFLAME", "POMMEL_STRIKE", "SHRUG_IT_OFF"]
+    obs, actions = reward(offered)
+    assert pilot()._card_reward(obs, actions) == pilot(size=1.0, size_from=20)._card_reward(obs, actions)
