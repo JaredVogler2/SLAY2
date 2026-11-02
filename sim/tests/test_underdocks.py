@@ -198,6 +198,24 @@ def test_the_monsters_hit_points_are_the_games_at_every_ascension(sim, monster):
         assert min(seen) == want[0] and max(seen) == want[1], f"{monster} at Ascension {ascension}: {sorted(seen)} against {want}"
 
 
+def _snake_upper(name: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", name).upper()
+
+
+@pytest.mark.parametrize("monster", sorted(MONSTERS))
+def test_every_number_the_game_gives_a_monster_at_a_harder_ascension_is_a_constant_of_the_monster(sim, monster):
+    """Presence, not placement: each number of the game's ``GetValueIfAscension(level, harder, easier)`` calls for the monster (hit points,
+    damage, block, powers) is among the simulator's constants that carry the monster's name, so no number was dropped in the transcription.
+    What the monster does with them (its moves and their order) is not checked by anything here."""
+    from sts2_env.monsters import act4 as monsters
+
+    source = _game_source(sim, "MegaCrit.Sts2.Core.Models.Monsters", f"{monster}.cs")
+    numbers = {int(x) for pair in re.findall(r"GetValueIfAscension\(AscensionLevel\.\w+, (-?\d+), (-?\d+)\)", source) for x in pair}
+    assert numbers, monster
+    have = {int(v) for k, v in vars(monsters).items() if k.startswith(_snake_upper(monster) + "_") and isinstance(v, (int, float)) and not isinstance(v, bool)}
+    assert numbers <= have, f"{monster}: the game has {sorted(numbers - have)} that no constant of the simulator's monster carries"
+
+
 # ---------------------------------------------------------------------------------------------------------- what a run is dealt
 
 
@@ -469,3 +487,29 @@ def test_every_fight_of_the_act_can_be_played_at_ascension_0_and_9(sim, kind, na
             expected = {"CorpseSlugsWeak": 2, "CorpseSlugsNormal": 3, "TwoTailedRatsNormal": 3, "PhantasmalGardenersElite": 4, "GremlinMercNormal": 3, "ToadpolesWeak": 2, "CultistsNormal": 2, "SeapunkNormal": 2}
             if name in expected:
                 assert len(began) == expected[name], (name, began)  # the numbers of enemies of the game's own GenerateMonsters
+
+
+# ------------------------------------------------------------------------------------------------------------------- fairness
+
+
+@pytest.mark.parametrize("character", CLASSES)
+def test_the_pilots_of_the_study_ignore_hidden_state_in_underdocks(sim, character):
+    """A twin of a decision point that differs only in hidden state (draw order, every RNG stream) gives the same observation and the same
+    action, in Underdocks, for the pilots ADR-064 plays. The fights and the events of the act are new code paths for that question."""
+    from test_policy_fairness import decide, sample_points, twins
+
+    cfg = RunConfig(character=character, act1="underdocks", keep_relics=True)
+    points = []
+    for seed in (11, 12):
+        points.extend(sample_points(seed, steps=260, every=10, cfg=cfg))
+    assert len({p.phase for p in points}) >= 4 and sum(1 for p in points if p.phase == "COMBAT") >= 4
+    pilots = [
+        ("rules_v1", {}),
+        ("rules_v2", {}),
+        ("advisor_v1", {"engines": 0, "margin": 0.0, "needs": 1, "scalers": 0.7}),
+        ("rules_v2_neow_values", {"neow_values": "experiments/neow/neow-values-keep-v1.json"}),
+    ]
+    for name, params in pilots:
+        for i, p in enumerate(points):
+            a, b = twins(p, 700 + i)
+            assert decide(name, a, **params) == decide(name, b, **params), f"{name} depends on hidden state at point {i} ({p.phase}) in {character}"
