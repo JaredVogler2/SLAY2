@@ -3,19 +3,34 @@
 
     node scripts/export-site-data.mjs                      (reads the pooled files, the all-pairs analysis, the design checks and the recomputation strictly)
     python3 scripts/acts-result-numbers.py [acts.generated.json] > result-numbers.md
+    python3 scripts/acts-result-numbers.py --arms [--batches experiments/batches]
 
-The prose around the numbers is written by hand. This reads `apps/web/src/content/acts.generated.json` (never the batches) and prints, for each of
-the four tests, the pooled figures, the two readings (the registered primary test and the all-pairs analysis of item 4), what the reading rule gave
-and which conditions withheld it, the shares past the first and the second boss, mean floors, each class on its own and what the independent
-recomputation found. It lives outside `scripts/studies/acts/` on purpose: that directory is frozen from the commit that registers the held-out run.
+The prose around the numbers is written by hand. Without a flag this reads `apps/web/src/content/acts.generated.json` (never the batches) and
+prints, for each of the four tests, the pooled figures, the two readings (the registered primary test and the all-pairs analysis of item 4), what
+the reading rule gave and which conditions withheld it, the shares past the first and the second boss, mean floors, each class on its own and what
+the independent recomputation found. With `--arms` it reads the manifests and audit records of the 25 held-out batches (and nothing else) and prints,
+per arm, the games, the completed games, the wins, the simulator errors and the timeouts, the commit they were played from and what the audits found.
+It lives outside `scripts/studies/acts/` on purpose: that directory is frozen from the commit that registers the held-out run.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 
-DATA = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[1] / "apps" / "web" / "src" / "content" / "acts.generated.json"
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "apps" / "web" / "src" / "content" / "acts.generated.json"
+BATCHES = ROOT / "experiments" / "batches"
+ARMS = {
+    "s": "S (`s`, the baseline)",
+    "lead": "L (`lead`)",
+    "a1": "A1 (`a1`)",
+    "a2": "A2 (`a2`)",
+    "a3": "A3 (`a3`)",
+}
+BATCH_GLOB = "acts-{arm}-*-a0-veteran-keeprelics-val2-n3000"
 NAMES = {
     "L": "L (`lead`: threshold 0.2 in every act)",
     "A1": "A1 (`a1`: 0.2 in the card rewards of Act 1 only)",
@@ -38,8 +53,70 @@ def pval(p: float) -> str:
     return "p < 1e-300" if p == 0 else (f"p = {p:.4g}" if p >= 1e-4 else f"p = {p:.2e}")
 
 
-def main() -> int:
-    d = json.loads(DATA.read_text(encoding="utf-8"))
+def arm_lines(batches: Path) -> list[str]:
+    """Per arm over its class batches: games, completed games, wins, simulator errors, timeouts; then the commit(s) the batches were played from and the audits."""
+    lines: list[str] = []
+    heads: set[str] = set()
+    dirty: set[bool] = set()
+    overall: Counter[str] = Counter()
+    for arm, name in ARMS.items():
+        tot: Counter[str] = Counter()
+        dirs = sorted(batches.glob(BATCH_GLOB.format(arm=arm)))
+        for d in dirs:
+            m = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+            s = m["summary"]
+            tot["batches"] += 1
+            tot["games"] += s["episodes"]
+            tot["completed"] += s["completed"]
+            for k in ("win", "simulator_error", "timeout"):
+                tot[k] += s["counts"].get(k, 0)
+            env = (m.get("environment") or {}).get("slay2") or {}
+            heads.add(str(env.get("head")))
+            dirty.add(bool(env.get("dirty")))
+            if s["counts"].get("win", 0):
+                w = json.loads((d / "wins-audit.json").read_text(encoding="utf-8"))
+                overall["winBatches"] += 1
+                overall["winsAudited"] += w["wins_audited"]
+                overall["winsVerified"] += w["wins_verified"]
+            a = json.loads((d / "sample-audit.json").read_text(encoding="utf-8"))
+            overall["sampleBatches"] += 1
+            overall["sampleBatchesPassed"] += 1 if a["all_verified"] is True else 0
+            overall["sampleGames"] += a["sample"]["drawn"]
+            overall["sampleVerified"] += a["verified"]
+        for k, v in tot.items():
+            overall[k] += v
+        lines.append(
+            f"- {name}: {tot['batches']} batches, {tot['games']:,} games, {tot['completed']:,} completed, {tot['win']:,} wins, "
+            f"{tot['simulator_error']:,} simulator errors, {tot['timeout']:,} timeouts."
+        )
+    lines.append(
+        f"- All arms: {overall['batches']} batches, {overall['games']:,} games, {overall['completed']:,} completed, {overall['win']:,} wins, "
+        f"{overall['simulator_error']:,} simulator errors, {overall['timeout']:,} timeouts."
+    )
+    lines.append(
+        f"- Played from {len(heads)} commit{'' if len(heads) == 1 else 's'} ({', '.join(sorted(h[:12] for h in heads))}); "
+        f"tree dirty: {'yes' if True in dirty else 'no'}."
+    )
+    lines.append(
+        f"- Audits: {overall['winsVerified']:,} of {overall['winsAudited']:,} audited wins re-derived (in {overall['winBatches']} batches that have a win); "
+        f"{overall['sampleBatchesPassed']} of {overall['sampleBatches']} sample audits passed ({overall['sampleVerified']:,} of {overall['sampleGames']:,} sampled games verified)."
+    )
+    return lines
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("data", nargs="?", type=Path, default=DATA, help="the exporter's acts.generated.json")
+    ap.add_argument("--arms", action="store_true", help="print the per-arm counts of the held-out batches instead of the tests")
+    ap.add_argument("--batches", type=Path, default=BATCHES)
+    args = ap.parse_args(argv)
+    if args.arms:
+        if not any(args.batches.glob(BATCH_GLOB.format(arm="s"))):
+            print(f"no held-out batch of the acts study under {args.batches}", file=sys.stderr)
+            return 1
+        print("\n".join(arm_lines(args.batches)))
+        return 0
+    d = json.loads(args.data.read_text(encoding="utf-8"))
     if not d.get("registered") or not d.get("tests"):
         print("no test result in the exporter's output yet", file=sys.stderr)
         return 1

@@ -1,0 +1,400 @@
+{
+  "contentSha256": {
+    "acts-a1-defect-a0-veteran-keeprelics-val2-n3000": "d5e314a688a88139434cdb29cba7b333eb159793b64d9e859e9782e405d8733d",
+    "acts-a1-ironclad-a0-veteran-keeprelics-val2-n3000": "a892d5b1805f8bb26e2e2b1f0a550742b94f76ad83ea94a33708a8c638f25aed",
+    "acts-a1-necrobinder-a0-veteran-keeprelics-val2-n3000": "746242d231bb2aa84759d2a5a0ed410573033222bcc1ebcd2362ad497fb878bc",
+    "acts-a1-regent-a0-veteran-keeprelics-val2-n3000": "445a163bf4c20bf600ebbad3fbb5ab03fa5a67e3eb3fd2a21905215d0c888db2",
+    "acts-a1-silent-a0-veteran-keeprelics-val2-n3000": "51d6c080705970875bfcd458f97b65fea070d57e57c4762d61f0e720524e43f0",
+    "acts-a2-defect-a0-veteran-keeprelics-val2-n3000": "42ef9b1be4fae480182d10e5c2601e2e5979c4695e54e9835178afa5a2acaf98",
+    "acts-a2-ironclad-a0-veteran-keeprelics-val2-n3000": "e8c9ca322570720e61d895f250f402d5397612125dd53592b78d7dfb484f433b",
+    "acts-a2-necrobinder-a0-veteran-keeprelics-val2-n3000": "ba80c55dd909a4a973a5815f6afd5ddfc68ecdb75d2d01b8337f2452fb3da909",
+    "acts-a2-regent-a0-veteran-keeprelics-val2-n3000": "87779d0a4c979babbc6bedf48d88359e030f8871b8d31ed3e6c8e85b5b99bf2a",
+    "acts-a2-silent-a0-veteran-keeprelics-val2-n3000": "10bcec7640cd5360a85a60b6e48954f1ee50d9e781f7261265d2ccb700be9004",
+    "acts-a3-defect-a0-veteran-keeprelics-val2-n3000": "ac2d7e9620ea6eeb5a401a376e8e95a526f2b2058ee74fe02547311d73e115cb",
+    "acts-a3-ironclad-a0-veteran-keeprelics-val2-n3000": "3412a50b9f7d674a85a4e684b8a50be9da0a330c6deb5b1b821fc742dc028ede",
+    "acts-a3-necrobinder-a0-veteran-keeprelics-val2-n3000": "cac6aa74d68039180a9c38e12664d4d827adc401b8c6c25e32459ee2543e0c40",
+    "acts-a3-regent-a0-veteran-keeprelics-val2-n3000": "30cdf87fd921bdaa43fc50faa434287bccfea9d24e291d07bbbca972e712cc24",
+    "acts-a3-silent-a0-veteran-keeprelics-val2-n3000": "620020e9ff11760bfa960cd9f59be51d6d6b5e96abdbfc360a718aed7221b193",
+    "acts-lead-defect-a0-veteran-keeprelics-val2-n3000": "0abb3490093207f0b94bd1d2b3c434fd23b912a33ab7f4607679bd9eb808edb8",
+    "acts-lead-ironclad-a0-veteran-keeprelics-val2-n3000": "71a5a839343fae5d3213683c61e5eb34f4c5b64afae4f9d60e44ea569c310a2e",
+    "acts-lead-necrobinder-a0-veteran-keeprelics-val2-n3000": "7fcda966a731e61c3399d6a7173809e6eb61d40ecb58088b8daebde84d8e4a40",
+    "acts-lead-regent-a0-veteran-keeprelics-val2-n3000": "c1be9a8c0d8a72352313920fe343c6812fa57ca430c8ddb75196c03d5cf67614",
+    "acts-lead-silent-a0-veteran-keeprelics-val2-n3000": "b18bae38eb4a43f45b673e9a9bd5563308bde0102d548efea787d03f96df4542",
+    "acts-s-defect-a0-veteran-keeprelics-val2-n3000": "1527952fda5ee8c3780222f1a0ed0cfbb04705d1d754dfd9b26a969fb6f8b18f",
+    "acts-s-ironclad-a0-veteran-keeprelics-val2-n3000": "89a4101ba7f57d877d9d1a46b8b66ca93618c41385ff26efb2554b149ec4c289",
+    "acts-s-necrobinder-a0-veteran-keeprelics-val2-n3000": "a22a3d6f36c3cd97c8522b95323b2aa74580c333f1759e5d99dd553505fc8ef0",
+    "acts-s-regent-a0-veteran-keeprelics-val2-n3000": "528d15e61587f9bd6403c8ab043910bedfb8813c6c08547cedd0587c810b443d",
+    "acts-s-silent-a0-veteran-keeprelics-val2-n3000": "25f9c00190a478bd7ff6e8b4e2c9c19cff060b4d67fc99f7f6c150e82d821131"
+  },
+  "kind": "acts-robustness",
+  "label": "a condition of the reading rule (ADR-061 item 4): every pair of seeds both batches hold, a game that did not end in a win scored as not a win",
+  "level": 0.05,
+  "maxExcludedFraction": 0.1,
+  "schema": 1,
+  "tests": {
+    "A1": {
+      "arm": "a1",
+      "perClass": {
+        "Defect": {
+          "arm": 115,
+          "armOnly": 62,
+          "baseline": 97,
+          "baselineOnly": 44,
+          "notCompleted": {
+            "arm": 103,
+            "baseline": 92
+          },
+          "p": 0.09824250442243802,
+          "pairs": 3000,
+          "primaryPairs": 2864,
+          "shared": 3000
+        },
+        "Ironclad": {
+          "arm": 172,
+          "armOnly": 112,
+          "baseline": 134,
+          "baselineOnly": 74,
+          "notCompleted": {
+            "arm": 100,
+            "baseline": 125
+          },
+          "p": 0.006512203250161631,
+          "pairs": 3000,
+          "primaryPairs": 2833,
+          "shared": 3000
+        },
+        "Necrobinder": {
+          "arm": 1,
+          "armOnly": 1,
+          "baseline": 3,
+          "baselineOnly": 3,
+          "notCompleted": {
+            "arm": 65,
+            "baseline": 67
+          },
+          "p": 0.625,
+          "pairs": 3000,
+          "primaryPairs": 2904,
+          "shared": 3000
+        },
+        "Regent": {
+          "arm": 14,
+          "armOnly": 9,
+          "baseline": 12,
+          "baselineOnly": 7,
+          "notCompleted": {
+            "arm": 100,
+            "baseline": 106
+          },
+          "p": 0.803619384765625,
+          "pairs": 3000,
+          "primaryPairs": 2849,
+          "shared": 3000
+        },
+        "Silent": {
+          "arm": 0,
+          "armOnly": 0,
+          "baseline": 0,
+          "baselineOnly": 0,
+          "notCompleted": {
+            "arm": 17,
+            "baseline": 23
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2971,
+          "shared": 3000
+        }
+      },
+      "pooled": {
+        "arm": 302,
+        "armOnly": 184,
+        "baseline": 246,
+        "baselineOnly": 128,
+        "difference": 0.0037333333333333333,
+        "notCompleted": {
+          "arm": 385,
+          "baseline": 413
+        },
+        "p": 0.0018019224581453596,
+        "pairs": 15000,
+        "primaryExcludedFraction": 0.03859999999999997,
+        "primaryPairs": 14421,
+        "shared": 15000
+      }
+    },
+    "A2": {
+      "arm": "a2",
+      "perClass": {
+        "Defect": {
+          "arm": 107,
+          "armOnly": 38,
+          "baseline": 97,
+          "baselineOnly": 28,
+          "notCompleted": {
+            "arm": 90,
+            "baseline": 92
+          },
+          "p": 0.267811664846587,
+          "pairs": 3000,
+          "primaryPairs": 2900,
+          "shared": 3000
+        },
+        "Ironclad": {
+          "arm": 171,
+          "armOnly": 89,
+          "baseline": 134,
+          "baselineOnly": 52,
+          "notCompleted": {
+            "arm": 132,
+            "baseline": 125
+          },
+          "p": 0.0023131070595483407,
+          "pairs": 3000,
+          "primaryPairs": 2844,
+          "shared": 3000
+        },
+        "Necrobinder": {
+          "arm": 1,
+          "armOnly": 1,
+          "baseline": 3,
+          "baselineOnly": 3,
+          "notCompleted": {
+            "arm": 67,
+            "baseline": 67
+          },
+          "p": 0.625,
+          "pairs": 3000,
+          "primaryPairs": 2928,
+          "shared": 3000
+        },
+        "Regent": {
+          "arm": 13,
+          "armOnly": 6,
+          "baseline": 12,
+          "baselineOnly": 5,
+          "notCompleted": {
+            "arm": 102,
+            "baseline": 106
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2888,
+          "shared": 3000
+        },
+        "Silent": {
+          "arm": 0,
+          "armOnly": 0,
+          "baseline": 0,
+          "baselineOnly": 0,
+          "notCompleted": {
+            "arm": 21,
+            "baseline": 23
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2977,
+          "shared": 3000
+        }
+      },
+      "pooled": {
+        "arm": 292,
+        "armOnly": 134,
+        "baseline": 246,
+        "baselineOnly": 88,
+        "difference": 0.0030666666666666668,
+        "notCompleted": {
+          "arm": 412,
+          "baseline": 413
+        },
+        "p": 0.002449210560676186,
+        "pairs": 15000,
+        "primaryExcludedFraction": 0.03086666666666671,
+        "primaryPairs": 14537,
+        "shared": 15000
+      }
+    },
+    "A3": {
+      "arm": "a3",
+      "perClass": {
+        "Defect": {
+          "arm": 108,
+          "armOnly": 20,
+          "baseline": 97,
+          "baselineOnly": 9,
+          "notCompleted": {
+            "arm": 92,
+            "baseline": 92
+          },
+          "p": 0.06142834573984146,
+          "pairs": 3000,
+          "primaryPairs": 2907,
+          "shared": 3000
+        },
+        "Ironclad": {
+          "arm": 133,
+          "armOnly": 32,
+          "baseline": 134,
+          "baselineOnly": 33,
+          "notCompleted": {
+            "arm": 126,
+            "baseline": 125
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2870,
+          "shared": 3000
+        },
+        "Necrobinder": {
+          "arm": 3,
+          "armOnly": 0,
+          "baseline": 3,
+          "baselineOnly": 0,
+          "notCompleted": {
+            "arm": 66,
+            "baseline": 67
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2933,
+          "shared": 3000
+        },
+        "Regent": {
+          "arm": 11,
+          "armOnly": 5,
+          "baseline": 12,
+          "baselineOnly": 6,
+          "notCompleted": {
+            "arm": 106,
+            "baseline": 106
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2894,
+          "shared": 3000
+        },
+        "Silent": {
+          "arm": 0,
+          "armOnly": 0,
+          "baseline": 0,
+          "baselineOnly": 0,
+          "notCompleted": {
+            "arm": 23,
+            "baseline": 23
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2977,
+          "shared": 3000
+        }
+      },
+      "pooled": {
+        "arm": 255,
+        "armOnly": 57,
+        "baseline": 246,
+        "baselineOnly": 48,
+        "difference": 0.0006,
+        "notCompleted": {
+          "arm": 413,
+          "baseline": 413
+        },
+        "p": 0.43511449489230064,
+        "pairs": 15000,
+        "primaryExcludedFraction": 0.027933333333333366,
+        "primaryPairs": 14581,
+        "shared": 15000
+      }
+    },
+    "L": {
+      "arm": "lead",
+      "perClass": {
+        "Defect": {
+          "arm": 117,
+          "armOnly": 65,
+          "baseline": 97,
+          "baselineOnly": 45,
+          "notCompleted": {
+            "arm": 98,
+            "baseline": 92
+          },
+          "p": 0.06956519633623019,
+          "pairs": 3000,
+          "primaryPairs": 2867,
+          "shared": 3000
+        },
+        "Ironclad": {
+          "arm": 230,
+          "armOnly": 159,
+          "baseline": 134,
+          "baselineOnly": 63,
+          "notCompleted": {
+            "arm": 97,
+            "baseline": 125
+          },
+          "p": 9.305733214694433e-11,
+          "pairs": 3000,
+          "primaryPairs": 2828,
+          "shared": 3000
+        },
+        "Necrobinder": {
+          "arm": 0,
+          "armOnly": 0,
+          "baseline": 3,
+          "baselineOnly": 3,
+          "notCompleted": {
+            "arm": 67,
+            "baseline": 67
+          },
+          "p": 0.25,
+          "pairs": 3000,
+          "primaryPairs": 2902,
+          "shared": 3000
+        },
+        "Regent": {
+          "arm": 23,
+          "armOnly": 19,
+          "baseline": 12,
+          "baselineOnly": 8,
+          "notCompleted": {
+            "arm": 97,
+            "baseline": 106
+          },
+          "p": 0.052238985896110535,
+          "pairs": 3000,
+          "primaryPairs": 2848,
+          "shared": 3000
+        },
+        "Silent": {
+          "arm": 0,
+          "armOnly": 0,
+          "baseline": 0,
+          "baselineOnly": 0,
+          "notCompleted": {
+            "arm": 17,
+            "baseline": 23
+          },
+          "p": 1.0,
+          "pairs": 3000,
+          "primaryPairs": 2971,
+          "shared": 3000
+        }
+      },
+      "pooled": {
+        "arm": 370,
+        "armOnly": 243,
+        "baseline": 246,
+        "baselineOnly": 119,
+        "difference": 0.008266666666666667,
+        "notCompleted": {
+          "arm": 376,
+          "baseline": 413
+        },
+        "p": 6.659463868905158e-11,
+        "pairs": 15000,
+        "primaryExcludedFraction": 0.038933333333333375,
+        "primaryPairs": 14416,
+        "shared": 15000
+      }
+    }
+  }
+}

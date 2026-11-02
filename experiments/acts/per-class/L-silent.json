@@ -1,0 +1,124 @@
+{
+  "a": {
+    "batchId": "acts-lead-silent-a0-veteran-keeprelics-val2-n3000",
+    "contentSha256": "b18bae38eb4a43f45b673e9a9bd5563308bde0102d548efea787d03f96df4542",
+    "meanFloor": 15.231908448333895,
+    "meanWallSecondsPerEpisode": 0.7315,
+    "params": {
+      "threshold": 0.2,
+      "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+    },
+    "policy": "rules_v2",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.0012913154781085308
+    ],
+    "wins": 0
+  },
+  "b": {
+    "batchId": "acts-s-silent-a0-veteran-keeprelics-val2-n3000",
+    "contentSha256": "25f9c00190a478bd7ff6e8b4e2c9c19cff060b4d67fc99f7f6c150e82d821131",
+    "meanFloor": 15.571524739145069,
+    "meanWallSecondsPerEpisode": 1.0269,
+    "params": {
+      "threshold": 0.0,
+      "values": "experiments/cardvalue/silent-a0-keep-v1.json"
+    },
+    "policy": "rules_v2",
+    "winRate": 0.0,
+    "winRateWilson95": [
+      0.0,
+      0.0012913154781085308
+    ],
+    "wins": 0
+  },
+  "bothCompleted": 2971,
+  "cohort": {
+    "ascension": 0,
+    "character": "Silent",
+    "partition": "val2",
+    "profile": "veteran",
+    "seedManifestSha256": "3519702503d19b72b9862e34b4624aedcb798560a03421976778998ea0d7af7e"
+  },
+  "contentSha256": "abe6ba609fc30b9a23e62a0a8942b7e32a61d245cfa1825b99819abb934e35d0",
+  "difference": "a minus b",
+  "excludedNotCompleted": 29,
+  "floorDifference": {
+    "ci95": [
+      -0.5382026253786604,
+      -0.138337260181757
+    ],
+    "meanAMinusB": -0.33961629081117467,
+    "method": "paired percentile bootstrap over seeds, 20000 resamples, rng seed 0"
+  },
+  "kind": "paired-comparison",
+  "pairedSeeds": 3000,
+  "pairedWinTable": {
+    "a_only": 0,
+    "b_only": 0,
+    "both": 0,
+    "mcnemar_p": 1.0,
+    "neither": 2971
+  },
+  "reachedAct2": {
+    "a": {
+      "games": 878,
+      "rate": 0.29552339279703804,
+      "wilson95": [
+        0.2793890279415105,
+        0.31218584526815024
+      ]
+    },
+    "b": {
+      "games": 889,
+      "rate": 0.29922584988219453,
+      "wilson95": [
+        0.2830278095634509,
+        0.31594241573624066
+      ]
+    },
+    "definition": "the run got past the Act-1 boss (it ended in Act 2 or later, or won)",
+    "pairedTable": {
+      "a_only": 285,
+      "b_only": 296,
+      "both": 593,
+      "mcnemar_p": 0.6782733152715057,
+      "neither": 1797
+    }
+  },
+  "reachedAct3": {
+    "a": {
+      "games": 8,
+      "rate": 0.0026926960619320095,
+      "wilson95": [
+        0.0013650662274733226,
+        0.0053046871342939984
+      ]
+    },
+    "b": {
+      "games": 6,
+      "rate": 0.002019522046449007,
+      "wilson95": [
+        0.0009258835280621879,
+        0.004399260362790435
+      ]
+    },
+    "definition": "the run got past the Act-2 boss (it ended in Act 3, or won)",
+    "pairedTable": {
+      "a_only": 7,
+      "b_only": 5,
+      "both": 1,
+      "mcnemar_p": 0.7744140625,
+      "neither": 2958
+    }
+  },
+  "role": "held-out",
+  "schema": 1,
+  "simulator": {
+    "id": "sts2-rl-agent",
+    "parityWithLiveGame": "UNVERIFIED",
+    "sha": "5d874e855ae1d0550d5c30416fadd7dbb0d133b7"
+  },
+  "wallTimeRatioBOverA": 1.404
+}
