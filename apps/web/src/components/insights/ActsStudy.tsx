@@ -13,8 +13,10 @@ import {
   downgradeNote,
   excludedSentence,
   formatP,
+  isNarrow,
   marginNote,
   meaningOf,
+  narrowSentence,
   pctShare,
   pts,
   resultLine,
@@ -43,7 +45,9 @@ function TestCard({ t, data }: { t: ActsTest; data: ActsData }) {
         <Badge tone={tone}>{VERDICT_TEXT[t.verdict]}</Badge>
       </div>
       <p className="mt-1 text-sm text-muted">{info.asks}</p>
+      <p className="mt-1 text-xs text-dim">This pilot {info.arm}.</p>
       <p className="mt-2 text-sm text-parchment">{testSentence(t)}</p>
+      {isNarrow(t) ? <p className="mt-1 text-sm text-parchment">{narrowSentence(t)}</p> : null}
       <p className="mt-1 text-sm text-parchment">{bossSentence(t)}</p>
       <p className="mt-1 text-xs text-muted">{excludedSentence(t)}</p>
       <p className="mt-1 text-xs text-muted">{robustSentence(t)}</p>
@@ -54,7 +58,13 @@ function TestCard({ t, data }: { t: ActsTest; data: ActsData }) {
         baseline did · {n(t.wins.arm)} against {n(t.wins.baseline)} games won · read at{" "}
         {data.level.toFixed(4)} (the study-wise 0.05 divided by four)
       </p>
-      <Disclosure summary={<span>Each class on its own</span>}>
+      <Disclosure
+        summary={
+          <span>
+            Each class on its own<span className="sr-only"> ({info.title})</span>
+          </span>
+        }
+      >
         <ScrollRegion label={`${info.title}: each class on its own`}>
           <table className="w-full min-w-[32rem] border-collapse">
             <caption className="sr-only">

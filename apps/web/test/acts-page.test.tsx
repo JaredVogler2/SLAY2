@@ -10,8 +10,10 @@ import {
   bossSentence,
   downgradeNote,
   excludedSentence,
+  isNarrow,
   marginNote,
   meaningOf,
+  narrowSentence,
   resultLine,
   robustSentence,
   testSentence,
@@ -88,7 +90,7 @@ describe("with the four tests", () => {
     expect(t).toMatch(/plays the baseline's game until the third act/);
     // every test says how many pairs it left out, what the second analysis found and at what level it was read
     expect(t.match(/500 of 15,000 pairs were left out/g)).toHaveLength(4);
-    expect(t.match(/Checked again on all 15,000 pairs of seeds/g)).toHaveLength(4);
+    expect(t.match(/Checked again on all 15,000 pairs of games/g)).toHaveLength(4);
     expect(t.match(/read at 0\.0125 \(the study-wise 0\.05 divided by four\)/g)).toHaveLength(4);
     expect(t).toMatch(/not independent/);
     expect(t).toMatch(
@@ -148,13 +150,13 @@ describe("what the four results mean together (ADR-061 item 8)", () => {
         /No single act is shown to carry it/,
         /less power/,
       ],
-      [/alone also won more/],
+      [/is also shown to win more/],
     ],
     [
       "L and A2 passed",
       { L: "passed", A2: "passed" },
       [
-        /alone also won more games, so that act's picks alone are shown to matter/,
+        /Being pickier in Act 2 alone is also shown to win more games/,
         /Act 2 alone/,
         /need not add up to the lead's/,
       ],
@@ -163,8 +165,8 @@ describe("what the four results mean together (ADR-061 item 8)", () => {
     [
       "L, A1 and A3 passed",
       { L: "passed", A1: "passed", A3: "passed" },
-      [/Act 1 and Act 3 alone also won more/, /so those acts' picks alone are shown to matter/],
-      [/No single act is shown/, /that act's picks/],
+      [/Act 1 and Act 3 alone is also shown to win more games/],
+      [/No single act is shown/, /shown to matter/],
     ],
     [
       "L not shown, A3 passed",
@@ -245,7 +247,9 @@ describe("what the four results mean together (ADR-061 item 8)", () => {
             const all = said.join(" ");
             count += 1;
             // a gain is claimed only where a test showed it, a loss only where one did
-            expect(/alone (also )?won more games/.test(all)).toBe([a1, a2, a3].includes("passed"));
+            expect(/alone (is also shown to win|won) more games/.test(all)).toBe(
+              [a1, a2, a3].includes("passed"),
+            );
             expect(all.includes("alone won fewer games than the baseline")).toBe(
               [a1, a2, a3].includes("reversed"),
             );
@@ -328,11 +332,91 @@ describe("the result line and the note about narrow passes", () => {
       floorDifference: { meanAMinusB: 0.002, ci95: [-0.01, 0.014] },
     };
     expect(bossSentence(t)).toMatch(
-      /the runs reached the same number of floors on average \(to two decimals\)\.$/,
+      /the runs reached the same number of floors on average, to two decimals \(95 % interval −0\.01 to \+0\.01\)\.$/,
     );
     expect(bossSentence(actsTest("A3", "not-shown"))).toMatch(
-      /the runs reached 0\.01 floors more on average\.$/,
+      /the runs reached 0\.01 floors more on average \(95 % interval −0\.90 to −0\.60\)\.$/,
     );
+  });
+});
+
+describe("what a card says about its pilot and about narrow passes (review of the result)", () => {
+  const narrowResults = () => {
+    const base = actsFixture({ L: "passed", A1: "passed", A2: "passed" }).tests?.results;
+    if (!base) throw new Error("no tests");
+    return {
+      ...base,
+      A2: { ...base.A2, difference: 0.0029, ci: [0.0004, 0.0053] },
+    };
+  };
+
+  it("says on each card what the pilot does, including the card reward that ends the act", () => {
+    const { container } = render(<ActsStudy data={actsFixture({ L: "passed" })} />);
+    const t = text(container);
+    expect(t).toMatch(
+      /This pilot plays as the baseline except that, in every act, it takes a card only if it is worth more than 0\.2\./,
+    );
+    expect(t).toMatch(/Act 1 \(the one after the first boss included\)/);
+    expect(t).toMatch(/Act 2 \(the one after the second boss included\)/);
+    expect(t).toMatch(/card rewards of Act 3, it takes a card only if/);
+  });
+
+  it("flags a narrow pass on its own card and leaves a wide one alone", () => {
+    const results = narrowResults();
+    const d = { ...actsFixture({ L: "passed" }), tests: { results } };
+    const { container } = render(<ActsStudy data={d} />);
+    expect(text(container)).toContain(narrowSentence(results.A2));
+    expect(narrowSentence(results.A2)).toBe(
+      "A narrow pass: the lower end of the interval is only +0.04 points (about 6 games in 14,500 pairs), under a quarter of the difference, so it shows a direction and not a size.",
+    );
+    expect(isNarrow(results.A2)).toBe(true);
+    expect(isNarrow(results.L)).toBe(false);
+    expect(isNarrow({ ...results.A2, verdict: "not-shown" })).toBe(false);
+    expect(container.textContent.match(/A narrow pass:/g)).toHaveLength(1);
+  });
+
+  it("gives each class table a name of its own for assistive technology", () => {
+    const { container } = render(<ActsStudy data={actsFixture({ L: "passed" })} />);
+    const names = [...container.querySelectorAll("summary")].map((s) =>
+      text(s as HTMLElement).replace(/\s*›$/, ""),
+    );
+    expect(names).toEqual([
+      "Each class on its own (The old lead)",
+      "Each class on its own (Pickier in Act 1 only)",
+      "Each class on its own (Pickier in Act 2 only)",
+      "Each class on its own (Pickier in Act 3 only)",
+    ]);
+  });
+
+  it("says in the third-act note how many pairs differed and what the registration had guessed", () => {
+    const note = actThreeNote(actsTest("A3", "not-shown"));
+    expect(note).toMatch(/so the registration expected a result of not shown there/);
+    expect(note).toMatch(
+      /200 pairs differed in whether the game was won \(the registration guessed 30 to 60\), and not shown is not no effect\./,
+    );
+  });
+
+  it("says that a game left out may have ended at a turn limit or a timeout, not only a step limit", () => {
+    const t = actsTest("A2", "passed");
+    expect(excludedSentence(t)).toMatch(/\(a simulator error, a step or turn limit or a timeout\)/);
+    expect(robustSentence(t)).toMatch(/ended in an error, a limit or a timeout\)/);
+    expect(robustSentence(t)).toMatch(/^Checked again on all 15,000 pairs of games,/);
+  });
+
+  it("shows on Methods the shares past the first and the second boss, the class difference, and the narrow pass", () => {
+    const results = narrowResults();
+    const d = { ...actsFixture({ L: "passed" }), tests: { results } };
+    const { container } = render(<ActsPanel data={d} />);
+    const table = screen.getAllByRole("table", { hidden: true })[0];
+    if (!table) throw new Error("no table");
+    expect(text(table)).toMatch(/Past the first \/ second boss/);
+    const rows = within(table).getAllByRole("row");
+    expect(rows[1]).toHaveTextContent("61.0 % / 11.4 %against 67.0 % / 10.5 %");
+    expect(rows[3]).toHaveTextContent("67.0 % / 11.4 %against 67.0 % / 10.5 %");
+    expect(rows[3]).toHaveTextContent("a narrow pass");
+    expect(rows[1]).not.toHaveTextContent("a narrow pass");
+    expect(text(container)).toContain(marginNote(results));
+    expect(text(container)).toMatch(/6\.03 % against 4\.48 % \(\+1\.55 points\)/);
   });
 });
 

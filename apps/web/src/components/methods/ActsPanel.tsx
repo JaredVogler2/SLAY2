@@ -11,6 +11,8 @@ import {
   VERDICT_TEXT,
   actsData,
   formatP,
+  isNarrow,
+  marginNote,
   pctShare,
   pts,
   robustSentence,
@@ -48,6 +50,12 @@ function Row({ t }: { t: ActsTest }) {
         </span>
       </td>
       <td className="num py-2 pr-3 text-muted">{formatP(t.p)}</td>
+      <td className="num py-2 pr-3 text-muted">
+        {pctShare(t.actOne.shares.arm, 1)} / {pctShare(t.actTwo.shares.arm, 1)}
+        <span className="block text-xs text-dim">
+          against {pctShare(t.actOne.shares.baseline, 1)} / {pctShare(t.actTwo.shares.baseline, 1)}
+        </span>
+      </td>
       <td className="py-2">
         <Badge
           tone={
@@ -56,6 +64,7 @@ function Row({ t }: { t: ActsTest }) {
         >
           {VERDICT_TEXT[t.verdict]}
         </Badge>
+        {isNarrow(t) ? <span className="mt-1 block text-xs text-dim">a narrow pass</span> : null}
       </td>
     </tr>
   );
@@ -93,11 +102,11 @@ export function ActsPanel({ data = actsData() }: { data?: ActsData | null }) {
         {tests ? (
           <>
             <ScrollRegion label="The four held-out tests of the acts study">
-              <table className="w-full min-w-[40rem] text-left text-sm">
+              <table className="w-full min-w-[48rem] text-left text-sm">
                 <caption className="sr-only">
                   The four tests: the share of the paired games that were won, for the rule against
-                  the baseline, the difference with its interval, the pairs, the exact p and the
-                  reading
+                  the baseline, the difference with its interval, the pairs, the exact p, the shares
+                  that got past the first and the second boss, and the reading
                 </caption>
                 <thead>
                   <tr className="border-b border-line text-muted">
@@ -116,6 +125,9 @@ export function ActsPanel({ data = actsData() }: { data?: ActsData | null }) {
                     <th scope="col" className="py-2 pr-3 font-medium">
                       Exact p
                     </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      Past the first / second boss
+                    </th>
                     <th scope="col" className="py-2 font-medium">
                       Reading
                     </th>
@@ -128,6 +140,7 @@ export function ActsPanel({ data = actsData() }: { data?: ActsData | null }) {
                 </tbody>
               </table>
             </ScrollRegion>
+            {marginNote(tests.results) ? <p>{marginNote(tests.results)}</p> : null}
             <Disclosure summary={<span>Each class on its own</span>}>
               <ScrollRegion label="The acts tests, class by class">
                 <table className="w-full min-w-[40rem] text-left text-sm">
@@ -160,7 +173,8 @@ export function ActsPanel({ data = actsData() }: { data?: ActsData | null }) {
                             <td key={t.key} className="num py-2 pr-3 text-muted">
                               {c ? (
                                 <>
-                                  {pctShare(c.shares.arm)} against {pctShare(c.shares.baseline)}
+                                  {pctShare(c.shares.arm)} against {pctShare(c.shares.baseline)} (
+                                  {pts(c.difference)})
                                   <span className="block text-xs text-dim">
                                     {c.wins.arm} / {c.wins.baseline} won · {c.armOnly} /{" "}
                                     {c.baselineOnly} · {formatP(c.p)} ·{" "}
@@ -193,7 +207,7 @@ export function ActsPanel({ data = actsData() }: { data?: ActsData | null }) {
                   about the bosses before their act in every pair.
                 </li>
                 <li>
-                  Every test was also read on all pairs of seeds, a game that did not end in a win
+                  Every test was also read on all pairs of games, a game that did not end in a win
                   counting as not won: a result is read as ahead or behind only if that check agrees
                   at an exact p below 0.05 and at most a tenth of the pairs were dropped.{" "}
                   {results.map((t) => `${t.key}: ${robustSentence(t)}`).join(" ")}
