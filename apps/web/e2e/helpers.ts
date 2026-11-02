@@ -124,15 +124,22 @@ export function pickierCards(character: string): { between: string; above: strin
 }
 
 /** The registered replication of the Act-2 rule (ADR-062, T1) as the exporter wrote it, or null before it exists. */
-export function threshReplication(): {
+export interface ThreshReplication {
+  readonly arm: string;
   readonly verdict: string;
   readonly shares: { readonly arm: number; readonly baseline: number };
   readonly difference: number;
-  readonly perClass: readonly { readonly character: string; readonly verdict: string }[];
-} | null {
+  readonly perClass: readonly {
+    readonly character: string;
+    readonly verdict: string;
+    readonly shares: { readonly arm: number; readonly baseline: number };
+  }[];
+}
+
+export function threshReplication(): ThreshReplication | null {
   const file = join(__dirname, "..", "src", "content", "thresh.generated.json");
   const data = JSON.parse(readFileSync(file, "utf8")) as {
-    tests?: { results?: { T1?: ReturnType<typeof threshReplication> } } | null;
+    tests?: { results?: { T1?: ThreshReplication } } | null;
   };
   return data.tests?.results?.T1 ?? null;
 }

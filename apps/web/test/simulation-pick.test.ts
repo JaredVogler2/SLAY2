@@ -225,6 +225,26 @@ describe("simulation pick, branch by branch", () => {
     ).toBe("pick");
   });
 
+  it("sends a real tie to the earlier card, whichever order the two cards are offered in (two Necrobinder cards share a value)", () => {
+    const a = setFor("necrobinder")?.cards.find((c) => c.id === "SOW");
+    const b = setFor("necrobinder")?.cards.find((c) => c.id === "FRIENDSHIP");
+    expect(a?.beta, "the tie must exist in the shipped values").toBe(b?.beta);
+    const forward = simulationPick({
+      character: "necrobinder",
+      offered: ["SOW", "FRIENDSHIP"],
+      deckSize: 12,
+      threshold: 0.1,
+    });
+    const backward = simulationPick({
+      character: "necrobinder",
+      offered: ["FRIENDSHIP", "SOW"],
+      deckSize: 12,
+      threshold: 0.1,
+    });
+    expect(forward.kind === "pick" ? forward.cardId : "").toBe("SOW");
+    expect(backward.kind === "pick" ? backward.cardId : "").toBe("FRIENDSHIP");
+  });
+
   it("sends ties to the earlier card", () => {
     const a = measuredValue("RAMPAGE", "ironclad");
     expect(a).toBeDefined();

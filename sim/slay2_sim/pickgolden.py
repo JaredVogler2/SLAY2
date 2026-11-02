@@ -43,14 +43,8 @@ def build_class(values: str, *, cases: int, seed: int) -> dict:
     rng = random.Random(seed)
     ids = sorted(policy.beta) + list(UNMEASURED)
     out = []
-    # offers made only of cards the values file does not contain are rare in a random draw: pin them explicitly
-    fixed = [([UNMEASURED[1]], 12), (list(UNMEASURED), 12), (list(UNMEASURED), MAX_DECK)]
-    for k in range(cases):
-        if k < len(fixed):
-            offered, size = fixed[k]
-        else:
-            offered = rng.sample(ids, rng.choice((1, 2, 3, 3, 3, 4)))
-            size = rng.choice(DECK_SIZES)
+
+    def evaluate(offered: list[str], size: int) -> dict:
         character = policy.values_character
         obs = {"run": {"deck": [["STRIKE_IRONCLAD", False, size]], "character": character}}
         actions = [{"action": "pick_card", "idx": i, "card_id": c} for i, c in enumerate(offered)]
@@ -59,14 +53,25 @@ def build_class(values: str, *, cases: int, seed: int) -> dict:
         # the same offer in Act 2 (act index 1), where the late rule applies
         late_obs = {"run": {"deck": [["STRIKE_IRONCLAD", False, size]], "character": character, "act": LATE_ACTS[0]}}
         late_idx = late._card_reward(late_obs, actions)
-        out.append(
-            {
-                "offered": offered,
-                "deckSize": size,
-                "pick": "skip" if idx == len(offered) else offered[idx],
-                "latePick": "skip" if late_idx == len(offered) else offered[late_idx],
-            }
-        )
+        return {
+            "offered": offered,
+            "deckSize": size,
+            "pick": "skip" if idx == len(offered) else offered[idx],
+            "latePick": "skip" if late_idx == len(offered) else offered[late_idx],
+        }
+
+    # offers made only of cards the values file does not contain are rare in a random draw: pin them explicitly
+    fixed = [([UNMEASURED[1]], 12), (list(UNMEASURED), 12), (list(UNMEASURED), MAX_DECK)]
+    for k in range(cases):
+        if k < len(fixed):
+            offered, size = fixed[k]
+        else:
+            offered = rng.sample(ids, rng.choice((1, 2, 3, 3, 3, 4)))
+            size = rng.choice(DECK_SIZES)
+        out.append(evaluate(offered, size))
+    # edge cases appended after the random ones, so that the cases before them do not move: an empty deck and the largest offers (five cards)
+    for size, count in ((0, 3), (0, 5), (1, 5), (12, 5), (MAX_DECK - 1, 5), (MAX_DECK, 5)):
+        out.append(evaluate(rng.sample(ids, count), size))
     params = policy.describe()["params"]
     return {"character": (policy.values_character or "").lower(), "valuesFile": params["values"], "valuesSha256": params["values_sha256"], "cases": out}
 

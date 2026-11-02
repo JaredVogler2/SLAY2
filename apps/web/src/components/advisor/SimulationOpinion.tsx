@@ -41,13 +41,13 @@ export function SimulationOpinion({
   heuristic,
   ascensionData,
   underdocksData,
-  source = "regular",
+  source,
 }: {
   run: RunState;
   offered: readonly string[];
   heuristic: DraftAction;
   /** where the cards are offered (a card reward after a fight, a shop, an event): the pickier rule of Act 2 speaks only for the rewards after a fight */
-  source?: PackSource;
+  source: PackSource;
   /** what the Ascension 9 study found (the exporter's file by default; tests pass their own) */
   ascensionData?: AscensionData;
   /** what the Underdocks study found (the exporter's file by default; tests pass their own) */

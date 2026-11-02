@@ -1,5 +1,6 @@
 import type { PackSource } from "@/lib/run-state";
 import {
+  DECK_CAP,
   PICKIER_ACT_INDEX,
   PICKIER_THRESHOLD,
   simulationPick,
@@ -8,8 +9,9 @@ import {
 import { threshData, type ThreshClassResult, type ThreshData, type ThreshTest } from "@/lib/thresh";
 
 /**
- * The card rewards the pilot of the threshold study (ADR-062) changed are the ones after a fight; a shop's cards and an event's choices are decided by
- * other rules of the pilot and were not part of the test.
+ * The arms of the threshold study (ADR-062) applied the bar to every card reward of Act 2 (in the simulator that includes the few an event or a relic gives);
+ * the advisor shows the opinion only for the rewards after a fight, which a visitor can tell from the others, and never for a shop, whose cards another rule of
+ * the pilot buys.
  */
 export const PICKIER_SOURCES: readonly PackSource[] = ["regular", "elite", "boss"];
 
@@ -27,7 +29,14 @@ export type PickierOpinion =
       /** the registered test that offers it, and the class's own row of it */
       readonly test: ThreshTest;
       readonly classResult: ThreshClassResult;
+      /** every class's own row of the test, in the file's order (the panel prints them all: ADR-062 item 5) */
+      readonly classes: readonly ThreshClassResult[];
       readonly level: number;
+      /** the seeds each class was played on, and the record that registered the test, both read from the file */
+      readonly seeds: number;
+      readonly adr: string;
+      /** the deck is full: a pilot skips whatever its bar */
+      readonly capped: boolean;
     };
 
 const no = (why: PickierWhy, reason: string): PickierOpinion => ({ available: false, why, reason });
@@ -51,7 +60,7 @@ export function pickierOpinion(input: {
   const data = input.data === undefined ? threshData() : input.data;
   const tests = data?.tests;
   const t1 = tests?.results.T1;
-  if (tests?.results.T1?.arm !== "t020" || t1?.baseline !== "s")
+  if (!data || !tests || t1?.arm !== "t020" || t1.baseline !== "s")
     return no("no-result", "The registered replication of the Act-2 rule has no result yet.");
   if (t1.verdict !== "passed")
     return no(
@@ -78,5 +87,16 @@ export function pickierOpinion(input: {
     offered: input.offered,
     deckSize: input.deckSize,
   });
-  return { available: true, pick, baseline, test: t1, classResult, level: tests.level };
+  return {
+    available: true,
+    pick,
+    baseline,
+    test: t1,
+    classResult,
+    classes: t1.perClass,
+    level: tests.level,
+    seeds: data.seeds,
+    adr: data.adr,
+    capped: input.deckSize >= DECK_CAP,
+  };
 }
