@@ -461,25 +461,35 @@ export function resultLine(results: Partial<Record<ThreshTestKey, ThreshTest>>):
 }
 
 /**
- * What follows for the advisor, as ADR-062 item 8 wrote it before any game was played: nothing changes because of this study alone; a simulated second
- * opinion could be offered only for a threshold whose own held-out test against the baseline passed, in a separate change with its own review.
+ * What follows for the advisor, as ADR-062 item 8 wrote it before any game was played, and what ADR-063 did with it: the advisor's own recommendation does not
+ * change because of this study. A simulated second opinion may be offered only for a threshold whose own held-out test against the baseline passed, as an opt-in
+ * labelled as a simulated pilot's result with the test's figures beside it, in a separate change with its own review. The advisor offers it for 0.2 (T1, the only
+ * threshold that has a held-out test against the baseline here) as a closed panel in Act 2 for Ironclad and Defect; any other threshold that passed would need its own change.
  */
 export function advisorNote(
   results: Partial<Record<ThreshTestKey, ThreshTest>>,
 ): readonly string[] {
-  const out: string[] = ["The advisor does not change because of this study alone."];
+  const out: string[] = ["The advisor's own recommendation does not change because of this study."];
   const passed: ThreshTest[] = [];
   for (const k of THRESH_TEST_KEYS) {
     const t = results[k];
     if (k !== "T3" && t?.verdict === "passed") passed.push(t);
   }
-  if (passed.length === 0)
+  if (passed.length === 0) {
     out.push(
       "No threshold was shown to win more games than the baseline on these seeds, so there is nothing to offer, and nothing already published is withdrawn.",
     );
-  else
+    return out;
+  }
+  const offered = passed.filter((t) => t.key === "T1");
+  const others = passed.filter((t) => t.key !== "T1");
+  if (offered.length > 0)
     out.push(
-      `${list(passed.map((t) => armShort(t.arm)))} passed its own test against the baseline. The project decided in advance (ADR-061, addendum B; ADR-062 item 8) that a simulated second opinion for such a threshold may be added as an opt-in, labelled as a simulated pilot's result with these figures beside it, for Ironclad and Defect only and in a separate change with its own review; this page does not add it.`,
+      "0.2 passed its own test against the baseline, so the advisor offers an optional second opinion for it (ADR-063): a closed panel in Act 2, for Ironclad and Defect only, that says what a simulated pilot with that bar does with the cards on offer, labelled as a simulated pilot's result and with these figures beside it. It is not part of the recommendation and it never speaks for another bar.",
+    );
+  if (others.length > 0)
+    out.push(
+      `${list(others.map((t) => armShort(t.arm)))} passed its own test against the baseline. The project decided in advance (ADR-061, addendum B; ADR-062 item 8) that a simulated second opinion for such a threshold may be added as an opt-in, labelled as a simulated pilot's result with these figures beside it, for Ironclad and Defect only and in a separate change with its own review; this page does not add it.`,
     );
   return out;
 }
@@ -498,7 +508,7 @@ export function nextStep(results: Partial<Record<ThreshTestKey, ThreshTest>>): s
   const elsewhere =
     "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).";
   if (t1?.verdict === "passed")
-    return `The Act-2 result of ADR-061 was shown again on seeds nobody had played (ADR-062).${choice} The advisor is unchanged: an opt-in, labelled simulated second opinion for 0.2 in Ironclad and Defect is a separate change with its own review, and other thresholds are still untested on held-out seeds; nothing about the live game has been compared.`;
+    return `The Act-2 result of ADR-061 was shown again on seeds nobody had played (ADR-062).${choice} The advisor now offers an optional, closed second opinion for 0.2 in Act 2 for Ironclad and Defect (ADR-063) and its own recommendation is unchanged; other thresholds are still untested on held-out seeds, and nothing about the live game has been compared.`;
   if (t1?.verdict === "reversed")
     return `ADR-062 contradicted the Act-2 result of ADR-061 on seeds nobody had played: the baseline won more. Nothing already published is withdrawn; that result was one narrow pass of four tests and has now been contradicted.${choice} ${elsewhere}`;
   return `ADR-062 did not show the Act-2 result of ADR-061 again on seeds nobody had played; not shown is not evidence of no effect, and the earlier result stands as one narrow pass of four tests, not replicated.${choice} ${elsewhere}`;

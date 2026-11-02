@@ -9,6 +9,13 @@ import {
 /** The deck size at which the validated pilot (rules_v2, ADR-031) stops taking cards. */
 export const DECK_CAP = 32;
 
+/**
+ * The bar of the pickier pilot in the card rewards of Act 2 (`rules_v2_late`, `late_acts` [1], `late_threshold` 0.2: ADR-060, ADR-061's A2, ADR-062's T1), and the act it
+ * applies to (the game's acts counted from 0, as `run.act` and the run state count them). Everywhere else the pilot's bar is 0.
+ */
+export const PICKIER_THRESHOLD = 0.2;
+export const PICKIER_ACT_INDEX = 1;
+
 export type SimulationPick =
   | { readonly kind: "unmeasured"; readonly reason: string }
   | { readonly kind: "skip"; readonly reason: string }
@@ -28,13 +35,19 @@ export type SimulationPick =
  * It answers "what did the simulated pilot do", not "what should you do": the values come from a simulator that has not
  * been compared with the live game, and from one pilot's way of playing the cards. It speaks only for a class whose values
  * passed their held-out test (acting on them beat the hand-written ratings).
+ *
+ * `threshold` is the bar the best card's value has to be strictly above (default 0, the pilot of ADR-031); 0.2 is the pickier
+ * pilot of Act 2 (`PICKIER_THRESHOLD`), whose only difference is that it skips more rewards.
  */
 export function simulationPick(input: {
   character: string;
   offered: readonly string[];
   deckSize: number;
+  threshold?: number;
 }): SimulationPick {
   const { character, offered, deckSize } = input;
+  const threshold = input.threshold ?? 0;
+  const bar = threshold === 0 ? "zero" : String(threshold);
   const set = setFor(character);
   if (!set) {
     return {
@@ -76,18 +89,16 @@ export function simulationPick(input: {
     };
   }
   const id = offered[bestIndex];
-  if (best !== undefined && id !== undefined && best.beta > 0) {
+  if (best !== undefined && id !== undefined && best.beta > threshold) {
     return {
       kind: "pick",
       cardId: id,
       value: best,
-      reason:
-        "It has the largest measured value among the offered cards, and that value is above zero.",
+      reason: `It has the largest measured value among the offered cards, and that value is above ${bar}.`,
     };
   }
   return {
     kind: "skip",
-    reason:
-      "No offered card has a measured value above zero (a card that was never measured counts as zero), so the simulated pilot skips.",
+    reason: `No offered card has a measured value above ${bar} (a card that was never measured counts as zero), so the simulated pilot skips.`,
   };
 }

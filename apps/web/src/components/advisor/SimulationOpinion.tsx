@@ -5,6 +5,7 @@ import type { DraftAction } from "@slay2/decision";
 
 import { AscensionNote } from "@/components/advisor/AscensionNote";
 import { UnderdocksNote } from "@/components/advisor/UnderdocksNote";
+import { PickierOpinion } from "@/components/advisor/PickierOpinion";
 import { MeasuredValue } from "@/components/codex/MeasuredValue";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
@@ -20,7 +21,7 @@ import {
   pointsText,
   setFor,
 } from "@/lib/cardvalues";
-import type { RunState } from "@/lib/run-state";
+import type { PackSource, RunState } from "@/lib/run-state";
 import { simulationPick } from "@/lib/simulation-pick";
 
 const nameOf = (id: string): string => getCard(id)?.name ?? id;
@@ -40,10 +41,13 @@ export function SimulationOpinion({
   heuristic,
   ascensionData,
   underdocksData,
+  source = "regular",
 }: {
   run: RunState;
   offered: readonly string[];
   heuristic: DraftAction;
+  /** where the cards are offered (a card reward after a fight, a shop, an event): the pickier rule of Act 2 speaks only for the rewards after a fight */
+  source?: PackSource;
   /** what the Ascension 9 study found (the exporter's file by default; tests pass their own) */
   ascensionData?: AscensionData;
   /** what the Underdocks study found (the exporter's file by default; tests pass their own) */
@@ -156,6 +160,8 @@ export function SimulationOpinion({
           );
         })}
       </ul>
+
+      <PickierOpinion run={run} offered={offered} source={source} />
 
       <div className="mt-4">
         <Disclosure summary="How to read this, and what it is not">
