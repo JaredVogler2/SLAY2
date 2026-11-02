@@ -202,7 +202,10 @@ export function bossSentence(t: ActsTest): string {
   const d1 = a1.shares.arm - a1.shares.baseline;
   const d2 = a2.shares.arm - a2.shares.baseline;
   const f = t.floorDifference.meanAMinusB;
-  const floors = `the runs reached ${Math.abs(f).toFixed(2)} floors ${f < 0 ? "fewer" : "more"} on average`;
+  const floors =
+    Math.abs(f) < 0.005
+      ? "the runs reached the same number of floors on average (to two decimals)"
+      : `the runs reached ${Math.abs(f).toFixed(2)} floors ${f < 0 ? "fewer" : "more"} on average`;
   if (first >= 2)
     return `Along the way: this rule plays the baseline's game until the third act, so the games that got past the first and the second boss are the same by construction (${pctShare(a2.shares.baseline, 1)} of the baseline's paired games got past the second boss, which is all the third act's picks can change); ${floors}.`;
   const firstBoss =
@@ -263,7 +266,7 @@ export function meaningOf(results: Record<ActsTestKey, ActsTest>): readonly stri
     );
     out.push(
       singles.length > 0
-        ? `Being pickier in ${list(singles.map(ACT_NAME))} alone also won more games, so that act's picks alone are shown to matter; the effects of the three acts need not add up to the lead's, and 0.2 may not be the best threshold in any act.`
+        ? `Being pickier in ${list(singles.map(ACT_NAME))} alone also won more games, so ${singles.length > 1 ? "those acts'" : "that act's"} picks alone are shown to matter; the effects of the three acts need not add up to the lead's, and 0.2 may not be the best threshold in any act.`
         : "No single act is shown to carry it. The single-act pilots have less power, so the effect may be shared between the acts, may need a thinner deck from the first act and the later picks together, or may be one act's, too small to see.",
     );
   } else if (l === "reversed") {
@@ -284,6 +287,90 @@ export function meaningOf(results: Record<ActsTestKey, ActsTest>): readonly stri
   if (behind.length > 0)
     out.push(
       `Being pickier in ${list(behind.map(ACT_NAME))} alone won fewer games than the baseline, which is reported as plainly as a gain would be, and with the same limits: it need not be so for other thresholds.`,
+    );
+  return out;
+}
+
+const lowerFirst = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
+const upperFirst = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+const NUMBER_WORD = ["No", "One", "Two", "Three", "Four"] as const;
+
+/** One sentence that says how the four tests came out, from the verdicts and differences the exporter read (the cards carry every figure and caveat). */
+export function resultLine(results: Record<ActsTestKey, ActsTest>): string {
+  const by = (v: ActsVerdict) => ACTS_KEYS.filter((k) => results[k].verdict === v);
+  const part = (ks: readonly ActsTestKey[]): string =>
+    list(ks.map((k) => `${lowerFirst(TEST_INFO[k].title)} (${pts(results[k].difference)})`));
+  const passed = by("passed");
+  const reversed = by("reversed");
+  const none = by("not-shown");
+  const out: string[] = [];
+  if (passed.length > 0)
+    out.push(
+      `${NUMBER_WORD[passed.length] ?? ""} of the four ${passed.length === 1 ? "was" : "were"} read as winning more games: ${part(passed)}`,
+    );
+  if (reversed.length > 0)
+    out.push(
+      `${NUMBER_WORD[reversed.length] ?? ""} of the four ${reversed.length === 1 ? "was" : "were"} read as winning fewer games: ${part(reversed)}`,
+    );
+  if (none.length === ACTS_KEYS.length)
+    out.push(`None of the four was shown to differ from the baseline (${part(none)})`);
+  else if (none.length > 0)
+    out.push(`${upperFirst(part(none))} ${none.length === 1 ? "was" : "were"} not shown to differ`);
+  return `${out.join(". ")}.`;
+}
+
+/**
+ * Says so when a pass is narrow: the lower end of its interval is under a quarter of the difference, so the evidence is of a direction and not of a
+ * size (empty when no pass is). The rule is the page's, not the registration's; the registration only asks every page to give the interval.
+ */
+export function marginNote(results: Record<ActsTestKey, ActsTest>): string {
+  const narrow = ACTS_KEYS.filter((k) => {
+    const t = results[k];
+    return t.verdict === "passed" && (t.ci[0] ?? 0) < 0.25 * t.difference;
+  });
+  if (narrow.length === 0) return "";
+  const parts = narrow.map((k) => {
+    const t = results[k];
+    const lo = t.ci[0] ?? 0;
+    return `${pts(lo)} (about ${n(Math.round(lo * t.pairs))} games in ${n(t.pairs)} pairs) for ${lowerFirst(TEST_INFO[k].title)}`;
+  });
+  const count = NUMBER_WORD[narrow.length] ?? "";
+  return `${count} ${narrow.length === 1 ? "pass is" : "passes are"} narrow: the lower end of the interval is only ${list(parts)}, under a quarter of the difference, so ${narrow.length === 1 ? "it shows" : "they show"} a direction and not a size.`;
+}
+
+/**
+ * What follows for the advisor, as ADR-061 item 7 (iii) wrote it before any game of the study was played: nothing changes because of the study. A
+ * pickier rule that won more where it has no price at a boss before its act (Act 2 or Act 3: it plays the baseline's game until then) is put to the
+ * owner as an optional, labelled simulated second opinion with these figures beside it; one that won more at a price at the first boss (the old lead,
+ * Act 1) is put as the trade-off it is. A rule that was not shown to win more, or won fewer, withdraws nothing and offers nothing. The decision is
+ * the owner's in every case and is not made here.
+ */
+export function advisorNote(results: Record<ActsTestKey, ActsTest>): readonly string[] {
+  const passed = ACTS_KEYS.filter((k) => results[k].verdict === "passed");
+  const free = passed.filter((k) => !hasPrice(results[k]));
+  const priced = passed.filter((k) => hasPrice(results[k]));
+  const out: string[] = ["The advisor does not change because of this study."];
+  if (free.length > 0)
+    out.push(
+      `Being pickier in ${list(free.map(ACT_NAME))} alone won more games (${list(free.map((k) => pts(results[k].difference)))}) and, because it plays the baseline's game until its act, has no price at any boss before that act. The question for the owner is whether the advisor should offer ${list(free.map((k) => `“pickier in ${ACT_NAME(k)}”`))} as an optional, labelled simulated second opinion, with these figures beside it. That is not decided here.`,
+    );
+  if (priced.length > 0)
+    out.push(
+      `${priced
+        .map((k) => {
+          const t = results[k];
+          return `${lowerFirst(TEST_INFO[k].title)} won more games (${pts(t.difference)}) at a price at the first boss (${pctShare(t.actOne.shares.arm, 1)} of the paired games got past it, against ${pctShare(t.actOne.shares.baseline, 1)})`;
+        })
+        .join(
+          "; ",
+        )}. More wins and a lower share past the first boss are a trade-off, not a free gain, and whether the advisor should show it is the owner's decision too.`.replace(
+        /^./,
+        (c) => c.toUpperCase(),
+      ),
+    );
+  if (passed.length === 0)
+    out.push(
+      "No pickier rule was shown to win more games, so there is nothing to offer, and nothing that was already offered is withdrawn.",
     );
   return out;
 }

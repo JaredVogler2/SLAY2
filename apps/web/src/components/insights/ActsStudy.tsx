@@ -8,13 +8,16 @@ import {
   TEST_INFO,
   VERDICT_TEXT,
   actThreeNote,
+  advisorNote,
   bossSentence,
   downgradeNote,
   excludedSentence,
   formatP,
+  marginNote,
   meaningOf,
   pctShare,
   pts,
+  resultLine,
   robustSentence,
   testSentence,
   verificationNote,
@@ -110,6 +113,7 @@ function TestsBlock({ data }: { data: ActsData }) {
         <h3 className="text-lg text-parchment">The held-out tests</h3>
         <EvidenceBadge kind="registered" />
       </div>
+      <p className="max-w-3xl text-base text-parchment">{resultLine(tests.results)}</p>
       <p className="max-w-3xl text-sm text-muted">
         Each pilot played the same {n(data.seeds)} held-out seeds in each of the five classes as the
         baseline (the pilot that follows the shown values), with the relics kept, and was compared
@@ -133,7 +137,18 @@ function TestsBlock({ data }: { data: ActsData }) {
             {s}
           </p>
         ))}
+        {marginNote(tests.results) ? (
+          <p className="text-sm text-muted">{marginNote(tests.results)}</p>
+        ) : null}
         <p className="text-xs text-dim">{actThreeNote(tests.results.A3)}</p>
+      </div>
+      <div className="space-y-2 rounded-xl border border-line bg-charcoal/40 p-4">
+        <h4 className="text-base text-parchment">What this changes for the advisor</h4>
+        {advisorNote(tests.results).map((s) => (
+          <p key={s} className="text-sm text-muted">
+            {s}
+          </p>
+        ))}
       </div>
     </div>
   );
@@ -155,6 +170,15 @@ export function ActsStudy({ data }: { data: ActsData }) {
         live game, at Ascension 0 with the relics kept. These pilots win very few games, almost all
         of them with Ironclad and Defect, so a difference in wins is a difference of a few points at
         most, and none of it is about a player.
+      </p>
+      <p className="max-w-3xl text-sm text-muted">
+        The axis here is the share of games <em>won</em>, which is small for these pilots (
+        {data.tests
+          ? `the baseline won ${pctShare(data.tests.results.L.shares.baseline)} of its paired games`
+          : "the baseline wins under 2 % of its games"}
+        ), so a difference of a few tenths of a point is a large relative change, and a point here
+        is not comparable with a point of the share that gets past a boss, which the other sections
+        of this page use.
       </p>
       {data.tests ? null : (
         <p className="max-w-3xl rounded-lg border border-line bg-charcoal/40 px-3 py-2 text-sm text-parchment">

@@ -52,6 +52,38 @@ test.describe("insights", () => {
     }
   });
 
+  test("shows the acts study as it came out: a result line, the four tests, what they mean and what it changes for the advisor", async ({
+    page,
+  }) => {
+    await page.goto("/insights#acts");
+    const acts = page.locator("section#acts");
+    for (const name of [
+      "The old lead",
+      "Pickier in Act 1 only",
+      "Pickier in Act 2 only",
+      "Pickier in Act 3 only",
+    ])
+      await expect(acts.getByRole("heading", { level: 4, name })).toBeVisible();
+    await expect(acts.getByText(/The axis here is the share of games won/)).toBeVisible();
+    await expect(
+      acts.getByText(
+        /^(One|Two|Three|Four) of the four (was|were) read as|^None of the four was shown/,
+      ),
+    ).toBeVisible();
+    await expect(
+      acts.getByRole("heading", { level: 4, name: "What the four results mean together" }),
+    ).toBeVisible();
+    await expect(
+      acts.getByRole("heading", { level: 4, name: "What this changes for the advisor" }),
+    ).toBeVisible();
+    await expect(
+      acts.getByText("The advisor does not change because of this study."),
+    ).toBeVisible();
+    // every figure is a registered test read at 0.0125, and the page never calls a not-shown result "no effect"
+    await expect(acts.getByText(/read at 0\.0125/).first()).toBeVisible();
+    await expect(acts.getByText(/is not .no effect./).first()).toBeVisible();
+  });
+
   test("ranks the levers and writes each bar's figure and interval beside it", async ({ page }) => {
     await page.goto("/insights");
     const ladder = page.locator("#levers ol > li");

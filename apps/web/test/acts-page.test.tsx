@@ -6,10 +6,13 @@ import { ActsPanel } from "@/components/methods/ActsPanel";
 import {
   ACTS_KEYS,
   actThreeNote,
+  advisorNote,
   bossSentence,
   downgradeNote,
   excludedSentence,
+  marginNote,
   meaningOf,
+  resultLine,
   robustSentence,
   testSentence,
   verificationNote,
@@ -46,6 +49,15 @@ describe("before the held-out games are read", () => {
     expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(/ADR-061/);
   });
 
+  it("says that its axis is the share of games won, not the share that gets past a boss (item 7 ii)", () => {
+    const { container } = render(<ActsStudy data={actsFixture(null)} />);
+    expect(text(container)).toMatch(/The axis here is the share of games won/);
+    expect(text(container)).toMatch(/the baseline wins under 2 % of its games/);
+    expect(text(container)).toMatch(
+      /not comparable with a point of the share that gets past a boss, which the other sections of this page use/,
+    );
+  });
+
   it("is not drawn at all when the repository has no record of the study", () => {
     expect(render(<ActsPanel data={null} />).container).toBeEmptyDOMElement();
   });
@@ -79,6 +91,9 @@ describe("with the four tests", () => {
     expect(t.match(/Checked again on all 15,000 pairs of seeds/g)).toHaveLength(4);
     expect(t.match(/read at 0\.0125 \(the study-wise 0\.05 divided by four\)/g)).toHaveLength(4);
     expect(t).toMatch(/not independent/);
+    expect(t).toMatch(
+      /The axis here is the share of games won, which is small for these pilots \(the baseline won 2\.07 % of its paired games\)/,
+    );
     expect(t).toMatch(
       /not shown is not no effect|&ldquo;not shown&rdquo; is not|“not shown” is not “no effect”/,
     );
@@ -148,8 +163,8 @@ describe("what the four results mean together (ADR-061 item 8)", () => {
     [
       "L, A1 and A3 passed",
       { L: "passed", A1: "passed", A3: "passed" },
-      [/Act 1 and Act 3 alone also won more/],
-      [/No single act is shown/],
+      [/Act 1 and Act 3 alone also won more/, /so those acts' picks alone are shown to matter/],
+      [/No single act is shown/, /that act's picks/],
     ],
     [
       "L not shown, A3 passed",
@@ -237,6 +252,184 @@ describe("what the four results mean together (ADR-061 item 8)", () => {
             expect(all.includes("lead won more games than the baseline")).toBe(l === "passed");
             expect(all.includes("None of the four was shown to differ")).toBe(
               [l, a1, a2, a3].every((v) => v === "not-shown"),
+            );
+          }
+    expect(count).toBe(81);
+  });
+});
+
+describe("the result line and the note about narrow passes", () => {
+  const lineOf = (v: Verdicts): string => {
+    const results = actsFixture(v).tests?.results;
+    if (!results) throw new Error("no tests");
+    return resultLine(results);
+  };
+
+  it("says in one sentence which tests won more games, which won fewer and which were not shown to differ", () => {
+    expect(lineOf({ L: "passed", A1: "passed", A2: "passed" })).toBe(
+      "Three of the four were read as winning more games: the old lead (+0.69 points), pickier in Act 1 only (+0.69 points) and pickier in Act 2 only (+0.69 points). Pickier in Act 3 only (+0.00 points) was not shown to differ.",
+    );
+    expect(lineOf({ A3: "passed" })).toMatch(
+      /^One of the four was read as winning more games: pickier in Act 3 only \(\+0\.69 points\)\. The old lead \(\+0\.00 points\), pickier in Act 1 only \(\+0\.00 points\) and pickier in Act 2 only \(\+0\.00 points\) were not shown to differ\.$/,
+    );
+    expect(lineOf({ L: "reversed", A2: "passed" })).toMatch(
+      /^One of the four was read as winning more games: pickier in Act 2 only .*\. One of the four was read as winning fewer games: the old lead \(−0\.69 points\)\./,
+    );
+    expect(lineOf({})).toMatch(/^None of the four was shown to differ from the baseline \(/);
+  });
+
+  it("is on the page above the cards, and only when there is a result", () => {
+    const d = actsFixture({ L: "passed", A2: "passed" });
+    const results = d.tests?.results;
+    if (!results) throw new Error("no tests");
+    const { container } = render(<ActsStudy data={d} />);
+    expect(text(container)).toContain(resultLine(results));
+    cleanup();
+    const registered = render(<ActsStudy data={actsFixture(null)} />);
+    expect(text(registered.container)).not.toMatch(/of the four (was|were) read as/);
+  });
+
+  it("says nothing about margins when the lower end of each passed interval is a good part of the difference", () => {
+    const results = actsFixture({ L: "passed", A2: "passed" }).tests?.results;
+    if (!results) throw new Error("no tests");
+    expect(marginNote(results)).toBe("");
+  });
+
+  it("names a pass whose interval's lower end is under a quarter of the difference, with the games that end stands for", () => {
+    const base = actsFixture({ L: "passed", A1: "passed", A2: "passed" }).tests?.results;
+    if (!base) throw new Error("no tests");
+    const narrow = (t: (typeof base)["A1"], lo: number, diff: number) => ({
+      ...t,
+      difference: diff,
+      ci: [lo, diff + 0.003],
+    });
+    const one = { ...base, A2: narrow(base.A2, 0.0004, 0.0029) };
+    expect(marginNote(one)).toBe(
+      "One pass is narrow: the lower end of the interval is only +0.04 points (about 6 games in 14,500 pairs) for pickier in Act 2 only, under a quarter of the difference, so it shows a direction and not a size.",
+    );
+    const two = { ...one, A1: narrow(base.A1, 0.0005, 0.0035) };
+    expect(marginNote(two)).toMatch(
+      /^Two passes are narrow: the lower end of the interval is only \+0\.05 points \(about 7 games in 14,500 pairs\) for pickier in Act 1 only and \+0\.04 points .* for pickier in Act 2 only, .* so they show a direction and not a size\.$/,
+    );
+    // a test that did not pass is never called a narrow pass
+    const notPassed = {
+      ...base,
+      A2: { ...narrow(base.A2, 0.0004, 0.0029), verdict: "not-shown" as const },
+    };
+    expect(marginNote(notPassed)).toBe("");
+    const d = { ...actsFixture({ L: "passed" }), tests: { results: one } };
+    const { container } = render(<ActsStudy data={d} />);
+    expect(text(container)).toContain(marginNote(one));
+  });
+
+  it("says that two runs reached the same number of floors when the difference rounds to nothing", () => {
+    const t = {
+      ...actsTest("A3", "not-shown"),
+      floorDifference: { meanAMinusB: 0.002, ci95: [-0.01, 0.014] },
+    };
+    expect(bossSentence(t)).toMatch(
+      /the runs reached the same number of floors on average \(to two decimals\)\.$/,
+    );
+    expect(bossSentence(actsTest("A3", "not-shown"))).toMatch(
+      /the runs reached 0\.01 floors more on average\.$/,
+    );
+  });
+});
+
+describe("what this changes for the advisor (ADR-061 item 7 iii)", () => {
+  const cases: readonly (readonly [string, Verdicts, readonly RegExp[], readonly RegExp[]])[] = [
+    [
+      "Act 2 alone passed: put to the owner as an optional second opinion",
+      { A2: "passed" },
+      [
+        /^The advisor does not change because of this study\./,
+        /Being pickier in Act 2 alone won more games \(\+0\.69 points\)/,
+        /has no price at any boss before that act/,
+        /whether the advisor should offer “pickier in Act 2” as an optional, labelled simulated second opinion, with these figures beside it\. That is not decided here/,
+      ],
+      [/trade-off/, /nothing to offer/],
+    ],
+    [
+      "Act 2 and Act 3 passed",
+      { A2: "passed", A3: "passed" },
+      [
+        /Being pickier in Act 2 and Act 3 alone won more games \(\+0\.69 points and \+0\.69 points\)/,
+        /offer “pickier in Act 2” and “pickier in Act 3” as an optional/,
+      ],
+      [/trade-off/],
+    ],
+    [
+      "the lead and Act 1 passed, at a price at the first boss: the trade-off, not an offer",
+      { L: "passed", A1: "passed" },
+      [
+        /The old lead won more games \(\+0\.69 points\) at a price at the first boss \(61\.0 % of the paired games got past it, against 67\.0 %\); pickier in Act 1 only won more games/,
+        /a trade-off, not a free gain, and whether the advisor should show it is the owner's decision too/,
+      ],
+      [/second opinion/, /nothing to offer/],
+    ],
+    [
+      "the lead, Act 1 and Act 2 passed (both kinds)",
+      { L: "passed", A1: "passed", A2: "passed" },
+      [
+        /Being pickier in Act 2 alone won more games/,
+        /second opinion/,
+        /a trade-off, not a free gain/,
+      ],
+      [/nothing to offer/],
+    ],
+    [
+      "nothing passed",
+      {},
+      [
+        /^The advisor does not change because of this study\./,
+        /nothing to offer, and nothing that was already offered is withdrawn/,
+      ],
+      [/second opinion/, /trade-off/, /owner/],
+    ],
+    [
+      "a reversed result offers nothing and withdraws nothing",
+      { A1: "reversed", A3: "reversed" },
+      [/nothing to offer/],
+      [/second opinion/, /trade-off/],
+    ],
+  ];
+  it.each(cases)("%s", (_name, verdicts, expected, forbidden) => {
+    const d = actsFixture(verdicts);
+    const results = d.tests?.results;
+    if (!results) throw new Error("no tests");
+    const said = advisorNote(results).join(" ");
+    for (const re of expected) expect(said).toMatch(re);
+    for (const re of forbidden) expect(said).not.toMatch(re);
+    const { container } = render(<ActsStudy data={d} />);
+    expect(
+      screen.getByRole("heading", { level: 4, name: "What this changes for the advisor" }),
+    ).toBeInTheDocument();
+    for (const sentence of advisorNote(results)) expect(text(container)).toContain(sentence);
+  });
+
+  it("is not on the page before there is a result", () => {
+    render(<ActsStudy data={actsFixture(null)} />);
+    expect(screen.queryByText("What this changes for the advisor")).toBeNull();
+  });
+
+  it("offers a second opinion only for a rule with no price that passed, and the trade-off only for one with a price, in all 81 combinations", () => {
+    const vs: readonly ActsVerdict[] = ["passed", "not-shown", "reversed"];
+    let count = 0;
+    for (const l of vs)
+      for (const a1 of vs)
+        for (const a2 of vs)
+          for (const a3 of vs) {
+            const results = actsFixture({ L: l, A1: a1, A2: a2, A3: a3 }).tests?.results;
+            if (!results) throw new Error("no tests");
+            const said = advisorNote(results).join(" ");
+            count += 1;
+            expect(said.startsWith("The advisor does not change because of this study.")).toBe(
+              true,
+            );
+            expect(said.includes("second opinion")).toBe(a2 === "passed" || a3 === "passed");
+            expect(said.includes("trade-off")).toBe(l === "passed" || a1 === "passed");
+            expect(said.includes("nothing to offer")).toBe(
+              [l, a1, a2, a3].every((v) => v !== "passed"),
             );
           }
     expect(count).toBe(81);
