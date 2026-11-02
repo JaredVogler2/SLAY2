@@ -120,7 +120,54 @@ def test_v3_manifest_keeps_every_v2_seed_where_it_was_and_adds_disjoint_held_out
         mf.partition_seeds(v3, "test")
     with pytest.raises(ValueError, match="no 'val2' partition"):
         mf.partition_seeds(v2, "val2")  # an older manifest says so instead of a bare KeyError
-    assert "val2" not in mf.DEVELOPMENT_PARTITIONS and set(mf.DEVELOPMENT_PARTITIONS) == {"train", "dev"}
+    assert "val2" not in mf.DEVELOPMENT_PARTITIONS and set(mf.DEVELOPMENT_PARTITIONS) == {"train", "dev", "dev2"}
+
+
+def test_v4_manifest_keeps_every_v3_seed_where_it_was_and_adds_disjoint_development_and_held_out_seeds(tmp_path):
+    """dev2 is fresh development seeds (every dev slice had been used, and dev[5000:10000) had fitted the card values) and val3 fresh held-out seeds
+    for the threshold study (ADR-062); neither has been played by any batch, and the sealed test partition stays sealed."""
+    root = mf.Path(__file__).resolve().parents[2] / "experiments" / "seeds"
+    v3 = mf.load_seed_manifest(root / "ironclad-a0-v3.json")
+    v4 = mf.load_seed_manifest(root / "ironclad-a0-v4.json")
+    for part in ("train", "val", "test", "dev", "val2"):
+        assert v4["partitions"][part] == v3["partitions"][part], part
+    assert "dev2" not in v3["partitions"] and "val3" not in v3["partitions"]
+    assert v4["sizes"]["dev2"] == 3000 and v4["sizes"]["val3"] == 10000
+    everything = [s for part in v4["partitions"].values() for s in part]
+    assert len(everything) == len(set(everything)) == 37000
+    sizes = {"train": 5000, "val": 2000, "test": 4000, "dev": 10000, "val2": 3000, "dev2": 3000, "val3": 10000}
+    regenerated = mf.make_seed_manifest("ironclad-a0-v4", 20261025, sizes)
+    assert regenerated["sha256"] == v4["sha256"]
+    out = tmp_path / "ironclad-a0-v4.json"
+    mf.save_json(out, regenerated)
+    assert out.read_bytes() == (root / "ironclad-a0-v4.json").read_bytes()  # the file, not only its checksum
+    # asking for neither leaves a v3-style manifest exactly as it was
+    assert mf.make_seed_manifest("ironclad-a0-v3", 20261025, {k: v for k, v in sizes.items() if k not in ("dev2", "val3")})["sha256"] == v3["sha256"]
+    assert mf.partition_seeds(v4, "val3", limit=3) == v4["partitions"]["val3"][:3]  # held-out, but not sealed
+    assert mf.partition_seeds(v4, "dev2", limit=3) == v4["partitions"]["dev2"][:3]  # development seeds are not sealed
+    with pytest.raises(PermissionError):
+        mf.partition_seeds(v4, "test")
+    for older in ("dev2", "val3"):
+        with pytest.raises(ValueError, match=f"no '{older}' partition"):
+            mf.partition_seeds(v3, older)
+    assert "dev2" in mf.DEVELOPMENT_PARTITIONS and "val3" not in mf.DEVELOPMENT_PARTITIONS
+
+
+def test_no_batch_has_played_a_dev2_or_val3_seed_before_the_threshold_study():
+    """The fresh partitions are fresh: no committed batch's first episode is a seed of dev2 or val3 (the studies that follow check it again)."""
+    import gzip
+    import json
+
+    repo = mf.Path(__file__).resolve().parents[2]
+    v4 = mf.load_seed_manifest(repo / "experiments" / "seeds" / "ironclad-a0-v4.json")
+    fresh = set(v4["partitions"]["dev2"]) | set(v4["partitions"]["val3"])
+    played = set()
+    for batch in (repo / "experiments" / "batches").iterdir():
+        gz = batch / "episodes.jsonl.gz"
+        if gz.exists():
+            with gzip.open(gz, "rt", encoding="utf-8") as fh:
+                played.update(int(json.loads(line)["seed"]) for line in fh if line.strip())
+    assert not (played & fresh)
 
 
 def test_seed_manifest_tamper_detected(tmp_path):
