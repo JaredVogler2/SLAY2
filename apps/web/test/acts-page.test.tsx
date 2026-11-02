@@ -378,7 +378,7 @@ describe("what a card says about its pilot and about narrow passes (review of th
   it("gives each class table a name of its own for assistive technology", () => {
     const { container } = render(<ActsStudy data={actsFixture({ L: "passed" })} />);
     const names = [...container.querySelectorAll("summary")].map((s) =>
-      text(s as HTMLElement).replace(/\s*›$/, ""),
+      text(s).replace(/\s*›$/, ""),
     );
     expect(names).toEqual([
       "Each class on its own (The old lead)",
