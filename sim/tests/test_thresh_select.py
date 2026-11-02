@@ -38,6 +38,7 @@ def world(tmp: Path, finished: bool = True, **per_arm) -> Path:
     (work / "artifacts" / "thresh").mkdir(parents=True)
     if finished:
         (work / "artifacts" / "thresh" / "run-done.txt").write_text("DEV_s_DONE\nDEV_DONE\n")
+        (work / "artifacts" / "thresh" / "audit-dev-done.txt").write_text("wins thresh-dev-s-ironclad wins=3 exit=0\nsample thresh-dev-s-ironclad exit=0\nAUDIT_DONE\n")
     return work
 
 
@@ -65,6 +66,20 @@ def test_an_unfinished_stage_is_not_screened(tmp_path):
     assert not (work / "experiments" / "thresh" / "dev-selection.json").exists()
     (work / "artifacts" / "thresh" / "run-done.txt").write_text("DEV_s_DONE\n")        # S done, the rest not
     assert "the development stage is not finished" in run(work).stderr
+
+
+def test_a_stage_whose_batches_are_not_audited_is_not_screened(tmp_path):
+    work = world(tmp_path, t020={"gain": 1})
+    audit = work / "artifacts" / "thresh" / "audit-dev-done.txt"
+    for body in ("", "wins thresh-dev-s-ironclad wins=3 exit=0\n", "AUDIT_DONE\nAUDIT_FAILED=1\n", "AUDIT_FAILED=1\n"):   # none, unfinished, finished and then failed, failed
+        audit.write_text(body)
+        r = run(work)
+        assert r.returncode != 0 and "the development batches are not audited" in r.stderr, body
+        assert not (work / "experiments" / "thresh" / "dev-selection.json").exists()
+    audit.unlink()
+    assert "the development batches are not audited" in run(work).stderr
+    audit.write_text("AUDIT_FAILED=1\nAUDIT_DONE\n")                   # a failed audit that was run again and passed
+    assert run(work).returncode == 0
 
 
 def test_a_selection_that_was_ever_in_the_history_is_not_written_again(tmp_path):

@@ -132,10 +132,10 @@ def test_v4_manifest_keeps_every_v3_seed_where_it_was_and_adds_disjoint_developm
     for part in ("train", "val", "test", "dev", "val2"):
         assert v4["partitions"][part] == v3["partitions"][part], part
     assert "dev2" not in v3["partitions"] and "val3" not in v3["partitions"]
-    assert v4["sizes"]["dev2"] == 3000 and v4["sizes"]["val3"] == 10000
+    assert v4["sizes"]["dev2"] == 3000 and v4["sizes"]["val3"] == 15000
     everything = [s for part in v4["partitions"].values() for s in part]
-    assert len(everything) == len(set(everything)) == 37000
-    sizes = {"train": 5000, "val": 2000, "test": 4000, "dev": 10000, "val2": 3000, "dev2": 3000, "val3": 10000}
+    assert len(everything) == len(set(everything)) == 42000
+    sizes = {"train": 5000, "val": 2000, "test": 4000, "dev": 10000, "val2": 3000, "dev2": 3000, "val3": 15000}
     regenerated = mf.make_seed_manifest("ironclad-a0-v4", 20261025, sizes)
     assert regenerated["sha256"] == v4["sha256"]
     out = tmp_path / "ironclad-a0-v4.json"

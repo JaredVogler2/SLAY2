@@ -37,6 +37,7 @@ vb = load("thresh_verify_batch", SCRIPTS / "verify_batch.py")
 rob = load("thresh_robustness", SCRIPTS / "robustness.py")
 part2 = load("thresh_part2", SCRIPTS / "part2.py")
 played = load("thresh_seeds_played", SCRIPTS / "seeds_played.py")
+power = load("thresh_power_tables", SCRIPTS / "power.py")
 
 
 def shell(tmp: Path, snippet: str) -> list[str]:
@@ -95,6 +96,8 @@ def test_the_values_an_arm_reads_are_the_ones_the_site_shows(tmp_path):
         assert (REPO / shown).exists()
         site = [e["file"] for e in sets if e["file"].startswith(f"{cls.lower()}-a0-")]
         assert [f"experiments/cardvalue/{f}" for f in site] == [shown], (cls, site, shown)
+        assert power.SHOWN[cls] == shown                      # the power tables read the file the arms read
+    assert power.GRID == ts.GRID and tuple(power.SHOWN) == ts.CLASSES and power.SEEDS_PER_CLASS_HELD_OUT == ts.VAL_N and power.SEEDS_PER_CLASS_DEV == ts.DEV_N
     assert sorted(shell(tmp_path, "shown_files")) == sorted(one(tmp_path, f"shown_values {c}") for c in ts.CLASSES)
 
 

@@ -29,7 +29,7 @@ SEEDS_INFO = {"file_sha256": "s" * 64, "partition": "val3"}
 
 
 def val_id(arm: str, cls: str) -> str:
-    return f"thresh-val-{arm}-{cls}-a0-veteran-keeprelics-val3-n10000"
+    return f"thresh-val-{arm}-{cls}-a0-veteran-keeprelics-val3-n15000"
 
 
 def git(work: Path, cmd: str) -> None:

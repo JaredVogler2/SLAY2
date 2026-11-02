@@ -24,7 +24,7 @@ DEV_IDS = [f"thresh-dev-{a}-{c.lower()}-a0-veteran-keeprelics-dev2-n3000" for a 
 
 
 def val_ids(arms: list[str]) -> list[str]:
-    return [f"thresh-val-{a}-{c.lower()}-a0-veteran-keeprelics-val3-n10000" for a in arms for c in CLASSES]
+    return [f"thresh-val-{a}-{c.lower()}-a0-veteran-keeprelics-val3-n15000" for a in arms for c in CLASSES]
 
 
 STAND_IN = r'''#!/usr/bin/env bash
@@ -206,8 +206,8 @@ def test_the_held_out_run_plays_the_arms_in_the_registered_order_and_checks_each
     assert [ln for ln in done if ln.startswith("VAL_")] == ["VAL_s_DONE", "VAL_t020_DONE", "VAL_t030_DONE", "VAL_DONE"]
     assert (work / "artifacts" / "thresh" / "run-head.txt").read_text().strip() == head(work)
     s = manifest(work, ids[0])
-    assert s["policy"]["name"] == "rules_v2" and s["policy"]["params"]["threshold"] == 0.0 and s["seeds"] == {"partition": "val3", "n": 10000}
-    t = manifest(work, "thresh-val-t030-defect-a0-veteran-keeprelics-val3-n10000")
+    assert s["policy"]["name"] == "rules_v2" and s["policy"]["params"]["threshold"] == 0.0 and s["seeds"] == {"partition": "val3", "n": 15000}
+    t = manifest(work, "thresh-val-t030-defect-a0-veteran-keeprelics-val3-n15000")
     assert t["policy"]["name"] == "rules_v2_late" and t["policy"]["params"]["late_acts"] == [1] and t["policy"]["params"]["late_threshold"] == 0.3
     assert t["policy"]["params"]["values"] == "experiments/cardvalue/defect-a0-keep-v1.json"
 
@@ -273,8 +273,8 @@ def test_a_finished_held_out_batch_that_is_not_what_was_asked_for_is_not_accepte
 
 def test_a_held_out_batch_that_completed_under_ninety_percent_stops_the_run(tmp_path):
     work, log, env = val_world(tmp_path)
-    r = run(work, "run-val.sh", env, "2", FAKE_COMPLETED="8600")
-    assert r.returncode != 0 and "only 8600 of 10000 completed" in r.stderr
+    r = run(work, "run-val.sh", env, "2", FAKE_COMPLETED="12600")
+    assert r.returncode != 0 and "only 12600 of 15000 completed" in r.stderr
     assert calls(log) == [f"run {val_ids(['s'])[0]}"]
 
 

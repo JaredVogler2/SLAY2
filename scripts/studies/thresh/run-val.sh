@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The held-out arms of ADR-062: S, the threshold 0.2 (T1 replicates it) and, if the development screen advanced one, that threshold (T2 against S, T3 against 0.2);
-# the two classes, the 10,000 val3 seeds of each, Ascension 0, the relics kept, veteran (20,000 games an arm). Every batch is checked against its own manifest when
+# the two classes, the 15,000 val3 seeds of each, Ascension 0, the relics kept, veteran (30,000 games an arm). Every batch is checked against its own manifest when
 # it ends, and the run stops at the first one that is not what ADR-062 says.
 #   run-val.sh <workers>        (PREFLIGHT_ONLY=1 stops after the checks; RESUME=1 finishes an interrupted run, from the same commit)
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"

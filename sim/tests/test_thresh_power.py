@@ -56,8 +56,25 @@ def test_the_rates_are_those_of_the_committed_result_of_adr_061():
 def test_the_tables_are_the_ones_the_record_quotes(capsys):
     assert pw.main() == 0
     text = capsys.readouterr().out
-    assert "5744 pairs, 119 won only by the arm, 76 only by S: D = 195 (0.0339 a pair), net +43 (0.749 points" in text and "19147 held-out" in text
-    assert "| 0.50 | 72 | 0.555 | 0.79 | 0.69 |" in text                       # level 0.05
-    assert "| 0.50 | 72 | 0.555 | 0.66 | 0.52 |" in text                       # level 0.05 / 3
+    assert "5744 pairs, 119 won only by the arm, 76 only by S: D = 195 (0.0339 a pair), net +43 (0.749 points" in text and "28720 held-out" in text
+    assert "| 0.50 | 108 | 0.555 | 0.93 | 0.85 |" in text                      # level 0.05
+    assert "| 0.50 | 108 | 0.555 | 0.84 | 0.73 |" in text                      # level 0.05 / 3
+    assert "| 0.33 | 71 | 0.536 | 0.44 | 0.34 |" in text
     assert "| 200 | 0.14 / 0.12 | 0.64 / 0.53 | 0.97 / 0.90 | 1.00 / 0.99 |" in text
+    assert "| net wins | 38 | 53 | 65 | 75 |" in text and "| points of the win share | 0.13 | 0.18 | 0.23 | 0.26 |" in text
+    assert "117 net wins (0.41 points; 54 % of ADR-061's) at α = 0.05 / 3, 101 (0.35 points; 47 % of ADR-061's) at α = 0.05" in text
     assert "standard deviation of about 14.0" in text
+
+
+def test_the_scale_of_the_thresholds_is_read_from_the_value_files_the_site_shows():
+    sc = pw.scale()
+    assert sorted(sc) == ["Defect", "Ironclad"] and (sc["Ironclad"]["cards"], sc["Defect"]["cards"]) == (95, 97)
+    iron = sc["Ironclad"]
+    assert [round(iron["quantiles"][q], 2) for q in (0.05, 0.5, 0.95)] == [-0.53, 0.07, 0.82]
+    assert round(iron["shareAbove"]["t020"], 3) == 0.274 and round(iron["crudeSkip"]["t020"], 2) == 0.38 and iron["shareAbove"]["tnone"] == 0 and iron["crudeSkip"]["tnone"] == 1
+    assert all(sc[c]["shareAbove"][a] >= sc[c]["shareAbove"][b] for c in sc for a, b in zip(pw.GRID, list(pw.GRID)[1:], strict=False))   # a higher threshold keeps fewer cards
+    assert round(sc["Defect"]["crudeSkip"]["t020"], 2) == 0.43 and round(sc["Defect"]["crudeSkip"]["t045"], 2) == 0.77
+    # the shown files are the ones the arms read (common.sh) and the grid is the study's
+    from slay2_sim import threshstudy as ts
+
+    assert pw.GRID == ts.GRID and set(pw.SHOWN) == set(ts.CLASSES)

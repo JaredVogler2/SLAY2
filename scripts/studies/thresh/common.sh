@@ -7,8 +7,8 @@ OUT=${OUT:-artifacts/thresh}
 SEEDS=experiments/seeds/ironclad-a0-v4.json
 DEV_PARTITION=dev2                  # 3,000 development seeds nobody has played (v4 appends them to v3's partitions; the sealed test partition is not touched)
 DEV_N=3000
-VAL_PARTITION=val3                  # 10,000 held-out seeds nobody has played
-VAL_N=10000
+VAL_PARTITION=val3                  # 15,000 held-out seeds nobody has played
+VAL_N=15000
 CLASSES="Ironclad Defect"           # the classes that win: 94 % of the baseline's wins in ADR-061 (the other three almost never win)
 STUDY_ALPHA=0.05                    # split over the held-out tests that are played (ADR-062 item 4)
 mkdir -p "$OUT"

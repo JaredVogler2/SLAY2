@@ -13,7 +13,7 @@ fixed before any of those games was played:
 * the screen's choice is the threshold with the largest *net wins* against S (games only the arm won minus games only S won, over the pairs both
   games completed); a tie goes to the smaller threshold;
 * it goes to the held-out tests T2 and T3 only if its net wins are above zero, it is not 0.2 itself, and in a head-to-head against 0.2 on the same
-  development pairs it is ahead with an exact two-sided McNemar p below 0.20 (a generous screen: it only decides what is worth 20,000 more games);
+  development pairs it is ahead with an exact two-sided McNemar p below 0.20 (a generous screen: it only decides what is worth 30,000 more games);
 * T1, the replication of 0.2 against S, is always tested.
 
 It also checks what the design relies on: every threshold plays S's game until the first card reward of Act 2, so a game that S ended in Act 1 has
@@ -39,7 +39,7 @@ SCHEMA = 1
 CLASSES = ("Ironclad", "Defect")                  # the classes that win (94 % of the baseline's wins in ADR-061); the others almost never do
 SEEDS_FILE = "experiments/seeds/ironclad-a0-v4.json"
 DEV_PARTITION, DEV_N = "dev2", 3000
-VAL_PARTITION, VAL_N = "val3", 10000
+VAL_PARTITION, VAL_N = "val3", 15000
 FIRST_ACT = 1                                     # the arms differ from S from the first card reward of Act 2 (act index 1) on
 # the thresholds of the card reward of Act 2 (tag -> threshold of ``late_threshold``); +100 never takes a card in Act 2
 GRID: dict[str, float] = {"t010": 0.1, "t020": 0.2, "t030": 0.3, "t045": 0.45, "t060": 0.6, "tnone": 100.0}

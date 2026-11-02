@@ -26,7 +26,7 @@ MARKER1 = "Registration of ADR-062 (part 1, frozen choices)"
 MARKER2 = "Frozen choices of ADR-062 (part 2)"
 ENV = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
 SEEDS = "experiments/seeds/ironclad-a0-v4.json"
-SIZES = {"train": 4, "val": 4, "test": 4, "dev": 4, "val2": 4, "dev2": 3000, "val3": 10000}
+SIZES = {"train": 4, "val": 4, "test": 4, "dev": 4, "val2": 4, "dev2": 3000, "val3": 15000}
 TAGS = ["t010", "t020", "t030", "t045", "t060", "tnone"]
 
 
@@ -77,7 +77,7 @@ def push_change(work: Path, rel: str, text: str | None = None) -> None:
 # ----------------------------------------------------------------------------------------------------------------------------- the development preflight
 
 
-def build_dev_world(tmp: Path, marker: str = MARKER1, dev2: int = 3000, val3: int = 10000, quote_seeds: bool = True) -> Path:
+def build_dev_world(tmp: Path, marker: str = MARKER1, dev2: int = 3000, val3: int = 15000, quote_seeds: bool = True) -> Path:
     """A work tree whose HEAD is the registration commit (part 1), on the remote, with the value files and the seed manifest the record quotes."""
     work = new_repo(tmp)
     files = common(work, "shown_files")
@@ -234,7 +234,7 @@ def test_the_dev_seed_file_has_to_be_quoted_and_has_to_be_a_manifest_with_the_tw
     assert r.returncode != 0 and "does not quote the SHA-256" in r.stderr and SEEDS in r.stderr
     for name, kw in (("shortdev", {"dev2": 2999}), ("shortval", {"val3": 9999})):
         r = preflight_dev(build_dev_world(tmp_path / name, **kw))
-        assert r.returncode != 0 and "not a valid v4 manifest with 3000 dev2 seeds and 10000 val3 seeds" in r.stderr, name
+        assert r.returncode != 0 and "not a valid v4 manifest with 3000 dev2 seeds and 15000 val3 seeds" in r.stderr, name
     work = build_dev_world(tmp_path / "tampered")
     body = json.loads((work / SEEDS).read_text())
     body["partitions"]["val3"][0] += 1                           # a changed seed under the same checksum
@@ -627,7 +627,7 @@ def test_a_result_in_the_history_stops_the_held_out_run_even_if_it_was_deleted(t
 
 def test_val_batches_that_exist_stop_the_held_out_run_unless_an_interrupted_run_is_being_resumed(tmp_path):
     work = build_val_world(tmp_path)
-    d = work / "experiments" / "batches" / "thresh-val-s-ironclad-a0-veteran-keeprelics-val3-n10000"
+    d = work / "experiments" / "batches" / "thresh-val-s-ironclad-a0-veteran-keeprelics-val3-n15000"
     d.mkdir(parents=True)
     (d / "manifest.json").write_text("{}")
     assert "RESUME=1" in preflight_val(work).stderr

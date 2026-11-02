@@ -27,7 +27,7 @@ from statistics import NormalDist
 
 ROOT = Path(__file__).resolve().parents[3]
 CLASSES = ("ironclad", "defect")
-SEEDS_PER_CLASS_HELD_OUT = 10_000
+SEEDS_PER_CLASS_HELD_OUT = 15_000
 SEEDS_PER_CLASS_DEV = 3_000
 INFLATION = 1.15
 
@@ -86,6 +86,42 @@ def rates(root: Path = ROOT) -> dict:
     }
 
 
+GRID = {"t010": 0.1, "t020": 0.2, "t030": 0.3, "t045": 0.45, "t060": 0.6, "tnone": 100.0}
+SHOWN = {"Ironclad": "experiments/cardvalue/ironclad-a0-v2.json", "Defect": "experiments/cardvalue/defect-a0-keep-v1.json"}
+
+
+def scale(root: Path = ROOT) -> dict:
+    """The scale of the thresholds, from the value files alone: for each class the quantiles of the shown values of its cards and, for each threshold, the share
+    of the cards worth more than it (s) and the crude chance that a reward of three cards drawn uniformly from them has no card above it, (1 - s) ** 3. This is
+    not a measurement of the games (rarity weights, the cards a deck already holds and the deck-size cap change what is offered and taken)."""
+    out: dict = {}
+    for cls, rel in SHOWN.items():
+        betas = sorted(float(c["beta"]) for c in json.loads((root / rel).read_text(encoding="utf-8"))["cards"])
+        n = len(betas)
+
+        def quantile(q: float) -> float:
+            i = q * (n - 1)
+            lo = int(math.floor(i))
+            hi = min(lo + 1, n - 1)
+            return betas[lo] + (betas[hi] - betas[lo]) * (i - lo)
+
+        above = {tag: sum(1 for b in betas if b > t) / n for tag, t in GRID.items()}
+        out[cls] = {
+            "cards": n, "quantiles": {q: quantile(q) for q in (0.05, 0.25, 0.5, 0.75, 0.95)},
+            "shareAbove": above, "crudeSkip": {tag: (1 - s) ** 3 for tag, s in above.items()},
+        }
+    return out
+
+
+def net_needed(d: int, alpha: float, pairs: int, target: float = 0.8) -> int | None:
+    """The smallest net wins for which both the exact test and the interval requirement reach ``target`` power, with ``d`` discordant pairs."""
+    for net in range(1, d + 1):
+        theta = (d + net) / (2 * d)
+        if min(power_exact(d, theta, alpha), power_interval(d, theta, pairs, alpha)) >= target:
+            return net
+    return None
+
+
 def table_vs_s(r: dict, pairs: int, alpha: float, fractions=(1.0, 0.75, 0.5, 0.33)) -> list[str]:
     d = round(r["dPerPair"] * pairs)
     out = [f"| share of ADR-061's net | net wins | theta | exact test | interval (SE x {INFLATION}) |", "|---|---|---|---|---|"]
@@ -116,6 +152,23 @@ def main() -> int:
     alpha = 0.05 / 3
     print(f"### T3: the screen's choice against 0.2, level 0.05 / 3 = {alpha:.5f}, {held} pairs; D = pairs in which exactly one of the two won; cells: exact test / interval\n")
     print("\n".join(table_head_to_head(held, alpha)) + "\n")
+    need = [(dd, net_needed(dd, alpha, held)) for dd in (100, 200, 300, 400)]
+    print("### The net wins that give 80 % power (both figures at least 0.8), at α = 0.05 / 3 and {} pairs\n".format(held))
+    print("| D | " + " | ".join(str(dd) for dd, _ in need) + " |\n|---|" + "---|" * len(need))
+    print("| net wins | " + " | ".join(str(n) for _, n in need) + " |")
+    print("| points of the win share | " + " | ".join(f"{100 * n / held:.2f}" for _, n in need) + " |")
+    n1 = net_needed(round(r["dPerPair"] * held), alpha, held)
+    n1b = net_needed(round(r["dPerPair"] * held), 0.05, held)
+    print(f"\nFor an arm against S at ADR-061's rate (D = {round(r['dPerPair'] * held)}): {n1} net wins ({100 * n1 / held:.2f} points; {100 * n1 / (r['netPerPair'] * held):.0f} % of ADR-061's) at α = 0.05 / 3, "
+          f"{n1b} ({100 * n1b / held:.2f} points; {100 * n1b / (r['netPerPair'] * held):.0f} % of ADR-061's) at α = 0.05.\n")
+    sc = scale()
+    print("### The scale of the thresholds (the shown values; the crude chance that a reward of three cards drawn uniformly from the cards that have a value has none above the threshold; not measured in games)\n")
+    print("| class | cards | values at 5 / 25 / 50 / 75 / 95 % | " + " | ".join(f"above {t:g}" if t < 100 else "never" for t in GRID.values()) + " |")
+    print("|---|---|---|" + "---|" * len(GRID))
+    for cls, v in sc.items():
+        qs = " / ".join(f"{v['quantiles'][q]:.2f}" for q in (0.05, 0.25, 0.5, 0.75, 0.95))
+        print(f"| {cls} | {v['cards']} | {qs} | " + " | ".join(f"{100 * v['shareAbove'][tag]:.0f} % (skip {100 * v['crudeSkip'][tag]:.0f} %)" for tag in GRID) + " |")
+    print()
     d = round(r["dPerPair"] * dev)
     sd = math.sqrt(d)
     print(f"### The development screen: an arm like A2 against S on {dev} pairs has D = {d}; its net wins have a standard deviation of about {sd:.1f}; "

@@ -53,9 +53,9 @@ def build(tmp_path: Path, ident=ts.dev_id, **per_arm) -> Path:
 
 def test_the_names_are_the_ones_the_batches_use():
     assert ts.dev_id("t030", "Defect") == "thresh-dev-t030-defect-a0-veteran-keeprelics-dev2-n3000"
-    assert ts.val_id("t020", "Ironclad") == "thresh-val-t020-ironclad-a0-veteran-keeprelics-val3-n10000"
+    assert ts.val_id("t020", "Ironclad") == "thresh-val-t020-ironclad-a0-veteran-keeprelics-val3-n15000"
     assert ts.CLASSES == ("Ironclad", "Defect") and ts.SEEDS_FILE == "experiments/seeds/ironclad-a0-v4.json"
-    assert (ts.DEV_PARTITION, ts.DEV_N, ts.VAL_PARTITION, ts.VAL_N) == ("dev2", 3000, "val3", 10000)
+    assert (ts.DEV_PARTITION, ts.DEV_N, ts.VAL_PARTITION, ts.VAL_N) == ("dev2", 3000, "val3", 15000)
     assert ts.GRID == {"t010": 0.1, "t020": 0.2, "t030": 0.3, "t045": 0.45, "t060": 0.6, "tnone": 100.0}
     assert ts.REPLICATION_TAG in ts.GRID and ts.HEAD_ALPHA == 0.20 and ts.STUDY_ALPHA == 0.05 and ts.FIRST_ACT == 1
 
