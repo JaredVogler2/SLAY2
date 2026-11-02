@@ -4,12 +4,285 @@
   "adr": "ADR-062",
   "registered": true,
   "frozen": true,
-  "partTwo": false,
+  "partTwo": true,
   "studyLevel": 0.05,
   "classLevel": 0.01,
   "seeds": 15000,
   "devSeeds": 3000,
-  "stage": "registered",
-  "screen": null,
-  "tests": null
+  "stage": "screened",
+  "screen": {
+    "rows": {
+      "t010": {
+        "tag": "t010",
+        "threshold": 0.1,
+        "pairs": 5775,
+        "excluded": 225,
+        "wins": {
+          "arm": 243,
+          "baseline": 212
+        },
+        "shares": {
+          "arm": 0.042077922077922075,
+          "baseline": 0.03670995670995671
+        },
+        "difference": 0.005367965367965368,
+        "armOnly": 82,
+        "baselineOnly": 51,
+        "net": 31,
+        "p": 0.009030490687219986,
+        "pastAct1Boss": {
+          "arm": 0.815930735930736,
+          "baseline": 0.815930735930736
+        },
+        "pastAct2Boss": {
+          "arm": 0.20467532467532468,
+          "baseline": 0.20051948051948051
+        },
+        "meanFloorDifference": 0.025627705627705628,
+        "meanDeckSize": {
+          "arm": 23.690043290043292,
+          "baseline": 24.124848484848485,
+          "pairs": 5775
+        },
+        "wallClockPairs": 0
+      },
+      "t020": {
+        "tag": "t020",
+        "threshold": 0.2,
+        "pairs": 5762,
+        "excluded": 238,
+        "wins": {
+          "arm": 260,
+          "baseline": 213
+        },
+        "shares": {
+          "arm": 0.04512322110378341,
+          "baseline": 0.03696633113502256
+        },
+        "difference": 0.008156889968760846,
+        "armOnly": 113,
+        "baselineOnly": 66,
+        "net": 47,
+        "p": 0.0005483633140185812,
+        "pastAct1Boss": {
+          "arm": 0.8155154460256855,
+          "baseline": 0.8155154460256855
+        },
+        "pastAct2Boss": {
+          "arm": 0.209996528982992,
+          "baseline": 0.19940992710864283
+        },
+        "meanFloorDifference": 0.03748698368622006,
+        "meanDeckSize": {
+          "arm": 22.897257896563694,
+          "baseline": 24.11489066296425,
+          "pairs": 5762
+        },
+        "wallClockPairs": 0
+      },
+      "t030": {
+        "tag": "t030",
+        "threshold": 0.3,
+        "pairs": 5759,
+        "excluded": 241,
+        "wins": {
+          "arm": 253,
+          "baseline": 211
+        },
+        "shares": {
+          "arm": 0.04393123806216357,
+          "baseline": 0.03663830526133009
+        },
+        "difference": 0.007292932800833478,
+        "armOnly": 120,
+        "baselineOnly": 78,
+        "net": 42,
+        "p": 0.0034659860835590138,
+        "pastAct1Boss": {
+          "arm": 0.815419343636048,
+          "baseline": 0.815419343636048
+        },
+        "pastAct2Boss": {
+          "arm": 0.21218961625282168,
+          "baseline": 0.19968744573710714
+        },
+        "meanFloorDifference": 0.027782601146032298,
+        "meanDeckSize": {
+          "arm": 22.52248654280257,
+          "baseline": 24.1154714360132,
+          "pairs": 5759
+        },
+        "wallClockPairs": 0
+      },
+      "t045": {
+        "tag": "t045",
+        "threshold": 0.45,
+        "pairs": 5757,
+        "excluded": 243,
+        "wins": {
+          "arm": 277,
+          "baseline": 212
+        },
+        "shares": {
+          "arm": 0.04811533784957443,
+          "baseline": 0.036824735105089455
+        },
+        "difference": 0.011290602744484974,
+        "armOnly": 140,
+        "baselineOnly": 75,
+        "net": 65,
+        "p": 0.000011009854857869255,
+        "pastAct1Boss": {
+          "arm": 0.8153552197324996,
+          "baseline": 0.8153552197324996
+        },
+        "pastAct2Boss": {
+          "arm": 0.20861559840194546,
+          "baseline": 0.19993051936772624
+        },
+        "meanFloorDifference": 0.031266284523189164,
+        "meanDeckSize": {
+          "arm": 21.854785478547853,
+          "baseline": 24.11533784957443,
+          "pairs": 5757
+        },
+        "wallClockPairs": 0
+      },
+      "t060": {
+        "tag": "t060",
+        "threshold": 0.6,
+        "pairs": 5764,
+        "excluded": 236,
+        "wins": {
+          "arm": 270,
+          "baseline": 211
+        },
+        "shares": {
+          "arm": 0.04684247050659265,
+          "baseline": 0.03660652324774462
+        },
+        "difference": 0.010235947258848022,
+        "armOnly": 139,
+        "baselineOnly": 80,
+        "net": 59,
+        "p": 0.00008105624271900317,
+        "pastAct1Boss": {
+          "arm": 0.8155794587092297,
+          "baseline": 0.8155794587092297
+        },
+        "pastAct2Boss": {
+          "arm": 0.2090562109646079,
+          "baseline": 0.20003469812630117
+        },
+        "meanFloorDifference": -0.04250520471894518,
+        "meanDeckSize": {
+          "arm": 21.502255378209576,
+          "baseline": 24.116932685634975,
+          "pairs": 5764
+        },
+        "wallClockPairs": 0
+      },
+      "tnone": {
+        "tag": "tnone",
+        "threshold": 100,
+        "pairs": 5771,
+        "excluded": 229,
+        "wins": {
+          "arm": 235,
+          "baseline": 211
+        },
+        "shares": {
+          "arm": 0.04072084560734708,
+          "baseline": 0.03656212094957546
+        },
+        "difference": 0.004158724657771617,
+        "armOnly": 110,
+        "baselineOnly": 86,
+        "net": 24,
+        "p": 0.10016673529821761,
+        "pastAct1Boss": {
+          "arm": 0.8158031536995322,
+          "baseline": 0.8158031536995322
+        },
+        "pastAct2Boss": {
+          "arm": 0.18506324727083695,
+          "baseline": 0.1996187835730376
+        },
+        "meanFloorDifference": -0.3342574943683937,
+        "meanDeckSize": {
+          "arm": 20.42176399237567,
+          "baseline": 24.117483971582047,
+          "pairs": 5771
+        },
+        "wallClockPairs": 0
+      }
+    },
+    "best": {
+      "arm": "t045",
+      "threshold": 0.45,
+      "net": 65
+    },
+    "headToHead": {
+      "armOnly": 103,
+      "baselineOnly": 85,
+      "difference": 0.003126085446335533,
+      "excluded": 242,
+      "meanFloorDifference": 0.009551927752691907,
+      "net": 18,
+      "p": 0.21492179659284352,
+      "pairs": 5758,
+      "pastAct1Boss": {
+        "arm": 0.8153872872525182,
+        "baseline": 0.8153872872525182
+      },
+      "pastAct2Boss": {
+        "arm": 0.2089267106634248,
+        "baseline": 0.20962139631816604
+      },
+      "perClass": {
+        "Defect": {
+          "pairs": 2898,
+          "wins": {
+            "arm": 113,
+            "baseline": 112
+          }
+        },
+        "Ironclad": {
+          "pairs": 2860,
+          "wins": {
+            "arm": 166,
+            "baseline": 149
+          }
+        }
+      },
+      "pooledSha256": "ec4230274f72f8c57ebb7ef82b1ada8100ce3504a58108f202e18b584f37771b",
+      "shares": {
+        "arm": 0.048454324418200766,
+        "baseline": 0.045328238971865234
+      },
+      "wins": {
+        "arm": 279,
+        "baseline": 261
+      }
+    },
+    "choice": {
+      "arm": null,
+      "threshold": null,
+      "advance": false,
+      "reason": "t045 is not ahead of 0.2 in the head-to-head at an exact p below 0.2 (103 against 85 games, p 0.215)"
+    },
+    "tests": [
+      {
+        "key": "T1",
+        "arm": "t020",
+        "baseline": "s"
+      }
+    ],
+    "level": 0.05,
+    "role": "development: not a held-out result"
+  },
+  "tests": null,
+  "level": 0.05,
+  "devHead": "97bb5580d1a80d91e446db2f45d1d06d05ceb109",
+  "selectionSha256": "f09930fdb1222acdea9f67fc35a5f19a0b8c7fc8dfdd8f2abe1f456350691112"
 }

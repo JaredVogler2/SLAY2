@@ -487,4 +487,18 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `search_v3-all-ironclad-a0-veteran-val-n300` | search_v3 | Ironclad | val · 300 | 300 | 2 | `307658fb33b6…` | clean | wins,sample | predates |
 | `search_v3-boss-ironclad-a0-veteran-dev-n500` | search_v3 | Ironclad | dev · 500 | 500 | 0 | `9c6212b8c85c…` | dirty | – | predates |
 | `smoke-random_legal-ironclad-a0-veteran-n10` | random_legal | Ironclad | train · 10 | 10 | 0 | `863f8cce3adc…` | dirty | – | predates |
+| `thresh-dev-s-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2 | Defect | dev2 · 3000 | 2916 | 105 | `8f15fea54c7f…` | clean | wins,sample | yes |
+| `thresh-dev-s-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2 | Ironclad | dev2 · 3000 | 2892 | 108 | `dabde3813804…` | clean | wins,sample | yes |
+| `thresh-dev-t010-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2909 | 117 | `6f04b0bbad8a…` | clean | wins,sample | yes |
+| `thresh-dev-t010-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2885 | 129 | `545af769a9ce…` | clean | wins,sample | yes |
+| `thresh-dev-t020-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2910 | 112 | `2b08e6ed6b0b…` | clean | wins,sample | yes |
+| `thresh-dev-t020-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2885 | 151 | `bdc882a2332c…` | clean | wins,sample | yes |
+| `thresh-dev-t030-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2907 | 108 | `659e351fd39f…` | clean | wins,sample | yes |
+| `thresh-dev-t030-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2887 | 150 | `cfb738415be7…` | clean | wins,sample | yes |
+| `thresh-dev-t045-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2911 | 116 | `bef676afd34a…` | clean | wins,sample | yes |
+| `thresh-dev-t045-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2880 | 168 | `3ad12ea00abf…` | clean | wins,sample | yes |
+| `thresh-dev-t060-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2918 | 115 | `86f38d23a5d8…` | clean | wins,sample | yes |
+| `thresh-dev-t060-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2880 | 160 | `d41163215043…` | clean | wins,sample | yes |
+| `thresh-dev-tnone-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2913 | 84 | `47527b4185fe…` | clean | wins,sample | yes |
+| `thresh-dev-tnone-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2898 | 155 | `44a4e5e04005…` | clean | wins,sample | yes |
 <!-- table:batches:end -->
