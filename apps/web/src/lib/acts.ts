@@ -350,11 +350,11 @@ export function marginNote(results: Record<ActsTestKey, ActsTest>): string {
 }
 
 /**
- * What follows for the advisor, as ADR-061 item 7 (iii) wrote it before any game of the study was played: nothing changes because of the study. A
- * pickier rule that won more where it has no price at a boss before its act (Act 2 or Act 3: it plays the baseline's game until then) is put to the
- * owner as an optional, labelled simulated second opinion with these figures beside it; one that won more at a price at the first boss (the old lead,
- * Act 1) is put as the trade-off it is. A rule that was not shown to win more, or won fewer, withdraws nothing and offers nothing. The decision is
- * the owner's in every case and is not made here.
+ * What follows for the advisor, as ADR-061 item 7 (iii) wrote it before any game of the study was played: nothing changes because of the study. The
+ * rule asked that a pickier rule that won more where it has no price at a boss before its act (Act 2 or Act 3: it plays the baseline's game until
+ * then) be put to the owner as an optional, labelled simulated second opinion, and one that won more at a price at the first boss (the old lead,
+ * Act 1) as the trade-off it is. The owner left the decision to the project, and addendum B of ADR-061 records it (2026-11-02): not yet, to be
+ * revisited when the replication of ADR-062 has been read. A rule that was not shown to win more, or won fewer, withdraws nothing and offers nothing.
  */
 export function advisorNote(results: Record<ActsTestKey, ActsTest>): readonly string[] {
   const passed = ACTS_KEYS.filter((k) => results[k].verdict === "passed");
@@ -363,7 +363,7 @@ export function advisorNote(results: Record<ActsTestKey, ActsTest>): readonly st
   const out: string[] = ["The advisor does not change because of this study."];
   if (free.length > 0)
     out.push(
-      `Being pickier in ${list(free.map(ACT_NAME))} alone won more games (${list(free.map((k) => pts(results[k].difference)))}) and, because it plays the baseline's game until its act, has no price at any boss before that act. The question for the owner is whether the advisor should offer ${list(free.map((k) => `“pickier in ${ACT_NAME(k)}”`))} as an optional, labelled simulated second opinion, with these figures beside it. That is not decided here.`,
+      `Being pickier in ${list(free.map(ACT_NAME))} alone won more games (${list(free.map((k) => pts(results[k].difference)))}) and, because it plays the baseline's game until its act, has no price at any boss before that act. Decision of 2026-11-02 (the owner left it to the project; ADR-061, addendum B): the advisor does not offer it yet. The evidence is narrow, the threshold 0.2 was not compared with any other, and the next registered study (ADR-062) repeats the test on new seeds and screens thresholds; if its replication passes, an opt-in simulated second opinion for the classes that passed, with the tested threshold and these figures beside it, is the change that would follow.`,
     );
   if (priced.length > 0)
     out.push(
@@ -374,7 +374,7 @@ export function advisorNote(results: Record<ActsTestKey, ActsTest>): readonly st
         })
         .join(
           "; ",
-        )}. More wins and a lower share past the first boss are a trade-off, not a free gain, and whether the advisor should show it is the owner's decision too.`.replace(
+        )}. More wins and a lower share past the first boss are a trade-off, not a free gain, and the advisor does not offer it.`.replace(
         /^./,
         (c) => c.toUpperCase(),
       ),
