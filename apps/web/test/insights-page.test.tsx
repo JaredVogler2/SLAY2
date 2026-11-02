@@ -18,6 +18,7 @@ const SECTIONS = [
   "second-boss",
   "later",
   "acts",
+  "thresholds",
   "cards",
   "synergy",
   "ascension",

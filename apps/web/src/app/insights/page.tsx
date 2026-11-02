@@ -13,10 +13,12 @@ import { OpenQuestions } from "@/components/insights/OpenQuestions";
 import { RunsEnd } from "@/components/insights/RunsEnd";
 import { SecondBoss } from "@/components/insights/SecondBoss";
 import { SynergyAtlas } from "@/components/insights/SynergyAtlas";
+import { ThreshStudy } from "@/components/insights/ThreshStudy";
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { act2Data } from "@/lib/act2";
 import { actsData } from "@/lib/acts";
+import { threshData } from "@/lib/thresh";
 import { INSIGHTS, count, roughly } from "@/lib/insights";
 import { allSets } from "@/lib/cardvalues";
 import { act2CardName, atlasData } from "@/lib/insights-server";
@@ -30,6 +32,7 @@ export const metadata: Metadata = {
 
 const LATER = act2Data();
 const ACTS = actsData();
+const THRESH = threshData();
 
 const SECTIONS: readonly (readonly [string, string])[] = [
   ["findings", "Findings"],
@@ -40,6 +43,8 @@ const SECTIONS: readonly (readonly [string, string])[] = [
   ...(LATER?.fit ? ([["later", "After the first boss"]] as const) : []),
   // the acts study (ADR-061) is shown once it is registered
   ...(ACTS ? ([["acts", "Does it win more?"]] as const) : []),
+  // the threshold study (ADR-062) is shown once it is registered
+  ...(THRESH ? ([["thresholds", "Which threshold?"]] as const) : []),
   ["cards", "Card surprises"],
   ["synergy", "Synergy atlas"],
   ["ascension", "Ascension"],
@@ -195,6 +200,17 @@ export default function InsightsPage() {
           title="Does a pickier card rule win more games, and in which act?"
         >
           <ActsStudy data={ACTS} />
+        </Panel>
+      ) : null}
+
+      {THRESH ? (
+        <Panel
+          id="thresholds"
+          className="scroll-mt-20"
+          eyebrow="A registered study"
+          title="Does the Act-2 result hold on new seeds, and is another threshold better?"
+        >
+          <ThreshStudy data={THRESH} />
         </Panel>
       ) : null}
 

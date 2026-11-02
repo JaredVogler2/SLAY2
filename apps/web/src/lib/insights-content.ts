@@ -8,6 +8,7 @@ import {
 } from "@/lib/acts";
 import { allSets } from "@/lib/cardvalues";
 import { count, INSIGHTS, points, share } from "@/lib/insights";
+import { resultLine, threshData } from "@/lib/thresh";
 
 /**
  * The words of the insights page that are not read from a data file: what each Ascension changes (with the rule that says so), what is
@@ -128,6 +129,23 @@ const PILOT_OF_ACTS: Record<ActsTestKey, string> = {
   A3: "the one that is pickier in Act 3 only",
 };
 
+/** What the threshold study (ADR-062) adds, at whichever stage the repository has reached; null before it is registered. */
+function threshStudy(): { readonly why: string } | null {
+  const t = threshData();
+  if (!t) return null;
+  if (t.tests)
+    return {
+      why: ` A third registered study (ADR-062) then repeated the Act-2 test on seeds nobody had played and screened other thresholds: ${resultLine(t.tests.results)} These are statements about simulated rules pilots that win very few games.`,
+    };
+  if (t.screen)
+    return {
+      why: " A third registered study (ADR-062) repeats the Act-2 test on seeds nobody has played and screens other thresholds; its development screen has been read and its held-out games are not finished, so there is no result yet.",
+    };
+  return {
+    why: " A third registered study (ADR-062) repeats the Act-2 test on seeds nobody has played and screens other thresholds; it was registered before any of its games and they are not finished, so there is no result yet.",
+  };
+}
+
 /** What the acts study (ADR-061) adds, at whichever stage the repository has reached; null before it is registered. */
 function actsStudy(): { readonly why: string; readonly first: string } | null {
   const a = actsData();
@@ -190,7 +208,7 @@ function laterStudy(): { readonly why: string; readonly first: string } {
   const anyPassed = played.some((t) => t.verdict === "passed");
   const acts = actsStudy();
   return {
-    why: why + (acts?.why ?? ""),
+    why: why + (acts?.why ?? "") + (threshStudy()?.why ?? ""),
     first: acts
       ? acts.first
       : anyPassed

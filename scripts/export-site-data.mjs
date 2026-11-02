@@ -16,6 +16,7 @@ import { gunzipSync } from "node:zlib";
 
 import { parseAct2 } from "./lib/act2.mjs";
 import { parseActs } from "./lib/acts.mjs";
+import { parseThresh } from "./lib/thresh.mjs";
 import { parseAscensionNine } from "./lib/ascension9.mjs";
 import {
   parseAscensionLadder,
@@ -1573,6 +1574,13 @@ const outputs = {
     generatedFrom:
       "docs/DECISIONS.md (ADR-061) + experiments/acts/*.json (the pooled tests, the per-class comparisons, the design checks, the all-pairs analysis, the independent recomputation) + experiments/batches/*/manifest.json",
     ...parseActs({ root, reports }),
+  },
+  // The threshold study (ADR-062): the stage it is at (registered; screened, development numbers only; tested), read strictly by the reading code its registration froze
+  "thresh.generated.json": {
+    schema: 1,
+    generatedFrom:
+      "docs/DECISIONS.md (ADR-062) + experiments/thresh/*.json (the development selection, the pooled tests, the per-class comparisons, the design checks, the all-pairs analysis, the independent recomputation) + experiments/batches/*/manifest.json",
+    ...parseThresh({ root, reports }),
   },
   // The page of insights reads the committed experiment files; a repository without them (the small copies the exporter's tests build) has
   // nothing to say there, and says so instead of failing. A repository that has some of them and not the rest fails, strictly.
