@@ -17,7 +17,7 @@ for d in $dirs; do
   wins=$("$PY" -c "import json,sys;print(json.load(open(sys.argv[1]+'/manifest.json'))['summary']['counts']['win'])" "$d")
   if [ "$wins" = 0 ]; then rc=0; else "$PY" -m slay2_sim audit wins --batch "$d" >> "$OUT/audit-wins-$(basename "$d").log" 2>&1; rc=$?; fi
   [ "$rc" = 0 ] || fails=$((fails+1))
-  echo "wins $(basename "$d") wins=$wins exit=$rc" >> "$OUT/audit-done.txt"
+  echo "wins $(basename "$d") exit=$rc" >> "$OUT/audit-done.txt"   # no count: this file is read while the run waits, and must not say who won more
   "$PY" -m slay2_sim audit sample --batch "$d" --limit 40 >> "$OUT/audit-sample-$(basename "$d").log" 2>&1
   rc=$?
   [ "$rc" = 0 ] || fails=$((fails+1))
