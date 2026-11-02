@@ -32,6 +32,7 @@ import type { RunState } from "@/lib/run-state";
 
 import { Act1Brief } from "./Act1Brief";
 import { NeowOffer } from "./NeowOffer";
+import { UnderdocksNote } from "./UnderdocksNote";
 
 type Pick = Extract<OpeningStep, { kind: "pick" }>["from"];
 
@@ -551,10 +552,10 @@ export function OpeningPanel({
               </div>
               <Act1Brief variant={variant} boss={run.act1Boss} />
               {variant === "underdocks" ? (
-                <p className="rounded-lg border border-rose-deep/60 bg-rose/10 px-3 py-2 text-sm text-rose">
+                <UnderdocksNote>
                   The simulated runs behind the measured card values never played Underdocks, so
                   that second opinion is for Overgrowth only.
-                </p>
+                </UnderdocksNote>
               ) : null}
             </>
           ) : (

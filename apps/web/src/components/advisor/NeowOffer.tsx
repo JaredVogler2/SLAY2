@@ -12,6 +12,7 @@ import { Disclosure } from "@/components/ui/Disclosure";
 import { Select } from "@/components/ui/Field";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import { AscensionNote } from "@/components/advisor/AscensionNote";
+import { UnderdocksNote } from "@/components/advisor/UnderdocksNote";
 import { ASCENSION, ascensionTest, neowAdviceAllowed, type AscensionData } from "@/lib/ascension";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier, valueSign } from "@/lib/cardvalues";
@@ -303,9 +304,11 @@ export function NeowOffer({
         />
         <StartHpNote character={character} subject="chances" data={data} />
         {run.act1 === "underdocks" ? (
-          <p className="text-xs text-rose">
-            You said you are in Underdocks; every simulated run was played in Overgrowth.
-          </p>
+          <UnderdocksNote>
+            Your Act 1 is Underdocks, and every simulated run behind these relic values was played
+            in Overgrowth (the simulator never plays Underdocks), so the numbers below were not
+            measured for your Act 1: read them as a prior about the relics, not about your fights.
+          </UnderdocksNote>
         ) : null}
         <div aria-live="polite" className="space-y-3">
           {withheld ? (
