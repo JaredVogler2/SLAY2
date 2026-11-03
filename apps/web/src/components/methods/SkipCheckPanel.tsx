@@ -147,6 +147,12 @@ export function SkipCheckPanel({ data = SKIP }: { data?: SkipData } = {}) {
   const badge = BADGE[stage];
   const legs = skipLegs(data);
   const pre = data.precondition;
+  const played = legs.reduce((n, [, leg]) => n + leg.pairs, 0);
+  const won = legs.reduce((n, [, leg]) => n + leg.wins.s1, 0);
+  const wonText =
+    legs.length === 2
+      ? `the pilot that charges for a slot won ${games(won)} of its ${games(played)} games`
+      : "the pilot wins about one game in 800";
   return (
     <Panel
       eyebrow="The advisor"
@@ -183,8 +189,8 @@ export function SkipCheckPanel({ data = SKIP }: { data?: SkipData } = {}) {
           lower end of the interval of the mean floors reached is above{" "}
           <span className="num">{signed(data.margins.meanFloors, 2)}</span>; the price is harmless
           as far as the simulation can see only if both versions are. It cannot show that the price
-          helps (the pilot wins about one game in 800) and does not try. The registration (
-          {data.adr}) was pushed before any held-out game was played.
+          helps ({wonText}) and does not try. The registration ({data.adr}) was pushed before any
+          held-out game was played.
         </p>
         {pre ? (
           <p>

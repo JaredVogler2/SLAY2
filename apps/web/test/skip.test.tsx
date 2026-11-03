@@ -381,6 +381,17 @@ describe("the section of the Methods page", () => {
     expect(one.container.textContent).toContain("half done");
     expect(one.container.textContent).not.toContain("no gross harm found");
   });
+
+  it("says how many games the pilot won once both legs are in, and the earlier estimate before that", () => {
+    const both = render(<SkipCheckPanel data={withLegs({ og: leg("og"), ud: leg("ud") }, true)} />);
+    expect(both.container.textContent).toContain(
+      "the pilot that charges for a slot won 14 of its 20,000 games",
+    );
+    expect(both.container.textContent).not.toContain("one game in 800");
+    cleanup();
+    const one = render(<SkipCheckPanel data={withLegs({ og: leg("og") }, null)} />);
+    expect(one.container.textContent).toContain("the pilot wins about one game in 800");
+  });
 });
 
 // ---- on the advisor's recommendation panel, with real drafts
