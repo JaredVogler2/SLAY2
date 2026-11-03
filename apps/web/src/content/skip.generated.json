@@ -22,5 +22,148 @@
     "games": 2000,
     "minimumGapInSkipShare": 0.02
   },
-  "result": null
+  "result": {
+    "legs": {
+      "og": {
+        "act1": "overgrowth",
+        "file": "experiments/skip/pooled-slot-og.json",
+        "sha256": "7dc73bdd5859ccaf9fb4fcc0830c6b4389fa50743aca827885fedbabd1fcecb3",
+        "contentSha256": "64546914e80acadc3a6c25286f229bce88135363b1b5e8be290b9b1d7614a910",
+        "pairs": 10000,
+        "bothCompleted": 9883,
+        "excludedNotCompleted": 117,
+        "notFinished": {
+          "a": 108,
+          "b": 104
+        },
+        "pastActOneBoss": {
+          "s1": 0.4046342203784276,
+          "s0": 0.40412830112314074,
+          "onlyS1": 72,
+          "onlyS0": 67,
+          "exactP": 0.7345393172729974,
+          "difference": 0.0005059192552868562,
+          "interval95": [
+            -0.0018268686751078415,
+            0.002932558734067894
+          ]
+        },
+        "meanFloors": {
+          "difference": 0.007386421127188101,
+          "interval95": [
+            -0.03915815035920267,
+            0.05454062531619931
+          ]
+        },
+        "pastActTwoBoss": {
+          "s1": 0.02590306587068704,
+          "s0": 0.023778204998482242,
+          "onlyS1": 99,
+          "onlyS0": 78
+        },
+        "wins": {
+          "s1": 18,
+          "s0": 13,
+          "onlyS1": 11,
+          "onlyS0": 6
+        },
+        "notBehind": {
+          "firstBoss": true,
+          "meanFloors": true
+        },
+        "verdict": "not-behind",
+        "classes": {
+          "ironclad": {
+            "pairs": 1953,
+            "s1": 0.5960061443932412,
+            "s0": 0.5990783410138248,
+            "onlyS1": 10,
+            "onlyS0": 16,
+            "p": 0.32693958282470703,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.0056323604710701485
+          },
+          "silent": {
+            "pairs": 1994,
+            "s1": 0.1860581745235707,
+            "s0": 0.1815446339017051,
+            "onlyS1": 27,
+            "onlyS0": 18,
+            "p": 0.23269319190831084,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.02708124373119358
+          },
+          "regent": {
+            "pairs": 1979,
+            "s1": 0.2753916119252148,
+            "s0": 0.2743810005053057,
+            "onlyS1": 12,
+            "onlyS0": 10,
+            "p": 0.8318119049072266,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.05709954522486104
+          },
+          "necrobinder": {
+            "pairs": 1974,
+            "s1": 0.47821681864235055,
+            "s0": 0.4766970618034448,
+            "onlyS1": 15,
+            "onlyS0": 12,
+            "p": 0.7011080384254456,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.014184397163120567
+          },
+          "defect": {
+            "pairs": 1983,
+            "s1": 0.491679273827534,
+            "s0": 0.49319213313161875,
+            "onlyS1": 8,
+            "onlyS0": 11,
+            "p": 0.6476058959960938,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.0670700958144226
+          }
+        },
+        "skipShares": {
+          "s1": {
+            "share": 0.0654,
+            "cardRewards": 98322,
+            "skipped": 6431,
+            "byAct": {
+              "act1": {
+                "cardRewards": 81858,
+                "share": 0.0133,
+                "skipped": 1089
+              },
+              "act2": {
+                "cardRewards": 15617,
+                "share": 0.3127,
+                "skipped": 4883
+              },
+              "act3": {
+                "cardRewards": 847,
+                "share": 0.5419,
+                "skipped": 459
+              }
+            }
+          },
+          "s0": {
+            "share": 0.0067,
+            "cardRewards": 98358,
+            "skipped": 663
+          }
+        }
+      }
+    },
+    "harmless": null,
+    "readingFile": {
+      "file": "experiments/skip/reading.json",
+      "sha256": "6535ffaa9fe5a7613ba0ff8f6bd04b3819bb5e46aa0364c300e8fd15242f66ae"
+    }
+  }
 }

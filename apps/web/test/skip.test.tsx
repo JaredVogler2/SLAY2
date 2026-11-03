@@ -131,9 +131,21 @@ describe("the stage of the check", () => {
     expect(skipLegs({ registered: false })).toEqual([]);
   });
 
-  it("ships the registered state, with no result, until the legs are played", () => {
+  it("ships the registered study, and the stage it reads follows the legs the exported file holds", () => {
     expect(SKIP.registered).toBe(true);
-    expect(skipStage(SKIP)).toBe("registered");
+    const verdicts = skipLegs(SKIP).map(([, leg]) => leg.verdict);
+    const expected =
+      verdicts.length === 0
+        ? "registered"
+        : verdicts.includes("not-shown-harmless")
+          ? "not-shown"
+          : verdicts.length === 2
+            ? "harmless"
+            : "partial";
+    expect(skipStage(SKIP)).toBe(expected);
+    // an exported file never claims "harmless" without both legs, and never has legs without a reading of them
+    if (SKIP.registered && verdicts.length < 2)
+      expect(SKIP.result?.harmless ?? null).not.toBe(true);
   });
 });
 
@@ -383,6 +395,14 @@ describe("the recommendation panel", () => {
     const note = big.container.querySelector("[data-skip-check]");
     expect(note).not.toBeNull();
     expect(note?.textContent).toContain("The price of a slot");
-    expect(note?.textContent).toContain("registered and has not been run yet");
+    // the note says where the check stands in the stage that the exported file is in
+    const WORDS = {
+      registered: "registered and has not been run yet",
+      partial: "half done",
+      harmless: "no gross harm was found",
+      "not-shown": "did not show it harmless",
+      none: "",
+    } as const;
+    expect(note?.textContent).toContain(WORDS[skipStage(SKIP)]);
   });
 });
