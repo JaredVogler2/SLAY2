@@ -18,7 +18,7 @@ for LEG in $LEGS; do
         --out "$DIR/$LEG-s0-$l" >> "$OUT/dev-pre-slot-$LEG-s0-$l.log" 2>&1
       s=$?; [ "$s" = 0 ] || [ "$s" = 2 ] || { echo "precondition: baseline for $C ($LEG) failed with status $s" >&2; exit "$s"; }
     fi
-    verify_batch "$DIR/$LEG-s0-$l" dev 100 "$LEG" s0 || exit $?
+    verify_batch "$DIR/$LEG-s0-$l" dev 100 "$LEG" s0 "$C" || exit $?
   done
 done
 "$PY" -I "$(dirname "${BASH_SOURCE[0]}")/precondition_report.py" --dir "$DIR" --out "$RESULTS/precondition.json"

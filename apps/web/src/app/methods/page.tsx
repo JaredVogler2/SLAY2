@@ -4,6 +4,7 @@ import { Act2Panel } from "@/components/methods/Act2Panel";
 import { ActsPanel } from "@/components/methods/ActsPanel";
 import { ThreshPanel } from "@/components/methods/ThreshPanel";
 import { AscensionPanel } from "@/components/methods/AscensionPanel";
+import { UnderdocksPanel } from "@/components/methods/UnderdocksPanel";
 import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { NeowValuesPanel } from "@/components/methods/NeowValuesPanel";
 import { SynergyStudyPanel } from "@/components/methods/SynergyStudyPanel";
@@ -50,7 +51,7 @@ const NOT_EVALUATED = [
   ],
   [
     "Act 1 versions",
-    "Act 1 has two versions with different elites and bosses, Overgrowth and Underdocks. Every simulated game was played in Overgrowth: the simulator never plays Underdocks, so no card value here was measured for it. The advisor lets you say which version you are in and tilts its heuristic toward what that version's fights ask of a deck; that tilt is judgement, not a measurement.",
+    "Act 1 has two versions with different elites and bosses, Overgrowth and Underdocks. Every card value and opening-relic measurement here comes from games played in Overgrowth, the version the simulator builds every run from. A harness variant plays Underdocks (ADR-064), and the study named below tests three of the results there unchanged, but nothing was fitted in Underdocks, so no card value here was measured for it. The advisor lets you say which version you are in and tilts its heuristic toward what that version's fights ask of a deck; that tilt is judgement, not a measurement.",
   ],
   [
     "Live-game parity of the simulator",
@@ -484,6 +485,7 @@ export default function MethodsPage() {
       <NeowValuesPanel />
 
       <AscensionPanel />
+      <UnderdocksPanel />
 
       <Act2Panel />
       <ActsPanel />

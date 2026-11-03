@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # The held-out arm of ADR-065: the pilot that charges for a slot (S1), five classes, the 2,000 val seeds of each class, Ascension 0, the relics kept,
 # veteran, in one Act 1 at a time (10,000 games a leg). The baselines (S0) are batches that exist: Overgrowth's are ADR-054's, Underdocks's are the T1
-# arm `A*` of ADR-064, which has to be finished and audited before the Underdocks leg starts. Every batch is checked against its own manifest when it
-# ends (common.sh, verify_batch), and the run stops at the first one that is not what ADR-065 says.
+# arm `A*` of ADR-064, which has to be finished, audited and pooled before the Underdocks leg starts (the preflight refuses it otherwise). Every batch
+# is checked against its own manifest when it ends (common.sh, verify_batch), and the run stops at the first one that is not what ADR-065 says.
 #   run-val.sh <leg: og | ud> <workers>        (PREFLIGHT_ONLY=1 stops after the checks; RESUME=1 finishes an interrupted run, from the same commit)
 LEG=${1:-}
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"

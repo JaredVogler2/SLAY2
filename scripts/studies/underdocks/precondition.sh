@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Precondition of ADR-064 (item 6), on development seeds: do the six arms of the study play in Underdocks, in every class, with the relics kept?
+# Precondition of ADR-064 (item 7), on development seeds: do the six arms of the study play in Underdocks, in every class, with the relics kept?
 # 100 dev seeds per class and arm (dev[0:100)), exact class ids; the comparator is the shown-values pilot in Overgrowth on the same seeds.
 # The dev seeds are not held-out data; nothing here is evidence of anything but that the arms run, that Underdocks is in force and that the act
 # can be got through at all.

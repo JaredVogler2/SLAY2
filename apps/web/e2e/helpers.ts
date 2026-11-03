@@ -249,3 +249,26 @@ export function ascensionStudy(): AscensionStudy {
   const file = join(__dirname, "..", "src", "content", "ascension.generated.json");
   return JSON.parse(readFileSync(file, "utf8")) as AscensionStudy;
 }
+
+export interface UnderdocksStudy {
+  /** false when the decision log carries no registration of the study */
+  readonly registered: boolean;
+  /** null while the three tests are registered and have not been run */
+  readonly tests: Readonly<
+    Record<
+      string,
+      {
+        readonly verdict: string;
+        readonly classes: Readonly<
+          Record<string, { readonly ahead: boolean; readonly behind: boolean }>
+        >;
+      }
+    >
+  > | null;
+}
+
+/** The Underdocks transfer study (ADR-064) as the pages were built with it: registered and not run, or tested, from the generated file. */
+export function underdocksStudy(): UnderdocksStudy {
+  const file = join(__dirname, "..", "src", "content", "underdocks.generated.json");
+  return JSON.parse(readFileSync(file, "utf8")) as UnderdocksStudy;
+}

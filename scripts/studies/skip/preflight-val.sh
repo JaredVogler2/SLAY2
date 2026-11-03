@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The checks that must hold before the first held-out game of one leg of this study (ADR-065 item 2); run-val.sh sources this file (LEG is set).
+# The checks that must hold before the first held-out game of one leg of this study (ADR-065 item 3); run-val.sh sources this file (LEG is set).
 # Any failed check stops the run before a val seed is played, because each check is run once.
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 fail() { echo "preflight-val: $*" >&2; exit 1; }
@@ -9,6 +9,9 @@ git fetch -q origin 2>/dev/null || fail "cannot reach the remote to check that t
 [ -n "$(git branch -r --contains HEAD 2>/dev/null)" ] || fail "HEAD is not on the remote: push the registration before the first val game"
 ADR=$(adr_section)
 [ -n "$ADR" ] || fail "docs/DECISIONS.md does not carry ADR-065"
+# the baseline of the Underdocks leg is the T1 arm `A*` of ADR-064, whose outcomes that study reads only after its own three tests are pooled: nothing of
+# the baseline (its manifest, a replay whose log prints the outcome counts) is opened before they are, so this is the first check that goes near it
+if [ "$LEG" = ud ] && missing=$(adr064_unpooled); then fail "ADR-064 has not been pooled yet: its tests are read before this leg's baseline is ($missing is missing)"; fi
 
 # the code and data the arms read, and the page's own index, are those of the registration commit (the first commit that carries the ADR-065 text)
 REG=${REG:-$(git log -S'ADR-065: the advisor charges for a slot' --format=%H -- docs/DECISIONS.md | tail -1)}
@@ -42,7 +45,7 @@ git ls-files --error-unmatch "$RESULTS/precondition.json" > /dev/null 2>&1 || fa
 # would make the pairs compare two different games): the sample audit of each is run into a temporary copy, so that no committed file is touched
 for C in $CLASSES; do
   b=$(s0_dir "$C" "$LEG")
-  verify_batch "$b" val 2000 "$LEG" s0 || fail "the baseline $b is not the batch ADR-065 names"
+  verify_batch "$b" val 2000 "$LEG" s0 "$C" || fail "the baseline $b is not the batch ADR-065 names"
   "$PY" - "$b" <<'EOF' || fail "the baseline $b has no passing sample audit"
 import json, sys
 s = json.load(open(sys.argv[1] + "/sample-audit.json"))
@@ -60,6 +63,7 @@ for p in pooled-slot-$LEG; do
   [ -z "$(git log --all --oneline -1 -- "$RESULTS/$p.json")" ] || fail "$RESULTS/$p.json is in the history: the check is run once"
 done
 if ls "$RESULTS/per-class" 2>/dev/null | grep -Eq "slot-$LEG-.*\\.json$"; then fail "$RESULTS/per-class holds output of this leg: the comparisons are run once"; fi
+[ -z "$(git log --all --oneline -1 -- "$RESULTS/per-class/slot-$LEG-*.json")" ] || fail "$RESULTS/per-class/slot-$LEG-*.json is in the history: the comparisons are run once"
 
 # no val batch of the leg exists unless an interrupted run is being finished (a finished batch is checked and never touched)
 if ls "$BATCHES" 2>/dev/null | grep -Eq -- "$(if [ "$LEG" = ud ]; then echo '-underdocks-val-'; else echo '-keeprelics-val-n2000$'; fi)"; then

@@ -1,4 +1,4 @@
-"""Do the six arms of the Underdocks study play, is Underdocks in force, and can the act be got through? (ADR-064 item 6)
+"""Do the six arms of the Underdocks study play, is Underdocks in force, and can the act be got through? (ADR-064 item 7)
 
 Reads <dir>/<arm>-<class>/ (episode files and manifests of the same 100 development seeds per class) and checks, per arm and class:
 (a) every game says Act 1 in Underdocks (Overgrowth for the comparator `ogshown`), Ascension 0, the exact class asked for, the relics kept, the

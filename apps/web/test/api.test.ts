@@ -59,7 +59,7 @@ describe("GET endpoints", () => {
     );
     expect(body.characters).toHaveLength(5);
     for (const c of body.characters) {
-      expect(c.cardAdvisor.status).toBe("heuristic-v1");
+      expect(c.cardAdvisor.status).toBe("heuristic-v2");
       expect(c.cardAdvisor.calibrated).toBe(false);
       expect(c.cardAdvisor.roleTagCoverage.share).toBeGreaterThan(0.3);
       expect(c.cardAdvisor.synergyTagCoverage.share).toBeGreaterThan(0.7);

@@ -18,7 +18,7 @@ import {
 import { requireSupportedBuild } from "@slay2/game-schema";
 
 import { mulberry32, stateDigest } from "./digest";
-import { must } from "./util";
+import { must, ordinal } from "./util";
 import { GROUPS, profileDeck, type DeckEntry, type DeckProfile, type Group } from "./profile";
 import { actContextTilt, MAX_TILT, tiltWeights, type ContextTilt } from "./context";
 import {
@@ -584,7 +584,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     const slot = bestPick?.reasons.find((r) => r.kind === "size")?.delta ?? 0;
     if (bestPick && slot < 0 && bestPick.indexDelta - slot > 0) {
       tradeoffs.push(
-        `No offered card earns its slot: ${bestPick.label} would add ${fmt(bestPick.indexDelta - slot)} index points, but a ${String(base.size + 1)}th card costs ${fmt(-slot)}, which leaves ${fmt(bestPick.indexDelta)}. Skipping keeps the deck thin, so each card you need shows up more often.`,
+        `No offered card earns its slot: ${bestPick.label} would add ${fmt(bestPick.indexDelta - slot)} index points, but a ${ordinal(base.size + 1)} card costs ${fmt(-slot)}, which leaves ${fmt(bestPick.indexDelta)}. Skipping keeps the deck thin, so each card you need shows up more often.`,
       );
     } else {
       tradeoffs.push(
@@ -642,7 +642,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
           ]
         : []),
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
-      `Deck size: every card makes each of the others show up less often, so past ${String(neutral.sizeFrom)} cards each card added costs ${fmt(neutral.size)} index points (the price of a slot) and has to earn them through its quality, the roles it covers or the cards it works with, or skipping ranks first. That price is a judgement (ADR-065): simulated runs say that picking fewer cards wins more games, not how many fewer; earlier versions of the index charged ${fmt(LEGACY_SIZE_PRICE)} from the ${String(LEGACY_SIZE_FROM + 1)}st card on, and a pilot that played card rewards by that index skipped 0.2 % of them.`,
+      `Deck size: every card makes each of the others show up less often, so past ${String(neutral.sizeFrom)} cards each card added costs ${fmt(neutral.size)} index points (the price of a slot) and has to earn them through its quality, the roles it covers or the cards it works with, or skipping ranks first. That price is a judgement (ADR-065). In simulated runs, pilots that follow measured card values won more games when they took fewer cards (ADR-061, ADR-062); the runs cannot tell fewer cards from avoiding weak ones, nor say how many fewer. Earlier versions of the index charged ${fmt(LEGACY_SIZE_PRICE)} from the ${ordinal(LEGACY_SIZE_FROM + 1)} card on, and a pilot that played card rewards by that index skipped under 1 % of them (0.7 %).`,
       ...(tilt
         ? [
             `Act 1 context (${tilt.variantName}${tilt.boss ? `, boss ${tilt.boss.name}` : ", boss not known"}): coverage weights are tilted, by at most ${String(Math.round(MAX_TILT * 100))} % and usually a few, by how what its elites and bosses ask of a deck differs from the average Act 1 (both versions together). That is SLAY2's judgement of the fights, not a measurement (ADR-048).`,

@@ -234,5 +234,5 @@ describe("draft advisor v0: property tests over random valid requests", () => {
       }),
       { numRuns: 120 },
     );
-  });
+  }, 30_000); // 1.5 s alone; the default 5 s is not enough when the machine is busy with a long run
 });

@@ -42,7 +42,9 @@ describe("the Underdocks caveat looks the same wherever it appears", () => {
       />,
     );
     expect(overgrowth.container.querySelector("[data-underdocks-note]")).toBeNull();
-    expect(screen.getByText(/Every simulated run was played in Overgrowth/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Every simulated run behind these values was played in Overgrowth/),
+    ).toBeInTheDocument();
   });
 
   it("is written in one place: no panel draws its own box for it", () => {

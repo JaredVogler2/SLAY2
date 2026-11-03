@@ -64,8 +64,9 @@ def _descend(obj) -> bool:
         return False
     if isinstance(obj, (dict, list, tuple, set, frozenset, collections.deque, types.FunctionType, types.MethodType, functools.partial)):
         return True
-    module = type(obj).__module__ or ""
-    return module.startswith("sts2_env")
+    # a class of the simulator, or a subclass of one that this package defines (the keep-relics run manager, the run state of the Underdocks variant): their
+    # streams are the run's too, and a perturbation that skipped them would leave every random stream of such a run as it was
+    return any((getattr(klass, "__module__", None) or "").startswith("sts2_env") for klass in type(obj).__mro__)
 
 
 def find_rngs(root) -> list:

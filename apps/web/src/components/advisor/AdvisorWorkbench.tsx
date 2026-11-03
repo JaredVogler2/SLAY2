@@ -396,6 +396,7 @@ export function AdvisorWorkbench() {
                   confirmed: run.ascensionConfirmed,
                   character: run.character,
                 }}
+                act1={{ version: run.act1, character: run.character }}
               />
               <SimulationOpinion
                 run={run}

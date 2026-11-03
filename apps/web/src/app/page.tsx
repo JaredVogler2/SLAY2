@@ -10,6 +10,7 @@ import { ScrollRegion } from "@/components/ui/ScrollRegion";
 import { ascensionCoverage } from "@/lib/ascension";
 import { coverage } from "@/lib/cardvalues";
 import { neowCoverage, neowValues } from "@/lib/neow";
+import { underdocksCoverage } from "@/lib/underdocks";
 
 export const metadata: Metadata = {
   title: { absolute: "SLAY2 — The Spire Intelligence Observatory" },
@@ -192,6 +193,15 @@ export default function Home() {
                           "Simulated results above Ascension 0",
                           "Research",
                           `${ascensionCoverage()?.detail ?? ""}. Simulator unverified against the live game; see Evidence & methods.`,
+                        ],
+                      ]
+                    : []),
+                  ...(underdocksCoverage()
+                    ? [
+                        [
+                          "Simulated results in Underdocks",
+                          "Research",
+                          `${underdocksCoverage()?.detail ?? ""}. The simulator’s Underdocks is unverified against the live game; see Evidence & methods.`,
                         ],
                       ]
                     : []),

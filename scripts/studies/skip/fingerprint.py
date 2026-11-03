@@ -27,8 +27,16 @@ sys.path.insert(0, str(ROOT / "sim"))
 CLASSES = ["Ironclad", "Silent", "Regent", "Necrobinder", "Defect"]
 BANDS = [("<=15", 0, 15), ("16-20", 16, 20), ("21-25", 21, 25), ("26-30", 26, 30), (">30", 31, 999)]
 A_STAR = {"synergy": 1, "needs": 1, "scalers": 0.7, "engines": 0, "margin": 0}
+
+
+def ordinal(n: int) -> str:
+    """16 -> 16th, 21 -> 21st, 22 -> 22nd, 23 -> 23rd, 11 to 13 -> th."""
+    suffix = "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
+
 CANDIDATES = [("version 1", 30, 0.6), ("page: 1.0 from the 21st card", 20, 1.0)] + [
-    (f"{p} from the {n + 1}th card", n, p) for n in (15, 20, 25) for p in (0.3, 0.6, 1.0, 1.5) if (n, p) != (20, 1.0)
+    (f"{p} from the {ordinal(n + 1)} card", n, p) for n in (15, 20, 25) for p in (0.3, 0.6, 1.0, 1.5) if (n, p) != (20, 1.0)
 ]
 
 

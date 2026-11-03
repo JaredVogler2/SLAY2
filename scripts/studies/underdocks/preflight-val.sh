@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The checks that must hold before the first held-out game of this study (ADR-064 item 2); run-val.sh sources this file.
+# The checks that must hold before the first held-out game of this study (ADR-064 item 3); run-val.sh sources this file.
 # Any failed check stops the run before a val seed is played, because each test is run once.
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 fail() { echo "preflight-val: $*" >&2; exit 1; }
@@ -55,9 +55,10 @@ want = sorted(["experiments/cardvalue/ironclad-a0-v2.json"] + [f"experiments/car
 sys.exit(0 if got == want else 1)
 EOF
 
-# the harness variant is the verified one: the facts of the act against the game's source, the pools, the events and the hit points of every monster
-"$PY" -m pytest sim/tests/test_underdocks.py -q -x --no-header -p no:cacheprovider \
-  -k "fingerprint or refused or batch_id or command_line or pools_have or setup_names or every_event or facts_are or anti_repeat_tags or hit_points or every_number" > "$OUT/preflight-harness.log" 2>&1 \
+# the harness variant is the verified one: every test of the variant passes at this commit (the act's facts against the game's source, the pools, the
+# events, the hit points of every monster, what a run is dealt, that a game is a function of its seed and fair, that every fight can be played, the
+# command line end to end); the file takes a few minutes and is run whole, because a subset once left five failing tests out of the check
+"$PY" -m pytest sim/tests/test_underdocks.py -q -x --no-header -p no:cacheprovider > "$OUT/preflight-harness.log" 2>&1 \
   || fail "the harness tests of the Underdocks variant do not pass at this commit (see $OUT/preflight-harness.log)"
 
 # the precondition (development seeds) was run, committed and passed
@@ -66,7 +67,7 @@ git ls-files --error-unmatch "$RESULTS/precondition.json" > /dev/null 2>&1 || fa
 "$PY" -c "import json,sys; sys.exit(0 if json.load(open('$RESULTS/precondition.json'))['passed'] is True else 1)" || fail "the precondition did not pass"
 
 # each test is run once: no pooled result, per-class output or interval file of the study exists, and none is in the history
-for p in pooled-ud-t1-synergy-astar-vs-d0star pooled-ud-t2-values-shown-vs-rules_v1 pooled-ud-t3-neow-keep-v1-vs-rules_v2; do
+for p in pooled-ud-t1-synergy-astar-vs-d0star pooled-ud-t2-values-shown-vs-rules_v1 pooled-ud-t3-neow-keep-v1-vs-rules_v2 robustness-all-pairs; do
   [ ! -e "$RESULTS/$p.json" ] || fail "the pooled result $RESULTS/$p.json exists: the test is run once"
   [ -z "$(git log --all --oneline -1 -- "$RESULTS/$p.json")" ] || fail "$RESULTS/$p.json is in the history: the test is run once"
 done

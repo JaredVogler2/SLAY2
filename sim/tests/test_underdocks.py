@@ -159,6 +159,7 @@ MONSTERS = {
     "FatGremlin": ("create_fat_gremlin", {}),
     "HauntedShip": ("create_haunted_ship", {}),
     "LivingFog": ("create_living_fog", {}),
+    "GasBomb": ("create_gas_bomb", {}),  # LivingFog's summon: in LivingFogNormal.AllPossibleMonsters, so the act has 22 monsters and not the 21 of its encounters' GenerateMonsters
     "PunchConstruct": ("create_punch_construct", {}),
     "SewerClam": ("create_sewer_clam", {}),
     "TwoTailedRat": ("create_two_tailed_rat", {"starter_move_idx": 0}),
@@ -354,6 +355,77 @@ def test_a_run_that_is_not_in_the_act_that_was_asked_for_is_refused(sim):
         ud.check_act1(mgr, "underdocks")
 
 
+@pytest.mark.parametrize("kind", ["weak", "normal", "elite"])
+def test_a_first_act_that_draws_a_fight_of_another_kind_is_refused_in_every_slot(sim, kind):
+    """The check reads the weak fights, the regular ones, the elites and the boss: each is refused on its own when it is a fight that belongs to another pool."""
+    import sts2_env.encounters as encounters
+
+    mgr = new_run(UNDERDOCKS, 3)
+    ud.check_act1(mgr, "underdocks")  # as built, it passes
+    rooms = mgr.run_state.get_act_room_set(0)
+    other = {"weak": ud.pools()["normal"][0], "normal": ud.pools()["weak"][0], "elite": ud.pools()["normal"][0]}[kind]
+    if kind == "weak":
+        rooms.normal_encounters[0] = other
+    elif kind == "normal":
+        rooms.normal_encounters[ud.WEAK_FIGHTS] = other
+    else:
+        rooms.elite_encounters[0] = other
+    with pytest.raises(ud.Act1Error, match="not in Underdocks"):
+        ud.check_act1(mgr, "underdocks")
+    # ... and so is an Overgrowth fight in any of the slots
+    mgr = new_run(UNDERDOCKS, 3)
+    rooms = mgr.run_state.get_act_room_set(0)
+    overgrowth = encounters.get_act_encounter_pools(0)
+    rooms.normal_encounters[-1] = overgrowth["normal"][0]
+    with pytest.raises(ud.Act1Error, match="not in Underdocks"):
+        ud.check_act1(mgr, "underdocks")
+
+
+def test_a_first_act_with_another_event_pool_or_length_is_refused(sim):
+    mgr = new_run(UNDERDOCKS, 3)
+    mgr.run_state.acts[0].event_ids.pop()
+    with pytest.raises(ud.Act1Error, match="not Underdocks"):
+        ud.check_act1(mgr, "underdocks")
+    mgr = new_run(UNDERDOCKS, 3)
+    mgr.run_state.acts[0].num_rooms = 14
+    with pytest.raises(ud.Act1Error, match="not Underdocks"):
+        ud.check_act1(mgr, "underdocks")
+
+
+def test_building_a_run_in_underdocks_checks_it_is_one(sim, monkeypatch):
+    """If the variant were bypassed (the run state not the Underdocks one) a game would be played in Overgrowth under an Underdocks name: new_run refuses."""
+    monkeypatch.setattr(ud, "run_state_cls", lambda base: base)
+    with pytest.raises(ud.Act1Error):
+        new_run(UNDERDOCKS, 5)
+    monkeypatch.undo()
+    assert new_run(UNDERDOCKS, 5) is not None
+
+
+def test_the_command_line_plays_the_variant_end_to_end_and_the_manifest_and_the_records_say_so(sim, tmp_path):
+    """A batch named -underdocks that had been played in Overgrowth would be a wrong experiment: the flag has to reach the run, the manifest and every record, and
+    without the flag no trace of it is left."""
+    import gzip
+
+    env = {**os.environ, "PYTHONPATH": str(external.REPO_ROOT / "sim")}
+
+    def play(name: str, *extra: str) -> tuple[dict, list[dict]]:
+        out = tmp_path / name
+        cmd = [sys.executable, "-m", "slay2_sim", "run", "--policy", "rules_v1", "--character", "Silent", "--ascension", "0", "--profile", "veteran", "--seeds",
+               "experiments/seeds/ironclad-a0-v2.json", "--partition", "dev", "--offset", "0", "--n", "2", "--keep-relics", "--workers", "1", "--trace", "0",
+               "--batch-id", name, "--out", str(out), *extra]
+        done = subprocess.run(cmd, env=env, cwd=external.REPO_ROOT, capture_output=True, text=True, timeout=900)
+        assert done.returncode in (0, 2), done.stderr[-2000:]  # 2: some game ended in a simulator error, which is normal
+        raw = (out / "episodes.jsonl.gz")
+        text = gzip.open(raw, "rt", encoding="utf-8").read() if raw.exists() else (out / "episodes.jsonl").read_text(encoding="utf-8")
+        return json.loads((out / "manifest.json").read_text(encoding="utf-8")), [json.loads(line) for line in text.splitlines() if line.strip()]
+
+    manifest, rows = play("t-underdocks", "--act1", "underdocks")
+    assert manifest["config"]["act1"] == "underdocks" and len(rows) == 2
+    assert all(r["extra"]["act1"]["version"] == "underdocks" and r["extra"]["act1"]["boss"] in ud.ENCOUNTERS["boss"] for r in rows)
+    manifest, rows = play("t-default")
+    assert "act1" not in manifest["config"] and all("act1" not in (r.get("extra") or {}) for r in rows)
+
+
 def test_the_episode_record_names_the_boss_only_outside_overgrowth(sim):
     from slay2_sim.policies import make_policy
     from slay2_sim.runner import run_episode
@@ -499,17 +571,55 @@ def test_the_pilots_of_the_study_ignore_hidden_state_in_underdocks(sim, characte
     from test_policy_fairness import decide, sample_points, twins
 
     cfg = RunConfig(character=character, act1="underdocks", keep_relics=True)
-    points = []
-    for seed in (11, 12):
+    # random play dies early, so a seed gives six to nine points of one to three phases: take seeds (each walk is a function of its seed) until the
+    # sample has the variety the question needs, with an upper bound so that a change of the act's generation shows as a failure and not a loop
+    points: list = []
+    for seed in range(11, 41):
         points.extend(sample_points(seed, steps=260, every=10, cfg=cfg))
-    assert len({p.phase for p in points}) >= 4 and sum(1 for p in points if p.phase == "COMBAT") >= 4
+        if len(points) >= 40 and len({p.phase for p in points}) >= 4 and sum(1 for p in points if p.phase == "COMBAT") >= 8:
+            break
+    assert len(points) >= 40 and len({p.phase for p in points}) >= 4 and sum(1 for p in points if p.phase == "COMBAT") >= 8, sorted({p.phase for p in points})
+    # the six arms of the study as each class plays them (the card values are the class's: a pilot refuses another class's file)
+    low = character.lower()
+    shown = "experiments/cardvalue/ironclad-a0-v2.json" if low == "ironclad" else f"experiments/cardvalue/{low}-a0-keep-v1.json"
+    first = f"experiments/cardvalue/{low}-a0-v1.json"
     pilots = [
         ("rules_v1", {}),
-        ("rules_v2", {}),
+        ("rules_v2", {"threshold": 0, "values": shown}),
+        ("rules_v2", {"threshold": 0, "values": first}),
         ("advisor_v1", {"engines": 0, "margin": 0.0, "needs": 1, "scalers": 0.7}),
-        ("rules_v2_neow_values", {"neow_values": "experiments/neow/neow-values-keep-v1.json"}),
+        ("advisor_v1", {"synergy": 0, "margin": 0}),
+        ("rules_v2_neow_values", {"threshold": 0, "values": first, "neow_values": "experiments/neow/neow-values-keep-v1.json"}),
     ]
     for name, params in pilots:
         for i, p in enumerate(points):
             a, b = twins(p, 700 + i)
             assert decide(name, a, **params) == decide(name, b, **params), f"{name} depends on hidden state at point {i} ({p.phase}) in {character}"
+
+
+def test_the_perturbation_reaches_the_random_streams_of_a_keep_relics_run_in_underdocks(sim, monkeypatch):
+    """The twin test above is only as strong as the perturbation. The manager of a keep-relics run and the run state of the Underdocks variant are classes of this
+    package that extend the simulator's, and a perturbation that followed only the simulator's own classes found no stream of such a run at all (the draw order
+    was the only thing it changed). Here the streams are found, reseeded, and an observation that read one of them would tell the twins apart."""
+    import test_policy_fairness as fairness
+    from slay2_sim.hidden import find_rngs
+
+    cfg = RunConfig(character="Ironclad", act1="underdocks", keep_relics=True)
+    points = fairness.sample_points(12, steps=120, every=20, cfg=cfg)
+    assert len(points) >= 4
+    for i, point in enumerate(points):
+        assert len(find_rngs(point)) >= 10, f"only {len(find_rngs(point))} random streams found at point {i} ({point.phase})"
+    a, b = fairness.twins(points[2], 702)
+    assert [r._seed for r in find_rngs(a)] != [r._seed for r in find_rngs(b)]            # the streams of the twin are other streams
+
+    honest = fairness.decide("rules_v1", a), fairness.decide("rules_v1", b)
+    assert honest[0] == honest[1]
+    real_observe = fairness.observe
+
+    def leaking(mgr, actions=None):
+        obs = real_observe(mgr, actions)
+        obs["run"]["leak"] = mgr.run_state.rng.rewards._seed                              # a hidden stream, as a pilot that peeked would see it
+        return obs
+
+    monkeypatch.setattr(fairness, "observe", leaking)
+    assert fairness.decide("rules_v1", a)[0] != fairness.decide("rules_v1", b)[0]

@@ -18,6 +18,7 @@ import { parseAct2 } from "./lib/act2.mjs";
 import { parseActs } from "./lib/acts.mjs";
 import { parseThresh } from "./lib/thresh.mjs";
 import { parseAscensionNine } from "./lib/ascension9.mjs";
+import { parseUnderdocks } from "./lib/underdocks.mjs";
 import {
   parseAscensionLadder,
   parseGames,
@@ -101,8 +102,7 @@ const SKIP = new Set([
   "ladder-random_legal-ironclad-a0-veteran-train-n100",
 ]);
 
-function parseEvidence() {
-  const dir = join(root, "experiments", "batches");
+function parseEvidence(dir = join(root, "experiments", "batches")) {
   const reports = [];
   for (const name of readdirSync(dir).sort()) {
     if (SKIP.has(name) || !existsSync(join(dir, name, "manifest.json"))) continue;
@@ -1501,6 +1501,10 @@ function parseVerification() {
 
 const reports = parseEvidence();
 const comparisons = parseComparisons(reports);
+// The batches of the Underdocks study (ADR-064) live apart from `experiments/batches`: no reader of that directory can pool a game of Underdocks
+// into an Overgrowth cohort, and the evidence file above is not changed by them. Only the reader of that study looks here.
+const underdocksBatches = join(root, "experiments", "underdocks", "batches");
+const underdocksReports = existsSync(underdocksBatches) ? parseEvidence(underdocksBatches) : [];
 
 // Gap G13: what the game's own starting HP costs a class the simulator starts with more, from the committed development comparison of
 // the `game_hp` variant (side a) with the simulator's start (side b). A few numbers per class, written beside the opening-relic data so
@@ -1560,6 +1564,18 @@ const outputs = {
     generatedFrom:
       "experiments/ascension9/precondition.json + experiments/ascension9/ascension-check.json + experiments/ascension9/pooled-a9-*.json (the Ascension 9 transfer study, ADR-058) + experiments/batches/*/manifest.json",
     ...parseAscensionNine({ root, reports, synergyChoice: parseSynergySelection }),
+  },
+  // The Underdocks transfer study (ADR-064): the stage it is at (registered; the precondition; the three held-out tests), read strictly
+  "underdocks.generated.json": {
+    schema: 1,
+    generatedFrom:
+      "experiments/underdocks/precondition.json + experiments/underdocks/pooled-ud-*.json (the Underdocks transfer study, ADR-064) + experiments/underdocks/batches/*/manifest.json + the Overgrowth twins experiments/synergy/keep-val/pooled-astar-vs-d0star.json, experiments/ascension9/pooled-a0keep-t2-values-shown-vs-rules_v1.json and experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
+    ...parseUnderdocks({
+      root,
+      reports,
+      udReports: underdocksReports,
+      synergyChoice: parseSynergySelection,
+    }),
   },
   // The Act-2 study (ADR-060): the stage it is at (registered; the fit; the development screen; the three held-out tests), read strictly
   "act2.generated.json": {

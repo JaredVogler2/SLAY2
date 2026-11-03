@@ -14,6 +14,13 @@ import { StartHpNote } from "@/components/ui/StartHpNote";
 import { AscensionNote } from "@/components/advisor/AscensionNote";
 import { UnderdocksNote } from "@/components/advisor/UnderdocksNote";
 import { ASCENSION, ascensionTest, neowAdviceAllowed, type AscensionData } from "@/lib/ascension";
+import {
+  UNDERDOCKS,
+  neowAdviceAllowedInUnderdocks,
+  underdocksTest,
+  withheldWords,
+  type UnderdocksData,
+} from "@/lib/underdocks";
 import { CLASS_STYLE } from "@/lib/card-style";
 import { formatBeta, oddsMultiplier, valueSign } from "@/lib/cardvalues";
 import {
@@ -210,6 +217,7 @@ export function NeowOffer({
   onRecord,
   data = NEOW,
   ascensionData = ASCENSION,
+  underdocksData = UNDERDOCKS,
 }: {
   run: RunState;
   disabled: boolean;
@@ -219,6 +227,8 @@ export function NeowOffer({
   data?: NeowData;
   /** the Ascension 9 study (ADR-058): what a run above Ascension 0 is told about the rule, and whether it may be advised */
   ascensionData?: AscensionData;
+  /** the Underdocks study (ADR-064): what a run in Underdocks is told about the rule, and whether it may be advised */
+  underdocksData?: UnderdocksData;
 }) {
   const [slots, setSlots] = useState<readonly [string, string, string]>(["", "", ""]);
   const character = run.character;
@@ -230,9 +240,24 @@ export function NeowOffer({
   const assessment = assessOffer(chosen, data);
   const verdict = offerVerdict(assessment, character, data);
   // at Ascension 1 to 10 the rule names a relic only if the Ascension 9 test passed and this class's own games had it ahead (ADR-058 item 5 iii)
-  const withheld =
+  const withheldAtAscension =
     verdict.kind === "take" &&
     !neowAdviceAllowed(character, run.ascension, run.ascensionConfirmed, ascensionData);
+  // in Underdocks the rule names a relic only if the Underdocks test passed and this class's own Underdocks games had it ahead (ADR-064 item 6 iii)
+  const withheldInUnderdocks =
+    verdict.kind === "take" && !neowAdviceAllowedInUnderdocks(character, run.act1, underdocksData);
+  const withheld = withheldAtAscension || withheldInUnderdocks;
+  const underdocksResult = underdocksTest("neow", underdocksData);
+  const withheldInUnderdocksBecause =
+    underdocksResult?.verdict === "reversed"
+      ? "in Underdocks the test had the first helpful relic ahead of the rule"
+      : underdocksResult?.verdict === "passed"
+        ? `${label}'s own Underdocks games did not show the rule ahead (the bar is p below 0.01; a class whose games rarely get past the boss can show nothing even when the rule helps it)`
+        : underdocksResult?.withheld
+          ? underdocksResult.primary === "reversed"
+            ? `the Underdocks test had the first helpful relic ahead of the rule on the pairs both games completed, but ${withheldWords(underdocksResult)}, so the registered rule does not count it as a reversal`
+            : `the Underdocks test had the rule ahead on the pairs both games completed, but ${withheldWords(underdocksResult)}, so the registered rule does not count it as shown`
+          : "the Underdocks test did not show the rule ahead";
   const neowResult = ascensionTest("neow", ascensionData);
   const withheldBecause =
     neowResult?.verdict === "reversed"
@@ -304,17 +329,23 @@ export function NeowOffer({
         />
         <StartHpNote character={character} subject="chances" data={data} />
         {run.act1 === "underdocks" ? (
-          <UnderdocksNote>
+          <UnderdocksNote finding="neow" character={character} data={underdocksData}>
             Your Act 1 is Underdocks, and every simulated run behind these relic values was played
-            in Overgrowth (the simulator never plays Underdocks), so the numbers below were not
-            measured for your Act 1: read them as a prior about the relics, not about your fights.
+            in Overgrowth, so the numbers below were not measured for your Act 1: read them as a
+            prior about the relics, not about your fights.
           </UnderdocksNote>
         ) : null}
         <div aria-live="polite" className="space-y-3">
-          {withheld ? (
+          {withheldAtAscension ? (
             <p className="rounded-lg border border-copper-deep/70 bg-copper/10 p-3 text-sm text-copper">
               SLAY2 does not say which relic to take at Ascension {run.ascension}: it has no tested
               advice for {label} there, because {withheldBecause}. The numbers below are
+              measurements, not advice.
+            </p>
+          ) : withheldInUnderdocks ? (
+            <p className="rounded-lg border border-copper-deep/70 bg-copper/10 p-3 text-sm text-copper">
+              SLAY2 does not say which relic to take in Underdocks: it has no tested advice for{" "}
+              {label} there, because {withheldInUnderdocksBecause}. The numbers below are
               measurements, not advice.
             </p>
           ) : (

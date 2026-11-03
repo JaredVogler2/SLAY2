@@ -84,7 +84,7 @@ export function Act1Brief({ variant, boss }: { variant: Act1Variant; boss: strin
           Hit points are the Ascension 0 to 7 figures; Ascension 8 adds hit points and Ascension 9
           adds damage. The notes are SLAY2&rsquo;s reading of the game&rsquo;s own monster data;
           &ldquo;rewards in a deck&rdquo; is judgement, not a measurement. The card values measured
-          from simulated runs were played in Overgrowth only: the simulator never plays Underdocks.
+          from simulated runs were played in Overgrowth only: nothing was fitted in Underdocks.
         </p>
       </div>
     </Disclosure>

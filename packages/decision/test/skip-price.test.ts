@@ -10,6 +10,7 @@ import {
   baseWeights,
   evaluateDraft,
   mulberry32,
+  ordinal,
   profileDeck,
   rankWith,
   type DeckEntry,
@@ -118,6 +119,58 @@ describe("the price of a slot", () => {
     const skip = r.ranking.find((o) => o.action.kind === "skip");
     expect(skip?.reasons[0]?.text).toMatch(/spares the price of a slot/);
     expect(r.assumptions.join(" ")).toMatch(/price of a slot/);
+  });
+
+  it("writes the ordinal of the card that costs the slot correctly, whatever the size of the deck", () => {
+    expect(
+      [1, 2, 3, 4, 10, 11, 12, 13, 14, 21, 22, 23, 24, 31, 32, 33, 101, 111, 112, 113, 121].map(
+        ordinal,
+      ),
+    ).toEqual([
+      "1st",
+      "2nd",
+      "3rd",
+      "4th",
+      "10th",
+      "11th",
+      "12th",
+      "13th",
+      "14th",
+      "21st",
+      "22nd",
+      "23rd",
+      "24th",
+      "31st",
+      "32nd",
+      "33rd",
+      "101st",
+      "111th",
+      "112th",
+      "113th",
+      "121st",
+    ]);
+    let seen = 0;
+    for (let extra = 11; extra <= 24; extra++) {
+      const deck = grown(extra);
+      const r = evaluateDraft(request(deck, MEDIOCRE));
+      const line = r.tradeoffs[0] ?? "";
+      if (!line.includes("No offered card earns its slot")) continue;
+      seen++;
+      expect(line).toContain(`a ${ordinal(size(deck) + 1)} card costs`);
+      expect(line).not.toMatch(/\d(1|2|3)th card/);
+    }
+    expect(seen).toBeGreaterThanOrEqual(3);
+  });
+
+  it("states the evidence for the price as it is: a direction in pilots that follow measured values, not an isolated mechanism", () => {
+    const text = evaluateDraft(request(grown(14), MEDIOCRE)).assumptions.join(" ");
+    expect(text).toMatch(
+      /pilots that follow measured card values won more games when they took fewer cards/,
+    );
+    expect(text).toMatch(/cannot tell fewer cards from avoiding weak ones/);
+    expect(text).toMatch(/skipped under 1 % of them \(0\.7 %\)/);
+    expect(text).not.toMatch(/0\.2 %/);
+    expect(text).not.toMatch(/wins more games, not how many fewer/);
   });
 
   it("still takes a card that earns its slot: a strong, fitting card in a big deck", () => {

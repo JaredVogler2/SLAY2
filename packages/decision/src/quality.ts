@@ -22,9 +22,10 @@ export interface Weights {
  * The price of a slot (ADR-065). Every card in a deck makes each of the others show up less often, so from the card after the
  * SIZE_FROM-th on, each card added costs SIZE_PRICE index points, which it has to earn (through its quality, the roles it covers or the
  * cards it works with) to beat skipping. Version 1 charged 0.6 points from the 31st card on; that almost never beat a card's own gain,
- * and the pilot that played card rewards by the index skipped 0.2 % of them. Both numbers are judgements: the simulated runs say that
- * skipping more wins more games (ADR-061, ADR-062), not how much more, and the registered check of this price (ADR-065) asks only that
- * it does no harm where the simulation can see it.
+ * and the pilot that played card rewards by the index skipped under 1 % of them (0.7 % of 98,358 card rewards of ADR-054's games with the relics
+ * kept). Both numbers are judgements: in simulated runs, pilots that follow measured card values won more games when they took fewer cards
+ * (ADR-061, ADR-062), which does not separate fewer cards from avoiding weak ones and does not say how many fewer, and the registered check
+ * of this price (ADR-065) asks only that it does no gross harm where the simulation can see it.
  */
 export const SIZE_FROM = 20;
 export const SIZE_PRICE = 1;

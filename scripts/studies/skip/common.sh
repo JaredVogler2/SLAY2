@@ -20,6 +20,9 @@ S0_PARAMS='{"engines":0,"margin":0.0,"needs":1,"scalers":0.7}'
 S1_PARAMS='{"engines":0,"margin":0.0,"needs":1,"scalers":0.7,"size":1.0,"size_from":20}'
 # Everything the arms read or run: the code and data that must be those of the registration commit when the first held-out game is played.
 PINNED_PATHS="sim scripts/studies/skip packages/decision packages/game-data/data experiments/seeds external/pins.json"
+# The baseline of the Underdocks leg is the T1 arm `A*` of ADR-064, whose outcomes are not read before that study's three pooled tests exist.
+ADR064_POOLED="experiments/underdocks/pooled-ud-t1-synergy-astar-vs-d0star.json experiments/underdocks/pooled-ud-t2-values-shown-vs-rules_v1.json experiments/underdocks/pooled-ud-t3-neow-keep-v1-vs-rules_v2.json experiments/underdocks/robustness-all-pairs.json"
+adr064_unpooled() { local f; for f in $ADR064_POOLED; do [ -e "$f" ] || { echo "$f"; return 0; }; done; return 1; }   # prints the first pooled file of ADR-064 that is missing; fails when none is
 
 act1_of() { if [ "$1" = ud ]; then echo underdocks; else echo overgrowth; fi; }
 s1_id() { # <ExactClass> <leg> -> the batch id of the arm that charges for a slot
@@ -36,13 +39,19 @@ s0_dir() { # <ExactClass> <leg> -> the directory of the baseline batch, which ex
 # The text of ADR-065 itself (its heading to the next one, or the end of the log): what the preflight reads the registration from.
 adr_section() { awk '/^## .*ADR-065:/ { p = 1; print; next } /^## / { if (p) exit } p' docs/DECISIONS.md; }
 
-# What a finished batch has to be (read from its own manifest): the policy and the price it charged, the seeds, Ascension 0, the Act 1 of the leg,
-# the relics kept, the class start verified, played from a clean working tree, no game ended in an abort or an error of ours (simulator errors, step
-# limits and timeouts are excluded and counted, as ADR-065 item 4 says) and at least 90 % of the games completed.
-verify_batch() { # <batch dir> <partition> <n> <leg> <arm: s0 or s1>
-  "$PY" - "$@" <<'EOF'
+# What a finished batch has to be (read from its own manifest): the policy and the parameters of the arm (the price it charges, or none), the exact
+# class, the seeds, Ascension 0, the veteran profile, the Act 1 of the leg, the relics kept, the class start verified, played from a clean working tree
+# (the arm that charges for a slot), no game ended in an abort or an error of ours (simulator errors, step limits and timeouts are excluded and counted,
+# as the Power paragraph of ADR-065 says; item 6 (b) holds the precondition to the same) and at least 90 % of the games completed.
+verify_batch() { # <batch dir> <partition> <n> <leg> <arm: s0 or s1> <ExactClass>
+  [ $# = 6 ] || { echo "verify_batch: usage: verify_batch <batch dir> <partition> <n> <leg> <s0|s1> <ExactClass>" >&2; return 2; }
+  local want=$S0_PARAMS
+  [ "$5" != s1 ] || want=$S1_PARAMS
+  "$PY" - "$@" "$want" <<'EOF'
 import json, sys
-d, part, n, leg, arm = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5]
+d, part, n, leg, arm, cls, want_params = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5], sys.argv[6], json.loads(sys.argv[7])
+if arm not in ("s0", "s1") or leg not in ("og", "ud"):
+    sys.exit(f"verify_batch: {d}: the arm is s0 or s1 and the leg og or ud, not {arm!r} and {leg!r}")
 try:
     m = json.load(open(d + "/manifest.json"))
 except Exception as e:  # noqa: BLE001
@@ -53,7 +62,11 @@ env = (m.get("environment") or {}).get("slay2") or {}
 params = (m["policy"].get("params") or {})
 problems = []
 if m["policy"]["name"] != "advisor_v1": problems.append(f"policy {m['policy']['name']}")
+# the parameters as parsed (1 and 1.0 are the same number): a batch of the other arm, or of other numbers, is not the arm it is filed as
+if params != want_params: problems.append(f"policy parameters {json.dumps(params, sort_keys=True)}, not {json.dumps(want_params, sort_keys=True)}")
+if m["config"].get("character") != cls: problems.append(f"played as {m['config'].get('character')}, not {cls}")
 if m["config"]["ascension"] != 0: problems.append(f"Ascension {m['config']['ascension']}")
+if m["config"].get("profile") != "veteran": problems.append(f"profile {m['config'].get('profile')}")
 if m["config"].get("keep_relics") is not True: problems.append("relics not kept")
 want = "underdocks" if leg == "ud" else "overgrowth"
 if m["config"].get("act1", "overgrowth") != want: problems.append(f"Act 1 {m['config'].get('act1', 'overgrowth')}, not {want}")
@@ -79,7 +92,7 @@ guard_tree() {
 run_batch() {
   local id=$1 leg=$2 cls=$3 part=$4 n=$5 off=$6 out=${7:-} W=${WORKERS:-4}
   local dest=${out:-$BATCHES/$id}
-  if [ -f "$dest/manifest.json" ]; then verify_batch "$dest" "$part" "$n" "$leg" s1; return $?; fi
+  if [ -f "$dest/manifest.json" ]; then verify_batch "$dest" "$part" "$n" "$leg" s1 "$cls"; return $?; fi
   guard_tree || return 1
   nice -n 8 "$PY" -m slay2_sim run --policy advisor_v1 --policy-params "$S1_PARAMS" --character "$cls" --ascension 0 --act1 "$(act1_of "$leg")" --profile veteran \
     --seeds "$SEEDS" --partition "$part" --offset "$off" --n "$n" --keep-relics --workers "$W" --trace 0 --batch-id "$id" \
@@ -89,5 +102,5 @@ run_batch() {
   # exit code 2 means that some episodes ended in a simulator error, which is normal (a usage error exits 2 as well, and leaves no manifest:
   # verify_batch is what tells them apart); anything else stops the run (RESUME=1 continues it)
   if [ "$status" != 0 ] && [ "$status" != 2 ]; then echo "run_batch: $id failed with status $status (see $OUT/$part-$id.log)" >&2; return "$status"; fi
-  verify_batch "$dest" "$part" "$n" "$leg" s1
+  verify_batch "$dest" "$part" "$n" "$leg" s1 "$cls"
 }

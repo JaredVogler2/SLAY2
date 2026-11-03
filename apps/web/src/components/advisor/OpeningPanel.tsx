@@ -553,8 +553,8 @@ export function OpeningPanel({
               <Act1Brief variant={variant} boss={run.act1Boss} />
               {variant === "underdocks" ? (
                 <UnderdocksNote>
-                  The simulated runs behind the measured card values never played Underdocks, so
-                  that second opinion is for Overgrowth only.
+                  The simulated runs behind the measured card values were all played in Overgrowth,
+                  so that second opinion was measured for Overgrowth only.
                 </UnderdocksNote>
               ) : null}
             </>

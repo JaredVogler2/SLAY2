@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/underdocks/precondition.json + experiments/underdocks/pooled-ud-*.json (the Underdocks transfer study, ADR-064) + experiments/underdocks/batches/*/manifest.json + the Overgrowth twins experiments/synergy/keep-val/pooled-astar-vs-d0star.json, experiments/ascension9/pooled-a0keep-t2-values-shown-vs-rules_v1.json and experiments/neow/pooled-neow-values-keep-v1-vs-rules_v2-keeprelics-val.json",
+  "adr": "ADR-064",
+  "registered": true,
+  "level": 0.016666666666666666,
+  "classLevel": 0.01,
+  "seeds": 2000,
+  "precondition": {
+    "file": "experiments/underdocks/precondition.json",
+    "sha256": "f4cc79c91d51e954148184a17fc0280bc75ee813344486b5283d55c40dd321d6",
+    "games": 3500,
+    "pooledShownValues": {
+      "overgrowth": {
+        "completed": 491,
+        "pastActOneBoss": 334,
+        "rate": 0.6802
+      },
+      "underdocks": {
+        "completed": 483,
+        "pastActOneBoss": 231,
+        "rate": 0.4783
+      }
+    }
+  },
+  "tests": null
+}

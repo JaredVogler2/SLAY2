@@ -10,7 +10,7 @@ SEEDS=experiments/seeds/ironclad-a0-v2.json
 CLASSES="Ironclad Silent Regent Necrobinder Defect"
 ASC=0                                     # Ascension 0 and the relics kept: the game of ADR-054, ADR-055 and ADR-058's twin, with Act 1 as the only change
 ACT1=underdocks
-LEVEL_CONFIDENCE=0.98333333333333   # 1 - 0.05 / 3: the level each of the three tests is read at (ADR-064 item 3)
+LEVEL_CONFIDENCE=0.98333333333333   # 1 - 0.05 / 3: the level each of the three tests is read at (ADR-064 item 4)
 mkdir -p "$OUT"
 lower() { echo "$1" | tr 'A-Z' 'a-z'; }
 
@@ -50,8 +50,13 @@ arm_ids() { # <ExactClass> -> "<T1 A*> <T1 d0*> <T2 shown> <T2 rules_v1> <T3 rul
 rules_v2-shownvals-$l-a0-veteran-keeprelics-underdocks-val-n2000 rules_v1-$l-a0-veteran-keeprelics-underdocks-val-n2000 \
 rules_v2_neow_values-keepvals-$l-a0-veteran-keeprelics-underdocks-val-n2000 rules_v2-$l-a0-veteran-keeprelics-underdocks-val-n2000"
 }
+arm_policies() { echo "advisor_v1 advisor_v1 rules_v2 rules_v1 rules_v2_neow_values rules_v2"; }   # the policy of each batch of arm_ids, in the same order
+arm_params() { # <ExactClass> -> the parameters (JSON) each batch of arm_ids is played with, one per line, in the same order
+  local C=$1
+  echo "$ASTAR"; echo "$D0STAR"; shown_params "$C"; echo "{}"; base_params "$C" ",\"neow_values\":\"$NEOW_VALUES\""; base_params "$C" ""
+}
 # The same six arms in Overgrowth, on the same seeds, with the same everything else: batches the earlier studies played (T1 ADR-054, T2 the
-# twin of ADR-058, T3 ADR-055). They are read, never played again, and they are what an Underdocks result is set beside (ADR-064 item 4).
+# twin of ADR-058, T3 ADR-055). They are read, never played again, and they are what an Underdocks result is set beside (ADR-064 item 5).
 overgrowth_ids() { # <ExactClass> -> the same order as arm_ids
   local l; l=$(lower "$1")
   echo "advisor_v1-astar-$l-a0-veteran-keeprelics-val-n2000 advisor_v1-d0star-$l-a0-veteran-keeprelics-val-n2000 \
@@ -62,13 +67,15 @@ rules_v2_neow_values-keepvals-$l-a0-veteran-keeprelics-val-n2000 rules_v2-$l-a0-
 # The text of ADR-064 itself (its heading to the next one, or the end of the log): what the preflight reads the quoted hashes from.
 adr_section() { awk '/^## .*ADR-064:/ { p = 1; print; next } /^## / { if (p) exit } p' docs/DECISIONS.md; }
 
-# What a finished batch has to be (read from its own manifest): the policy, the seeds, Ascension 0 and Act 1 in Underdocks, the relics kept, the
+# What a finished batch has to be (read from its own manifest): the policy, the seeds, Ascension 0, the veteran profile and Act 1 in Underdocks, the relics kept, the
 # class start verified, played from a clean working tree, no game ended in an abort or an error of ours (simulator errors, step limits and
-# timeouts are excluded and counted, as ADR-064 item 3 says) and at least 90 % of the games completed.
-verify_batch() { # <batch dir> <policy> <partition> <n>
+# timeouts are excluded and counted, as ADR-064 item 4 says) and at least 90 % of the games completed (item 10).
+verify_batch() { # <batch dir> <policy> <partition> <n> [ExactClass [policy parameters as JSON]]
   "$PY" - "$@" <<'EOF'
 import json, sys
 d, policy, part, n = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+cls = sys.argv[5] if len(sys.argv) > 5 else None
+want_params = json.loads(sys.argv[6]) if len(sys.argv) > 6 else None
 try:
     m = json.load(open(d + "/manifest.json"))
 except Exception as e:  # noqa: BLE001
@@ -78,7 +85,10 @@ bad = sum(c[k] for k in ("aborted", "harness_error", "policy_error", "invalid_ac
 env = (m.get("environment") or {}).get("slay2") or {}
 problems = []
 if m["policy"]["name"] != policy: problems.append(f"policy {m['policy']['name']}")
+if cls is not None and m["config"].get("character") != cls: problems.append(f"played as {m['config'].get('character')}, not {cls}")
+if want_params is not None and m["policy"].get("params") != want_params: problems.append(f"policy parameters {m['policy'].get('params')}, not {want_params}")
 if m["config"]["ascension"] != 0: problems.append(f"Ascension {m['config']['ascension']}")
+if m["config"].get("profile") != "veteran": problems.append(f"profile {m['config'].get('profile')}")
 if m["config"].get("act1") != "underdocks": problems.append(f"Act 1 {m['config'].get('act1', 'overgrowth')}")
 if m["config"].get("keep_relics") is not True: problems.append("relics not kept")
 if m["seeds"]["partition"] != part or m["seeds"]["n"] != n or m["summary"]["episodes"] != n: problems.append("seeds")
@@ -102,7 +112,7 @@ guard_tree() {
 run_batch() {
   local id=$1 policy=$2 params=$3 cls=$4 part=$5 n=$6 off=$7 out=${8:-} W=${WORKERS:-4}
   local dest=${out:-$BATCHES/$id}
-  if [ -f "$dest/manifest.json" ]; then verify_batch "$dest" "$policy" "$part" "$n"; return $?; fi
+  if [ -f "$dest/manifest.json" ]; then verify_batch "$dest" "$policy" "$part" "$n" "$cls" "$params"; return $?; fi
   guard_tree || return 1
   nice -n 8 "$PY" -m slay2_sim run --policy "$policy" --policy-params "$params" --character "$cls" --ascension "$ASC" --act1 "$ACT1" --profile veteran \
     --seeds "$SEEDS" --partition "$part" --offset "$off" --n "$n" --keep-relics --workers "$W" --trace 0 --batch-id "$id" \
@@ -112,5 +122,5 @@ run_batch() {
   # exit code 2 means that some episodes ended in a simulator error, which is normal (a usage error exits 2 as well, and leaves no manifest:
   # verify_batch is what tells them apart); anything else stops the run (RESUME=1 continues it)
   if [ "$status" != 0 ] && [ "$status" != 2 ]; then echo "run_batch: $id failed with status $status (see $OUT/$part-$id.log)" >&2; return "$status"; fi
-  verify_batch "$dest" "$policy" "$part" "$n"
+  verify_batch "$dest" "$policy" "$part" "$n" "$cls" "$params"
 }
