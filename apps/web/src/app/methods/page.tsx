@@ -5,6 +5,7 @@ import { ActsPanel } from "@/components/methods/ActsPanel";
 import { ThreshPanel } from "@/components/methods/ThreshPanel";
 import { AscensionPanel } from "@/components/methods/AscensionPanel";
 import { UnderdocksPanel } from "@/components/methods/UnderdocksPanel";
+import { SkipCheckPanel } from "@/components/methods/SkipCheckPanel";
 import { CardValuesPanel } from "@/components/methods/CardValuesPanel";
 import { NeowValuesPanel } from "@/components/methods/NeowValuesPanel";
 import { SynergyStudyPanel } from "@/components/methods/SynergyStudyPanel";
@@ -486,6 +487,7 @@ export default function MethodsPage() {
 
       <AscensionPanel />
       <UnderdocksPanel />
+      <SkipCheckPanel />
 
       <Act2Panel />
       <ActsPanel />

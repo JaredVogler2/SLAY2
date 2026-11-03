@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
+import { SkipCheckNote } from "@/components/advisor/SkipCheckNote";
 
 function key(a: DraftAction): string {
   return a.kind === "skip" ? "skip" : a.cardId;
@@ -36,9 +37,12 @@ function DeltaBar({ delta, max }: { delta: number; max: number }) {
 export function RecommendationPanel({
   result,
   onRecord,
+  character,
 }: {
   result: DraftResponse;
   onRecord: (action: DraftAction) => void;
+  /** the run's class: the note about the price of a slot says so when its own simulated games went against it (ADR-065) */
+  character?: string | null | undefined;
 }) {
   const best = result.recommendation;
   const max = Math.max(...result.ranking.map((o) => Math.abs(o.indexDelta)), 0.01);
@@ -47,6 +51,10 @@ export function RecommendationPanel({
   const { stability, closeCall } = result.confidence;
   const kept = stability.topChoiceKept;
   const total = stability.perturbations;
+  // the price of a slot touched this call (the deck is past 20 cards): say what it is and where its registered simulated check stands (ADR-065)
+  const priced = result.ranking.some((o) =>
+    o.reasons.some((r) => r.kind === "size" && r.delta < 0),
+  );
   const picked = chosen ?? key(best.action);
   const pickedOption: RankedOption | undefined = result.ranking.find(
     (o) => key(o.action) === picked,
@@ -116,6 +124,7 @@ export function RecommendationPanel({
               your run.
             </p>
           </div>
+          {priced ? <SkipCheckNote character={character} /> : null}
         </div>
 
         <div className="space-y-3">

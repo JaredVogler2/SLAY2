@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/skip/precondition.json + experiments/skip/pooled-slot-*.json + experiments/skip/reading.json (the price-of-a-slot check, ADR-065) + experiments/skip/batches/*/manifest.json + the baselines experiments/batches/advisor_v1-astar-*-val-n2000 and experiments/underdocks/batches/advisor_v1-astar-*-underdocks-val-n2000",
+  "adr": "ADR-065",
+  "registered": true,
+  "price": {
+    "from": 20,
+    "perCard": 1,
+    "legacyFrom": 30,
+    "legacyPerCard": 0.6
+  },
+  "margins": {
+    "firstBossShare": -0.01,
+    "meanFloors": -0.25,
+    "interval": 0.95
+  },
+  "classLevel": 0.01,
+  "seeds": 2000,
+  "precondition": {
+    "file": "experiments/skip/precondition.json",
+    "sha256": "34d9d2913b3c80da93581ab223c1b2a9347ef23619d5edb2e988d76e3a7180bd",
+    "games": 2000,
+    "minimumGapInSkipShare": 0.02
+  },
+  "result": null
+}
