@@ -186,6 +186,23 @@ describe("what the advisor says beside a recommendation that the price touched",
     expect(text).not.toMatch(/win(s|ning) more|helps winning|improves/i);
   });
 
+  it("names a small cost in floors, and in which version of Act 1, when its interval lies wholly below zero, and says nothing of it otherwise", () => {
+    const cost = {
+      meanFloors: { difference: -0.05, interval95: [-0.091, -0.0097] as [number, number] },
+    };
+    const text = skipSentence(withLegs({ og: leg("og"), ud: leg("ud", cost) }, true)) ?? "";
+    expect(text).toContain("no gross harm was found");
+    expect(text).toContain(
+      "A cost of a point at the first boss or of a quarter of a floor is ruled out. In Underdocks it did reach slightly fewer floors on average (−0.05, 95 % interval −0.09 to −0.01), a small cost inside that margin; whether it helps could not be measured",
+    );
+    expect(text).not.toContain("In Overgrowth it did reach");
+    const both = skipSentence(withLegs({ og: leg("og", cost), ud: leg("ud", cost) }, true)) ?? "";
+    expect(both).toContain("In Overgrowth and Underdocks it did reach slightly fewer floors");
+    // an interval that reaches zero is not a cost that shows
+    const none = skipSentence(withLegs({ og: leg("og"), ud: leg("ud") }, true)) ?? "";
+    expect(none).not.toContain("slightly fewer floors");
+  });
+
   it("says that the check is half done, which leg is waiting, and that it counts only when both are in", () => {
     const text = skipSentence(withLegs({ og: leg("og") }, null)) ?? "";
     expect(text).toContain("half done");
@@ -258,6 +275,20 @@ describe("the summary of a leg", () => {
       "The leg is not shown to be harmless: the lower end of the interval at the first boss is −3.40 points, not above −1.0",
     );
     expect(bad.text).not.toContain("of the floors");
+  });
+
+  it("says that the interval of the floors excludes zero, and that the cost lies inside the registered margin, only when it does", () => {
+    const cost = leg("ud", {
+      meanFloors: { difference: -0.05, interval95: [-0.091, -0.0097] },
+    });
+    const text = skipLegSummary("ud", cost, REGISTERED).text;
+    expect(text).toContain(
+      "its mean floors reached differ by −0.05 (95 % interval −0.09 to −0.01)",
+    );
+    expect(text).toContain(
+      "The interval of the floors excludes zero: with the price the pilot reached slightly fewer floors on average, a cost inside the margin registered for it (−0.25 floors)",
+    );
+    expect(skipLegSummary("og", leg("og"), REGISTERED).text).not.toContain("excludes zero");
   });
 });
 

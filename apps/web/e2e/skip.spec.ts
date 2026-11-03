@@ -13,7 +13,10 @@ const exported = JSON.parse(
   readFileSync(join(__dirname, "..", "src", "content", "skip.generated.json"), "utf8"),
 ) as {
   registered: boolean;
-  result: null | { legs: Record<string, unknown>; harmless: boolean | null };
+  result: null | {
+    legs: Record<string, { verdict: string; meanFloors: { interval95: [number, number] } }>;
+    harmless: boolean | null;
+  };
 };
 
 const catalog = JSON.parse(
@@ -32,8 +35,13 @@ const catalog = JSON.parse(
   ),
 ) as { cards: { id: string; name: string; class: string; rewardEligible: boolean }[] };
 
+/** A leg whose interval of the mean floors lies wholly below zero: a small cost that the pages say all the same. */
+const floorsCostShows = Object.values(exported.result?.legs ?? {}).some(
+  (l) => l.meanFloors.interval95[1] < 0,
+);
+
 function stage(): "registered" | "partial" | "harmless" | "not-shown" {
-  const legs = Object.values(exported.result?.legs ?? {}) as { verdict: string }[];
+  const legs = Object.values(exported.result?.legs ?? {});
   if (legs.length === 0) return "registered";
   if (legs.some((l) => l.verdict === "not-shown-harmless")) return "not-shown";
   return legs.length === 2 ? "harmless" : "partial";
@@ -61,6 +69,8 @@ test.describe("the price of a slot and its check", () => {
     await expect(section).toContainText("It cannot show that the price helps");
     if (stage() === "registered") await expect(section).toContainText("Not run yet.");
     else await expect(section.locator("[data-skip-leg]").first()).toBeVisible();
+    if (floorsCostShows)
+      await expect(section).toContainText("The interval of the floors excludes zero");
     await expectNoHorizontalOverflow(page);
     await expectNoSeriousA11yViolations(page, "/methods price of a slot");
   });
@@ -104,6 +114,8 @@ test.describe("the price of a slot and its check", () => {
     await expect(note).toBeVisible();
     await expect(note).toContainText("The price of a slot");
     await expect(note).toContainText("is a judgement, not a measurement");
+    if (stage() === "harmless" && floorsCostShows)
+      await expect(note).toContainText("it did reach slightly fewer floors on average");
     await expect(note.getByRole("link", { name: "Evidence & methods" })).toHaveAttribute(
       "href",
       "/methods#price-of-a-slot",

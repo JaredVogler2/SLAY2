@@ -158,12 +158,147 @@
             "skipped": 663
           }
         }
+      },
+      "ud": {
+        "act1": "underdocks",
+        "file": "experiments/skip/pooled-slot-ud.json",
+        "sha256": "57ccdecb6bce909e48d75a69b9855735dc3ffa61da90fb079736a15f90b33d90",
+        "contentSha256": "26bcb41fccbd597fc055b8501bd3511a41be3dbbb7f6d4210be0f29d747782bf",
+        "pairs": 10000,
+        "bothCompleted": 9908,
+        "excludedNotCompleted": 92,
+        "notFinished": {
+          "a": 89,
+          "b": 83
+        },
+        "pastActOneBoss": {
+          "s1": 0.2345579329834477,
+          "s0": 0.23617278966491723,
+          "onlyS1": 57,
+          "onlyS0": 73,
+          "exactP": 0.18810748401589183,
+          "difference": -0.0016148566814695195,
+          "interval95": [
+            -0.003931461521794275,
+            0.0006054505688954144
+          ]
+        },
+        "meanFloors": {
+          "difference": -0.05036334275333064,
+          "interval95": [
+            -0.091138473960436,
+            -0.009689140088817117
+          ]
+        },
+        "pastActTwoBoss": {
+          "s1": 0.019781994348001614,
+          "s0": 0.01867178037949132,
+          "onlyS1": 75,
+          "onlyS0": 64
+        },
+        "wins": {
+          "s1": 16,
+          "s0": 14,
+          "onlyS1": 10,
+          "onlyS0": 8
+        },
+        "notBehind": {
+          "firstBoss": true,
+          "meanFloors": true
+        },
+        "verdict": "not-behind",
+        "classes": {
+          "ironclad": {
+            "pairs": 1972,
+            "s1": 0.43204868154158216,
+            "s0": 0.4315415821501014,
+            "onlyS1": 20,
+            "onlyS0": 19,
+            "p": 1,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.02028397565922921
+          },
+          "silent": {
+            "pairs": 1994,
+            "s1": 0.040621865596790374,
+            "s0": 0.04212637913741224,
+            "onlyS1": 4,
+            "onlyS0": 7,
+            "p": 0.548828125,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.011033099297893681
+          },
+          "regent": {
+            "pairs": 1971,
+            "s1": 0.20040588533739218,
+            "s0": 0.20142059868087264,
+            "onlyS1": 14,
+            "onlyS0": 16,
+            "p": 0.855535551905632,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.03602232369355657
+          },
+          "necrobinder": {
+            "pairs": 1985,
+            "s1": 0.25743073047858944,
+            "s0": 0.26045340050377835,
+            "onlyS1": 13,
+            "onlyS0": 19,
+            "p": 0.37708558747544885,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.1309823677581864
+          },
+          "defect": {
+            "pairs": 1986,
+            "s1": 0.24420946626384693,
+            "s0": 0.2472306143001007,
+            "onlyS1": 6,
+            "onlyS0": 12,
+            "p": 0.237884521484375,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.12487411883182276
+          }
+        },
+        "skipShares": {
+          "s1": {
+            "share": 0.0473,
+            "cardRewards": 88570,
+            "skipped": 4192,
+            "byAct": {
+              "act1": {
+                "cardRewards": 78839,
+                "share": 0.0133,
+                "skipped": 1050
+              },
+              "act2": {
+                "cardRewards": 9128,
+                "share": 0.3109,
+                "skipped": 2838
+              },
+              "act3": {
+                "cardRewards": 603,
+                "share": 0.5041,
+                "skipped": 304
+              }
+            }
+          },
+          "s0": {
+            "share": 0.0054,
+            "cardRewards": 88884,
+            "skipped": 482
+          }
+        }
       }
     },
-    "harmless": null,
+    "harmless": true,
     "readingFile": {
       "file": "experiments/skip/reading.json",
-      "sha256": "6535ffaa9fe5a7613ba0ff8f6bd04b3819bb5e46aa0364c300e8fd15242f66ae"
+      "sha256": "3aa124325309dc6d0316bf4ab60080b0da47ac1744fc8c925f9cddac5a89950f"
     }
   }
 }

@@ -130,6 +130,11 @@ const games = (n: number): string => n.toLocaleString("en-US");
 const pText = (p: number): string =>
   p === 0 ? "p < 1e-300" : p < 1e-4 ? `p = ${p.toExponential(1)}` : `p = ${p.toPrecision(2)}`;
 
+/** The interval of a leg's mean floors lies wholly below zero: a cost too small for the registered margin to see, and said all the same. */
+function floorsCostShows(leg: SkipLeg): boolean {
+  return leg.meanFloors.interval95[1] < 0;
+}
+
 /** One leg's figures in words: the share past the first boss with its interval, and the mean floors with theirs. */
 export function skipLegFigures(leg: SkipLeg): string {
   const b = leg.pastActOneBoss;
@@ -166,7 +171,17 @@ export function skipSentence(data: SkipData = SKIP): string | null {
       return null;
     case "registered":
       return `${PRICE} A simulated check that it does no gross harm (a cost of a point at the first boss or of a quarter of a floor, against version 1's price) is registered and has not been run yet.`;
-    case "harmless":
+    case "harmless": {
+      const lost = legs.filter(([, leg]) => floorsCostShows(leg));
+      const lostText =
+        lost.length === 0
+          ? ""
+          : ` In ${lost.map(([k]) => LEG_NAMES[k]).join(" and ")} it did reach slightly fewer floors on average (${lost
+              .map(
+                ([, leg]) =>
+                  `${sign(leg.meanFloors.difference, 2)}, 95 % interval ${sign(leg.meanFloors.interval95[0], 2)} to ${sign(leg.meanFloors.interval95[1], 2)}`,
+              )
+              .join("; ")}), a small cost inside that margin`;
       return `${PRICE} It was checked in simulation, in both versions of Act 1, and no gross harm was found: ${legs
         .map(
           ([k, leg]) =>
@@ -174,7 +189,8 @@ export function skipSentence(data: SkipData = SKIP): string | null {
         )
         .join(
           ", and ",
-        )}. A cost of a point at the first boss or of a quarter of a floor is ruled out; whether it helps could not be measured.`;
+        )}. A cost of a point at the first boss or of a quarter of a floor is ruled out${lost.length === 0 ? "" : "."}${lostText}; whether it helps could not be measured.`;
+    }
     case "partial": {
       const waiting = (["og", "ud"] as const).filter((k) => !legs.some(([done]) => done === k));
       return `${PRICE} The simulated check is half done: ${legs
@@ -209,6 +225,13 @@ export function skipClassLine(character: string, data: SkipData = SKIP): string 
   return lines.length > 0 ? lines.join(" ") : null;
 }
 
+/** Said after the figures of a leg that is not behind whose interval of the floors excludes zero (a small cost inside the margin), or nothing. */
+function floorsCostText(leg: SkipLeg, data: SkipRegistered): string {
+  return floorsCostShows(leg)
+    ? ` The interval of the floors excludes zero: with the price the pilot reached slightly fewer floors on average, a cost inside the margin registered for it (${sign(data.margins.meanFloors, 2)} floors), which the rule was not written to resolve.`
+    : "";
+}
+
 /** The figures and the verdict of each leg that is in, for the Methods page. */
 export function skipLegSummary(
   key: SkipLegKey,
@@ -220,7 +243,7 @@ export function skipLegSummary(
     verdict: leg.verdict === "not-behind" ? "not behind" : "not shown to be harmless",
     text:
       leg.verdict === "not-behind"
-        ? `${skipLegFigures(leg)}.`
+        ? `${skipLegFigures(leg)}.${floorsCostText(leg, data)}`
         : `${skipLegFigures(leg)}. The leg is not shown to be harmless: ${failed(leg, data)}.`,
   };
 }
