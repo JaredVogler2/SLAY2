@@ -1,0 +1,308 @@
+{
+  "harmless": false,
+  "kind": "skip-reading",
+  "legs": {
+    "og": {
+      "bothCompleted": 9883,
+      "excludedNotCompleted": 117,
+      "meanFloors": {
+        "differenceS1MinusS0": 0.007386421127188101,
+        "interval95": [
+          -0.03915815035920267,
+          0.05454062531619931
+        ]
+      },
+      "notBehind": {
+        "firstBoss": true,
+        "firstBossLowerEnd": -0.0018268686751078415,
+        "floors": true,
+        "floorsLowerEnd": -0.03915815035920267
+      },
+      "pairs": 10000,
+      "pastActOneBoss": {
+        "differenceS1MinusS0": 0.0005059192552868562,
+        "exactP": 0.7345393172729974,
+        "interval95": [
+          -0.0018268686751078415,
+          0.002932558734067894
+        ],
+        "onlyS0": 67,
+        "onlyS1": 72,
+        "s0": 0.40412830112314074,
+        "s1": 0.4046342203784276
+      },
+      "pastActTwoBoss": {
+        "exactP": 0.13253419223810542,
+        "onlyS0": 78,
+        "onlyS1": 99,
+        "s0": 0.023778204998482242,
+        "s1": 0.02590306587068704
+      },
+      "perClass": {
+        "Defect": {
+          "bothCompleted": 1983,
+          "meanFloorsDifferenceS1MinusS0": -0.0670700958144226,
+          "pairs": 2000,
+          "pastActOneBoss": {
+            "exactP": 0.6476058959960938,
+            "onlyS0": 11,
+            "onlyS1": 8,
+            "s0": 0.49319213313161875,
+            "s1": 0.491679273827534
+          },
+          "wins": {
+            "s0": 0,
+            "s1": 0
+          }
+        },
+        "Ironclad": {
+          "bothCompleted": 1953,
+          "meanFloorsDifferenceS1MinusS0": 0.0056323604710701485,
+          "pairs": 2000,
+          "pastActOneBoss": {
+            "exactP": 0.32693958282470703,
+            "onlyS0": 16,
+            "onlyS1": 10,
+            "s0": 0.5990783410138248,
+            "s1": 0.5960061443932412
+          },
+          "wins": {
+            "s0": 13,
+            "s1": 17
+          }
+        },
+        "Necrobinder": {
+          "bothCompleted": 1974,
+          "meanFloorsDifferenceS1MinusS0": 0.014184397163120567,
+          "pairs": 2000,
+          "pastActOneBoss": {
+            "exactP": 0.7011080384254456,
+            "onlyS0": 12,
+            "onlyS1": 15,
+            "s0": 0.4766970618034448,
+            "s1": 0.47821681864235055
+          },
+          "wins": {
+            "s0": 0,
+            "s1": 0
+          }
+        },
+        "Regent": {
+          "bothCompleted": 1979,
+          "meanFloorsDifferenceS1MinusS0": 0.05709954522486104,
+          "pairs": 2000,
+          "pastActOneBoss": {
+            "exactP": 0.8318119049072266,
+            "onlyS0": 10,
+            "onlyS1": 12,
+            "s0": 0.2743810005053057,
+            "s1": 0.2753916119252148
+          },
+          "wins": {
+            "s0": 0,
+            "s1": 1
+          }
+        },
+        "Silent": {
+          "bothCompleted": 1994,
+          "meanFloorsDifferenceS1MinusS0": 0.02708124373119358,
+          "pairs": 2000,
+          "pastActOneBoss": {
+            "exactP": 0.23269319190831084,
+            "onlyS0": 18,
+            "onlyS1": 27,
+            "s0": 0.1815446339017051,
+            "s1": 0.1860581745235707
+          },
+          "wins": {
+            "s0": 0,
+            "s1": 0
+          }
+        }
+      },
+      "verdict": "not behind",
+      "wins": {
+        "onlyS0": 6,
+        "onlyS1": 11,
+        "s0": 13,
+        "s1": 18
+      }
+    }
+  },
+  "rule": {
+    "firstBossLowerEndAbove": -0.01,
+    "interval": "95 %",
+    "meanFloorsLowerEndAbove": -0.25
+  },
+  "schema": 1,
+  "skipShares": {
+    "og": {
+      "s0": {
+        "cardRewards": 98358,
+        "perClass": {
+          "Defect": {
+            "cardRewards": 20321,
+            "share": 0.0031,
+            "skipped": 63
+          },
+          "Ironclad": {
+            "cardRewards": 24598,
+            "share": 0.017,
+            "skipped": 419
+          },
+          "Necrobinder": {
+            "cardRewards": 20504,
+            "share": 0.0063,
+            "skipped": 130
+          },
+          "Regent": {
+            "cardRewards": 17397,
+            "share": 0.0018,
+            "skipped": 32
+          },
+          "Silent": {
+            "cardRewards": 15538,
+            "share": 0.0012,
+            "skipped": 19
+          }
+        },
+        "share": 0.0067,
+        "skipped": 663
+      },
+      "s1": {
+        "byAct": {
+          "act1": {
+            "cardRewards": 81858,
+            "share": 0.0133,
+            "skipped": 1089
+          },
+          "act2": {
+            "cardRewards": 15617,
+            "share": 0.3127,
+            "skipped": 4883
+          },
+          "act3": {
+            "cardRewards": 847,
+            "share": 0.5419,
+            "skipped": 459
+          }
+        },
+        "cardRewards": 98322,
+        "perClass": {
+          "Defect": {
+            "byAct": {
+              "act1": {
+                "cardRewards": 16833,
+                "share": 0.0065,
+                "skipped": 110
+              },
+              "act2": {
+                "cardRewards": 3361,
+                "share": 0.2838,
+                "skipped": 954
+              },
+              "act3": {
+                "cardRewards": 70,
+                "share": 0.5286,
+                "skipped": 37
+              }
+            },
+            "cardRewards": 20264,
+            "share": 0.0543,
+            "skipped": 1101
+          },
+          "Ironclad": {
+            "byAct": {
+              "act1": {
+                "cardRewards": 18144,
+                "share": 0.0126,
+                "skipped": 228
+              },
+              "act2": {
+                "cardRewards": 5756,
+                "share": 0.2679,
+                "skipped": 1542
+              },
+              "act3": {
+                "cardRewards": 652,
+                "share": 0.5031,
+                "skipped": 328
+              }
+            },
+            "cardRewards": 24552,
+            "share": 0.0855,
+            "skipped": 2098
+          },
+          "Necrobinder": {
+            "byAct": {
+              "act1": {
+                "cardRewards": 16663,
+                "share": 0.0122,
+                "skipped": 204
+              },
+              "act2": {
+                "cardRewards": 3757,
+                "share": 0.3966,
+                "skipped": 1490
+              },
+              "act3": {
+                "cardRewards": 93,
+                "share": 0.8172,
+                "skipped": 76
+              }
+            },
+            "cardRewards": 20513,
+            "share": 0.0863,
+            "skipped": 1770
+          },
+          "Regent": {
+            "byAct": {
+              "act1": {
+                "cardRewards": 15600,
+                "share": 0.0087,
+                "skipped": 135
+              },
+              "act2": {
+                "cardRewards": 1786,
+                "share": 0.3287,
+                "skipped": 587
+              },
+              "act3": {
+                "cardRewards": 31,
+                "share": 0.5484,
+                "skipped": 17
+              }
+            },
+            "cardRewards": 17417,
+            "share": 0.0424,
+            "skipped": 739
+          },
+          "Silent": {
+            "byAct": {
+              "act1": {
+                "cardRewards": 14618,
+                "share": 0.0282,
+                "skipped": 412
+              },
+              "act2": {
+                "cardRewards": 957,
+                "share": 0.3239,
+                "skipped": 310
+              },
+              "act3": {
+                "cardRewards": 1,
+                "share": 1.0,
+                "skipped": 1
+              }
+            },
+            "cardRewards": 15576,
+            "share": 0.0464,
+            "skipped": 723
+          }
+        },
+        "share": 0.0654,
+        "skipped": 6431
+      }
+    }
+  }
+}
