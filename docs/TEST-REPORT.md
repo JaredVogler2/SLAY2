@@ -196,6 +196,8 @@ Checked again on 2026-11-02 at 03:58 UTC, after pull request #24 was merged (202
 
 Checked again on 2026-11-02 at 05:12 UTC, after pull request #25 was merged (05:11 UTC): production serves `main` at `57bbb34` (`/api/v1/health` reports commit `57bbb348c83b82519bd2623c9dcec35fed63380a`), the eight pages answer 200, `/insights` and `/methods` carry the result of the acts study (checked by reading the served text for the result line, "Two passes are narrow", the advisor note, the figures of the four tests and the narrow tags, and for the absence of the registered-stage text), and **the whole browser suite was run against the hosted site** (`BASE_URL=https://slay-part2.vercel.app`, 05:13 to 05:19 UTC, three workers, 6.5 min in Playwright): **369 passed, 0 failed, 139 skipped by design**.
 
+Checked again on 2026-11-04 at 00:25 UTC, after pull request #30 was merged (00:22 UTC): production serves `main` at `61bc2ec` (`/api/v1/health` reports commit `61bc2ec281c1799dda4993e1ef731426766edb3f`; the eight pages answer 200, and `/methods` carries the Underdocks study (ADR-064) and the price check (ADR-065) as the record gives them, checked by reading the served text). **The whole browser suite was run against the hosted site** (`BASE_URL=https://slay-part2.vercel.app`, 2 workers, 00:25 to 00:37 UTC, 11.6 min in Playwright, run from a checkout of `61bc2ec`, so that the specs read the exported data the site was built from): **385 passed, 0 failed, 139 skipped by design**.
+
 ## What these tests do not show
 
 * **Nothing here tests the game.** The simulator tests prove the harness is deterministic, fair and audited, not that the simulator is the game; no live-game fixture exists (G5).
