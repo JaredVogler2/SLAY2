@@ -71,7 +71,7 @@ export function capabilities() {
       startingHp: CHARACTER_FACTS.find((c) => c.id === id)?.startingHp,
       odds: "supported",
       cardAdvisor: {
-        status: "heuristic-v1",
+        status: "heuristic-v2",
         calibrated: false,
         roleTagCoverage: tagCoverage(id),
         synergyTagCoverage: synergyCoverage(id),
@@ -116,7 +116,7 @@ export function capabilities() {
       },
       {
         id: "advisor.card_draft",
-        status: "heuristic-v1",
+        status: "heuristic-v2",
         method: "heuristic",
         calibrated: false,
         endpoint: "POST /api/v1/recommend",

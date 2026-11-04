@@ -21,6 +21,7 @@ import {
   type ActsTestKey,
   type ActsVerdict,
 } from "@/lib/acts";
+import { threshData } from "@/lib/thresh";
 
 import { actsFixture, actsTest } from "./fixtures/acts-test";
 
@@ -490,7 +491,32 @@ describe("what this changes for the advisor (ADR-061 item 7 iii)", () => {
     expect(
       screen.getByRole("heading", { level: 4, name: "What this changes for the advisor" }),
     ).toBeInTheDocument();
-    for (const sentence of advisorNote(results)) expect(text(container)).toContain(sentence);
+    // the page says what became of the replication of ADR-062 when the repository holds its result
+    const replication = threshData()?.tests?.results.T1?.verdict;
+    for (const sentence of advisorNote(results, replication))
+      expect(text(container)).toContain(sentence);
+  });
+
+  it("says what became of the replication (ADR-062) instead of what was planned, once there is one", () => {
+    const results = actsFixture({ A2: "passed" }).tests?.results;
+    if (!results) throw new Error("no tests");
+    expect(advisorNote(results).join(" ")).toMatch(
+      /the next registered study \(ADR-062\) repeats the test on new seeds and screens thresholds/,
+    );
+    const passed = advisorNote(results, "passed").join(" ");
+    expect(passed).toMatch(/then passed its replication on new seeds \(see “Which threshold\?”\)/);
+    expect(passed).toMatch(/is the change that follows, on its own and with its own review/);
+    expect(passed).not.toMatch(/repeats the test on new seeds and screens thresholds/);
+    for (const v of ["not-shown", "reversed"] as const) {
+      const said = advisorNote(results, v).join(" ");
+      expect(said).toMatch(/did not show it again/);
+      expect(said).toMatch(/nothing is added and nothing already published is withdrawn/);
+      expect(said).not.toMatch(/is the change that follows/);
+    }
+    // a study with no pickier rule that passed without a price says nothing about the replication
+    const none = actsFixture({}).tests?.results;
+    if (!none) throw new Error("no tests");
+    expect(advisorNote(none, "passed")).toEqual(advisorNote(none));
   });
 
   it("is not on the page before there is a result", () => {

@@ -1,0 +1,304 @@
+{
+  "schema": 1,
+  "generatedFrom": "experiments/skip/precondition.json + experiments/skip/pooled-slot-*.json + experiments/skip/reading.json (the price-of-a-slot check, ADR-065) + experiments/skip/batches/*/manifest.json + the baselines experiments/batches/advisor_v1-astar-*-val-n2000 and experiments/underdocks/batches/advisor_v1-astar-*-underdocks-val-n2000",
+  "adr": "ADR-065",
+  "registered": true,
+  "price": {
+    "from": 20,
+    "perCard": 1,
+    "legacyFrom": 30,
+    "legacyPerCard": 0.6
+  },
+  "margins": {
+    "firstBossShare": -0.01,
+    "meanFloors": -0.25,
+    "interval": 0.95
+  },
+  "classLevel": 0.01,
+  "seeds": 2000,
+  "precondition": {
+    "file": "experiments/skip/precondition.json",
+    "sha256": "34d9d2913b3c80da93581ab223c1b2a9347ef23619d5edb2e988d76e3a7180bd",
+    "games": 2000,
+    "minimumGapInSkipShare": 0.02
+  },
+  "result": {
+    "legs": {
+      "og": {
+        "act1": "overgrowth",
+        "file": "experiments/skip/pooled-slot-og.json",
+        "sha256": "7dc73bdd5859ccaf9fb4fcc0830c6b4389fa50743aca827885fedbabd1fcecb3",
+        "contentSha256": "64546914e80acadc3a6c25286f229bce88135363b1b5e8be290b9b1d7614a910",
+        "pairs": 10000,
+        "bothCompleted": 9883,
+        "excludedNotCompleted": 117,
+        "notFinished": {
+          "a": 108,
+          "b": 104
+        },
+        "pastActOneBoss": {
+          "s1": 0.4046342203784276,
+          "s0": 0.40412830112314074,
+          "onlyS1": 72,
+          "onlyS0": 67,
+          "exactP": 0.7345393172729974,
+          "difference": 0.0005059192552868562,
+          "interval95": [
+            -0.0018268686751078415,
+            0.002932558734067894
+          ]
+        },
+        "meanFloors": {
+          "difference": 0.007386421127188101,
+          "interval95": [
+            -0.03915815035920267,
+            0.05454062531619931
+          ]
+        },
+        "pastActTwoBoss": {
+          "s1": 0.02590306587068704,
+          "s0": 0.023778204998482242,
+          "onlyS1": 99,
+          "onlyS0": 78
+        },
+        "wins": {
+          "s1": 18,
+          "s0": 13,
+          "onlyS1": 11,
+          "onlyS0": 6
+        },
+        "notBehind": {
+          "firstBoss": true,
+          "meanFloors": true
+        },
+        "verdict": "not-behind",
+        "classes": {
+          "ironclad": {
+            "pairs": 1953,
+            "s1": 0.5960061443932412,
+            "s0": 0.5990783410138248,
+            "onlyS1": 10,
+            "onlyS0": 16,
+            "p": 0.32693958282470703,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.0056323604710701485
+          },
+          "silent": {
+            "pairs": 1994,
+            "s1": 0.1860581745235707,
+            "s0": 0.1815446339017051,
+            "onlyS1": 27,
+            "onlyS0": 18,
+            "p": 0.23269319190831084,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.02708124373119358
+          },
+          "regent": {
+            "pairs": 1979,
+            "s1": 0.2753916119252148,
+            "s0": 0.2743810005053057,
+            "onlyS1": 12,
+            "onlyS0": 10,
+            "p": 0.8318119049072266,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.05709954522486104
+          },
+          "necrobinder": {
+            "pairs": 1974,
+            "s1": 0.47821681864235055,
+            "s0": 0.4766970618034448,
+            "onlyS1": 15,
+            "onlyS0": 12,
+            "p": 0.7011080384254456,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.014184397163120567
+          },
+          "defect": {
+            "pairs": 1983,
+            "s1": 0.491679273827534,
+            "s0": 0.49319213313161875,
+            "onlyS1": 8,
+            "onlyS0": 11,
+            "p": 0.6476058959960938,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.0670700958144226
+          }
+        },
+        "skipShares": {
+          "s1": {
+            "share": 0.0654,
+            "cardRewards": 98322,
+            "skipped": 6431,
+            "byAct": {
+              "act1": {
+                "cardRewards": 81858,
+                "share": 0.0133,
+                "skipped": 1089
+              },
+              "act2": {
+                "cardRewards": 15617,
+                "share": 0.3127,
+                "skipped": 4883
+              },
+              "act3": {
+                "cardRewards": 847,
+                "share": 0.5419,
+                "skipped": 459
+              }
+            }
+          },
+          "s0": {
+            "share": 0.0067,
+            "cardRewards": 98358,
+            "skipped": 663
+          }
+        }
+      },
+      "ud": {
+        "act1": "underdocks",
+        "file": "experiments/skip/pooled-slot-ud.json",
+        "sha256": "57ccdecb6bce909e48d75a69b9855735dc3ffa61da90fb079736a15f90b33d90",
+        "contentSha256": "26bcb41fccbd597fc055b8501bd3511a41be3dbbb7f6d4210be0f29d747782bf",
+        "pairs": 10000,
+        "bothCompleted": 9908,
+        "excludedNotCompleted": 92,
+        "notFinished": {
+          "a": 89,
+          "b": 83
+        },
+        "pastActOneBoss": {
+          "s1": 0.2345579329834477,
+          "s0": 0.23617278966491723,
+          "onlyS1": 57,
+          "onlyS0": 73,
+          "exactP": 0.18810748401589183,
+          "difference": -0.0016148566814695195,
+          "interval95": [
+            -0.003931461521794275,
+            0.0006054505688954144
+          ]
+        },
+        "meanFloors": {
+          "difference": -0.05036334275333064,
+          "interval95": [
+            -0.091138473960436,
+            -0.009689140088817117
+          ]
+        },
+        "pastActTwoBoss": {
+          "s1": 0.019781994348001614,
+          "s0": 0.01867178037949132,
+          "onlyS1": 75,
+          "onlyS0": 64
+        },
+        "wins": {
+          "s1": 16,
+          "s0": 14,
+          "onlyS1": 10,
+          "onlyS0": 8
+        },
+        "notBehind": {
+          "firstBoss": true,
+          "meanFloors": true
+        },
+        "verdict": "not-behind",
+        "classes": {
+          "ironclad": {
+            "pairs": 1972,
+            "s1": 0.43204868154158216,
+            "s0": 0.4315415821501014,
+            "onlyS1": 20,
+            "onlyS0": 19,
+            "p": 1,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.02028397565922921
+          },
+          "silent": {
+            "pairs": 1994,
+            "s1": 0.040621865596790374,
+            "s0": 0.04212637913741224,
+            "onlyS1": 4,
+            "onlyS0": 7,
+            "p": 0.548828125,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.011033099297893681
+          },
+          "regent": {
+            "pairs": 1971,
+            "s1": 0.20040588533739218,
+            "s0": 0.20142059868087264,
+            "onlyS1": 14,
+            "onlyS0": 16,
+            "p": 0.855535551905632,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": 0.03602232369355657
+          },
+          "necrobinder": {
+            "pairs": 1985,
+            "s1": 0.25743073047858944,
+            "s0": 0.26045340050377835,
+            "onlyS1": 13,
+            "onlyS0": 19,
+            "p": 0.37708558747544885,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.1309823677581864
+          },
+          "defect": {
+            "pairs": 1986,
+            "s1": 0.24420946626384693,
+            "s0": 0.2472306143001007,
+            "onlyS1": 6,
+            "onlyS0": 12,
+            "p": 0.237884521484375,
+            "behind": false,
+            "ahead": false,
+            "meanFloors": -0.12487411883182276
+          }
+        },
+        "skipShares": {
+          "s1": {
+            "share": 0.0473,
+            "cardRewards": 88570,
+            "skipped": 4192,
+            "byAct": {
+              "act1": {
+                "cardRewards": 78839,
+                "share": 0.0133,
+                "skipped": 1050
+              },
+              "act2": {
+                "cardRewards": 9128,
+                "share": 0.3109,
+                "skipped": 2838
+              },
+              "act3": {
+                "cardRewards": 603,
+                "share": 0.5041,
+                "skipped": 304
+              }
+            }
+          },
+          "s0": {
+            "share": 0.0054,
+            "cardRewards": 88884,
+            "skipped": 482
+          }
+        }
+      }
+    },
+    "harmless": true,
+    "readingFile": {
+      "file": "experiments/skip/reading.json",
+      "sha256": "3aa124325309dc6d0316bf4ab60080b0da47ac1744fc8c925f9cddac5a89950f"
+    }
+  }
+}

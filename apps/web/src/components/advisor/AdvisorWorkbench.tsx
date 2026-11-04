@@ -387,7 +387,11 @@ export function AdvisorWorkbench() {
 
           {outcome?.ok ? (
             <>
-              <RecommendationPanel result={outcome.result} onRecord={record} />
+              <RecommendationPanel
+                result={outcome.result}
+                onRecord={record}
+                character={run.character}
+              />
               <SynergyPanel
                 synergy={outcome.result.deckSynergy}
                 relics={outcome.result.relics}
@@ -396,6 +400,7 @@ export function AdvisorWorkbench() {
                   confirmed: run.ascensionConfirmed,
                   character: run.character,
                 }}
+                act1={{ version: run.act1, character: run.character }}
               />
               <SimulationOpinion
                 run={run}

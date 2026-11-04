@@ -355,15 +355,25 @@ export function marginNote(results: Record<ActsTestKey, ActsTest>): string {
  * then) be put to the owner as an optional, labelled simulated second opinion, and one that won more at a price at the first boss (the old lead,
  * Act 1) as the trade-off it is. The owner left the decision to the project, and addendum B of ADR-061 records it (2026-11-02): not yet, to be
  * revisited when the replication of ADR-062 has been read. A rule that was not shown to win more, or won fewer, withdraws nothing and offers nothing.
+ * `replication` is the verdict of that replication (ADR-062's T1) once it exists, so that the note says what happened to it and not what was planned.
  */
-export function advisorNote(results: Record<ActsTestKey, ActsTest>): readonly string[] {
+export function advisorNote(
+  results: Record<ActsTestKey, ActsTest>,
+  replication?: "passed" | "not-shown" | "reversed",
+): readonly string[] {
   const passed = ACTS_KEYS.filter((k) => results[k].verdict === "passed");
   const free = passed.filter((k) => !hasPrice(results[k]));
   const priced = passed.filter((k) => hasPrice(results[k]));
   const out: string[] = ["The advisor does not change because of this study."];
   if (free.length > 0)
     out.push(
-      `Being pickier in ${list(free.map(ACT_NAME))} alone won more games (${list(free.map((k) => pts(results[k].difference)))}) and, because it plays the baseline's game until its act, has no price at any boss before that act. Decision of 2026-11-02 (the owner left it to the project; ADR-061, addendum B): the advisor does not offer it yet. The evidence is narrow, the threshold 0.2 was not compared with any other, and the next registered study (ADR-062) repeats the test on new seeds and screens thresholds; if its replication passes, an opt-in simulated second opinion for the classes that passed, with the tested threshold and these figures beside it, is the change that would follow.`,
+      `Being pickier in ${list(free.map(ACT_NAME))} alone won more games (${list(free.map((k) => pts(results[k].difference)))}) and, because it plays the baseline's game until its act, has no price at any boss before that act. Decision of 2026-11-02 (the owner left it to the project; ADR-061, addendum B): the advisor does not offer it yet. ${
+        replication === undefined
+          ? "The evidence is narrow, the threshold 0.2 was not compared with any other, and the next registered study (ADR-062) repeats the test on new seeds and screens thresholds; if its replication passes, an opt-in simulated second opinion for the classes that passed, with the tested threshold and these figures beside it, is the change that would follow."
+          : replication === "passed"
+            ? "The evidence was narrow and the threshold 0.2 had not been compared with any other; the next registered study (ADR-062) then passed its replication on new seeds (see “Which threshold?”), and the opt-in simulated second opinion that the decision allows, with the tested threshold and the figures beside it, is the change that follows, on its own and with its own review."
+            : "The evidence was narrow and the threshold 0.2 had not been compared with any other; the next registered study (ADR-062) then repeated the test on new seeds and did not show it again (see “Which threshold?”), so nothing is added and nothing already published is withdrawn."
+      }`,
     );
   if (priced.length > 0)
     out.push(

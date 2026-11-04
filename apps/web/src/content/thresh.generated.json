@@ -9,7 +9,7 @@
   "classLevel": 0.01,
   "seeds": 15000,
   "devSeeds": 3000,
-  "stage": "screened",
+  "stage": "tested",
   "screen": {
     "rows": {
       "t010": {
@@ -281,8 +281,159 @@
     "level": 0.05,
     "role": "development: not a held-out result"
   },
-  "tests": null,
+  "tests": {
+    "results": {
+      "T1": {
+        "key": "T1",
+        "arm": "t020",
+        "baseline": "s",
+        "file": "experiments/thresh/pooled-thresh-T1.json",
+        "sha256": "76ca40d66ffbadfdace43e2da36fd57b06da05f6fe73dbed925102cd0ed3c55b",
+        "pairs": 28727,
+        "pairedSeeds": 30000,
+        "excluded": 1273,
+        "notFinished": {
+          "a": 1079,
+          "b": 1089
+        },
+        "shares": {
+          "arm": 0.04553207783618199,
+          "baseline": 0.040588992933477216
+        },
+        "wins": {
+          "arm": 1308,
+          "baseline": 1166
+        },
+        "difference": 0.004943084902704772,
+        "ci": [
+          0.0028205184029193825,
+          0.007078459274429646
+        ],
+        "ci95": [
+          0.0028205184029193825,
+          0.007078459274429646
+        ],
+        "armOnly": 558,
+        "baselineOnly": 416,
+        "p": 0.000006025507103498109,
+        "verdict": "passed",
+        "primaryVerdict": "passed",
+        "downgrade": null,
+        "downgrades": [],
+        "narrow": false,
+        "excludedFraction": 0.04243333333333332,
+        "verification": {
+          "exactChecks": 56,
+          "bootstrapChecks": 62,
+          "bootstrapDisagreements": []
+        },
+        "robust": {
+          "pairs": 30000,
+          "notCompleted": {
+            "arm": 1079,
+            "baseline": 1089
+          },
+          "wins": {
+            "arm": 1331,
+            "baseline": 1177
+          },
+          "shares": {
+            "arm": 0.044366666666666665,
+            "baseline": 0.039233333333333335
+          },
+          "difference": 0.0051333333333333335,
+          "armOnly": 581,
+          "baselineOnly": 427,
+          "p": 0.0000013792818311902033
+        },
+        "actOne": {
+          "shares": {
+            "arm": 0.8203780415636858,
+            "baseline": 0.8203780415636858
+          },
+          "armOnly": 0,
+          "baselineOnly": 0,
+          "p": 1
+        },
+        "actTwo": {
+          "shares": {
+            "arm": 0.20966338288021721,
+            "baseline": 0.20430257249277683
+          },
+          "armOnly": 1531,
+          "baselineOnly": 1377,
+          "p": 0.004542539428456641
+        },
+        "floorDifference": {
+          "ci95": [
+            -0.02979775124447384,
+            0.07693198036690213
+          ],
+          "meanAMinusB": 0.023392627145194415,
+          "method": "paired percentile bootstrap over all pooled pairs, 20000 resamples, rng seed 0"
+        },
+        "perClass": [
+          {
+            "character": "ironclad",
+            "pairs": 14248,
+            "wins": {
+              "arm": 739,
+              "baseline": 636
+            },
+            "shares": {
+              "arm": 0.05186692869174621,
+              "baseline": 0.0446378439079169
+            },
+            "difference": 0.007229084783829309,
+            "armOnly": 392,
+            "baselineOnly": 289,
+            "p": 0.00009020460144399864,
+            "verdict": "arm",
+            "actOne": {
+              "arm": 0.8112717574396406,
+              "baseline": 0.8112717574396406
+            },
+            "meanFloorDifference": 0.05200729927007299
+          },
+          {
+            "character": "defect",
+            "pairs": 14479,
+            "wins": {
+              "arm": 569,
+              "baseline": 530
+            },
+            "shares": {
+              "arm": 0.03929829408108295,
+              "baseline": 0.036604737896263555
+            },
+            "difference": 0.0026935561848193935,
+            "armOnly": 166,
+            "baselineOnly": 127,
+            "p": 0.02625106473080816,
+            "verdict": "level",
+            "actOne": {
+              "arm": 0.8293390427515712,
+              "baseline": 0.8293390427515712
+            },
+            "meanFloorDifference": -0.004765522480834312
+          }
+        ]
+      }
+    },
+    "order": [
+      "T1"
+    ],
+    "level": 0.05,
+    "levelLabel": "0.05 / 1"
+  },
   "level": 0.05,
   "devHead": "97bb5580d1a80d91e446db2f45d1d06d05ceb109",
-  "selectionSha256": "f09930fdb1222acdea9f67fc35a5f19a0b8c7fc8dfdd8f2abe1f456350691112"
+  "selectionSha256": "f09930fdb1222acdea9f67fc35a5f19a0b8c7fc8dfdd8f2abe1f456350691112",
+  "identity": {
+    "t020": {
+      "beforePairs": 5198,
+      "bossPairs": 30000,
+      "wallClockPairs": 0
+    }
+  }
 }

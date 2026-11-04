@@ -27,6 +27,7 @@ import {
   type ActsTest,
 } from "@/lib/acts";
 import { classLabel } from "@/lib/insights-server";
+import { threshData } from "@/lib/thresh";
 
 const TH = "px-2 py-1.5 text-left text-xs font-medium text-dim";
 const TD = "px-2 py-1.5 align-top text-sm";
@@ -154,7 +155,7 @@ function TestsBlock({ data }: { data: ActsData }) {
       </div>
       <div className="space-y-2 rounded-xl border border-line bg-charcoal/40 p-4">
         <h4 className="text-base text-parchment">What this changes for the advisor</h4>
-        {advisorNote(tests.results).map((s) => (
+        {advisorNote(tests.results, threshData()?.tests?.results.T1?.verdict).map((s) => (
           <p key={s} className="text-sm text-muted">
             {s}
           </p>

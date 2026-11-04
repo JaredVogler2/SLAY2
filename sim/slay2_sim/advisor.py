@@ -371,18 +371,34 @@ RISK_MULTIPLIERS = {
 }
 
 
+# The price of a slot (ADR-065), as in ``packages/decision/src/quality.ts``: from the card after the SIZE_FROM-th on, each card added costs
+# SIZE_PRICE index points. The page's numbers are the defaults of ``base_weights``; the numbers of version 1 of the index, which every
+# simulated game of ADR-050 to ADR-062 that played on the index used, stay available (``LEGACY_*``) so that those batches replay as they were.
+SIZE_FROM = 20
+SIZE_PRICE = 1.0
+LEGACY_SIZE_FROM = 30
+LEGACY_SIZE_PRICE = 0.6
+
+
 @dataclass(frozen=True)
 class Weights:
     quality: float
     coverage: Mapping[str, float]
     curve: float
     size: float
+    sizeFrom: float
     synergy: float
 
 
-def base_weights(act_index: int = 0, risk: str = "balanced", synergy: float = 1.0) -> Weights:
+def base_weights(
+    act_index: int = 0,
+    risk: str = "balanced",
+    synergy: float = 1.0,
+    size: float = SIZE_PRICE,
+    size_from: float = SIZE_FROM,
+) -> Weights:
     coverage = {g: COVERAGE_BY_ACT[g][act_index] * RISK_MULTIPLIERS[risk].get(g, 1) for g in GROUPS}
-    return Weights(quality=1.0, coverage=coverage, curve=6.0, size=0.6, synergy=synergy)
+    return Weights(quality=1.0, coverage=coverage, curve=6.0, size=size, sizeFrom=size_from, synergy=synergy)
 
 
 @dataclass(frozen=True)
@@ -401,7 +417,7 @@ def _saturate(n: float, k: float) -> float:
 def score_terms(p: Profile, w: Weights) -> Terms:
     coverage = {g: w.coverage[g] * _saturate(p.groups[g], COVERAGE_SCALE[g]) for g in GROUPS}
     curve = -(w.curve * max(0.0, p.averageEnergyCost - 1.3) + 0.8 * max(0, p.highCostCount - 2))
-    size = -(w.size * max(0, p.size - 30))
+    size = -(w.size * max(0, p.size - w.sizeFrom))
     return Terms(w.quality * p.meanPrior, coverage, curve, size, w.synergy * p.synergy)
 
 

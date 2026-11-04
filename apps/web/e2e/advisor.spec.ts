@@ -76,7 +76,7 @@ test.describe("advisor journey", () => {
     await addOffered(page, "inflame");
     const call = page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ });
     await expect(call).toBeVisible();
-    await expect(page.getByText("Heuristic v1").first()).toBeVisible();
+    await expect(page.getByText("Heuristic v2").first()).toBeVisible();
     await expect(page.getByText("Not calibrated").first()).toBeVisible();
     // every option, including skip, is listed exactly once
     const options = page.getByRole("list", { name: "Ranked options" }).locator("> li");
@@ -203,7 +203,7 @@ test.describe("advisor journey", () => {
     await expect(cards).toContainText("simulated runs");
     // the heuristic's own call is still the headline and still says what it is
     await expect(page.getByRole("heading", { level: 2, name: /^(Take|Skip)/ })).toBeVisible();
-    await expect(page.getByText("Heuristic v1").first()).toBeVisible();
+    await expect(page.getByText("Heuristic v2").first()).toBeVisible();
 
     // what the disclosure says about the numbers is this class's own, read from the data
     const ironclad = requireMeasuredSet("ironclad");

@@ -35,7 +35,7 @@ describe("draft advisor v1: contract", () => {
     const r = evaluateDraft(request());
     expect(r.method).toBe("heuristic");
     expect(r.calibrated).toBe(false);
-    expect(r.policyVersion).toBe("draft-heuristic-v1");
+    expect(r.policyVersion).toBe("draft-heuristic-v2");
     expect(r.gameId).toBe("STS2");
     expect(JSON.stringify(r)).not.toMatch(/winProbability|winRate|probabilityEstimate/);
     expect(r.assumptions.length).toBeGreaterThan(2);
@@ -234,5 +234,5 @@ describe("draft advisor v0: property tests over random valid requests", () => {
       }),
       { numRuns: 120 },
     );
-  });
+  }, 30_000); // 1.5 s alone; the default 5 s is not enough when the machine is busy with a long run
 });

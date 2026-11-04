@@ -376,11 +376,15 @@ describe("What did Neow offer?", () => {
         data={withTest(test(true))}
       />,
     );
-    expect(
-      screen.getByText(
-        /You said you are in Underdocks; every simulated run was played in Overgrowth/,
-      ),
-    ).toBeInTheDocument();
+    const note = screen.getByRole("note");
+    expect(note).toHaveTextContent(
+      /Your Act 1 is Underdocks, and every simulated run behind these relic values was played in Overgrowth/,
+    );
+    expect(note).toHaveTextContent("so the numbers below were not measured for your Act 1");
+    expect(note).toHaveAttribute("data-underdocks-note");
+    expect(note.className).toBe(
+      "rounded-lg border border-rose-deep/60 bg-rose/10 p-3 text-sm text-rose",
+    );
   });
 
   it("says that a simulated run keeps no relic gained after its first fight (gap G14)", () => {

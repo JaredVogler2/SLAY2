@@ -6,9 +6,13 @@ import { ThreshPanel } from "@/components/methods/ThreshPanel";
 import {
   THRESH_TAGS,
   advisorNote,
+  bossSentence,
   downgradeNote,
+  excludedSentence,
+  levelLabelText,
   meaningOf,
   narrowSentence,
+  nextStep,
   resultLine,
   screenSentence,
   testInfo,
@@ -19,7 +23,7 @@ import {
   type ThreshVerdict,
 } from "@/lib/thresh";
 
-import { PEAK_NETS, threshFixture, threshTest } from "./fixtures/thresh-test";
+import { PEAK_NETS, QUIET_NETS, threshFixture, threshTest } from "./fixtures/thresh-test";
 
 afterEach(cleanup);
 
@@ -106,7 +110,8 @@ describe("after the held-out tests", () => {
     expect(t).toBeDefined();
     const { container } = render(<ThreshStudy data={d} />);
     const body = text(container);
-    expect(body).toMatch(/Each test is read at 0\.05 \/ 1/);
+    expect(body).toMatch(/Each test is read at 0\.05 \(95\.00 % confidence\)/);
+    expect(body).not.toMatch(/0\.05 \/ 1/);
     expect(body).toContain(verdictText({ key: "T1", verdict }));
     if (verdict === "passed")
       expect(body).toMatch(/T1 passed: the Act-2 result of ADR-061 is shown again/);
@@ -185,7 +190,9 @@ describe("after the held-out tests", () => {
       threshFixture({ stage: "tested", verdicts: { T1: "passed" } }).tests?.results ?? {};
     const none =
       threshFixture({ stage: "tested", verdicts: { T1: "not-shown" } }).tests?.results ?? {};
-    expect(resultLine(passed)).toMatch(/Read as winning more games: replication: 0\.2 in act 2/);
+    expect(resultLine(passed)).toMatch(
+      /Read as winning more games: the replication of 0\.2 in Act 2 \(\d+\.\d\d % against \d+\.\d\d % of the paired games won, \+0\.\d\d points\)\./,
+    );
     expect(resultLine(none)).toMatch(/None of the tests was shown to differ from its baseline/);
     expect(advisorNote(passed)[0]).toBe("The advisor does not change because of this study alone.");
     expect(advisorNote(passed)[1]).toMatch(/separate change with its own review/);
@@ -194,6 +201,113 @@ describe("after the held-out tests", () => {
     );
     const peak = threshFixture({ stage: "tested", nets: PEAK_NETS, verdicts: { T3: "passed" } });
     expect(advisorNote(peak.tests?.results ?? {})[1]).toMatch(/nothing to offer/); // T3 alone offers nothing: only a test against the baseline does
+  });
+
+  it("names the next step for each way the replication came out, and a pass of the screen's choice beside it", () => {
+    const step = (verdict: ThreshVerdict): string =>
+      nextStep(threshFixture({ stage: "tested", verdicts: { T1: verdict } }).tests?.results ?? {});
+    expect(step("passed")).toMatch(/shown again on seeds nobody had played \(ADR-062\)/);
+    expect(step("passed")).toMatch(
+      /The advisor is unchanged: an opt-in, labelled simulated second opinion for 0\.2 in Ironclad and Defect is a separate change with its own review/,
+    );
+    expect(step("passed")).toMatch(/other thresholds are still untested on held-out seeds/);
+    expect(step("passed")).toMatch(/nothing about the live game has been compared/);
+    for (const v of VERDICTS) expect(step(v)).not.toMatch(/pickier mode/);
+    expect(step("not-shown")).toMatch(/did not show the Act-2 result of ADR-061 again/);
+    expect(step("not-shown")).toMatch(/not shown is not evidence of no effect/);
+    expect(step("not-shown")).toMatch(/Look for what moves the later acts elsewhere/);
+    expect(step("reversed")).toMatch(/contradicted the Act-2 result of ADR-061/);
+    expect(step("reversed")).toMatch(/Nothing already published is withdrawn/);
+    for (const v of VERDICTS) expect(step(v)).not.toMatch(/development screen's choice/);
+    const withChoice = (t2: ThreshVerdict): string =>
+      nextStep(
+        threshFixture({
+          stage: "tested",
+          nets: PEAK_NETS,
+          verdicts: { T1: "not-shown", T2: t2, T3: "not-shown" },
+        }).tests?.results ?? {},
+      );
+    expect(withChoice("passed")).toMatch(
+      /The development screen's choice, the threshold 0\.3, also won more games than the baseline/,
+    );
+    expect(withChoice("not-shown")).not.toMatch(/development screen's choice/);
+    expect(withChoice("reversed")).not.toMatch(/development screen's choice/);
+  });
+
+  it("gives the shares past the first and the second boss and the floors beside every reading, on both pages (ADR-062 item 5)", () => {
+    for (const verdict of VERDICTS) {
+      const d = threshFixture({ stage: "tested", verdicts: { T1: verdict } });
+      const t = d.tests?.results.T1;
+      if (!t) throw new Error("no T1");
+      const said = bossSentence(t);
+      expect(said).toMatch(
+        /^Along the way: 67\.0 % of the paired games got past the first boss with either arm, the same in every pair by construction; 11\.4 % got past the second boss against 10\.5 %/,
+      );
+      expect(said).toMatch(/secondary and uncorrected/);
+      expect(said).toMatch(
+        /the runs reached 0\.40 floors more on average \(95 % interval \+0\.20 to \+0\.60\)/,
+      );
+      const { container } = render(<ThreshStudy data={d} />);
+      expect(text(container)).toContain(said);
+      expect(text(container)).toContain(excludedSentence(t));
+      expect(text(container)).toMatch(/Past the first boss/);
+      expect(text(container)).toMatch(/67\.0 % against 67\.0 %/);
+      cleanup();
+      const panel = render(<ThreshPanel data={d} />);
+      const headers = [...panel.container.querySelectorAll("th")].map((h) => text(h));
+      expect(headers).toContain("Past the first boss");
+      expect(headers).toContain("Past the second boss");
+      expect(text(panel.container)).toMatch(/past the first boss 67\.0 % against 67\.0 %/);
+      cleanup();
+    }
+  });
+
+  it("says when the first boss differs, and the direction of the floors", () => {
+    const t = threshTest("T1", "t020", "s", "passed");
+    const price = {
+      ...t,
+      actOne: { shares: { arm: 0.61, baseline: 0.66 }, armOnly: 100, baselineOnly: 250, p: 1e-9 },
+      floorDifference: { meanAMinusB: -0.66, ci95: [-0.8, -0.53] },
+    };
+    const said = bossSentence(price);
+    expect(said).toMatch(
+      /61\.0 % of the paired games got past the first boss against 66\.0 % \(100 pairs in which only the arm did, 250 in which only the baseline did\)/,
+    );
+    expect(said).toMatch(
+      /the runs reached 0\.66 floors fewer on average \(95 % interval −0\.80 to −0\.53\)/,
+    );
+    const flat = { ...t, floorDifference: { meanAMinusB: 0.002, ci95: [-0.03, 0.03] } };
+    expect(bossSentence(flat)).toMatch(/the same number of floors on average, to two decimals/);
+  });
+
+  it("counts the pairs that lost both games from the two counts of games that did not finish, and says nothing when they do not fit", () => {
+    const t = threshTest("T1", "t020", "s", "passed");
+    const real = {
+      ...t,
+      excluded: 1273,
+      pairedSeeds: 30000,
+      robust: { ...t.robust, notCompleted: { arm: 1079, baseline: 1089 } },
+    };
+    expect(excludedSentence(real)).toMatch(
+      /^1,273 of 30,000 pairs were left out of the first analysis because a game did not finish .* never read as a loss; 895 of them lost both games\.$/,
+    );
+    const odd = {
+      ...t,
+      excluded: 2000,
+      robust: { ...t.robust, notCompleted: { arm: 900, baseline: 950 } },
+    };
+    expect(excludedSentence(odd)).not.toMatch(/lost both/);
+  });
+
+  it("shows one test at the whole level and a family of three at a third, and the reader's tags as thresholds", () => {
+    expect(levelLabelText("0.05 / 1")).toBe("0.05");
+    expect(levelLabelText("0.05 / 3")).toBe("0.05 / 3");
+    const nets = { ...QUIET_NETS, t045: 25 };
+    const d = threshFixture({ stage: "screened", nets });
+    expect(d.screen?.choice).toMatchObject({ advance: false });
+    const said = screenSentence(d.screen ?? (null as never));
+    expect(said).toMatch(/Nothing goes forward beyond 0\.2 \(0\.45 is not ahead of 0\.2/);
+    expect(said).not.toMatch(/\bt0\d\d\b|\btnone\b/);
   });
 
   it("gives the meaning of each combination, T3 and T2 apart, as the registration wrote it first", () => {

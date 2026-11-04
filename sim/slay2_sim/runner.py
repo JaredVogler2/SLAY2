@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import act1 as act1_variant
 from .classes import ClassError, check_start, exact_character, game_start_hp
 from .isolation import deliberation
 from .observation import obs_hash, observe
@@ -43,10 +44,17 @@ class RunConfig:
     # A harness variant for gap G14, never the simulator's own behaviour and off in every other batch: keep the relics a run gains
     # after its first fight (the pinned simulator drops them when the next fight starts; see ``_keep_relics_manager_cls``).
     keep_relics: bool = False
+    # A harness variant for gap G12 (ADR-064), never the simulator's own behaviour: the version of Act 1 the run is in. The simulator builds every
+    # run from Overgrowth, the default and the only Act 1 of every batch written before ADR-064, so it is left out of ``describe()`` and the
+    # fingerprint of those batches stays what it was; "underdocks" gives the first act the game's other version (see ``act1.py``).
+    act1: str = act1_variant.DEFAULT_ACT1
 
     def __post_init__(self) -> None:
         # the simulator silently plays any class id it does not know exactly as Ironclad (classes.py, ADR-049)
         exact_character(self.character)
+        # and any Act 1 it does not know as Overgrowth: a typo must not pass for a different environment
+        if self.act1 not in act1_variant.ACT1_VERSIONS:
+            raise ValueError(f"act1 must be one of {act1_variant.ACT1_VERSIONS}, got {self.act1!r}")
         # STS2 has Ascension 0 to 10 and nothing above (rule ASC-1); a higher number would be played as something else without a word
         if not isinstance(self.ascension, int) or isinstance(self.ascension, bool) or not 0 <= self.ascension <= MAX_ASCENSION:
             raise ValueError(f"ascension must be an integer from 0 to {MAX_ASCENSION}, got {self.ascension!r}")
@@ -56,6 +64,8 @@ class RunConfig:
         for variant in ("ancient_heal", "game_hp", "keep_relics"):
             if not d[variant]:
                 del d[variant]  # the fingerprint of every earlier batch stays what it was
+        if d["act1"] == act1_variant.DEFAULT_ACT1:
+            del d["act1"]
         return d
 
 
@@ -147,6 +157,8 @@ def new_run(cfg: "RunConfig", seed: int):
     previous = rm.RunState
     if cfg.profile == "veteran":
         rm.RunState = _veteran_run_state_cls()
+    if cfg.act1 == act1_variant.UNDERDOCKS:
+        rm.RunState = act1_variant.run_state_cls(rm.RunState)
     manager_cls = _ancient_heal_manager_cls() if cfg.ancient_heal else rm.RunManager
     if cfg.keep_relics:
         manager_cls = _keep_relics_manager_cls(manager_cls)
@@ -158,6 +170,7 @@ def new_run(cfg: "RunConfig", seed: int):
         player = mgr.run_state.player
         player.max_hp = player.current_hp = game_start_hp(cfg.character)
     check_start(mgr, cfg.character, cfg.ascension, cfg.game_hp)  # the class that was asked for is the class that was played
+    act1_variant.check_act1(mgr, cfg.act1)  # and the Act 1 that was asked for is the Act 1 that was played (Underdocks only; the default is untouched)
     return mgr
 
 
@@ -262,6 +275,8 @@ def run_episode(
     try:
         with wall_timer(cfg.wall_seconds):
             mgr = new_run(cfg, seed)
+            if cfg.act1 != act1_variant.DEFAULT_ACT1:  # only for a run outside Overgrowth: the records of every earlier batch stay what they were
+                rec.extra["act1"] = {"version": cfg.act1, "boss": act1_variant.boss_name(mgr)}
             policy.reset(policy_seed_for(policy.name, seed))
             fm = ManagerForwardModel(mgr) if policy.needs_forward_model else None
             steps = turns_in_combat = same = combats_won = 0

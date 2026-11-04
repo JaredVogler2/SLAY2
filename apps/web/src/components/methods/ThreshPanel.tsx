@@ -149,6 +149,12 @@ function TestRow({ t }: { t: ThreshTest }) {
       </td>
       <td className="num py-2 pr-3 text-muted">{formatP(t.p)}</td>
       <td className="num py-2 pr-3 text-muted">
+        {pctShare(t.actOne.shares.arm, 1)}
+        <span className="block text-xs text-dim">
+          against {pctShare(t.actOne.shares.baseline, 1)}
+        </span>
+      </td>
+      <td className="num py-2 pr-3 text-muted">
         {pctShare(t.actTwo.shares.arm, 1)}
         <span className="block text-xs text-dim">
           against {pctShare(t.actTwo.shares.baseline, 1)}
@@ -226,11 +232,11 @@ export function ThreshPanel({ data = threshData() }: { data?: ThreshData | null 
               {tests.results.T2 ? "three, each read at 0.05 / 3" : "one, read at 0.05"})
             </p>
             <ScrollRegion label="The held-out tests of the threshold study">
-              <table className="w-full min-w-[48rem] text-left text-sm">
+              <table className="w-full min-w-[52rem] text-left text-sm">
                 <caption className="sr-only">
                   The tests: the share of the paired games that were won, for the arm against its
-                  baseline, the difference with its interval, the pairs, the exact p, the share that
-                  got past the second boss, and the reading
+                  baseline, the difference with its interval, the pairs, the exact p, the shares
+                  that got past the first and the second boss, and the reading
                 </caption>
                 <thead>
                   <tr className="border-b border-line text-muted">
@@ -248,6 +254,9 @@ export function ThreshPanel({ data = threshData() }: { data?: ThreshData | null 
                     </th>
                     <th scope="col" className="py-2 pr-3 font-medium">
                       Exact p
+                    </th>
+                    <th scope="col" className="py-2 pr-3 font-medium">
+                      Past the first boss
                     </th>
                     <th scope="col" className="py-2 pr-3 font-medium">
                       Past the second boss
@@ -315,7 +324,9 @@ export function ThreshPanel({ data = threshData() }: { data?: ThreshData | null 
                                   <span className="block text-xs text-dim">
                                     {c.wins.arm} / {c.wins.baseline} won · {c.armOnly} /{" "}
                                     {c.baselineOnly} · {formatP(c.p)} ·{" "}
-                                    {CLASS_VERDICT_TEXT[c.verdict]}
+                                    {CLASS_VERDICT_TEXT[c.verdict]} · past the first boss{" "}
+                                    {pctShare(c.actOne.arm, 1)} against{" "}
+                                    {pctShare(c.actOne.baseline, 1)}
                                   </span>
                                 </>
                               ) : (

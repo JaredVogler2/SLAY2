@@ -12,7 +12,9 @@ term; 0 switches it off) and ``needs`` / ``scalers`` / ``engines`` (how much of 
 ``advisor.Model``; left out, what the page keeps, ``advisor.DEFAULT_MODEL``), ``risk`` ("safe", "balanced", "aggressive"; the page's
 default is balanced) and ``margin`` (the index points a card must add over skipping to be taken; 0 is what the page does) and ``relics`` (false: the pilot
 reads the class alone, as every batch before ADR-051 did; true: it also gives the index the relics it holds, which count as
-suppliers of the mechanics they provide, as on the page).
+suppliers of the mechanics they provide, as on the page). ``size`` and ``size_from`` are the price of a slot (ADR-065): from the card after
+the ``size_from``-th on, each card added costs ``size`` index points. Left out they are version 1's (0.6 from the 31st card on, which every
+earlier batch played with); the page's price (1 from the 21st card on) is named by the study that tests it.
 
 Fair: the policy sees the deck and the offered card ids (a human sees both), the act, and the public catalog; no hidden state.
 It does not use the Act-1 version or boss the page can take as an input, so it is the page without that optional context.
@@ -39,26 +41,39 @@ class AdvisorCards:
         risk: str = "balanced",
         margin: float = 0.0,
         relics: bool = False,
+        size: float | None = None,
+        size_from: float | None = None,
         **params,
     ):
         # a part left out is what the website keeps of it (``advisor.DEFAULT_MODEL``); a study names every part it varies
         needs = advisor.DEFAULT_MODEL.needs if needs is None else needs
         scalers = advisor.DEFAULT_MODEL.scalers if scalers is None else scalers
         engines = advisor.DEFAULT_MODEL.engines if engines is None else engines
-        super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, margin=margin, relics=relics, **params)
+        # the price of a slot (ADR-065): left out, the pilot charges what version 1 of the index charged (0.6 from the 31st card on), which every
+        # batch written before ADR-065 played with, so those batches replay as they were; the page's own price (``advisor.SIZE_PRICE`` from
+        # ``advisor.SIZE_FROM``) is asked for by naming it. Named, the two numbers are recorded in the manifest; left out they are not, so the
+        # parameters of every earlier batch stay what they were.
+        named = {k: float(v) for k, v in (("size", size), ("size_from", size_from)) if v is not None}
+        super().__init__(synergy=synergy, needs=needs, scalers=scalers, engines=engines, risk=risk, margin=margin, relics=relics, **named, **params)
         if risk not in advisor.RISK_MULTIPLIERS:
             raise ValueError(f"unknown risk {risk!r}; known: {sorted(advisor.RISK_MULTIPLIERS)}")
         if margin < 0:
             raise ValueError("margin is the index points a card must add over skipping: not negative")
+        if any(v < 0 for v in named.values()):
+            raise ValueError("the price of a slot and the deck size it starts at are not negative")
         self.synergy = float(synergy)
         self.model = advisor.Model(needs=float(needs), scalers=float(scalers), engines=float(engines))
         self.risk = risk
         self.margin = float(margin)
         self.relics = bool(relics)
+        self.size_price = named.get("size", advisor.LEGACY_SIZE_PRICE)
+        self.size_from = named.get("size_from", advisor.LEGACY_SIZE_FROM)
+        self._counts_by_act = bool(named)  # only a pilot that names the price says, per act, how many card rewards it met and skipped (earlier batches' records are unchanged)
 
     def reset(self, rng_seed: int) -> None:
         super().reset(rng_seed)
         self.offers = self.taken = self.skipped = self.unscored = 0
+        self.by_act = {0: [0, 0], 1: [0, 0], 2: [0, 0]}  # act index -> [card rewards met, skipped]
 
     def _card_reward(self, obs, actions) -> int:
         picks = _by(actions, "pick_card")
@@ -75,20 +90,25 @@ class AdvisorCards:
             else:
                 by_card.setdefault(card, a["idx"])
         act = min(max(int(run["act"]), 0), 2)
-        weights = advisor.base_weights(act, self.risk, self.synergy)
+        weights = advisor.base_weights(act, self.risk, self.synergy, self.size_price, self.size_from)
         character = str(run.get("character") or "").lower() or None
         setting = advisor.Setting(character, tuple(str(r) for r in run.get("relics") or ())) if self.relics else character
         best, gain = advisor.rank_options(deck, list(by_card), act, self.risk, weights, self.model, setting)[0]
         self.offers += 1
+        self.by_act[act][0] += 1
         skip = _first(actions, "skip")
         if best == advisor.SKIP or gain < self.margin or sum(deck.values()) >= self.tune["max_deck"]:
             self.skipped += 1
+            self.by_act[act][1] += 1
             return skip if skip is not None else super()._card_reward(obs, actions)
         self.taken += 1
         return by_card[best]
 
     def episode_stats(self) -> dict:
-        return {**super().episode_stats(), "advisor": {"offers": self.offers, "taken": self.taken, "skipped": self.skipped, "unscored": self.unscored}}
+        stats = {"offers": self.offers, "taken": self.taken, "skipped": self.skipped, "unscored": self.unscored}
+        if self._counts_by_act:
+            stats["by_act"] = {str(a): {"offers": o, "skipped": k} for a, (o, k) in self.by_act.items()}
+        return {**super().episode_stats(), "advisor": stats}
 
 
 @register

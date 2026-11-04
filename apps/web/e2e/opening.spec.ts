@@ -76,7 +76,7 @@ test.describe("where your run starts", () => {
         .locator("li", { has: page.locator("strong", { hasText: "Waterfall Giant" }) })
         .getByText("on your map"),
     ).toHaveCount(0);
-    await expect(page.getByText(/never played Underdocks/).first()).toBeVisible();
+    await expect(page.getByText(/were all played in Overgrowth/).first()).toBeVisible();
 
     await page.reload();
     await expect(act(page, "Underdocks")).toBeVisible();
@@ -203,7 +203,9 @@ test.describe("where your run starts", () => {
     await act(page, "Overgrowth").click();
     await expect(options).toContainText("Act 1 context (Overgrowth)");
     await expect(page.getByText("You said you are in Underdocks.")).toHaveCount(0);
-    await expect(page.getByText(/Every simulated run was played in Overgrowth/)).toBeVisible();
+    await expect(
+      page.getByText(/Every simulated run behind these values was played in Overgrowth/),
+    ).toBeVisible();
     // and a simulated run keeps only the relics it has when its first fight starts (gap G14): said beside the simulated values
     await expect(
       page.getByText(/keeps only the relics it has when its first fight starts \(gap G14\)/),
@@ -373,6 +375,29 @@ test.describe("what did Neow offer?", () => {
       await page.getByLabel(label).selectOption(id);
     }
   }
+
+  test("for a run in Underdocks, the panel says in the one boxed note that the relic values were measured in Overgrowth, as the other panels do", async ({
+    page,
+  }) => {
+    await startIronclad(page);
+    await act(page, "Underdocks").click();
+    await openOffer(page);
+    const note = page
+      .locator("[data-underdocks-note]")
+      .filter({ hasText: "Your Act 1 is Underdocks" });
+    await expect(note).toBeVisible();
+    await expect(note).toHaveAttribute("role", "note");
+    await expect(note).toContainText("so the numbers below were not measured for your Act 1");
+    await expect(note).toContainText("not about your fights");
+    // the same box the card-pick panel and the opening panel use
+    await expect(page.locator("[data-underdocks-note]").first()).toHaveClass(
+      /rounded-lg border border-rose-deep\/60 bg-rose\/10 p-3 text-sm text-rose/,
+    );
+    await expectNoSeriousA11yViolations(page, "Neow offer, Underdocks note");
+    // Overgrowth: no such note
+    await act(page, "Overgrowth").click();
+    await expect(note).toHaveCount(0);
+  });
 
   test("sets the three relics beside what simulated runs say, says what the one test found, and hands the choice to the recorder", async ({
     page,

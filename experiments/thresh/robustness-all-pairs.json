@@ -1,0 +1,65 @@
+{
+  "contentSha256": {
+    "thresh-val-s-defect-a0-veteran-keeprelics-val3-n15000": "852850e79c84e42b60705916ee69463f9c68c23d3ea5bad198813703f425fc33",
+    "thresh-val-s-ironclad-a0-veteran-keeprelics-val3-n15000": "bfb51bd49e47bddc51a7935be71ad51030598a41711a186649b2ee463f8e9848",
+    "thresh-val-t020-defect-a0-veteran-keeprelics-val3-n15000": "c10fd36cda938f4997fc3cd38ab5b2830d9ffb60b6f7f4a5680d8ceb05044b18",
+    "thresh-val-t020-ironclad-a0-veteran-keeprelics-val3-n15000": "1847805a2a74206f20fcccc1caabeccf91bcc01c511ef603b6f505cb6f0e3edb"
+  },
+  "kind": "thresh-robustness",
+  "label": "a condition of the reading rule (ADR-062 item 4): every pair of seeds both batches hold, a game that did not end in a win scored as not a win",
+  "level": 0.05,
+  "maxExcludedFraction": 0.1,
+  "schema": 1,
+  "tests": {
+    "T1": {
+      "arm": "t020",
+      "baseline": "s",
+      "perClass": {
+        "Defect": {
+          "arm": 579,
+          "armOnly": 176,
+          "baseline": 534,
+          "baselineOnly": 131,
+          "notCompleted": {
+            "arm": 469,
+            "baseline": 467
+          },
+          "p": 0.011908132438174941,
+          "pairs": 15000,
+          "primaryPairs": 14479,
+          "shared": 15000
+        },
+        "Ironclad": {
+          "arm": 752,
+          "armOnly": 405,
+          "baseline": 643,
+          "baselineOnly": 296,
+          "notCompleted": {
+            "arm": 610,
+            "baseline": 622
+          },
+          "p": 4.3745226062386166e-05,
+          "pairs": 15000,
+          "primaryPairs": 14248,
+          "shared": 15000
+        }
+      },
+      "pooled": {
+        "arm": 1331,
+        "armOnly": 581,
+        "baseline": 1177,
+        "baselineOnly": 427,
+        "difference": 0.0051333333333333335,
+        "notCompleted": {
+          "arm": 1079,
+          "baseline": 1089
+        },
+        "p": 1.3792818311902033e-06,
+        "pairs": 30000,
+        "primaryExcludedFraction": 0.04243333333333332,
+        "primaryPairs": 28727,
+        "shared": 30000
+      }
+    }
+  }
+}

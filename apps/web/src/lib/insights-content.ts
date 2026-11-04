@@ -8,7 +8,7 @@ import {
 } from "@/lib/acts";
 import { allSets } from "@/lib/cardvalues";
 import { count, INSIGHTS, points, share } from "@/lib/insights";
-import { resultLine, threshData } from "@/lib/thresh";
+import { armName, nextStep, resultLine, threshData } from "@/lib/thresh";
 
 /**
  * The words of the insights page that are not read from a data file: what each Ascension changes (with the rule that says so), what is
@@ -129,20 +129,32 @@ const PILOT_OF_ACTS: Record<ActsTestKey, string> = {
   A3: "the one that is pickier in Act 3 only",
 };
 
-/** What the threshold study (ADR-062) adds, at whichever stage the repository has reached; null before it is registered. */
-function threshStudy(): { readonly why: string } | null {
+/**
+ * What the threshold study (ADR-062) adds, at whichever stage the repository has reached; null before it is registered. `first` is set only once the held-out tests exist: before
+ * that the acts study's next step (which names this study as the next one) is still the right one.
+ */
+function threshStudy(): { readonly why: string; readonly first: string | null } | null {
   const t = threshData();
   if (!t) return null;
-  if (t.tests)
+  if (t.tests) {
+    const choice = t.screen?.choice;
+    const screened =
+      choice?.advance && choice.arm
+        ? ` Its development screen sent ${armName(choice.arm)} forward as well.`
+        : " Its development screen advanced no other threshold, so none was tested on held-out seeds.";
     return {
-      why: ` A third registered study (ADR-062) then repeated the Act-2 test on seeds nobody had played and screened other thresholds: ${resultLine(t.tests.results)} These are statements about simulated rules pilots that win very few games.`,
+      why: ` A third registered study (ADR-062) then repeated the Act-2 test on seeds nobody had played and screened other thresholds. ${resultLine(t.tests.results)}${screened} These are statements about simulated rules pilots that win very few games.`,
+      first: nextStep(t.tests.results),
     };
+  }
   if (t.screen)
     return {
       why: " A third registered study (ADR-062) repeats the Act-2 test on seeds nobody has played and screens other thresholds; its development screen has been read and its held-out games are not finished, so there is no result yet.",
+      first: null,
     };
   return {
     why: " A third registered study (ADR-062) repeats the Act-2 test on seeds nobody has played and screens other thresholds; it was registered before any of its games and they are not finished, so there is no result yet.",
+    first: null,
   };
 }
 
@@ -207,13 +219,16 @@ function laterStudy(): { readonly why: string; readonly first: string } {
   const why = ` A registered study (ADR-060) then asked it of the second boss on held-out seeds: ${played.map(studyLine).join("; ")}${skipped.length > 0 ? `; ${skipped.join(", and ")}` : ""}. Every one of these is a statement about simulated rules pilots, and none is about winning.`;
   const anyPassed = played.some((t) => t.verdict === "passed");
   const acts = actsStudy();
+  const thresh = threshStudy();
   return {
-    why: why + (acts?.why ?? "") + (threshStudy()?.why ?? ""),
-    first: acts
-      ? acts.first
-      : anyPassed
-        ? "Find which acts' card picks carry the effect and whether it reaches winning: a new registration with wins as its endpoint (the study's win counts are descriptive, not a registered endpoint)."
-        : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions).",
+    why: why + (acts?.why ?? "") + (thresh?.why ?? ""),
+    first:
+      thresh?.first ??
+      (acts
+        ? acts.first
+        : anyPassed
+          ? "Find which acts' card picks carry the effect and whether it reaches winning: a new registration with wins as its endpoint (the study's win counts are descriptive, not a registered endpoint)."
+          : "Look for what moves the later acts elsewhere than in the card picks: the elite thresholds tuned again with the relics kept, or the relics themselves (the next two questions)."),
   };
 }
 

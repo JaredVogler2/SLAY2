@@ -3,10 +3,12 @@ import Link from "next/link";
 import { PART_WEIGHT, type DeckSynergy, type DraftResponse } from "@slay2/decision";
 
 import { AscensionNote } from "@/components/advisor/AscensionNote";
+import { UnderdocksNote } from "@/components/advisor/UnderdocksNote";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
 import type { AscensionData } from "@/lib/ascension";
+import type { UnderdocksData } from "@/lib/underdocks";
 import { formatP, pct } from "@/lib/stat-format";
 import {
   SYNERGY_EVIDENCE,
@@ -78,7 +80,10 @@ function TestResult({ test }: { test: SynergyTest }) {
           as showing that it does not.
         </>
       )}{" "}
-      The result and its limits are in{" "}
+      The pilots of these tests played with the index as it was before it charged for a slot (they
+      paid 0.60 per card from the 31st on); the price this page now charges, one point per card from
+      the 21st on (ADR-065), is a judgement that no test of the synergy term included. The result
+      and its limits are in{" "}
       <Link
         className="text-teal underline decoration-dotted underline-offset-4"
         href="/methods#synergy"
@@ -227,6 +232,8 @@ export function SynergyPanel({
   evidence = SYNERGY_EVIDENCE,
   ascension,
   ascensionData,
+  act1,
+  underdocksData,
 }: {
   synergy: DeckSynergy;
   /** The relics the ranking counted as suppliers (what the answer says it read from the relics the player listed). */
@@ -240,6 +247,12 @@ export function SynergyPanel({
   };
   /** what the Ascension 9 study found (the exporter's file by default; tests pass their own) */
   ascensionData?: AscensionData;
+  /** the run's Act 1 and its class: a run in Underdocks is told what the Underdocks test of the synergy term found (ADR-064) */
+  act1?: {
+    readonly version: string | null | undefined;
+    readonly character?: string | null | undefined;
+  };
+  underdocksData?: UnderdocksData;
 }) {
   const label = labelOf(evidence);
   const top = Math.max(...synergy.engines.map((e) => e.value), 1);
@@ -260,6 +273,17 @@ export function SynergyPanel({
           {...(ascensionData ? { data: ascensionData } : {})}
           className="mb-4"
         />
+      ) : null}
+      {act1?.version === "underdocks" ? (
+        <UnderdocksNote
+          className="mb-4"
+          finding="synergy"
+          character={act1.character}
+          {...(underdocksData ? { data: underdocksData } : {})}
+        >
+          Your Act 1 is Underdocks. The strengths of this index were set and tested in simulated
+          runs played with Act 1 in Overgrowth.
+        </UnderdocksNote>
       ) : null}
       {relics && (relics.supplying.length > 0 || relics.taking.length > 0) ? (
         <p className="mb-4 text-xs text-muted">

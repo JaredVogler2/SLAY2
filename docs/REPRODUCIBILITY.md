@@ -177,6 +177,7 @@ python3 -m slay2_sim.threshstudy verify --batches experiments/batches --selectio
 bash scripts/studies/thresh/run-val.sh 4        # S, 0.2 and the screen's choice on the 15,000 val3 seeds of each class, from the commit that carries part 2
 bash scripts/studies/thresh/audit.sh val
 bash scripts/studies/thresh/pool.sh             # T1 (and T2, T3 if the screen advanced a threshold) once, the design checks, the all-pairs analysis, the independent recomputation
+python3 scripts/thresh-result-numbers.py       # the figures of the result section of the record, printed from the exporter's file (node scripts/export-site-data.mjs first; --arms --stage val prints the per-arm counts and audit totals of the batches)
 ```
 
 The seed file `experiments/seeds/ironclad-a0-v4.json` is made by `python3 -m slay2_sim seeds --name ironclad-a0-v4 --master 20261025 --sizes train=5000,val=2000,test=4000,dev=10000,val2=3000,dev2=3000,val3=15000` (the first five partitions are those of v3, byte for byte; `dev2` and `val3` are appended after `val2` in the same stream). What a third party can check without the simulator is as for the acts study: the committed batches' manifests and compressed episodes, the hashes quoted in ADR-062, and that the registration commit is an ancestor of the commit that holds the result.
@@ -501,4 +502,8 @@ The table is written by `python3 scripts/docs-tables.py --write` from the manife
 | `thresh-dev-t060-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2880 | 160 | `d41163215043…` | clean | wins,sample | yes |
 | `thresh-dev-tnone-defect-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Defect | dev2 · 3000 | 2913 | 84 | `47527b4185fe…` | clean | wins,sample | yes |
 | `thresh-dev-tnone-ironclad-a0-veteran-keeprelics-dev2-n3000` | rules_v2_late | Ironclad | dev2 · 3000 | 2898 | 155 | `44a4e5e04005…` | clean | wins,sample | yes |
+| `thresh-val-s-defect-a0-veteran-keeprelics-val3-n15000` | rules_v2 | Defect | val3 · 15000 | 14533 | 534 | `852850e79c84…` | clean | wins,sample | yes |
+| `thresh-val-s-ironclad-a0-veteran-keeprelics-val3-n15000` | rules_v2 | Ironclad | val3 · 15000 | 14378 | 643 | `bfb51bd49e47…` | clean | wins,sample | yes |
+| `thresh-val-t020-defect-a0-veteran-keeprelics-val3-n15000` | rules_v2_late | Defect | val3 · 15000 | 14531 | 579 | `c10fd36cda93…` | clean | wins,sample | yes |
+| `thresh-val-t020-ironclad-a0-veteran-keeprelics-val3-n15000` | rules_v2_late | Ironclad | val3 · 15000 | 14390 | 752 | `1847805a2a74…` | clean | wins,sample | yes |
 <!-- table:batches:end -->

@@ -18,10 +18,18 @@ import {
 import { requireSupportedBuild } from "@slay2/game-schema";
 
 import { mulberry32, stateDigest } from "./digest";
-import { must } from "./util";
+import { must, ordinal } from "./util";
 import { GROUPS, profileDeck, type DeckEntry, type DeckProfile, type Group } from "./profile";
 import { actContextTilt, MAX_TILT, tiltWeights, type ContextTilt } from "./context";
-import { baseWeights, scoreTerms, total, type Terms, type Weights } from "./quality";
+import {
+  LEGACY_SIZE_FROM,
+  LEGACY_SIZE_PRICE,
+  baseWeights,
+  scoreTerms,
+  total,
+  type Terms,
+  type Weights,
+} from "./quality";
 import {
   FUTURE_SUPPORT,
   MAX_DEPENDENCE,
@@ -253,6 +261,7 @@ function describeDelta(
   ex: SynergyExplanation,
   synergyWeight: number,
   relicsHeld: boolean,
+  sizeFrom: number,
 ): Reason[] {
   const reasons: Reason[] = [];
   const dq = after.quality - before.quality;
@@ -296,7 +305,7 @@ function describeDelta(
     reasons.push({
       kind: "size",
       delta: ds,
-      text: `Deck grows to ${String(ap.size)} cards; past about 30 each extra card slows the draw cycle.`,
+      text: `Deck grows to ${String(ap.size)} cards. Past ${String(sizeFrom)}, every extra card makes each of the others show up less often, so it has to earn ${fmt(-ds)} index points before it beats skipping.`,
     });
   }
   reasons.push(...synergyReasons(card, ex, synergyWeight));
@@ -492,11 +501,12 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const options: RankedOption[] = ranked.map((r, i) => {
     let reasons: Reason[];
     if (r.action.kind === "skip") {
+      const priced = base.size >= neutral.sizeFrom;
       reasons = [
         {
           kind: "quality",
           delta: 0,
-          text: `Keeps the deck at ${String(base.size)} cards with average quality ${base.meanPrior.toFixed(1)} and average energy cost ${base.averageEnergyCost.toFixed(2)}.`,
+          text: `Keeps the deck at ${String(base.size)} cards with average quality ${base.meanPrior.toFixed(1)} and average energy cost ${base.averageEnergyCost.toFixed(2)}.${priced ? ` It also spares the price of a slot: past ${String(neutral.sizeFrom)} cards each card added costs ${fmt(neutral.size)} index points, because it makes every other card show up less often.` : ""}`,
         },
       ];
     } else {
@@ -513,6 +523,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
         explained,
         neutral.synergy,
         relics.length > 0,
+        neutral.sizeFrom,
       );
       if (tilt) {
         const shift = r.delta - (neutralDelta.get(actionKey(r.action)) ?? r.delta);
@@ -545,6 +556,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
       ) as Record<Group, number>,
       curve: weights.curve * jitter(),
       size: weights.size * jitter(),
+      sizeFrom: weights.sizeFrom,
       synergy: weights.synergy * jitter(),
     };
     const winner = actionKey(
@@ -566,9 +578,19 @@ export function evaluateDraft(input: unknown): DraftResponse {
   const margin = second ? first.indexDelta - second.indexDelta : first.indexDelta;
   const tradeoffs: string[] = [];
   if (first.action.kind === "skip") {
-    tradeoffs.push(
-      "Every offered card lowers the heuristic deck index; skipping keeps the deck thin.",
-    );
+    // the best offered card, and what the price of a slot took from it: skipping wins either because the card is not good enough for the
+    // deck at all, or because it would have been good enough but for the slot it takes
+    const bestPick = options.find((o) => o.action.kind === "pick");
+    const slot = bestPick?.reasons.find((r) => r.kind === "size")?.delta ?? 0;
+    if (bestPick && slot < 0 && bestPick.indexDelta - slot > 0) {
+      tradeoffs.push(
+        `No offered card earns its slot: ${bestPick.label} would add ${fmt(bestPick.indexDelta - slot)} index points, but a ${ordinal(base.size + 1)} card costs ${fmt(-slot)}, which leaves ${fmt(bestPick.indexDelta)}. Skipping keeps the deck thin, so each card you need shows up more often.`,
+      );
+    } else {
+      tradeoffs.push(
+        "Every offered card lowers the heuristic deck index; skipping keeps the deck thin.",
+      );
+    }
   } else if (second) {
     const sec = second.action.kind === "skip" ? "skipping" : second.label;
     tradeoffs.push(`${first.label} edges ${sec} by ${fmt(margin)} index points.`);
@@ -598,7 +620,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
     schema: 1,
     gameId: "STS2",
     build: build.id,
-    policyVersion: "draft-heuristic-v1",
+    policyVersion: "draft-heuristic-v2",
     method: "heuristic",
     calibrated: false,
     legalActions: legal,
@@ -620,6 +642,7 @@ export function evaluateDraft(input: unknown): DraftResponse {
           ]
         : []),
       "Coverage needs (damage, block, area damage, scaling, draw, energy, debuffs) use hand-set, act-dependent weights.",
+      `Deck size: every card makes each of the others show up less often, so past ${String(neutral.sizeFrom)} cards each card added costs ${fmt(neutral.size)} index points (the price of a slot) and has to earn them through its quality, the roles it covers or the cards it works with, or skipping ranks first. That price is a judgement (ADR-065). In simulated runs, pilots that follow measured card values won more games when they took fewer cards (ADR-061, ADR-062); the runs cannot tell fewer cards from avoiding weak ones, nor say how many fewer. Earlier versions of the index charged ${fmt(LEGACY_SIZE_PRICE)} from the ${ordinal(LEGACY_SIZE_FROM + 1)} card on, and a pilot that played card rewards by that index skipped under 1 % of them (0.7 %).`,
       ...(tilt
         ? [
             `Act 1 context (${tilt.variantName}${tilt.boss ? `, boss ${tilt.boss.name}` : ", boss not known"}): coverage weights are tilted, by at most ${String(Math.round(MAX_TILT * 100))} % and usually a few, by how what its elites and bosses ask of a deck differs from the average Act 1 (both versions together). That is SLAY2's judgement of the fights, not a measurement (ADR-048).`,

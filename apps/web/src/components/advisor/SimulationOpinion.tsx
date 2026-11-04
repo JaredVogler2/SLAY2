@@ -4,12 +4,14 @@ import { getCard } from "@slay2/game-data";
 import type { DraftAction } from "@slay2/decision";
 
 import { AscensionNote } from "@/components/advisor/AscensionNote";
+import { UnderdocksNote } from "@/components/advisor/UnderdocksNote";
 import { MeasuredValue } from "@/components/codex/MeasuredValue";
 import { Badge } from "@/components/ui/Badge";
 import { Disclosure } from "@/components/ui/Disclosure";
 import { Panel } from "@/components/ui/Panel";
 import { StartHpNote } from "@/components/ui/StartHpNote";
 import type { AscensionData } from "@/lib/ascension";
+import type { UnderdocksData } from "@/lib/underdocks";
 import { CLASS_STYLE } from "@/lib/card-style";
 import {
   adoptedByPooledTest,
@@ -37,12 +39,15 @@ export function SimulationOpinion({
   offered,
   heuristic,
   ascensionData,
+  underdocksData,
 }: {
   run: RunState;
   offered: readonly string[];
   heuristic: DraftAction;
   /** what the Ascension 9 study found (the exporter's file by default; tests pass their own) */
   ascensionData?: AscensionData;
+  /** what the Underdocks study found (the exporter's file by default; tests pass their own) */
+  underdocksData?: UnderdocksData;
 }) {
   const deckSize = run.deck.reduce((n, d) => n + d.count, 0);
   const pick = simulationPick({ character: run.character ?? "", offered, deckSize });
@@ -81,17 +86,23 @@ export function SimulationOpinion({
     >
       <p className="text-parchment">{headline}</p>
       <p className="mt-1 text-sm text-muted">{pick.reason}</p>
-      <p
-        className={
-          run.act1 === "underdocks"
-            ? "mt-3 rounded-lg border border-rose-deep/60 bg-rose/10 p-3 text-sm text-rose"
-            : "mt-3 text-xs text-dim"
-        }
-      >
-        {run.act1 === "underdocks"
-          ? "You said you are in Underdocks. These runs were all played in Overgrowth (the simulator never plays Underdocks), so the numbers below were not measured for your Act 1: read them as a prior about the cards, not about your fights."
-          : "Every simulated run was played in Overgrowth, the Act 1 every profile starts with. The simulator never plays Underdocks."}
-      </p>
+      {run.act1 === "underdocks" ? (
+        <UnderdocksNote
+          className="mt-3"
+          finding="values"
+          character={run.character}
+          {...(underdocksData ? { data: underdocksData } : {})}
+        >
+          You said you are in Underdocks. These runs were all played in Overgrowth, so the numbers
+          below were not measured for your Act 1: read them as a prior about the cards, not about
+          your fights.
+        </UnderdocksNote>
+      ) : (
+        <p className="mt-3 text-xs text-dim">
+          Every simulated run behind these values was played in Overgrowth, the Act 1 every profile
+          starts with; none was fitted in Underdocks.
+        </p>
+      )}
       <AscensionNote
         finding="values"
         level={run.ascension}

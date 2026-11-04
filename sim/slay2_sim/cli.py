@@ -117,6 +117,7 @@ def _default_batch_id(args, n: int) -> str:
         ("-ancientheal" if args.ancient_heal else "")
         + ("-gamehp" if getattr(args, "game_hp", False) else "")
         + ("-keeprelics" if getattr(args, "keep_relics", False) else "")
+        + ("-underdocks" if getattr(args, "act1", "overgrowth") == "underdocks" else "")
     )
     where = f"{args.partition}-o{args.offset}" if getattr(args, "offset", 0) else args.partition
     return f"{args.policy}-{args.character.lower()}-a{args.ascension}-{args.profile}{variant}-{where}-n{n}"
@@ -126,7 +127,7 @@ def _batch_common(args, *, default_trace: int) -> int:
     sim = external.locate()
     external.activate(sim.root)
     seeds, seed_info = _resolve_seeds(args)
-    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal, game_hp=args.game_hp, keep_relics=args.keep_relics)
+    cfg = RunConfig(character=args.character, ascension=args.ascension, profile=args.profile, max_steps=args.max_steps, wall_seconds=args.wall_seconds, ancient_heal=args.ancient_heal, game_hp=args.game_hp, keep_relics=args.keep_relics, act1=args.act1)
     params = json.loads(args.policy_params) if args.policy_params else {}
     batch_id = args.batch_id or _default_batch_id(args, len(seeds))
     out_dir = Path(args.out) if args.out else EXPERIMENTS / "batches" / batch_id
@@ -385,6 +386,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="harness variant (gap G13): start the class with the maximum HP of the game's source (Necrobinder 66, the simulator 75); recorded in the manifest")
         sp.add_argument("--keep-relics", action="store_true",
                         help="harness variant (gap G14): keep the relics a run gains after its first fight (the simulator drops them when the next fight starts); recorded in the manifest")
+        sp.add_argument("--act1", default="overgrowth", choices=["overgrowth", "underdocks"],
+                        help="harness variant (gap G12, ADR-064): the version of Act 1 the run is in; the simulator builds every run from Overgrowth (the default); recorded in the manifest when not the default")
         sp.add_argument("--seeds", default=str(DEFAULT_SEEDS))
         sp.add_argument("--partition", default="train", choices=list(PARTITIONS))
         sp.add_argument("--allow-sealed", action="store_true", help="required for the sealed test partition (recorded)")
