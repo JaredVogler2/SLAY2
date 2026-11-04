@@ -436,6 +436,7 @@ describe("the three panels", () => {
         run={run}
         offered={offered}
         heuristic={{ kind: "skip" }}
+        source="regular"
         ascensionData={REGISTERED}
       />,
     );
@@ -447,6 +448,7 @@ describe("the three panels", () => {
         run={newRun("ironclad")}
         offered={offered}
         heuristic={{ kind: "skip" }}
+        source="regular"
         ascensionData={REGISTERED}
       />,
     );
@@ -458,7 +460,12 @@ describe("the three panels", () => {
     const offered = (set?.cards ?? []).slice(0, 3).map((c) => c.id);
     const run = withAscension({ ...newRun("ironclad"), ascensionConfirmed: true }, 7);
     const values = render(
-      <SimulationOpinion run={run} offered={offered} heuristic={{ kind: "skip" }} />,
+      <SimulationOpinion
+        run={run}
+        offered={offered}
+        heuristic={{ kind: "skip" }}
+        source="regular"
+      />,
     );
     const note = values.container.querySelector("[data-ascension-note]");
     expect(note).not.toBeNull();
@@ -495,6 +502,7 @@ describe("the three panels", () => {
         run={run}
         offered={offered}
         heuristic={{ kind: "skip" }}
+        source="regular"
         ascensionData={data}
       />,
     );
@@ -546,6 +554,7 @@ describe("the three panels", () => {
         run={run}
         offered={offered}
         heuristic={{ kind: "skip" }}
+        source="regular"
         ascensionData={data}
       />,
     );

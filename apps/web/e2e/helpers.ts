@@ -81,6 +81,69 @@ export function bestMeasuredCardNames(character: string, n: number): string[] {
   return names.slice(0, n);
 }
 
+/**
+ * Two reward-eligible cards of a class that the pickier pilot of Act 2 (the bar 0.2, ADR-063) tells apart: one measured between 0.02 and 0.2, which the
+ * ordinary pilot takes and the pickier one skips, and one measured above 0.25, which both take. Display names, read from the shipped values and the catalog.
+ */
+export function pickierCards(character: string): { between: string; above: string } {
+  const catalogFile = join(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "packages",
+    "game-data",
+    "data",
+    "cards.sts2-main-0.107.1.json",
+  );
+  const catalog = (
+    JSON.parse(readFileSync(catalogFile, "utf8")) as {
+      cards: { id: string; name: string; class: string; rewardEligible: boolean }[];
+    }
+  ).cards;
+  const byId = new Map(catalog.map((c) => [c.id, c]));
+  const valuesFile = join(__dirname, "..", "src", "content", "cardvalues.generated.json");
+  const data = JSON.parse(readFileSync(valuesFile, "utf8")) as {
+    sets: { character: string; cards: { id: string; beta: number }[] }[];
+  };
+  const set = data.sets.find((x) => x.character === character);
+  if (!set) throw new Error(`expected shipped card values for ${character}`);
+  const eligible = set.cards.filter((c) => {
+    const entry = byId.get(c.id);
+    return entry?.class === character && entry.rewardEligible;
+  });
+  const nameOf = (id: string | undefined): string => {
+    const entry = id === undefined ? undefined : byId.get(id);
+    if (!entry) throw new Error(`no card found for ${character}`);
+    return entry.name;
+  };
+  return {
+    between: nameOf(eligible.find((c) => c.beta > 0.02 && c.beta < 0.2)?.id),
+    above: nameOf(eligible.find((c) => c.beta > 0.25)?.id),
+  };
+}
+
+/** The registered replication of the Act-2 rule (ADR-062, T1) as the exporter wrote it, or null before it exists. */
+export interface ThreshReplication {
+  readonly arm: string;
+  readonly verdict: string;
+  readonly shares: { readonly arm: number; readonly baseline: number };
+  readonly difference: number;
+  readonly perClass: readonly {
+    readonly character: string;
+    readonly verdict: string;
+    readonly shares: { readonly arm: number; readonly baseline: number };
+  }[];
+}
+
+export function threshReplication(): ThreshReplication | null {
+  const file = join(__dirname, "..", "src", "content", "thresh.generated.json");
+  const data = JSON.parse(readFileSync(file, "utf8")) as {
+    tests?: { results?: { T1?: ThreshReplication } } | null;
+  };
+  return data.tests?.results?.T1 ?? null;
+}
+
 /** One class's shipped set; the test fails loudly when the class is missing instead of passing on `undefined`. */
 export function requireMeasuredSet(character: string): MeasuredSetInfo {
   const set = measuredSets().find((s) => s.character === character);

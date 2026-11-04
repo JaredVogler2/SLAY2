@@ -38,7 +38,9 @@ function render3(relicsKept: boolean, pooled = false) {
   const run = newRun("ironclad");
   const set = cardvalues.setFor("ironclad");
   const offered = (set?.cards ?? []).slice(0, 3).map((c) => c.id);
-  return render(<SimulationOpinion run={run} offered={offered} heuristic={{ kind: "skip" }} />);
+  return render(
+    <SimulationOpinion run={run} offered={offered} heuristic={{ kind: "skip" }} source="regular" />,
+  );
 }
 
 describe("the advisor's simulated opinion says what the runs behind the values kept", () => {

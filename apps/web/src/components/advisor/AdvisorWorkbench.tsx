@@ -406,6 +406,7 @@ export function AdvisorWorkbench() {
                 run={run}
                 offered={offered}
                 heuristic={outcome.result.recommendation.action}
+                source={source}
               />
             </>
           ) : outcome ? (

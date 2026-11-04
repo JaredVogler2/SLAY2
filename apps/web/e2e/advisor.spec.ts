@@ -8,7 +8,9 @@ import {
   expectNoHorizontalOverflow,
   expectNoSeriousA11yViolations,
   measuredSets,
+  pickierCards,
   requireMeasuredSet,
+  threshReplication,
 } from "./helpers";
 
 async function addOffered(page: Page, name: string): Promise<void> {
@@ -217,6 +219,87 @@ test.describe("advisor journey", () => {
       `+${(((test?.passRate ?? 0) - (test?.passRateBase ?? 0)) * 100).toFixed(1)} percentage points past the Act-1 boss on ${(test?.pairedGames ?? 0).toLocaleString("en-US")} paired held-out games`,
     );
   });
+
+  for (const label of ["Ironclad", "Defect"]) {
+    test(`Act 2, ${label}: an optional pickier simulated pilot is closed by default, labelled, carries the registered test's figures for both classes, and is absent in Acts 1 and 3 and after an event`, async ({
+      page,
+    }) => {
+      const t1 = threshReplication();
+      const character = label.toLowerCase();
+      const { between, above } = pickierCards(character);
+      const choose = (name: RegExp | string): Promise<void> =>
+        page.locator("label").filter({ hasText: name }).first().click();
+      await startClass(page, label);
+      await addOffered(page, between);
+      const panel = page.locator("#simulation-opinion");
+      await expect(panel).toBeVisible();
+      const box = panel.getByTestId("pickier-opinion");
+      await choose(/^Act 2$/);
+      if (t1?.verdict !== "passed" || t1.arm !== "t020") {
+        // the registered test did not pass (or is missing): nothing is offered, and the panel says nothing about it
+        await expect(box).toHaveCount(0);
+        return;
+      }
+      const ownClass = t1.perClass.find((c) => c.character === character);
+      expect(ownClass, `the test played ${label}`).toBeDefined();
+      if (ownClass?.verdict === "baseline") {
+        await expect(box).toHaveCount(0);
+        return;
+      }
+      const pct = (x: number): string => `${(x * 100).toFixed(2)} %`;
+      await expect(box).toBeVisible();
+      const details = box.locator("details");
+      await expect(details).not.toHaveAttribute("open", "");
+      await box.getByText(/also show what a pickier simulated pilot would do/).click();
+      await expect(details).toHaveAttribute("open", "");
+      await expect(box).toContainText("Simulated · unverified");
+      await expect(box).toContainText("Registered test passed (pooled) · ADR-062");
+      await expect(box).toContainText("Not the advisor’s index");
+      // a card measured between zero and the bar: the ordinary pilot takes it, the pickier one skips
+      await expect(box).toContainText(
+        /takes a card only if it is measured above 0\.2 would skip this reward\./,
+      );
+      await expect(box).toContainText("This is not a recommendation to skip, or to take");
+      await expect(box).toContainText(/The ordinary simulated pilot above would take /);
+      // the pooled figures and each class's own row are the registered test's own, arm first
+      await expect(box).toContainText(`won ${pct(t1.shares.arm)} of the`);
+      await expect(box).toContainText(
+        `against ${pct(t1.shares.baseline)} for the ordinary simulated pilot`,
+      );
+      for (const row of t1.perClass) {
+        const name = row.character === "ironclad" ? "Ironclad" : "Defect";
+        const mine = row.character === character ? " (your class)" : "";
+        await expect(box).toContainText(
+          `${name}${mine}: ${pct(row.shares.arm)} against ${pct(row.shares.baseline)}`,
+        );
+      }
+      if (ownClass?.verdict === "level")
+        await expect(box).toContainText("not shown on its own at the class level 0.01");
+      await expect(box).toContainText("Along the way: ");
+      await expect(box).toContainText("Every game of the test was played at Ascension 0");
+      await expect(
+        box.getByRole("link", { name: "The result and what it does not show" }),
+      ).toHaveAttribute("href", "/insights#thresholds");
+      await expectNoSeriousA11yViolations(page, `advisor, Act 2, ${label}, pickier opinion open`);
+      await expectNoHorizontalOverflow(page);
+      // with a better card on offer both pilots take it
+      await addOffered(page, above);
+      await expect(box).toContainText(/takes a card only if it is measured above 0\.2 would take /);
+      await expect(box).toContainText("gives the same answer here");
+      if (label !== "Ironclad") return;
+      // Act 1 (the run's first act) and Act 3 say nothing; neither does an event or relic offer
+      await choose(/^Act 1$/);
+      await expect(box).toHaveCount(0);
+      await choose(/^Act 2$/);
+      await expect(box).toHaveCount(1);
+      await choose("Event / relic");
+      await expect(box).toHaveCount(0);
+      await choose("Normal fight");
+      await expect(box).toHaveCount(1);
+      await choose(/^Act 3$/);
+      await expect(box).toHaveCount(0);
+    });
+  }
 
   test("synergy: a card that needs what the deck lacks is held back, and builds an engine once the deck has it", async ({
     page,

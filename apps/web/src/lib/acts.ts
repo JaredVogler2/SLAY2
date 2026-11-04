@@ -371,7 +371,7 @@ export function advisorNote(
         replication === undefined
           ? "The evidence is narrow, the threshold 0.2 was not compared with any other, and the next registered study (ADR-062) repeats the test on new seeds and screens thresholds; if its replication passes, an opt-in simulated second opinion for the classes that passed, with the tested threshold and these figures beside it, is the change that would follow."
           : replication === "passed"
-            ? "The evidence was narrow and the threshold 0.2 had not been compared with any other; the next registered study (ADR-062) then passed its replication on new seeds (see “Which threshold?”), and the opt-in simulated second opinion that the decision allows, with the tested threshold and the figures beside it, is the change that follows, on its own and with its own review."
+            ? "The evidence was narrow and the threshold 0.2 had not been compared with any other; the next registered study (ADR-062) then passed its replication on new seeds (see “Which threshold?”), and the advisor now offers the opt-in simulated second opinion that the decision allows, as a closed panel in Act 2 for Ironclad and Defect, with the tested threshold and the figures beside it (ADR-063)."
             : "The evidence was narrow and the threshold 0.2 had not been compared with any other; the next registered study (ADR-062) then repeated the test on new seeds and did not show it again (see “Which threshold?”), so nothing is added and nothing already published is withdrawn."
       }`,
     );

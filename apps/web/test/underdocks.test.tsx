@@ -605,6 +605,7 @@ describe("the advisor panels", () => {
         offered={offered("ironclad")}
         heuristic={{ kind: "skip" }}
         underdocksData={REGISTERED}
+        source="regular"
       />,
     );
     expect(own(container)).toHaveAttribute("data-underdocks-result", "registered");
@@ -615,6 +616,7 @@ describe("the advisor panels", () => {
         offered={offered("ironclad")}
         heuristic={{ kind: "skip" }}
         underdocksData={REGISTERED}
+        source="regular"
       />,
     );
     expect(own(container)).toBeNull();
@@ -642,6 +644,7 @@ describe("the advisor panels", () => {
         offered={offered("ironclad")}
         heuristic={{ kind: "skip" }}
         underdocksData={data}
+        source="regular"
       />,
     );
     expect(own(values.container)).toHaveTextContent("follows the card values shown here");
@@ -691,6 +694,7 @@ describe("the advisor panels", () => {
         offered={offered("silent")}
         heuristic={{ kind: "skip" }}
         underdocksData={data}
+        source="regular"
       />,
     );
     expect(values.container).toHaveTextContent(

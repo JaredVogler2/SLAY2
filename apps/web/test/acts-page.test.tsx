@@ -505,13 +505,15 @@ describe("what this changes for the advisor (ADR-061 item 7 iii)", () => {
     );
     const passed = advisorNote(results, "passed").join(" ");
     expect(passed).toMatch(/then passed its replication on new seeds \(see “Which threshold\?”\)/);
-    expect(passed).toMatch(/is the change that follows, on its own and with its own review/);
+    expect(passed).toMatch(
+      /the advisor now offers the opt-in simulated second opinion that the decision allows, as a closed panel in Act 2 for Ironclad and Defect/,
+    );
     expect(passed).not.toMatch(/repeats the test on new seeds and screens thresholds/);
     for (const v of ["not-shown", "reversed"] as const) {
       const said = advisorNote(results, v).join(" ");
       expect(said).toMatch(/did not show it again/);
       expect(said).toMatch(/nothing is added and nothing already published is withdrawn/);
-      expect(said).not.toMatch(/is the change that follows/);
+      expect(said).not.toMatch(/the advisor now offers/);
     }
     // a study with no pickier rule that passed without a price says nothing about the replication
     const none = actsFixture({}).tests?.results;

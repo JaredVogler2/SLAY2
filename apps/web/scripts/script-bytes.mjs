@@ -14,7 +14,7 @@ import { gzipSync } from "node:zlib";
 
 const BUDGET_KB_GZIPPED = {
   index: 200,
-  advisor: 345,
+  advisor: 355,
   odds: 285,
   routes: 278,
   codex: 285,

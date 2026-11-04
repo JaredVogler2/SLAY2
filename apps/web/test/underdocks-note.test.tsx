@@ -28,7 +28,12 @@ describe("the Underdocks caveat looks the same wherever it appears", () => {
 
   it("is the same box on the card-pick panel (the Neow panel's is asserted in neow-offer.test.tsx) and a quiet line, not a box, for Overgrowth", () => {
     const pick = render(
-      <SimulationOpinion run={underdocks} offered={["RAMPAGE"]} heuristic={{ kind: "skip" }} />,
+      <SimulationOpinion
+        run={underdocks}
+        offered={["RAMPAGE"]}
+        heuristic={{ kind: "skip" }}
+        source="regular"
+      />,
     );
     const onPick = pick.container.querySelector("[data-underdocks-note]");
     expect(onPick?.className).toContain(BOX);
@@ -39,6 +44,7 @@ describe("the Underdocks caveat looks the same wherever it appears", () => {
         run={{ ...underdocks, act1: "overgrowth" }}
         offered={["RAMPAGE"]}
         heuristic={{ kind: "skip" }}
+        source="regular"
       />,
     );
     expect(overgrowth.container.querySelector("[data-underdocks-note]")).toBeNull();

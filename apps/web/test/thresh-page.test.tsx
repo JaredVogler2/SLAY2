@@ -194,8 +194,13 @@ describe("after the held-out tests", () => {
       /Read as winning more games: the replication of 0\.2 in Act 2 \(\d+\.\d\d % against \d+\.\d\d % of the paired games won, \+0\.\d\d points\)\./,
     );
     expect(resultLine(none)).toMatch(/None of the tests was shown to differ from its baseline/);
-    expect(advisorNote(passed)[0]).toBe("The advisor does not change because of this study alone.");
-    expect(advisorNote(passed)[1]).toMatch(/separate change with its own review/);
+    expect(advisorNote(passed)[0]).toBe(
+      "The advisor's own recommendation does not change because of this study.",
+    );
+    expect(advisorNote(passed)[1]).toMatch(
+      /so the advisor offers an optional second opinion for it \(ADR-063\): a closed panel in Act 2, for Ironclad and Defect only/,
+    );
+    expect(advisorNote(passed)[1]).toMatch(/never speaks for another bar/);
     expect(advisorNote(none)[1]).toMatch(
       /nothing to offer, and nothing already published is withdrawn/,
     );
@@ -203,12 +208,34 @@ describe("after the held-out tests", () => {
     expect(advisorNote(peak.tests?.results ?? {})[1]).toMatch(/nothing to offer/); // T3 alone offers nothing: only a test against the baseline does
   });
 
+  it("offers the second opinion for 0.2 only, and a screen's choice that passed still needs its own change", () => {
+    const only = (
+      verdicts: NonNullable<Parameters<typeof threshFixture>[0]["verdicts"]>,
+    ): readonly string[] =>
+      advisorNote(
+        threshFixture({ stage: "tested", nets: PEAK_NETS, verdicts }).tests?.results ?? {},
+      );
+    const choiceOnly = only({ T1: "not-shown", T2: "passed", T3: "not-shown" });
+    expect(choiceOnly).toHaveLength(2);
+    expect(choiceOnly[1]).toMatch(/0\.3 passed its own test against the baseline/);
+    expect(choiceOnly[1]).toMatch(
+      /in a separate change with its own review; this page does not add it/,
+    );
+    expect(choiceOnly.join(" ")).not.toMatch(/advisor offers an optional second opinion/);
+    const both = only({ T1: "passed", T2: "passed", T3: "not-shown" });
+    expect(both).toHaveLength(3);
+    expect(both[1]).toMatch(/so the advisor offers an optional second opinion for it \(ADR-063\)/);
+    expect(both[2]).toMatch(/0\.3 passed its own test against the baseline/);
+    const none = only({ T1: "not-shown", T2: "not-shown", T3: "passed" });
+    expect(none[1]).toMatch(/nothing to offer/);
+  });
+
   it("names the next step for each way the replication came out, and a pass of the screen's choice beside it", () => {
     const step = (verdict: ThreshVerdict): string =>
       nextStep(threshFixture({ stage: "tested", verdicts: { T1: verdict } }).tests?.results ?? {});
     expect(step("passed")).toMatch(/shown again on seeds nobody had played \(ADR-062\)/);
     expect(step("passed")).toMatch(
-      /The advisor is unchanged: an opt-in, labelled simulated second opinion for 0\.2 in Ironclad and Defect is a separate change with its own review/,
+      /The advisor now offers an optional, closed second opinion for 0\.2 in Act 2 for Ironclad and Defect \(ADR-063\) and its own recommendation is unchanged/,
     );
     expect(step("passed")).toMatch(/other thresholds are still untested on held-out seeds/);
     expect(step("passed")).toMatch(/nothing about the live game has been compared/);

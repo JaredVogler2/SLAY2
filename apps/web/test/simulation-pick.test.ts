@@ -4,15 +4,22 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { allSets, isValidated, measuredValue, setFor } from "@/lib/cardvalues";
-import { DECK_CAP, simulationPick } from "@/lib/simulation-pick";
+import {
+  DECK_CAP,
+  PICKIER_ACT_INDEX,
+  PICKIER_THRESHOLD,
+  simulationPick,
+} from "@/lib/simulation-pick";
 
 interface Golden {
   deckCap: number;
   threshold: number;
+  lateThreshold: number;
+  lateActs: number[];
   classes: {
     character: string;
     valuesSha256: string;
-    cases: { offered: string[]; deckSize: number; pick: string }[];
+    cases: { offered: string[]; deckSize: number; pick: string; latePick: string }[];
   }[];
 }
 
@@ -24,6 +31,8 @@ describe("simulation pick follows the Python policy it describes", () => {
   it("was generated from the values files the site ships, one entry per measured class", () => {
     expect(golden.deckCap).toBe(DECK_CAP);
     expect(golden.threshold).toBe(0);
+    expect(golden.lateThreshold).toBe(PICKIER_THRESHOLD);
+    expect(golden.lateActs).toEqual([PICKIER_ACT_INDEX]);
     expect(golden.classes.map((c) => c.character).sort()).toEqual(
       allSets()
         .map((s) => s.character)
@@ -64,6 +73,101 @@ describe("simulation pick follows the Python policy it describes", () => {
         expect([...answers].sort(), entry.character).toEqual(["pick", "skip", "unmeasured"]);
       }
     }
+  });
+});
+
+describe("the pickier pilot of Act 2 follows the late policy it describes (ADR-063)", () => {
+  it("gives rules_v2_late's answer in Act 2 on every golden case, with the bar 0.2, and only ever skips more than the ordinary pilot", () => {
+    let skippedMore = 0;
+    for (const entry of golden.classes) {
+      const set = setFor(entry.character);
+      if (!isValidated(set)) continue;
+      const toCatalog = (id: string): string =>
+        set?.cards.some((c) => c.id === id) ? id : id.replace(/_CARD$/, "");
+      for (const c of entry.cases) {
+        const offered = c.offered.map(toCatalog);
+        const got = simulationPick({
+          character: entry.character,
+          offered,
+          deckSize: c.deckSize,
+          threshold: golden.lateThreshold,
+        });
+        const expected = c.latePick === "skip" ? "skip" : toCatalog(c.latePick);
+        if (got.kind === "unmeasured") {
+          expect(expected, JSON.stringify(c)).toBe("skip");
+          continue;
+        }
+        expect(got.kind === "pick" ? got.cardId : "skip", JSON.stringify(c)).toBe(expected);
+        // the late rule never takes a card the ordinary rule skips, and never takes another card than the ordinary rule's
+        expect(["skip", c.pick], JSON.stringify(c)).toContain(c.latePick);
+        if (c.latePick === "skip" && c.pick !== "skip") skippedMore += 1;
+      }
+    }
+    expect(skippedMore, "the fixture must contain offers the pickier pilot skips").toBeGreaterThan(
+      10,
+    );
+  });
+
+  it("takes the best card only if its value is strictly above the bar, and says which bar", () => {
+    const set = setFor("ironclad");
+    const between = set?.cards.find((c) => c.beta > 0.02 && c.beta < PICKIER_THRESHOLD);
+    const above = set?.cards.find((c) => c.beta > PICKIER_THRESHOLD + 0.05);
+    expect(between, "a card measured between zero and the bar").toBeDefined();
+    expect(above, "a card measured well above the bar").toBeDefined();
+    const ordinary = simulationPick({
+      character: "ironclad",
+      offered: [between?.id ?? ""],
+      deckSize: 12,
+    });
+    const pickier = simulationPick({
+      character: "ironclad",
+      offered: [between?.id ?? ""],
+      deckSize: 12,
+      threshold: PICKIER_THRESHOLD,
+    });
+    expect(ordinary.kind).toBe("pick");
+    expect(pickier.kind).toBe("skip");
+    expect(pickier.reason).toContain("above 0.2");
+    expect(pickier.reason).toContain("counts as zero");
+    const takes = simulationPick({
+      character: "ironclad",
+      offered: [between?.id ?? "", above?.id ?? ""],
+      deckSize: 12,
+      threshold: PICKIER_THRESHOLD,
+    });
+    expect(takes.kind === "pick" ? takes.cardId : "").toBe(above?.id);
+    expect(takes.reason).toContain("above 0.2");
+    expect(ordinary.reason).toContain("above zero");
+  });
+
+  it("is strict at the bar, as the policy is: a card measured exactly at it is skipped, one a hair below it is taken", () => {
+    const card = setFor("ironclad")?.cards.find((c) => c.beta > 0.02 && c.beta < PICKIER_THRESHOLD);
+    expect(card).toBeDefined();
+    const at = simulationPick({
+      character: "ironclad",
+      offered: [card?.id ?? ""],
+      deckSize: 12,
+      threshold: card?.beta ?? 0,
+    });
+    expect(at.kind).toBe("skip");
+    const hair = simulationPick({
+      character: "ironclad",
+      offered: [card?.id ?? ""],
+      deckSize: 12,
+      threshold: (card?.beta ?? 0) - 1e-9,
+    });
+    expect(hair.kind).toBe("pick");
+  });
+
+  it("still stops at the deck cap, whatever the bar", () => {
+    const r = simulationPick({
+      character: "ironclad",
+      offered: ["RAMPAGE"],
+      deckSize: DECK_CAP,
+      threshold: PICKIER_THRESHOLD,
+    });
+    expect(r.kind).toBe("skip");
+    expect(r.reason).toContain(String(DECK_CAP));
   });
 });
 
@@ -119,6 +223,26 @@ describe("simulation pick, branch by branch", () => {
     expect(
       simulationPick({ character: "ironclad", offered: ["RAMPAGE"], deckSize: DECK_CAP - 1 }).kind,
     ).toBe("pick");
+  });
+
+  it("sends a real tie to the earlier card, whichever order the two cards are offered in (two Necrobinder cards share a value)", () => {
+    const a = setFor("necrobinder")?.cards.find((c) => c.id === "SOW");
+    const b = setFor("necrobinder")?.cards.find((c) => c.id === "FRIENDSHIP");
+    expect(a?.beta, "the tie must exist in the shipped values").toBe(b?.beta);
+    const forward = simulationPick({
+      character: "necrobinder",
+      offered: ["SOW", "FRIENDSHIP"],
+      deckSize: 12,
+      threshold: 0.1,
+    });
+    const backward = simulationPick({
+      character: "necrobinder",
+      offered: ["FRIENDSHIP", "SOW"],
+      deckSize: 12,
+      threshold: 0.1,
+    });
+    expect(forward.kind === "pick" ? forward.cardId : "").toBe("SOW");
+    expect(backward.kind === "pick" ? backward.cardId : "").toBe("FRIENDSHIP");
   });
 
   it("sends ties to the earlier card", () => {
